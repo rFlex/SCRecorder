@@ -9,15 +9,15 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <UIKit/UIGestureRecognizerSubclass.h>
-#import "VRViewController.h"
-#import "VRVideoRecorder.h"
+#import "SCViewController.h"
+#import "SCVideoRecorder.h"
 
-@interface VRViewController () {
+@interface SCViewController () {
     
     AVCaptureSession * session;
     AVCaptureVideoPreviewLayer * previewLayer;
     AVCaptureInput * input;
-    VRVideoRecorder * videoRecorder;
+    SCVideoRecorder * videoRecorder;
     
 }
 
@@ -53,13 +53,13 @@
 
 @end
 
-@implementation VRViewController
+@implementation SCViewController
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    videoRecorder = [[VRVideoRecorder alloc] initWithOutputVideoSize:CGSizeMake(640, 480)];
+    videoRecorder = [[SCVideoRecorder alloc] initWithOutputVideoSize:CGSizeMake(640, 480)];
     
     session = [[AVCaptureSession alloc] init];
     

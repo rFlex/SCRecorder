@@ -6,10 +6,10 @@
 //  Copyright (c) 2013 rFlex. All rights reserved.
 //
 
-#import "VRVideoRecorder.h"
+#import "SCVideoRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 
-@interface VRVideoRecorder() {
+@interface SCVideoRecorder() {
     BOOL recording;
     BOOL shouldWriteToCameraRoll;
     BOOL initializingRecording;
@@ -24,7 +24,7 @@
 
 @end
 
-@implementation VRVideoRecorder
+@implementation SCVideoRecorder
 
 @synthesize outputVideoSize;
 

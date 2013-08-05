@@ -8,11 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-#import "VRAppDelegate.h"
+#import "SCAppDelegate.h"
 
 int main(int argc, char *argv[])
 {
     @autoreleasepool {
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([VRAppDelegate class]));
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([SCAppDelegate class]));
     }
 }

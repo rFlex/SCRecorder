@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface VRViewController : UIViewController
+@interface SCViewController : UIViewController
 @property (weak, nonatomic) IBOutlet UIView *recordView;
 @property (weak, nonatomic) IBOutlet UIButton *stopButton;
 @property (weak, nonatomic) IBOutlet UIButton *retakeButton;

@@ -13,39 +13,39 @@
 		DC551C4C17ADD66000E37F8F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */; };
 		DC551C5217ADD66000E37F8F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5017ADD66000E37F8F /* InfoPlist.strings */; };
 		DC551C5417ADD66000E37F8F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C5317ADD66000E37F8F /* main.m */; };
-		DC551C5817ADD66000E37F8F /* VRAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C5717ADD66000E37F8F /* VRAppDelegate.m */; };
+		DC551C5817ADD66000E37F8F /* SCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C5717ADD66000E37F8F /* SCAppDelegate.m */; };
 		DC551C5A17ADD66000E37F8F /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5917ADD66000E37F8F /* Default.png */; };
 		DC551C5C17ADD66000E37F8F /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5B17ADD66000E37F8F /* Default@2x.png */; };
 		DC551C5E17ADD66000E37F8F /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5D17ADD66000E37F8F /* Default-568h@2x.png */; };
 		DC551C6117ADD66000E37F8F /* MainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */; };
-		DC551C6417ADD66000E37F8F /* VRViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6317ADD66000E37F8F /* VRViewController.m */; };
+		DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6317ADD66000E37F8F /* SCViewController.m */; };
 		DC551C6B17ADDA4400E37F8F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */; };
-		DC551C6E17ADDB4000E37F8F /* VRVideoRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6D17ADDB4000E37F8F /* VRVideoRecorder.m */; };
+		DC551C6E17ADDB4000E37F8F /* SCVideoRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6D17ADDB4000E37F8F /* SCVideoRecorder.m */; };
 		DC551C7017ADF12200E37F8F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6F17ADF12200E37F8F /* CoreMedia.framework */; };
 		DC551C7217ADF12800E37F8F /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C7117ADF12800E37F8F /* CoreVideo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		DC36981F17AF132600F5012B /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
-		DC551C4417ADD66000E37F8F /* VideoRecorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoRecorder.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC551C4417ADD66000E37F8F /* SCVideoRecorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SCVideoRecorder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC551C4717ADD66000E37F8F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DC551C4917ADD66000E37F8F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		DC551C4F17ADD66000E37F8F /* VideoRecorder-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VideoRecorder-Info.plist"; sourceTree = "<group>"; };
+		DC551C4F17ADD66000E37F8F /* SCVideoRecorder-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SCVideoRecorder-Info.plist"; sourceTree = "<group>"; };
 		DC551C5117ADD66000E37F8F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DC551C5317ADD66000E37F8F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		DC551C5517ADD66000E37F8F /* VideoRecorder-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VideoRecorder-Prefix.pch"; sourceTree = "<group>"; };
-		DC551C5617ADD66000E37F8F /* VRAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VRAppDelegate.h; sourceTree = "<group>"; };
-		DC551C5717ADD66000E37F8F /* VRAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VRAppDelegate.m; sourceTree = "<group>"; };
+		DC551C5517ADD66000E37F8F /* SCVideoRecorder-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SCVideoRecorder-Prefix.pch"; sourceTree = "<group>"; };
+		DC551C5617ADD66000E37F8F /* SCAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCAppDelegate.h; sourceTree = "<group>"; };
+		DC551C5717ADD66000E37F8F /* SCAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SCAppDelegate.m; sourceTree = "<group>"; };
 		DC551C5917ADD66000E37F8F /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		DC551C5B17ADD66000E37F8F /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		DC551C5D17ADD66000E37F8F /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		DC551C6017ADD66000E37F8F /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard.storyboard; sourceTree = "<group>"; };
-		DC551C6217ADD66000E37F8F /* VRViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VRViewController.h; sourceTree = "<group>"; };
-		DC551C6317ADD66000E37F8F /* VRViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VRViewController.m; sourceTree = "<group>"; };
+		DC551C6217ADD66000E37F8F /* SCViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCViewController.h; sourceTree = "<group>"; };
+		DC551C6317ADD66000E37F8F /* SCViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SCViewController.m; sourceTree = "<group>"; };
 		DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		DC551C6C17ADDB4000E37F8F /* VRVideoRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VRVideoRecorder.h; sourceTree = "<group>"; };
-		DC551C6D17ADDB4000E37F8F /* VRVideoRecorder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VRVideoRecorder.m; sourceTree = "<group>"; };
+		DC551C6C17ADDB4000E37F8F /* SCVideoRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCVideoRecorder.h; sourceTree = "<group>"; };
+		DC551C6D17ADDB4000E37F8F /* SCVideoRecorder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCVideoRecorder.m; sourceTree = "<group>"; };
 		DC551C6F17ADF12200E37F8F /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		DC551C7117ADF12800E37F8F /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -75,7 +75,7 @@
 				DC551C7117ADF12800E37F8F /* CoreVideo.framework */,
 				DC551C6F17ADF12200E37F8F /* CoreMedia.framework */,
 				DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */,
-				DC551C4D17ADD66000E37F8F /* VideoRecorder */,
+				DC551C4D17ADD66000E37F8F /* SCVideoRecorder */,
 				DC551C4617ADD66000E37F8F /* Frameworks */,
 				DC551C4517ADD66000E37F8F /* Products */,
 			);
@@ -84,7 +84,7 @@
 		DC551C4517ADD66000E37F8F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DC551C4417ADD66000E37F8F /* VideoRecorder.app */,
+				DC551C4417ADD66000E37F8F /* SCVideoRecorder.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -99,28 +99,29 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DC551C4D17ADD66000E37F8F /* VideoRecorder */ = {
+		DC551C4D17ADD66000E37F8F /* SCVideoRecorder */ = {
 			isa = PBXGroup;
 			children = (
-				DC551C5617ADD66000E37F8F /* VRAppDelegate.h */,
-				DC551C5717ADD66000E37F8F /* VRAppDelegate.m */,
+				DC551C5617ADD66000E37F8F /* SCAppDelegate.h */,
+				DC551C5717ADD66000E37F8F /* SCAppDelegate.m */,
 				DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */,
-				DC551C6217ADD66000E37F8F /* VRViewController.h */,
-				DC551C6317ADD66000E37F8F /* VRViewController.m */,
+				DC551C6217ADD66000E37F8F /* SCViewController.h */,
+				DC551C6317ADD66000E37F8F /* SCViewController.m */,
 				DC551C4E17ADD66000E37F8F /* Supporting Files */,
-				DC551C6C17ADDB4000E37F8F /* VRVideoRecorder.h */,
-				DC551C6D17ADDB4000E37F8F /* VRVideoRecorder.m */,
+				DC551C6C17ADDB4000E37F8F /* SCVideoRecorder.h */,
+				DC551C6D17ADDB4000E37F8F /* SCVideoRecorder.m */,
 			);
+			name = SCVideoRecorder;
 			path = VideoRecorder;
 			sourceTree = "<group>";
 		};
 		DC551C4E17ADD66000E37F8F /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				DC551C4F17ADD66000E37F8F /* VideoRecorder-Info.plist */,
+				DC551C4F17ADD66000E37F8F /* SCVideoRecorder-Info.plist */,
 				DC551C5017ADD66000E37F8F /* InfoPlist.strings */,
 				DC551C5317ADD66000E37F8F /* main.m */,
-				DC551C5517ADD66000E37F8F /* VideoRecorder-Prefix.pch */,
+				DC551C5517ADD66000E37F8F /* SCVideoRecorder-Prefix.pch */,
 				DC551C5917ADD66000E37F8F /* Default.png */,
 				DC551C5B17ADD66000E37F8F /* Default@2x.png */,
 				DC551C5D17ADD66000E37F8F /* Default-568h@2x.png */,
@@ -131,9 +132,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DC551C4317ADD66000E37F8F /* VideoRecorder */ = {
+		DC551C4317ADD66000E37F8F /* SCVideoRecorder */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "VideoRecorder" */;
+			buildConfigurationList = DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "SCVideoRecorder" */;
 			buildPhases = (
 				DC551C4017ADD66000E37F8F /* Sources */,
 				DC551C4117ADD66000E37F8F /* Frameworks */,
@@ -143,9 +144,9 @@
 			);
 			dependencies = (
 			);
-			name = VideoRecorder;
+			name = SCVideoRecorder;
 			productName = VideoRecorder;
-			productReference = DC551C4417ADD66000E37F8F /* VideoRecorder.app */;
+			productReference = DC551C4417ADD66000E37F8F /* SCVideoRecorder.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -158,7 +159,7 @@
 				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = rFlex;
 			};
-			buildConfigurationList = DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "VideoRecorder" */;
+			buildConfigurationList = DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "SCVideoRecorder" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -170,7 +171,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DC551C4317ADD66000E37F8F /* VideoRecorder */,
+				DC551C4317ADD66000E37F8F /* SCVideoRecorder */,
 			);
 		};
 /* End PBXProject section */
@@ -196,9 +197,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC551C5417ADD66000E37F8F /* main.m in Sources */,
-				DC551C5817ADD66000E37F8F /* VRAppDelegate.m in Sources */,
-				DC551C6417ADD66000E37F8F /* VRViewController.m in Sources */,
-				DC551C6E17ADDB4000E37F8F /* VRVideoRecorder.m in Sources */,
+				DC551C5817ADD66000E37F8F /* SCAppDelegate.m in Sources */,
+				DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */,
+				DC551C6E17ADDB4000E37F8F /* SCVideoRecorder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,9 +285,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "VideoRecorder/VideoRecorder-Prefix.pch";
-				INFOPLIST_FILE = "VideoRecorder/VideoRecorder-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				GCC_PREFIX_HEADER = "VideoRecorder/SCVideoRecorder-Prefix.pch";
+				INFOPLIST_FILE = "VideoRecorder/SCVideoRecorder-Info.plist";
+				PRODUCT_NAME = SCVideoRecorder;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -295,9 +296,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "VideoRecorder/VideoRecorder-Prefix.pch";
-				INFOPLIST_FILE = "VideoRecorder/VideoRecorder-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				GCC_PREFIX_HEADER = "VideoRecorder/SCVideoRecorder-Prefix.pch";
+				INFOPLIST_FILE = "VideoRecorder/SCVideoRecorder-Info.plist";
+				PRODUCT_NAME = SCVideoRecorder;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -305,7 +306,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "VideoRecorder" */ = {
+		DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "SCVideoRecorder" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC551C6517ADD66000E37F8F /* Debug */,
@@ -314,7 +315,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "VideoRecorder" */ = {
+		DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "SCVideoRecorder" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC551C6817ADD66000E37F8F /* Debug */,

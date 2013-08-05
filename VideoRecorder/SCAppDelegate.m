@@ -6,9 +6,9 @@
 //  Copyright (c) 2013 rFlex. All rights reserved.
 //
 
-#import "VRAppDelegate.h"
+#import "SCAppDelegate.h"
 
-@implementation VRAppDelegate
+@implementation SCAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
