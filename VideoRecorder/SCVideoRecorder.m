@@ -12,12 +12,12 @@
 @interface SCVideoRecorder() {
     BOOL recording;
     BOOL shouldWriteToCameraRoll;
-    BOOL initializingRecording;
     BOOL shouldComputeOffset;
     AVAssetWriter *assetWriter;
     AVAssetWriterInput *assetWriterVideoIn;
     NSURL *url;
     dispatch_queue_t dispatch_queue;
+    CMTime startedTime;
     CMTime currentTimeOffset;
     CMTime lastTakenVideoTime;
 }
@@ -27,6 +27,7 @@
 @implementation SCVideoRecorder
 
 @synthesize outputVideoSize;
+@synthesize delegate;
 
 - (id) init {
     self = [super init];
@@ -48,68 +49,69 @@
     return self;
 }
 
-- (void) startRecordingAtCameraRoll:(void (^)(NSError *))handler {
-    long timeInterval =  (long)[[NSDate date] timeIntervalSince1970];
-    NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%ld%@", NSTemporaryDirectory(), timeInterval, @"Movie.MOV"]];
-    [self startRecordingAtUrl:fileUrl withHandler:^(NSError* error) {
-        shouldWriteToCameraRoll = YES;
-        if (handler != nil) {
-            handler(error);
-        }
-    }];
+- (void) startRecordingAtCameraRoll:(NSError **)error {
+    [self startRecordingOnTempDir:error];
+    shouldWriteToCameraRoll = YES;
 }
 
-- (void) startRecordingAtUrl:(NSURL *)fileUrl withHandler:(void (^)(NSError *))handler {
+- (NSURL*) startRecordingOnTempDir:(NSError **)error {
+    long timeInterval =  (long)[[NSDate date] timeIntervalSince1970];
+    NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%ld%@", NSTemporaryDirectory(), timeInterval, @"SCVideo.MOV"]];
+    
+    NSError * recordError = nil;
+    [self startRecordingAtUrl:fileUrl error:&recordError];
+    
+    if (recordError != nil) {
+        if (error != nil) {
+            *error = recordError;
+        }
+        [self removeFile:fileUrl];
+        fileUrl = nil;
+
+    }
+    
+    return fileUrl;
+}
+
+- (void) startRecordingAtUrl:(NSURL *)fileUrl error:(NSError**)error {
     if (fileUrl == nil) {
         [NSException raise:@"Invalid argument" format:@"FileUrl must be not nil"];
     }
-    if (initializingRecording) {
-        [NSException raise:@"VideoRecorder not ready" format:@"The VideoRecorder is already preparing for recording"];
-    }
     
-    shouldWriteToCameraRoll = NO;
-    initializingRecording = YES;
-    currentTimeOffset = CMTimeMake(0, 1);
-    
-    [self reset:^ {
+    [self progressChanged:0];
+    dispatch_sync(dispatch_queue, ^ {
+        [self resetInternal];
+        shouldWriteToCameraRoll = NO;
+        currentTimeOffset = CMTimeMake(0, 1);
+        
         NSError * assetError;
         
         AVAssetWriter * writer = [[AVAssetWriter alloc] initWithURL:fileUrl fileType:AVFileTypeQuickTimeMovie error:&assetError];
         
         if (assetError == nil) {
-            dispatch_async(dispatch_queue, ^ {
-                assetWriter = writer;
-                url = fileUrl;
-                initializingRecording = NO;
-                
-                NSError * error = nil;
-                [self setupAssetWriterVideoInput:&error];
+            assetWriter = writer;
+            url = fileUrl;
+            
+            NSError * assetWriterVideoError = nil;
+            [self setupAssetWriterVideoInput:&assetWriterVideoError];
+            if (assetWriterVideoError == nil) {
+                [self resumeRecording];
                 if (error != nil) {
-                    url = nil;
-                    assetWriter = nil;
-                    if (handler != nil) {
-                        dispatch_async(dispatch_get_main_queue(), ^ {
-                            handler(error);
-                        });
-                    }
-                } else {
-                    [self resumeRecording];
-                    if (handler != nil) {
-                        dispatch_async(dispatch_get_main_queue(), ^ {
-                            handler(nil);
-                        });
-                    }
+                    *error = nil;
                 }
-            });
+            } else {
+                [self resetInternal];
+                if (error != nil) {
+                    *error = assetWriterVideoError;
+                }
+            }
         } else {
-            initializingRecording = NO;
-            if (handler != nil) {
-                handler(assetError);
+            if (error != nil) {
+                *error = assetError;
             }
         }
-    }];
+    });
 }
-
 - (NSError*) createError:(NSString*)name {
     return [NSError errorWithDomain:@"SCVideoRecorder" code:500 userInfo:[NSDictionary dictionaryWithObject:name forKey:NSLocalizedDescriptionKey]];
 }
@@ -123,13 +125,14 @@
     }
 }
 
-- (void) stopRecording:(void (^)(NSURL *, NSError *))handler {
+- (void) stopRecording:(void (^)(NSError *))handler {
     [self pauseRecording];
+    
     dispatch_async(dispatch_queue, ^ {
         if (assetWriter == nil) {
             if (handler != nil) {
                 dispatch_async(dispatch_get_main_queue(), ^ {
-                    handler(nil, [self createError:@"Recording must be started before calling stopRecording"]);
+                    handler([self createError:@"Recording must be started before calling stopRecording"]);
                 });
             }
         } else {
@@ -148,14 +151,16 @@
                         [self removeFile:fileUrl];
                         if (handler != nil) {
                             dispatch_async(dispatch_get_main_queue(), ^ {
-                                handler(assetUrl, error);
+                                [self progressChanged:0];
+                                handler(error);
                             });
                         }
                     }];
                 } else {
                     if (handler != nil) {
                         dispatch_async(dispatch_get_main_queue(), ^ {
-                            handler(fileUrl, nil);
+                            [self progressChanged:0];
+                            handler(nil);
                         });
                     }
                 }
@@ -180,30 +185,29 @@
     });
 }
 
-- (void) reset:(void (^)())handler {
-    dispatch_async(dispatch_queue, ^ {
-        AVAssetWriter * writer = assetWriter;
-        NSURL * fileUrl = url;
-        
-        url = nil;
-        assetWriter = nil;
-        
-        if (writer != nil) {
-            if (writer.status != AVAssetWriterStatusUnknown) {
-                [writer finishWritingWithCompletionHandler:^ {
-                    assetWriterVideoIn = nil;
-                    if (fileUrl != nil) {
-                        [self removeFile:fileUrl];
-                    }
-                }];                
-            }
+- (void) resetInternal {
+    AVAssetWriter * writer = assetWriter;
+    NSURL * fileUrl = url;
+    
+    url = nil;
+    assetWriter = nil;
+    assetWriterVideoIn = nil;
+    
+    if (writer != nil) {
+        if (writer.status != AVAssetWriterStatusUnknown) {
+            [writer finishWritingWithCompletionHandler:^ {
+                if (fileUrl != nil) {
+                    [self removeFile:fileUrl];
+                }
+            }];
         }
-        
-        if (handler != nil) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                handler();
-            });
-        }
+    }
+}
+
+- (void) reset {
+    dispatch_sync(dispatch_queue, ^ {
+        [self resetInternal];
+        [self progressChanged:0];
     });
 }
 
@@ -246,29 +250,10 @@
     CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
     CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
     for (CMItemCount i = 0; i < count; i++) {
-        CFStringRef offsetDescription = CMTimeCopyDescription(nil, offset);
-        
         pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
         pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
         
-        NSLog(@"Offset: %@", offsetDescription);
-        
-        CFRelease(offsetDescription);
-    }
-    CMSampleBufferRef sout;
-    CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
-    free(pInfo);
-    return sout;
-}
-
-- (CMSampleBufferRef) adjustTimeOld:(CMSampleBufferRef) sample by:(CMTime) offset {
-    CMItemCount count;
-    CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
-    CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
-    CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
-    for (CMItemCount i = 0; i < count; i++) {
-        pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
-        pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
+        [self printTime:offset withMessage:@"Offset: "];
     }
     CMSampleBufferRef sout;
     CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
@@ -283,6 +268,12 @@
     CFRelease(timeDescription);
 }
 
+- (void) progressChanged:(Float64)totalSecond {
+    if ([self.delegate respondsToSelector:@selector(videoRecorder:didRecordFrame:)]) {
+        [self.delegate videoRecorder:self didRecordFrame:totalSecond];
+    }
+}
+
 - (void) captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     
     if ([self isRecordingStarted] && recording) {
@@ -293,6 +284,7 @@
                 [assetWriter startSessionAtSourceTime:frameTime];
             }
             lastTakenVideoTime = frameTime;
+            startedTime = frameTime;
         }
         if ([assetWriterVideoIn isReadyForMoreMediaData]) {
             if (shouldComputeOffset) {
@@ -306,10 +298,14 @@
             }
             
             CMSampleBufferRef adjustedBuffer = [self adjustTime:sampleBuffer by:currentTimeOffset];
+            
+            CMTime currentTime = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer), startedTime);
             [assetWriterVideoIn appendSampleBuffer:adjustedBuffer];
             CFRelease(adjustedBuffer);
             
-            NSLog(@"Recorded frame");
+            dispatch_async(dispatch_get_main_queue(), ^ {
+                [self progressChanged:CMTimeGetSeconds(currentTime)];
+            });
         } else {
             NSLog(@"Not ready for more media");
         }
@@ -325,8 +321,8 @@
     return recording;
 }
 
-- (BOOL) isInitializingRecording {
-    return initializingRecording;
+- (NSURL*) getOutputFileUrl {
+    return url;
 }
 
 @end

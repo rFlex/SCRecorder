@@ -9,24 +9,33 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
+@protocol SCVideoRecorderDelegate <NSObject>
+
+@optional
+
+- (void) videoRecorder:(id)videoRecorder didRecordFrame:(Float64)totalRecorded;
+
+@end
+
 @interface SCVideoRecorder : AVCaptureVideoDataOutput<AVCaptureVideoDataOutputSampleBufferDelegate> {
     
 }
 
 - (id) initWithOutputVideoSize:(CGSize)outputVideoSize;
 
-- (void) startRecordingAtCameraRoll:(void(^)(NSError*))handler;
-- (void) startRecordingAtUrl:(NSURL*)url withHandler:(void(^)(NSError*))handler;
-- (void) reset:(void(^)()) handler;
+- (void) startRecordingAtCameraRoll:(NSError**)error;
+- (NSURL*) startRecordingOnTempDir:(NSError**)error;
+- (void) startRecordingAtUrl:(NSURL*)url error:(NSError**)error;
+- (void) reset;
 - (void) resumeRecording;
 - (void) pauseRecording;
-- (void) stopRecording:(void(^)(NSURL*, NSError*)) handler;
+- (void) stopRecording:(void(^)(NSError*)) handler;
 
 - (BOOL) isRecordingStarted;
 - (BOOL) isRecording;
-- (BOOL) isInitializingRecording;
+- (NSURL*) getOutputFileUrl;
 
 @property (assign, nonatomic) CGSize outputVideoSize;
-
+@property (strong, nonatomic) id<SCVideoRecorderDelegate> delegate;
 
 @end

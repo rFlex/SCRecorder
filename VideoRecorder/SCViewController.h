@@ -7,11 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SCVideoRecorder.h"
 
-@interface SCViewController : UIViewController
+@interface SCViewController : UIViewController<SCVideoRecorderDelegate>
+
 @property (weak, nonatomic) IBOutlet UIView *recordView;
 @property (weak, nonatomic) IBOutlet UIButton *stopButton;
 @property (weak, nonatomic) IBOutlet UIButton *retakeButton;
 @property (weak, nonatomic) IBOutlet UIView *previewView;
+@property (weak, nonatomic) IBOutlet UIView *loadingView;
+@property (weak, nonatomic) IBOutlet UILabel *timeRecordedLabel;
+@property (weak, nonatomic) IBOutlet UIView *downBar;
 
 @end

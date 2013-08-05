@@ -10,7 +10,6 @@
 #import <AVFoundation/AVFoundation.h>
 #import <UIKit/UIGestureRecognizerSubclass.h>
 #import "SCViewController.h"
-#import "SCVideoRecorder.h"
 
 @interface SCViewController () {
     
@@ -60,6 +59,7 @@
     [super viewDidLoad];
     
     videoRecorder = [[SCVideoRecorder alloc] initWithOutputVideoSize:CGSizeMake(640, 480)];
+    videoRecorder.delegate = self;
     
     session = [[AVCaptureSession alloc] init];
     
@@ -86,11 +86,16 @@
     [self.stopButton addTarget:self action:@selector(handleStopButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.recordView addGestureRecognizer:[[VRTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
+    self.loadingView.hidden = YES;
     
 }
 
 - (void) handleStopButtonTapped:(id)sender {
-    [videoRecorder stopRecording:^(NSURL *url, NSError * error) {
+    self.loadingView.hidden = NO;
+    self.downBar.userInteractionEnabled = NO;
+    [videoRecorder stopRecording:^(NSError * error) {
+        self.loadingView.hidden = YES;
+        self.downBar.userInteractionEnabled = YES;
         if (error != nil) {
             [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedFailureReason]];
         } else {
@@ -100,7 +105,8 @@
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
-    [videoRecorder reset:nil];
+    [videoRecorder reset];
+    [self updateLabelForSecond:0];
 }
 
 - (void) showAlertViewWithTitle:(NSString*)title message:(NSString*) message {
@@ -112,13 +118,12 @@
     if (touchDetector.state == UIGestureRecognizerStateBegan) {
         NSLog(@"==== STARTING RECORDING ====");
         if (![videoRecorder isRecordingStarted]) {
-            if (![videoRecorder isInitializingRecording]) {
-                [videoRecorder startRecordingAtCameraRoll:^(NSError * error) {
-                    if (error != nil) {
-                        [self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
-                        NSLog(@"%@", error);
-                    }
-                }];
+            NSError * error;
+            [videoRecorder startRecordingAtCameraRoll:&error];
+            
+            if (error != nil) {
+                [self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
+                NSLog(@"%@", error);
             }
         } else {
             [videoRecorder resumeRecording];
@@ -135,10 +140,12 @@
     [session startRunning];
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void) updateLabelForSecond:(Float64)totalRecorded {
+    self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", totalRecorded];
+}
+
+- (void) videoRecorder:(id)videoRecorder didRecordFrame:(Float64)totalRecorded {
+    [self updateLabelForSecond:totalRecorded];
 }
 
 @end
