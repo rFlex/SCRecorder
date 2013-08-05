@@ -58,10 +58,11 @@
 {
     [super viewDidLoad];
     
-    videoRecorder = [[SCVideoRecorder alloc] initWithOutputVideoSize:CGSizeMake(640, 480)];
+    videoRecorder = [[SCVideoRecorder alloc] initWithOutputVideoSize:CGSizeMake(1280, 720)];
     videoRecorder.delegate = self;
     
     session = [[AVCaptureSession alloc] init];
+    session.sessionPreset = AVCaptureSessionPreset1280x720;
     
     AVCaptureDevice * captureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     
@@ -72,8 +73,7 @@
         [session addInput:input];
     } else {
         NSLog(@"Something bad happened");
-    }
-    
+    }    
     previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:session];
     previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     

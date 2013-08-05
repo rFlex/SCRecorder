@@ -36,6 +36,7 @@
 - (NSURL*) getOutputFileUrl;
 
 @property (assign, nonatomic) CGSize outputVideoSize;
+@property (assign, nonatomic) BOOL useInputFormatSizeAsOutputSize;
 @property (strong, nonatomic) id<SCVideoRecorderDelegate> delegate;
 
 @end

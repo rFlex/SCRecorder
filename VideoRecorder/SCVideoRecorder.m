@@ -20,6 +20,7 @@
     CMTime startedTime;
     CMTime currentTimeOffset;
     CMTime lastTakenVideoTime;
+    CMTime lastFrameTimeBeforePause;
 }
 
 @end
@@ -28,6 +29,7 @@
 
 @synthesize outputVideoSize;
 @synthesize delegate;
+@synthesize useInputFormatSizeAsOutputSize;
 
 - (id) init {
     self = [super init];
@@ -35,8 +37,15 @@
     if (self) {
         dispatch_queue = dispatch_queue_create("VRVideoRecorder", nil);
         [self setSampleBufferDelegate:self queue:dispatch_queue];
+        self.useInputFormatSizeAsOutputSize = YES;
+        lastTakenVideoTime = CMTimeMake(0, 1);
+        lastFrameTimeBeforePause = CMTimeMake(0, 1);
     }
     return self;
+}
+
+- (void) dealloc {
+
 }
 
 - (id) initWithOutputVideoSize:(CGSize)newOutputVideoSize {
@@ -44,6 +53,7 @@
     
     if (self) {
         self.outputVideoSize = newOutputVideoSize;
+        self.useInputFormatSizeAsOutputSize = NO;
     }
     
     return self;
@@ -172,7 +182,12 @@
 }
 
 - (void) pauseRecording {
-    recording = NO;
+    dispatch_async(dispatch_queue, ^ {
+        recording = NO;
+        // As I don't know any way to get the current time, setting this will always
+        // let the last frame to last 1/24th of a second
+        lastFrameTimeBeforePause = CMTimeMake(1, 24);
+    });
 }
 
 - (void) resumeRecording {
@@ -219,20 +234,20 @@
     bitsPerPixel = 11.4; // This bitrate matches the quality produced by AVCaptureSessionPresetHigh.
 	
 	bitsPerSecond = numPixels * bitsPerPixel;
-	
+    
 	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 											  AVVideoCodecH264, AVVideoCodecKey,
 											  [NSNumber numberWithInteger:self.outputVideoSize.width], AVVideoWidthKey,
 											  [NSNumber numberWithInteger:self.outputVideoSize.height], AVVideoHeightKey,
-											  [NSDictionary dictionaryWithObjectsAndKeys:
-											   [NSNumber numberWithInteger:bitsPerSecond], AVVideoAverageBitRateKey,
-											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
-											   nil], AVVideoCompressionPropertiesKey,
+//											  [NSDictionary dictionaryWithObjectsAndKeys:
+//											   [NSNumber numberWithInteger:bitsPerSecond], AVVideoAverageBitRateKey,
+//											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
+//											   nil], AVVideoCompressionPropertiesKey,
 											  nil];
 	if ([assetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {
 		assetWriterVideoIn = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoCompressionSettings];
 		assetWriterVideoIn.expectsMediaDataInRealTime = YES;
-//		assetWriterVideoIn.transform = [self transformFromCurrentVideoOrientationToOrientation:self.referenceOrientation];
+        assetWriterVideoIn.transform = CGAffineTransformMakeRotation(M_PI / 2);
 		if ([assetWriter canAddInput:assetWriterVideoIn])
 			[assetWriter addInput:assetWriterVideoIn];
 		else {
@@ -244,7 +259,7 @@
 	}
 }
 
-- (CMSampleBufferRef) adjustTime:(CMSampleBufferRef)sample by:(CMTime)offset {
+- (CMSampleBufferRef) adjustBuffer:(CMSampleBufferRef)sample withTimeOffset:(CMTime)offset {
     CMItemCount count;
     CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
     CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
@@ -252,8 +267,6 @@
     for (CMItemCount i = 0; i < count; i++) {
         pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
         pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
-        
-        [self printTime:offset withMessage:@"Offset: "];
     }
     CMSampleBufferRef sout;
     CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
@@ -276,8 +289,8 @@
 
 - (void) captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     
+    CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     if ([self isRecordingStarted] && recording) {
-        CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
         
         if (assetWriter.status == AVAssetWriterStatusUnknown) {
             if ([assetWriter startWriting]) {
@@ -294,10 +307,11 @@
                     CMTime offset = CMTimeSubtract(frameTime, lastTakenVideoTime);
                     
                     currentTimeOffset = CMTimeAdd(currentTimeOffset, offset);
+                    currentTimeOffset = CMTimeSubtract(currentTimeOffset, lastFrameTimeBeforePause);
                 }
             }
             
-            CMSampleBufferRef adjustedBuffer = [self adjustTime:sampleBuffer by:currentTimeOffset];
+            CMSampleBufferRef adjustedBuffer = [self adjustBuffer:sampleBuffer withTimeOffset:currentTimeOffset];
             
             CMTime currentTime = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer), startedTime);
             [assetWriterVideoIn appendSampleBuffer:adjustedBuffer];
