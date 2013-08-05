@@ -1,0 +1,329 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DC36982017AF132600F5012B /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC36981F17AF132600F5012B /* AssetsLibrary.framework */; };
+		DC551C4817ADD66000E37F8F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4717ADD66000E37F8F /* UIKit.framework */; };
+		DC551C4A17ADD66000E37F8F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4917ADD66000E37F8F /* Foundation.framework */; };
+		DC551C4C17ADD66000E37F8F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */; };
+		DC551C5217ADD66000E37F8F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5017ADD66000E37F8F /* InfoPlist.strings */; };
+		DC551C5417ADD66000E37F8F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C5317ADD66000E37F8F /* main.m */; };
+		DC551C5817ADD66000E37F8F /* VRAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C5717ADD66000E37F8F /* VRAppDelegate.m */; };
+		DC551C5A17ADD66000E37F8F /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5917ADD66000E37F8F /* Default.png */; };
+		DC551C5C17ADD66000E37F8F /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5B17ADD66000E37F8F /* Default@2x.png */; };
+		DC551C5E17ADD66000E37F8F /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5D17ADD66000E37F8F /* Default-568h@2x.png */; };
+		DC551C6117ADD66000E37F8F /* MainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */; };
+		DC551C6417ADD66000E37F8F /* VRViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6317ADD66000E37F8F /* VRViewController.m */; };
+		DC551C6B17ADDA4400E37F8F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */; };
+		DC551C6E17ADDB4000E37F8F /* VRVideoRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6D17ADDB4000E37F8F /* VRVideoRecorder.m */; };
+		DC551C7017ADF12200E37F8F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6F17ADF12200E37F8F /* CoreMedia.framework */; };
+		DC551C7217ADF12800E37F8F /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C7117ADF12800E37F8F /* CoreVideo.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		DC36981F17AF132600F5012B /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		DC551C4417ADD66000E37F8F /* VideoRecorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoRecorder.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC551C4717ADD66000E37F8F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		DC551C4917ADD66000E37F8F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		DC551C4F17ADD66000E37F8F /* VideoRecorder-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VideoRecorder-Info.plist"; sourceTree = "<group>"; };
+		DC551C5117ADD66000E37F8F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		DC551C5317ADD66000E37F8F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		DC551C5517ADD66000E37F8F /* VideoRecorder-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VideoRecorder-Prefix.pch"; sourceTree = "<group>"; };
+		DC551C5617ADD66000E37F8F /* VRAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VRAppDelegate.h; sourceTree = "<group>"; };
+		DC551C5717ADD66000E37F8F /* VRAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VRAppDelegate.m; sourceTree = "<group>"; };
+		DC551C5917ADD66000E37F8F /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
+		DC551C5B17ADD66000E37F8F /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		DC551C5D17ADD66000E37F8F /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		DC551C6017ADD66000E37F8F /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard.storyboard; sourceTree = "<group>"; };
+		DC551C6217ADD66000E37F8F /* VRViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VRViewController.h; sourceTree = "<group>"; };
+		DC551C6317ADD66000E37F8F /* VRViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VRViewController.m; sourceTree = "<group>"; };
+		DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		DC551C6C17ADDB4000E37F8F /* VRVideoRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VRVideoRecorder.h; sourceTree = "<group>"; };
+		DC551C6D17ADDB4000E37F8F /* VRVideoRecorder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VRVideoRecorder.m; sourceTree = "<group>"; };
+		DC551C6F17ADF12200E37F8F /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		DC551C7117ADF12800E37F8F /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DC551C4117ADD66000E37F8F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC36982017AF132600F5012B /* AssetsLibrary.framework in Frameworks */,
+				DC551C7217ADF12800E37F8F /* CoreVideo.framework in Frameworks */,
+				DC551C7017ADF12200E37F8F /* CoreMedia.framework in Frameworks */,
+				DC551C6B17ADDA4400E37F8F /* AVFoundation.framework in Frameworks */,
+				DC551C4817ADD66000E37F8F /* UIKit.framework in Frameworks */,
+				DC551C4A17ADD66000E37F8F /* Foundation.framework in Frameworks */,
+				DC551C4C17ADD66000E37F8F /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DC551C3B17ADD66000E37F8F = {
+			isa = PBXGroup;
+			children = (
+				DC36981F17AF132600F5012B /* AssetsLibrary.framework */,
+				DC551C7117ADF12800E37F8F /* CoreVideo.framework */,
+				DC551C6F17ADF12200E37F8F /* CoreMedia.framework */,
+				DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */,
+				DC551C4D17ADD66000E37F8F /* VideoRecorder */,
+				DC551C4617ADD66000E37F8F /* Frameworks */,
+				DC551C4517ADD66000E37F8F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DC551C4517ADD66000E37F8F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC551C4417ADD66000E37F8F /* VideoRecorder.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DC551C4617ADD66000E37F8F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DC551C4717ADD66000E37F8F /* UIKit.framework */,
+				DC551C4917ADD66000E37F8F /* Foundation.framework */,
+				DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DC551C4D17ADD66000E37F8F /* VideoRecorder */ = {
+			isa = PBXGroup;
+			children = (
+				DC551C5617ADD66000E37F8F /* VRAppDelegate.h */,
+				DC551C5717ADD66000E37F8F /* VRAppDelegate.m */,
+				DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */,
+				DC551C6217ADD66000E37F8F /* VRViewController.h */,
+				DC551C6317ADD66000E37F8F /* VRViewController.m */,
+				DC551C4E17ADD66000E37F8F /* Supporting Files */,
+				DC551C6C17ADDB4000E37F8F /* VRVideoRecorder.h */,
+				DC551C6D17ADDB4000E37F8F /* VRVideoRecorder.m */,
+			);
+			path = VideoRecorder;
+			sourceTree = "<group>";
+		};
+		DC551C4E17ADD66000E37F8F /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				DC551C4F17ADD66000E37F8F /* VideoRecorder-Info.plist */,
+				DC551C5017ADD66000E37F8F /* InfoPlist.strings */,
+				DC551C5317ADD66000E37F8F /* main.m */,
+				DC551C5517ADD66000E37F8F /* VideoRecorder-Prefix.pch */,
+				DC551C5917ADD66000E37F8F /* Default.png */,
+				DC551C5B17ADD66000E37F8F /* Default@2x.png */,
+				DC551C5D17ADD66000E37F8F /* Default-568h@2x.png */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DC551C4317ADD66000E37F8F /* VideoRecorder */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "VideoRecorder" */;
+			buildPhases = (
+				DC551C4017ADD66000E37F8F /* Sources */,
+				DC551C4117ADD66000E37F8F /* Frameworks */,
+				DC551C4217ADD66000E37F8F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VideoRecorder;
+			productName = VideoRecorder;
+			productReference = DC551C4417ADD66000E37F8F /* VideoRecorder.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DC551C3C17ADD66000E37F8F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = VR;
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = rFlex;
+			};
+			buildConfigurationList = DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "VideoRecorder" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = DC551C3B17ADD66000E37F8F;
+			productRefGroup = DC551C4517ADD66000E37F8F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DC551C4317ADD66000E37F8F /* VideoRecorder */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DC551C4217ADD66000E37F8F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC551C5217ADD66000E37F8F /* InfoPlist.strings in Resources */,
+				DC551C5A17ADD66000E37F8F /* Default.png in Resources */,
+				DC551C5C17ADD66000E37F8F /* Default@2x.png in Resources */,
+				DC551C5E17ADD66000E37F8F /* Default-568h@2x.png in Resources */,
+				DC551C6117ADD66000E37F8F /* MainStoryboard.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DC551C4017ADD66000E37F8F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC551C5417ADD66000E37F8F /* main.m in Sources */,
+				DC551C5817ADD66000E37F8F /* VRAppDelegate.m in Sources */,
+				DC551C6417ADD66000E37F8F /* VRViewController.m in Sources */,
+				DC551C6E17ADDB4000E37F8F /* VRVideoRecorder.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		DC551C5017ADD66000E37F8F /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DC551C5117ADD66000E37F8F /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DC551C6017ADD66000E37F8F /* en */,
+			);
+			name = MainStoryboard.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		DC551C6517ADD66000E37F8F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		DC551C6617ADD66000E37F8F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DC551C6817ADD66000E37F8F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VideoRecorder/VideoRecorder-Prefix.pch";
+				INFOPLIST_FILE = "VideoRecorder/VideoRecorder-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		DC551C6917ADD66000E37F8F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VideoRecorder/VideoRecorder-Prefix.pch";
+				INFOPLIST_FILE = "VideoRecorder/VideoRecorder-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "VideoRecorder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC551C6517ADD66000E37F8F /* Debug */,
+				DC551C6617ADD66000E37F8F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "VideoRecorder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC551C6817ADD66000E37F8F /* Debug */,
+				DC551C6917ADD66000E37F8F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DC551C3C17ADD66000E37F8F /* Project object */;
+}
