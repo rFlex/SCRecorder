@@ -7,6 +7,7 @@
 //
 
 #import "SCAudioEncoder.h"
+#import "SCAudioVideoRecorderInternal.h"
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -21,14 +22,52 @@
     
 }
 
+@synthesize outputSampleRate;
+@synthesize outputChannels;
+@synthesize outputBitRate;
+@synthesize outputEncodeType;
+
 - (id) initWithAudioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder {
     self = [super initWithAudioVideoRecorder:audioVideoRecorder];
+    
+    if (self != nil) {
+        self.outputBitRate = 128000;
+        self.outputEncodeType = kAudioFormatMPEGLayer3;
+    }
     
     return self;
 }
 
 - (AVAssetWriterInput*) createWriterInputForSampleBuffer:(CMSampleBufferRef)sampleBuffer error:(NSError **)error {
-    return nil;
+    
+    Float64 sampleRate = self.outputSampleRate;
+    int channels = self.outputChannels;
+    
+    if (self.useInputFormatTypeAsOutputType) {
+        CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
+        const AudioStreamBasicDescription * streamBasicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
+        
+        sampleRate = streamBasicDescription->mSampleRate;
+        channels = streamBasicDescription->mChannelsPerFrame;
+    }
+    
+    AVAssetWriterInput * audioInput = nil;
+    NSDictionary * audioCompressionSetings = [NSDictionary dictionaryWithObjectsAndKeys:
+                                              [ NSNumber numberWithInt: self.outputEncodeType], AVFormatIDKey,
+                                              [ NSNumber numberWithInt: self.outputBitRate ], AVEncoderBitRateKey,
+                                              [ NSNumber numberWithFloat: sampleRate], AVSampleRateKey,
+                                              [ NSNumber numberWithInt: channels], AVNumberOfChannelsKey,
+                                              nil];
+    
+    if ([self.audioVideoRecorder.assetWriter canApplyOutputSettings:audioCompressionSetings forMediaType:AVMediaTypeAudio]) {
+        audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioCompressionSetings];
+        audioInput.expectsMediaDataInRealTime = YES;
+        *error = nil;
+    } else {
+        *error = [SCAudioVideoRecorder createError:@"Cannot apply Audio settings"];
+    }
+
+    return audioInput;
 }
 
 @end

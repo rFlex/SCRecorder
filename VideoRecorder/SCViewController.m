@@ -15,7 +15,7 @@
     
     AVCaptureSession * session;
     AVCaptureVideoPreviewLayer * previewLayer;
-    AVCaptureInput * input;
+    AVCaptureInput * videoInput;
     SCAudioVideoRecorder * videoRecorder;
     
 }
@@ -64,16 +64,27 @@
     session = [[AVCaptureSession alloc] init];
     session.sessionPreset = AVCaptureSessionPreset1280x720;
     
-    AVCaptureDevice * captureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    AVCaptureDevice * videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    AVCaptureDevice * audioCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
     
     NSError * error;
-    input = [AVCaptureDeviceInput deviceInputWithDevice:captureDevice error:&error];
+    videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoCaptureDevice error:&error];
     
     if (error == nil) {
-        [session addInput:input];
+        [session addInput:videoInput];
     } else {
-        NSLog(@"Something bad happened");
-    }    
+        NSLog(@"Failed to add video input");
+    }
+    
+    error = nil;
+    AVCaptureDeviceInput * audioInput = [AVCaptureDeviceInput deviceInputWithDevice:audioCaptureDevice error:&error];
+    
+    if (error == nil) {
+        [session addInput:audioInput];
+    } else {
+        NSLog(@"Failed to add audio input");
+    }
+    
     previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:session];
     previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     
@@ -81,6 +92,8 @@
     [self.previewView.layer addSublayer:previewLayer];
     
     [session addOutput:videoRecorder.videoOutput];
+    [session addOutput:videoRecorder.audioOutput];
+
     videoRecorder.audioEncoder.enabled = NO;
     
     [self.retakeButton addTarget:self action:@selector(handleRetakeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];

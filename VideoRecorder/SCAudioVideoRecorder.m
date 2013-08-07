@@ -95,7 +95,7 @@
 }
 
 - (void) prepareRecordingAtCameraRoll:(NSError **)error shouldStartRecording:(BOOL)shouldRecord {
-    [self prepareRecordingAtCameraRoll:error shouldStartRecording:shouldRecord];
+    [self prepareRecordingOnTempDir:error shouldStartRecording:shouldRecord];
     shouldWriteToCameraRoll = YES;
 }
 

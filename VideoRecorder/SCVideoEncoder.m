@@ -38,7 +38,6 @@
         int height = CVPixelBufferGetHeight(imageBuffer);
         videoSize.width = width;
         videoSize.height = height;
-        NSLog(@"VideoSize: %f/%f", videoSize.width, videoSize.height);
     }
     
 	int numPixels = videoSize.width * videoSize.height;
@@ -59,6 +58,7 @@
                                               //											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
                                               //											   nil], AVVideoCompressionPropertiesKey,
 											  nil];
+    
 	if ([self.audioVideoRecorder.assetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {
 		assetWriterVideoIn = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoCompressionSettings];
 		assetWriterVideoIn.expectsMediaDataInRealTime = YES;
