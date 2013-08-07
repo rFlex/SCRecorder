@@ -16,7 +16,7 @@
     AVCaptureSession * session;
     AVCaptureVideoPreviewLayer * previewLayer;
     AVCaptureInput * input;
-    SCVideoRecorder * videoRecorder;
+    SCAudioVideoRecorder * videoRecorder;
     
 }
 
@@ -58,7 +58,7 @@
 {
     [super viewDidLoad];
     
-    videoRecorder = [[SCVideoRecorder alloc] initWithOutputVideoSize:CGSizeMake(1280, 720)];
+    videoRecorder = [[SCAudioVideoRecorder alloc] init];
     videoRecorder.delegate = self;
     
     session = [[AVCaptureSession alloc] init];
@@ -80,7 +80,8 @@
     previewLayer.frame = self.previewView.bounds;
     [self.previewView.layer addSublayer:previewLayer];
     
-    [session addOutput:videoRecorder];
+    [session addOutput:videoRecorder.videoOutput];
+    videoRecorder.audioEncoder.enabled = NO;
     
     [self.retakeButton addTarget:self action:@selector(handleRetakeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.stopButton addTarget:self action:@selector(handleStopButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -93,19 +94,11 @@
 - (void) handleStopButtonTapped:(id)sender {
     self.loadingView.hidden = NO;
     self.downBar.userInteractionEnabled = NO;
-    [videoRecorder stopRecording:^(NSError * error) {
-        self.loadingView.hidden = YES;
-        self.downBar.userInteractionEnabled = YES;
-        if (error != nil) {
-            [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedFailureReason]];
-        } else {
-            [self showAlertViewWithTitle:@"Video saved!" message:@"Video saved successfully"];
-        }
-    }];
+    [videoRecorder stopRecording];
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
-    [videoRecorder reset];
+    [videoRecorder cancelRecording];
     [self updateLabelForSecond:0];
 }
 
@@ -144,8 +137,27 @@
     self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", totalRecorded];
 }
 
-- (void) videoRecorder:(id)videoRecorder didRecordFrame:(Float64)totalRecorded {
-    [self updateLabelForSecond:totalRecorded];
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordVideoFrame:(Float64)frameSecond {
+    [self updateLabelForSecond:frameSecond];
 }
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
+    self.loadingView.hidden = YES;
+    self.downBar.userInteractionEnabled = YES;
+    if (error != nil) {
+        [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedFailureReason]];
+    } else {
+        [self showAlertViewWithTitle:@"Video saved!" message:@"Video saved successfully"];
+    }
+}
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {
+    NSLog(@"Failed to initialize VideoEncoder");
+}
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
+    NSLog(@"Failed to initialize AudioEncoder");
+}
+
 
 @end
