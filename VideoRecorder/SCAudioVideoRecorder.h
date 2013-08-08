@@ -40,20 +40,16 @@
     
 }
 
-- (void) startRecordingAtCameraRoll:(NSError**)error;
-- (NSURL*) startRecordingOnTempDir:(NSError**)error;
-- (void) startRecordingAtUrl:(NSURL*)url error:(NSError**)error;
+- (void) prepareRecordingAtCameraRoll:(NSError**)error;
+- (NSURL*) prepareRecordingOnTempDir:(NSError**)error;
+- (void) prepareRecordingAtUrl:(NSURL*)url error:(NSError**)error;
 
-- (void) prepareRecordingAtCameraRoll:(NSError**)error shouldStartRecording:(BOOL)shouldRecord;
-- (NSURL*) prepareRecordingOnTempDir:(NSError**)error shouldStartRecording:(BOOL)shouldRecord;
-- (void) prepareRecordingAtUrl:(NSURL*)url error:(NSError**)error shouldStartRecording:(BOOL)shouldRecord;
+- (void) record;
+- (void) pause;
+- (void) cancel;
+- (void) stop;
 
-- (void) resumeRecording;
-- (void) pauseRecording;
-- (void) cancelRecording;
-- (void) stopRecording;
-
-- (BOOL) isRecordingStarted;
+- (BOOL) isPrepared;
 - (BOOL) isRecording;
 
 @property (weak, nonatomic) id<SCAudioVideoRecorderDelegate> delegate;
@@ -62,7 +58,6 @@
 @property (strong, nonatomic, readonly) SCVideoEncoder * videoEncoder;
 @property (strong, nonatomic, readonly) SCAudioEncoder * audioEncoder;
 @property (strong, nonatomic, readonly) NSURL * outputFileUrl;
-@property (strong, nonatomic, readonly) AVAssetWriter * assetWriter;
 @property (assign, nonatomic) BOOL dispatchDelegateMessagesOnMainQueue;
 
 @end

@@ -18,7 +18,6 @@
     BOOL shouldWriteToCameraRoll;
     BOOL audioEncoderReady;
     BOOL videoEncoderReady;
-    dispatch_queue_t dispatch_queue;
 }
 
 @property (strong, nonatomic) AVCaptureVideoDataOutput * videoOutput;
@@ -26,7 +25,6 @@
 @property (strong, nonatomic) SCVideoEncoder * videoEncoder;
 @property (strong, nonatomic) SCAudioEncoder * audioEncoder;
 @property (strong, nonatomic) NSURL * outputFileUrl;
-@property (strong, nonatomic) AVAssetWriter * assetWriter;
 
 @end
 
@@ -48,7 +46,7 @@
     self = [super init];
     
     if (self) {
-        dispatch_queue = dispatch_queue_create("SCVideoRecorder", nil);
+        self.dispatch_queue = dispatch_queue_create("SCVideoRecorder", nil);
         
         audioEncoderReady = NO;
         videoEncoderReady = NO;
@@ -58,10 +56,10 @@
         self.videoEncoder.delegate = self;
         
         self.videoOutput = [[AVCaptureVideoDataOutput alloc] init];
-        [self.videoOutput setSampleBufferDelegate:self.videoEncoder queue:dispatch_queue];
+        [self.videoOutput setSampleBufferDelegate:self.videoEncoder queue:self.dispatch_queue];
         
         self.audioOutput = [[AVCaptureAudioDataOutput alloc] init];
-        [self.audioOutput setSampleBufferDelegate:self.audioEncoder queue:dispatch_queue];
+        [self.audioOutput setSampleBufferDelegate:self.audioEncoder queue:self.dispatch_queue];
         
         self.lastFrameTimeBeforePause = CMTimeMake(0, 1);
         self.dispatchDelegateMessagesOnMainQueue = YES;
@@ -82,29 +80,17 @@
 // Video Recorder methods
 //
 
-- (void) startRecordingAtCameraRoll:(NSError **)error {
-    [self prepareRecordingAtCameraRoll:error shouldStartRecording:YES];
-}
-
-- (NSURL*) startRecordingOnTempDir:(NSError **)error {
-    return [self prepareRecordingOnTempDir:error shouldStartRecording:YES];
-}
-
-- (void) startRecordingAtUrl:(NSURL *)fileUrl error:(NSError**)error {
-    [self prepareRecordingAtUrl:fileUrl error:error shouldStartRecording:YES];
-}
-
-- (void) prepareRecordingAtCameraRoll:(NSError **)error shouldStartRecording:(BOOL)shouldRecord {
-    [self prepareRecordingOnTempDir:error shouldStartRecording:shouldRecord];
+- (void) prepareRecordingAtCameraRoll:(NSError **)error {
+    [self prepareRecordingOnTempDir:error];
     shouldWriteToCameraRoll = YES;
 }
 
-- (NSURL*) prepareRecordingOnTempDir:(NSError **)error shouldStartRecording:(BOOL)shouldRecord {
+- (NSURL*) prepareRecordingOnTempDir:(NSError **)error {
     long timeInterval =  (long)[[NSDate date] timeIntervalSince1970];
     NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%ld%@", NSTemporaryDirectory(), timeInterval, @"SCVideo.MOV"]];
     
     NSError * recordError = nil;
-    [self prepareRecordingAtUrl:fileUrl error:&recordError shouldStartRecording:shouldRecord];
+    [self prepareRecordingAtUrl:fileUrl error:&recordError];
     
     if (recordError != nil) {
         if (error != nil) {
@@ -119,12 +105,12 @@
 }
 
 
-- (void) prepareRecordingAtUrl:(NSURL *)fileUrl error:(NSError **)error shouldStartRecording:(BOOL)shouldRecord {
+- (void) prepareRecordingAtUrl:(NSURL *)fileUrl error:(NSError **)error {
     if (fileUrl == nil) {
         [NSException raise:@"Invalid argument" format:@"FileUrl must be not nil"];
     }
     
-    dispatch_sync(dispatch_queue, ^ {
+    dispatch_sync(self.dispatch_queue, ^ {
         [self resetInternal];
         shouldWriteToCameraRoll = NO;
         self.currentTimeOffset = CMTimeMake(0, 1);
@@ -137,9 +123,11 @@
             self.assetWriter = writer;
             self.outputFileUrl = fileUrl;
             
-            if (shouldRecord) {
-                [self resumeRecording];
+            if (error != nil) {
+                *error = nil;
             }
+            
+            [self record];
         } else {
             if (error != nil) {
                 *error = assetError;
@@ -183,10 +171,10 @@
     }
 }
 
-- (void) stopRecording {
-    [self pauseRecording];
+- (void) stop {
+    [self pause];
     
-    dispatch_async(dispatch_queue, ^ {
+    dispatch_async(self.dispatch_queue, ^ {
         if (self.assetWriter == nil) {
             [self dispatchBlockOnAskedQueue:^ {
                 if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didFinishRecordingAtUrl:error:)]) {
@@ -208,8 +196,8 @@
     
 }
 
-- (void) pauseRecording {
-    dispatch_async(dispatch_queue, ^ {
+- (void) pause {
+    dispatch_async(self.dispatch_queue, ^ {
         recording = NO;
         // As I don't know any way to get the current time, setting this will always
         // let the last frame to last 1/24th of a second
@@ -217,18 +205,18 @@
     });
 }
 
-- (void) resumeRecording {
-    if (![self isRecordingStarted]) {
+- (void) record {
+    if (![self isPrepared]) {
         [NSException raise:@"Recording not previously started" format:@"Recording should be started using startRecording before trying to resume it"];
     }
-    dispatch_async(dispatch_queue, ^ {
+    dispatch_async(self.dispatch_queue, ^ {
         self.shouldComputeOffset = YES;
         recording = YES;
     });
 }
 
-- (void) cancelRecording {
-    dispatch_sync(dispatch_queue, ^ {
+- (void) cancel {
+    dispatch_sync(self.dispatch_queue, ^ {
         [self resetInternal];
     });
 }
@@ -325,7 +313,7 @@
 // Getters
 //
 
-- (BOOL) isRecordingStarted {
+- (BOOL) isPrepared {
     return self.assetWriter != nil;
 }
 

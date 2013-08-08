@@ -8,98 +8,47 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-#import <UIKit/UIGestureRecognizerSubclass.h>
+#import "SCTouchDetector.h"
 #import "SCViewController.h"
 
+////////////////////////////////////////////////////////////
+// PRIVATE DEFINITION
+/////////////////////
+
 @interface SCViewController () {
-    
-    AVCaptureSession * session;
-    AVCaptureVideoPreviewLayer * previewLayer;
-    AVCaptureInput * videoInput;
-    SCAudioVideoRecorder * videoRecorder;
-    
+
 }
+
+@property (strong, nonatomic) SCCamera * camera;
 
 @end
 
-@interface VRTouchDetector : UIGestureRecognizer {
-    
-}
-
-@end
-
-@implementation VRTouchDetector {
-    
-}
-
-- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.enabled) {
-        self.state = UIGestureRecognizerStateBegan;
-    }
-}
-
-- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.enabled) {
-        self.state = UIGestureRecognizerStateEnded;
-    }
-}
-
-- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.enabled) {
-        self.State = UIGestureRecognizerStateEnded;
-    }
-}
-
-@end
+////////////////////////////////////////////////////////////
+// IMPLEMENTATION
+/////////////////////
 
 @implementation SCViewController
+
+@synthesize camera;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    videoRecorder = [[SCAudioVideoRecorder alloc] init];
-    videoRecorder.delegate = self;
+    self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720];
+    self.camera.delegate = self;
+    self.camera.enableSound = NO;
     
-    session = [[AVCaptureSession alloc] init];
-    session.sessionPreset = AVCaptureSessionPreset1280x720;
-    
-    AVCaptureDevice * videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    AVCaptureDevice * audioCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
-    
-    NSError * error;
-    videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoCaptureDevice error:&error];
-    
-    if (error == nil) {
-        [session addInput:videoInput];
-    } else {
-        NSLog(@"Failed to add video input");
-    }
-    
-    error = nil;
-    AVCaptureDeviceInput * audioInput = [AVCaptureDeviceInput deviceInputWithDevice:audioCaptureDevice error:&error];
-    
-    if (error == nil) {
-        [session addInput:audioInput];
-    } else {
-        NSLog(@"Failed to add audio input");
-    }
-    
-    previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:session];
-    previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-    
-    previewLayer.frame = self.previewView.bounds;
-    [self.previewView.layer addSublayer:previewLayer];
-    
-    [session addOutput:videoRecorder.videoOutput];
-    [session addOutput:videoRecorder.audioOutput];
-
-    videoRecorder.audioEncoder.enabled = NO;
+    [self.camera initialize:^(NSError * audioError, NSError * videoError) {
+        self.camera.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        self.camera.previewLayer.frame = self.previewView.bounds;
+        [self.previewView.layer addSublayer:self.camera.previewLayer];
+    }];
     
     [self.retakeButton addTarget:self action:@selector(handleRetakeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.stopButton addTarget:self action:@selector(handleStopButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self.recordView addGestureRecognizer:[[VRTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
+    [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
     
 }
@@ -107,11 +56,11 @@
 - (void) handleStopButtonTapped:(id)sender {
     self.loadingView.hidden = NO;
     self.downBar.userInteractionEnabled = NO;
-    [videoRecorder stopRecording];
+    [self.camera stop];
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
-    [videoRecorder cancelRecording];
+    [self.camera cancel];
     [self updateLabelForSecond:0];
 }
 
@@ -120,30 +69,30 @@
     [alertView show];
 }
 
-- (void)handleTouchDetected:(VRTouchDetector*)touchDetector {
+- (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
     if (touchDetector.state == UIGestureRecognizerStateBegan) {
         NSLog(@"==== STARTING RECORDING ====");
-        if (![videoRecorder isRecordingStarted]) {
+        if (![self.camera isPrepared]) {
             NSError * error;
-            [videoRecorder startRecordingAtCameraRoll:&error];
+            [self.camera prepareRecordingAtCameraRoll:&error];
             
             if (error != nil) {
                 [self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
                 NSLog(@"%@", error);
+            } else {
+                [self.camera record];
             }
         } else {
-            [videoRecorder resumeRecording];
+            [self.camera record];
         }
     } else if (touchDetector.state == UIGestureRecognizerStateEnded) {
         NSLog(@"==== PAUSING RECORDING ====");
-        [videoRecorder pauseRecording];
+        [self.camera pause];
     }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    
-    [session startRunning];
+    [super viewDidAppear:animated];    
 }
 
 - (void) updateLabelForSecond:(Float64)totalRecorded {

@@ -127,7 +127,7 @@
     }
     CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     
-    if ([audioVideoRecorder isRecordingStarted] && [audioVideoRecorder isRecording]) {
+    if ([audioVideoRecorder isPrepared] && [audioVideoRecorder isRecording]) {
         
         if (!initialized) {
             [self initialize:sampleBuffer atFrameTime:frameTime];

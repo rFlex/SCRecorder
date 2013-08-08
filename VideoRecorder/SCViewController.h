@@ -7,9 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SCAudioVideoRecorder.h"
+#import "SCCamera.h"
 
-@interface SCViewController : UIViewController<SCAudioVideoRecorderDelegate>
+@interface SCViewController : UIViewController<SCCameraDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *recordView;
 @property (weak, nonatomic) IBOutlet UIButton *stopButton;

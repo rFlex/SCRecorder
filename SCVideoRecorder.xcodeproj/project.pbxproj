@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		DC0C3FC017B1D1BD0023DF70 /* SCDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC0C3FBF17B1D1BD0023DF70 /* SCDataEncoder.m */; };
+		DC0C3FC617B1E0310023DF70 /* SCCamera.m in Sources */ = {isa = PBXBuildFile; fileRef = DC0C3FC517B1E0310023DF70 /* SCCamera.m */; };
+		DC0C3FC917B217630023DF70 /* SCTouchDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = DC0C3FC817B217630023DF70 /* SCTouchDetector.m */; };
 		DC36982017AF132600F5012B /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC36981F17AF132600F5012B /* AssetsLibrary.framework */; };
 		DC551C4817ADD66000E37F8F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4717ADD66000E37F8F /* UIKit.framework */; };
 		DC551C4A17ADD66000E37F8F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4917ADD66000E37F8F /* Foundation.framework */; };
@@ -32,6 +34,10 @@
 		DC0C3FBE17B1D1BD0023DF70 /* SCDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCDataEncoder.h; sourceTree = "<group>"; };
 		DC0C3FBF17B1D1BD0023DF70 /* SCDataEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCDataEncoder.m; sourceTree = "<group>"; };
 		DC0C3FC117B1D3BE0023DF70 /* SCAudioVideoRecorderInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioVideoRecorderInternal.h; sourceTree = "<group>"; };
+		DC0C3FC417B1E0310023DF70 /* SCCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCCamera.h; sourceTree = "<group>"; };
+		DC0C3FC517B1E0310023DF70 /* SCCamera.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCCamera.m; sourceTree = "<group>"; };
+		DC0C3FC717B217630023DF70 /* SCTouchDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCTouchDetector.h; sourceTree = "<group>"; };
+		DC0C3FC817B217630023DF70 /* SCTouchDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCTouchDetector.m; sourceTree = "<group>"; };
 		DC36981F17AF132600F5012B /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		DC551C4417ADD66000E37F8F /* SCVideoRecorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SCVideoRecorder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC551C4717ADD66000E37F8F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -127,6 +133,10 @@
 				DC0C3FBE17B1D1BD0023DF70 /* SCDataEncoder.h */,
 				DC0C3FBF17B1D1BD0023DF70 /* SCDataEncoder.m */,
 				DC0C3FC117B1D3BE0023DF70 /* SCAudioVideoRecorderInternal.h */,
+				DC0C3FC417B1E0310023DF70 /* SCCamera.h */,
+				DC0C3FC517B1E0310023DF70 /* SCCamera.m */,
+				DC0C3FC717B217630023DF70 /* SCTouchDetector.h */,
+				DC0C3FC817B217630023DF70 /* SCTouchDetector.m */,
 			);
 			name = SCVideoRecorder;
 			path = VideoRecorder;
@@ -220,6 +230,8 @@
 				DCB19FBD17B087D20019AB38 /* SCVideoEncoder.m in Sources */,
 				DCB19FC017B089530019AB38 /* SCAudioEncoder.m in Sources */,
 				DC0C3FC017B1D1BD0023DF70 /* SCDataEncoder.m in Sources */,
+				DC0C3FC617B1E0310023DF70 /* SCCamera.m in Sources */,
+				DC0C3FC917B217630023DF70 /* SCTouchDetector.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
