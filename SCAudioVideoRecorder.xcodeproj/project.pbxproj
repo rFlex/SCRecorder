@@ -10,6 +10,16 @@
 		DC0C3FC017B1D1BD0023DF70 /* SCDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC0C3FBF17B1D1BD0023DF70 /* SCDataEncoder.m */; };
 		DC0C3FC617B1E0310023DF70 /* SCCamera.m in Sources */ = {isa = PBXBuildFile; fileRef = DC0C3FC517B1E0310023DF70 /* SCCamera.m */; };
 		DC0C3FC917B217630023DF70 /* SCTouchDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = DC0C3FC817B217630023DF70 /* SCTouchDetector.m */; };
+		DC23FE1217B4200800389EDA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4917ADD66000E37F8F /* Foundation.framework */; };
+		DC23FE2117B4519100389EDA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */; };
+		DC23FE2217B4519A00389EDA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */; };
+		DC23FE2317B451A100389EDA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4717ADD66000E37F8F /* UIKit.framework */; };
+		DC23FE2417B451AA00389EDA /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC36981F17AF132600F5012B /* AssetsLibrary.framework */; };
+		DC23FE2517B45A2800389EDA /* SCAudioVideoRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6D17ADDB4000E37F8F /* SCAudioVideoRecorder.m */; };
+		DC23FE2617B45A2800389EDA /* SCVideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB19FBC17B087D20019AB38 /* SCVideoEncoder.m */; };
+		DC23FE2717B45A2800389EDA /* SCAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB19FBF17B089520019AB38 /* SCAudioEncoder.m */; };
+		DC23FE2817B45A2800389EDA /* SCDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC0C3FBF17B1D1BD0023DF70 /* SCDataEncoder.m */; };
+		DC23FE2917B45A2800389EDA /* SCCamera.m in Sources */ = {isa = PBXBuildFile; fileRef = DC0C3FC517B1E0310023DF70 /* SCCamera.m */; };
 		DC36982017AF132600F5012B /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC36981F17AF132600F5012B /* AssetsLibrary.framework */; };
 		DC551C4817ADD66000E37F8F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4717ADD66000E37F8F /* UIKit.framework */; };
 		DC551C4A17ADD66000E37F8F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4917ADD66000E37F8F /* Foundation.framework */; };
@@ -26,9 +36,24 @@
 		DC551C6E17ADDB4000E37F8F /* SCAudioVideoRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6D17ADDB4000E37F8F /* SCAudioVideoRecorder.m */; };
 		DC551C7017ADF12200E37F8F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6F17ADF12200E37F8F /* CoreMedia.framework */; };
 		DC551C7217ADF12800E37F8F /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C7117ADF12800E37F8F /* CoreVideo.framework */; };
+		DC599B6617B481BB00500F05 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC599B6517B481BB00500F05 /* AudioToolbox.framework */; };
 		DCB19FBD17B087D20019AB38 /* SCVideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB19FBC17B087D20019AB38 /* SCVideoEncoder.m */; };
 		DCB19FC017B089530019AB38 /* SCAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB19FBF17B089520019AB38 /* SCAudioEncoder.m */; };
+		DCCAB6AD17B46C8900CEA47B /* SCAudioTools.m in Sources */ = {isa = PBXBuildFile; fileRef = DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */; };
+		DCCAB6AE17B46CDD00CEA47B /* SCAudioTools.m in Sources */ = {isa = PBXBuildFile; fileRef = DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DC23FE0F17B4200700389EDA /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/${PRODUCT_NAME}";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		DC0C3FBE17B1D1BD0023DF70 /* SCDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCDataEncoder.h; sourceTree = "<group>"; };
@@ -36,45 +61,62 @@
 		DC0C3FC117B1D3BE0023DF70 /* SCAudioVideoRecorderInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioVideoRecorderInternal.h; sourceTree = "<group>"; };
 		DC0C3FC417B1E0310023DF70 /* SCCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCCamera.h; sourceTree = "<group>"; };
 		DC0C3FC517B1E0310023DF70 /* SCCamera.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCCamera.m; sourceTree = "<group>"; };
-		DC0C3FC717B217630023DF70 /* SCTouchDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCTouchDetector.h; sourceTree = "<group>"; };
-		DC0C3FC817B217630023DF70 /* SCTouchDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCTouchDetector.m; sourceTree = "<group>"; };
+		DC0C3FC717B217630023DF70 /* SCTouchDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SCTouchDetector.h; path = VideoRecorder/SCTouchDetector.h; sourceTree = "<group>"; };
+		DC0C3FC817B217630023DF70 /* SCTouchDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SCTouchDetector.m; path = VideoRecorder/SCTouchDetector.m; sourceTree = "<group>"; };
+		DC23FE1117B4200700389EDA /* libSCAudioVideoRecorder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSCAudioVideoRecorder.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC36981F17AF132600F5012B /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
-		DC551C4417ADD66000E37F8F /* SCVideoRecorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SCVideoRecorder.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC551C4417ADD66000E37F8F /* SCAudioVideoRecorderExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SCAudioVideoRecorderExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC551C4717ADD66000E37F8F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		DC551C4917ADD66000E37F8F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		DC551C4F17ADD66000E37F8F /* SCVideoRecorder-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SCVideoRecorder-Info.plist"; sourceTree = "<group>"; };
+		DC551C4F17ADD66000E37F8F /* SCAudioVideoRecorder-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SCAudioVideoRecorder-Info.plist"; sourceTree = "<group>"; };
 		DC551C5117ADD66000E37F8F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DC551C5317ADD66000E37F8F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		DC551C5517ADD66000E37F8F /* SCVideoRecorder-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SCVideoRecorder-Prefix.pch"; sourceTree = "<group>"; };
-		DC551C5617ADD66000E37F8F /* SCAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCAppDelegate.h; sourceTree = "<group>"; };
-		DC551C5717ADD66000E37F8F /* SCAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SCAppDelegate.m; sourceTree = "<group>"; };
+		DC551C5517ADD66000E37F8F /* SCAudioVideoRecorder-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SCAudioVideoRecorder-Prefix.pch"; sourceTree = "<group>"; };
+		DC551C5617ADD66000E37F8F /* SCAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SCAppDelegate.h; path = VideoRecorder/SCAppDelegate.h; sourceTree = "<group>"; };
+		DC551C5717ADD66000E37F8F /* SCAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SCAppDelegate.m; path = VideoRecorder/SCAppDelegate.m; sourceTree = "<group>"; };
 		DC551C5917ADD66000E37F8F /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		DC551C5B17ADD66000E37F8F /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		DC551C5D17ADD66000E37F8F /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		DC551C6017ADD66000E37F8F /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard.storyboard; sourceTree = "<group>"; };
-		DC551C6217ADD66000E37F8F /* SCViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCViewController.h; sourceTree = "<group>"; };
-		DC551C6317ADD66000E37F8F /* SCViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SCViewController.m; sourceTree = "<group>"; };
+		DC551C6217ADD66000E37F8F /* SCViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SCViewController.h; path = VideoRecorder/SCViewController.h; sourceTree = "<group>"; };
+		DC551C6317ADD66000E37F8F /* SCViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SCViewController.m; path = VideoRecorder/SCViewController.m; sourceTree = "<group>"; };
 		DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		DC551C6C17ADDB4000E37F8F /* SCAudioVideoRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioVideoRecorder.h; sourceTree = "<group>"; };
 		DC551C6D17ADDB4000E37F8F /* SCAudioVideoRecorder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCAudioVideoRecorder.m; sourceTree = "<group>"; };
 		DC551C6F17ADF12200E37F8F /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		DC551C7117ADF12800E37F8F /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		DC599B6517B481BB00500F05 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		DCB19FBB17B087D20019AB38 /* SCVideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCVideoEncoder.h; sourceTree = "<group>"; };
 		DCB19FBC17B087D20019AB38 /* SCVideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCVideoEncoder.m; sourceTree = "<group>"; };
 		DCB19FBE17B089520019AB38 /* SCAudioEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioEncoder.h; sourceTree = "<group>"; };
 		DCB19FBF17B089520019AB38 /* SCAudioEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCAudioEncoder.m; sourceTree = "<group>"; };
+		DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioTools.h; sourceTree = "<group>"; };
+		DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCAudioTools.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		DC23FE0E17B4200700389EDA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC23FE2417B451AA00389EDA /* AssetsLibrary.framework in Frameworks */,
+				DC23FE2317B451A100389EDA /* UIKit.framework in Frameworks */,
+				DC23FE2217B4519A00389EDA /* CoreGraphics.framework in Frameworks */,
+				DC23FE2117B4519100389EDA /* AVFoundation.framework in Frameworks */,
+				DC23FE1217B4200800389EDA /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC551C4117ADD66000E37F8F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC599B6617B481BB00500F05 /* AudioToolbox.framework in Frameworks */,
+				DC551C6B17ADDA4400E37F8F /* AVFoundation.framework in Frameworks */,
 				DC36982017AF132600F5012B /* AssetsLibrary.framework in Frameworks */,
 				DC551C7217ADF12800E37F8F /* CoreVideo.framework in Frameworks */,
 				DC551C7017ADF12200E37F8F /* CoreMedia.framework in Frameworks */,
-				DC551C6B17ADDA4400E37F8F /* AVFoundation.framework in Frameworks */,
 				DC551C4817ADD66000E37F8F /* UIKit.framework in Frameworks */,
 				DC551C4A17ADD66000E37F8F /* Foundation.framework in Frameworks */,
 				DC551C4C17ADD66000E37F8F /* CoreGraphics.framework in Frameworks */,
@@ -84,14 +126,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DC23FE0C17B41FAB00389EDA /* SCAudioVideoRecorderSample */ = {
+			isa = PBXGroup;
+			children = (
+				DC0C3FC717B217630023DF70 /* SCTouchDetector.h */,
+				DC0C3FC817B217630023DF70 /* SCTouchDetector.m */,
+				DC551C5617ADD66000E37F8F /* SCAppDelegate.h */,
+				DC551C5717ADD66000E37F8F /* SCAppDelegate.m */,
+				DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */,
+				DC551C6217ADD66000E37F8F /* SCViewController.h */,
+				DC551C6317ADD66000E37F8F /* SCViewController.m */,
+				DC551C4E17ADD66000E37F8F /* Supporting Files */,
+			);
+			name = SCAudioVideoRecorderSample;
+			sourceTree = "<group>";
+		};
 		DC551C3B17ADD66000E37F8F = {
 			isa = PBXGroup;
 			children = (
-				DC36981F17AF132600F5012B /* AssetsLibrary.framework */,
-				DC551C7117ADF12800E37F8F /* CoreVideo.framework */,
-				DC551C6F17ADF12200E37F8F /* CoreMedia.framework */,
-				DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */,
-				DC551C4D17ADD66000E37F8F /* SCVideoRecorder */,
+				DC599B6517B481BB00500F05 /* AudioToolbox.framework */,
+				DC23FE0C17B41FAB00389EDA /* SCAudioVideoRecorderSample */,
+				DC551C4D17ADD66000E37F8F /* SCAudioVideoRecorder */,
 				DC551C4617ADD66000E37F8F /* Frameworks */,
 				DC551C4517ADD66000E37F8F /* Products */,
 			);
@@ -100,7 +155,8 @@
 		DC551C4517ADD66000E37F8F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DC551C4417ADD66000E37F8F /* SCVideoRecorder.app */,
+				DC551C4417ADD66000E37F8F /* SCAudioVideoRecorderExample.app */,
+				DC23FE1117B4200700389EDA /* libSCAudioVideoRecorder.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,6 +164,10 @@
 		DC551C4617ADD66000E37F8F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DC36981F17AF132600F5012B /* AssetsLibrary.framework */,
+				DC551C7117ADF12800E37F8F /* CoreVideo.framework */,
+				DC551C6F17ADF12200E37F8F /* CoreMedia.framework */,
+				DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */,
 				DC551C4717ADD66000E37F8F /* UIKit.framework */,
 				DC551C4917ADD66000E37F8F /* Foundation.framework */,
 				DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */,
@@ -115,15 +175,9 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DC551C4D17ADD66000E37F8F /* SCVideoRecorder */ = {
+		DC551C4D17ADD66000E37F8F /* SCAudioVideoRecorder */ = {
 			isa = PBXGroup;
 			children = (
-				DC551C5617ADD66000E37F8F /* SCAppDelegate.h */,
-				DC551C5717ADD66000E37F8F /* SCAppDelegate.m */,
-				DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */,
-				DC551C6217ADD66000E37F8F /* SCViewController.h */,
-				DC551C6317ADD66000E37F8F /* SCViewController.m */,
-				DC551C4E17ADD66000E37F8F /* Supporting Files */,
 				DC551C6C17ADDB4000E37F8F /* SCAudioVideoRecorder.h */,
 				DC551C6D17ADDB4000E37F8F /* SCAudioVideoRecorder.m */,
 				DCB19FBB17B087D20019AB38 /* SCVideoEncoder.h */,
@@ -135,33 +189,51 @@
 				DC0C3FC117B1D3BE0023DF70 /* SCAudioVideoRecorderInternal.h */,
 				DC0C3FC417B1E0310023DF70 /* SCCamera.h */,
 				DC0C3FC517B1E0310023DF70 /* SCCamera.m */,
-				DC0C3FC717B217630023DF70 /* SCTouchDetector.h */,
-				DC0C3FC817B217630023DF70 /* SCTouchDetector.m */,
+				DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */,
+				DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */,
 			);
-			name = SCVideoRecorder;
+			name = SCAudioVideoRecorder;
 			path = VideoRecorder;
 			sourceTree = "<group>";
 		};
 		DC551C4E17ADD66000E37F8F /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				DC551C4F17ADD66000E37F8F /* SCVideoRecorder-Info.plist */,
+				DC551C4F17ADD66000E37F8F /* SCAudioVideoRecorder-Info.plist */,
 				DC551C5017ADD66000E37F8F /* InfoPlist.strings */,
 				DC551C5317ADD66000E37F8F /* main.m */,
-				DC551C5517ADD66000E37F8F /* SCVideoRecorder-Prefix.pch */,
+				DC551C5517ADD66000E37F8F /* SCAudioVideoRecorder-Prefix.pch */,
 				DC551C5917ADD66000E37F8F /* Default.png */,
 				DC551C5B17ADD66000E37F8F /* Default@2x.png */,
 				DC551C5D17ADD66000E37F8F /* Default-568h@2x.png */,
 			);
 			name = "Supporting Files";
+			path = VideoRecorder;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DC551C4317ADD66000E37F8F /* SCVideoRecorder */ = {
+		DC23FE1017B4200700389EDA /* SCAudioVideoRecorder */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "SCVideoRecorder" */;
+			buildConfigurationList = DC23FE1A17B4200900389EDA /* Build configuration list for PBXNativeTarget "SCAudioVideoRecorder" */;
+			buildPhases = (
+				DC23FE0D17B4200700389EDA /* Sources */,
+				DC23FE0E17B4200700389EDA /* Frameworks */,
+				DC23FE0F17B4200700389EDA /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SCAudioVideoRecorder;
+			productName = SCAudioVideoRecorder;
+			productReference = DC23FE1117B4200700389EDA /* libSCAudioVideoRecorder.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		DC551C4317ADD66000E37F8F /* SCAudioVideoRecorderExample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "SCAudioVideoRecorderExample" */;
 			buildPhases = (
 				DC551C4017ADD66000E37F8F /* Sources */,
 				DC551C4117ADD66000E37F8F /* Frameworks */,
@@ -171,9 +243,9 @@
 			);
 			dependencies = (
 			);
-			name = SCVideoRecorder;
+			name = SCAudioVideoRecorderExample;
 			productName = VideoRecorder;
-			productReference = DC551C4417ADD66000E37F8F /* SCVideoRecorder.app */;
+			productReference = DC551C4417ADD66000E37F8F /* SCAudioVideoRecorderExample.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -186,7 +258,7 @@
 				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = rFlex;
 			};
-			buildConfigurationList = DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "SCVideoRecorder" */;
+			buildConfigurationList = DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "SCAudioVideoRecorder" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -198,7 +270,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DC551C4317ADD66000E37F8F /* SCVideoRecorder */,
+				DC551C4317ADD66000E37F8F /* SCAudioVideoRecorderExample */,
+				DC23FE1017B4200700389EDA /* SCAudioVideoRecorder */,
 			);
 		};
 /* End PBXProject section */
@@ -219,6 +292,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		DC23FE0D17B4200700389EDA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC23FE2517B45A2800389EDA /* SCAudioVideoRecorder.m in Sources */,
+				DC23FE2617B45A2800389EDA /* SCVideoEncoder.m in Sources */,
+				DC23FE2717B45A2800389EDA /* SCAudioEncoder.m in Sources */,
+				DC23FE2817B45A2800389EDA /* SCDataEncoder.m in Sources */,
+				DC23FE2917B45A2800389EDA /* SCCamera.m in Sources */,
+				DCCAB6AE17B46CDD00CEA47B /* SCAudioTools.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC551C4017ADD66000E37F8F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -232,6 +318,7 @@
 				DC0C3FC017B1D1BD0023DF70 /* SCDataEncoder.m in Sources */,
 				DC0C3FC617B1E0310023DF70 /* SCCamera.m in Sources */,
 				DC0C3FC917B217630023DF70 /* SCTouchDetector.m in Sources */,
+				DCCAB6AD17B46C8900CEA47B /* SCAudioTools.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,11 +339,36 @@
 				DC551C6017ADD66000E37F8F /* en */,
 			);
 			name = MainStoryboard.storyboard;
+			path = VideoRecorder;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		DC23FE1B17B4200900389EDA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DSTROOT = /tmp/SCAudioVideoRecorder.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VideoRecorder/SCAudioVideoRecorder-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		DC23FE1C17B4200900389EDA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DSTROOT = /tmp/SCAudioVideoRecorder.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VideoRecorder/SCAudioVideoRecorder-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		DC551C6517ADD66000E37F8F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -317,9 +429,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "VideoRecorder/SCVideoRecorder-Prefix.pch";
-				INFOPLIST_FILE = "VideoRecorder/SCVideoRecorder-Info.plist";
-				PRODUCT_NAME = SCVideoRecorder;
+				GCC_PREFIX_HEADER = "VideoRecorder/SCAudioVideoRecorder-Prefix.pch";
+				INFOPLIST_FILE = "VideoRecorder/SCAudioVideoRecorder-Info.plist";
+				PRODUCT_NAME = SCAudioVideoRecorderExample;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -328,9 +440,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "VideoRecorder/SCVideoRecorder-Prefix.pch";
-				INFOPLIST_FILE = "VideoRecorder/SCVideoRecorder-Info.plist";
-				PRODUCT_NAME = SCVideoRecorder;
+				GCC_PREFIX_HEADER = "VideoRecorder/SCAudioVideoRecorder-Prefix.pch";
+				INFOPLIST_FILE = "VideoRecorder/SCAudioVideoRecorder-Info.plist";
+				PRODUCT_NAME = SCAudioVideoRecorderExample;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -338,7 +450,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "SCVideoRecorder" */ = {
+		DC23FE1A17B4200900389EDA /* Build configuration list for PBXNativeTarget "SCAudioVideoRecorder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC23FE1B17B4200900389EDA /* Debug */,
+				DC23FE1C17B4200900389EDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "SCAudioVideoRecorder" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC551C6517ADD66000E37F8F /* Debug */,
@@ -347,7 +468,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "SCVideoRecorder" */ = {
+		DC551C6717ADD66000E37F8F /* Build configuration list for PBXNativeTarget "SCAudioVideoRecorderExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC551C6817ADD66000E37F8F /* Debug */,

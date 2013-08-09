@@ -28,13 +28,13 @@
 /////////////////////
 
 @implementation SCCamera {
-    
+    UIView * _previewView;
+    NSString * _previewVideoGravity;
 }
 
 @synthesize session;
 @synthesize delegate;
-@synthesize enableSound;
-@synthesize enableVideo;
+@synthesize previewVideoGravity;
 @synthesize previewLayer;
 
 - (id) init {
@@ -59,6 +59,12 @@
     return self;
 }
 
+- (void) dealloc {
+    self.session = nil;
+    self.previewVideoGravity = nil;
+    self.previewLayer = nil;
+}
+
 - (void) addInputToSession:(AVCaptureSession*)captureSession withMediaType:(NSString*)mediaType error:(NSError**)error {
     *error = nil;
     
@@ -79,27 +85,36 @@
         dispatch_async(self.dispatch_queue, ^ {
             AVCaptureSession * captureSession = [[AVCaptureSession alloc] init];
             
-            self.audioEncoder.enabled = self.enableSound;
-            self.videoEncoder.enabled = self.enableVideo;
-            
             NSError * audioError;
-            if (self.enableSound) {
-                [self addInputToSession:captureSession withMediaType:AVMediaTypeAudio error:&audioError];
+            [self addInputToSession:captureSession withMediaType:AVMediaTypeAudio error:&audioError];
+            if (!self.enableSound) {
+                audioError = nil;
             }
             
             NSError * videoError;
-            if (self.enableVideo) {
-                [self addInputToSession:captureSession withMediaType:AVMediaTypeVideo error:&videoError];
+            [self addInputToSession:captureSession withMediaType:AVMediaTypeVideo error:&videoError];
+            if (!self.enableVideo) {
+                videoError = nil;
             }
             
             [captureSession addOutput:self.audioOutput];
             [captureSession addOutput:self.videoOutput];
             
             self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
+            self.previewLayer.videoGravity = self.previewVideoGravity;
             
             [captureSession startRunning];
             
             self.session = captureSession;
+            dispatch_async(dispatch_get_main_queue(), ^ {
+                UIView * settedPreviewView = self.previewView;
+                
+                // We force the setter to add the setted preview to the previewLayer
+                if (settedPreviewView != nil) {
+                    self.previewView = nil;
+                    self.previewView = settedPreviewView;
+                }
+            });
             if (completionHandler != nil) {
                 [self dispatchBlockOnAskedQueue:^ {
                     completionHandler(audioError, videoError);
@@ -119,13 +134,53 @@
     }
 }
 
-- (void) dealloc {
-    self.session = nil;
-    self.previewLayer = nil;
-}
-
 - (BOOL) isReady {
     return self.session != nil;
+}
+
+- (void) setEnableSound:(BOOL)enableSound {
+    self.audioEncoder.enabled = enableSound;
+}
+
+- (BOOL) enableSound {
+    return self.audioEncoder.enabled;
+}
+
+- (void) setEnableVideo:(BOOL)enableVideo {
+    self.videoEncoder.enabled = enableVideo;
+}
+
+- (BOOL) enableVideo {
+    return self.videoEncoder.enabled;
+}
+
+- (void) setPreviewView:(UIView *)previewView {
+    if (self.previewLayer != nil) {
+        [self.previewLayer removeFromSuperlayer];
+    }
+    
+    _previewView = previewView;
+    
+    if (previewView != nil && self.previewLayer != nil) {
+        self.previewLayer.frame = previewView.bounds;
+        [previewView.layer addSublayer:self.previewLayer];
+    }
+}
+
+- (UIView*) previewView {
+    return _previewView;
+}
+
+- (void) setPreviewVideoGravity:(NSString *)newPreviewVideoGravity {
+    _previewVideoGravity = [newPreviewVideoGravity copy];
+    
+    if (self.previewLayer != nil && _previewVideoGravity != nil) {
+        self.previewLayer.videoGravity = _previewVideoGravity;
+    }
+}
+
+- (NSString*) previewVideoGravity {
+    return _previewVideoGravity;
 }
 
 @end

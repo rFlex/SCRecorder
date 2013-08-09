@@ -54,6 +54,7 @@
         self.videoEncoder = [[SCVideoEncoder alloc] initWithAudioVideoRecorder:self];
         self.audioEncoder.delegate = self;
         self.videoEncoder.delegate = self;
+        recording = NO;
         
         self.videoOutput = [[AVCaptureVideoDataOutput alloc] init];
         [self.videoOutput setSampleBufferDelegate:self.videoEncoder queue:self.dispatch_queue];
@@ -230,6 +231,7 @@
     
     self.outputFileUrl = nil;
     self.assetWriter = nil;
+    recording = NO;
     
     [self.audioEncoder reset];
     [self.videoEncoder reset];

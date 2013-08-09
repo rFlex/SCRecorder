@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import "SCAudioVideoRecorder.h"
 
 @class SCCamera;
@@ -24,10 +25,12 @@
 
 - (BOOL) isReady;
 
-@property (strong, nonatomic, readonly) AVCaptureVideoPreviewLayer * previewLayer;
+@property (strong, nonatomic, readonly) AVCaptureSession * session;
 @property (weak, nonatomic) id<SCCameraDelegate> delegate;
 @property (copy, nonatomic) NSString * sessionPreset;
+@property (copy, nonatomic) NSString * previewVideoGravity;
 @property (assign, nonatomic) BOOL enableSound;
 @property (assign, nonatomic) BOOL enableVideo;
+@property (weak, nonatomic) UIView * previewView;
 
 @end
