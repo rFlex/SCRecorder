@@ -41,11 +41,14 @@
 @synthesize audioEncoder;
 @synthesize videoEncoder;
 @synthesize dispatchDelegateMessagesOnMainQueue;
+@synthesize outputFileType;
 
 - (id) init {
     self = [super init];
     
     if (self) {
+        self.outputFileType = AVFileTypeQuickTimeMovie;
+        
         self.dispatch_queue = dispatch_queue_create("SCVideoRecorder", nil);
         
         audioEncoderReady = NO;
@@ -118,7 +121,7 @@
         
         NSError * assetError;
         
-        AVAssetWriter * writer = [[AVAssetWriter alloc] initWithURL:fileUrl fileType:AVFileTypeQuickTimeMovie error:&assetError];
+        AVAssetWriter * writer = [[AVAssetWriter alloc] initWithURL:fileUrl fileType:self.outputFileType error:&assetError];
         
         if (assetError == nil) {
             self.assetWriter = writer;

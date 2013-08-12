@@ -53,11 +53,23 @@
 - (BOOL) isRecording;
 
 @property (weak, nonatomic) id<SCAudioVideoRecorderDelegate> delegate;
+
 @property (strong, nonatomic, readonly) AVCaptureVideoDataOutput * videoOutput;
 @property (strong, nonatomic, readonly) AVCaptureAudioDataOutput * audioOutput;
+
+// The VideoEncoder. Accessing this allow the configuration of the video encoder
 @property (strong, nonatomic, readonly) SCVideoEncoder * videoEncoder;
+
+// The AudioEncoder. Accessing this allow the configuration of the audio encoder
 @property (strong, nonatomic, readonly) SCAudioEncoder * audioEncoder;
+
+// When the recording is prepared, this getter contains the output file
 @property (strong, nonatomic, readonly) NSURL * outputFileUrl;
+
+// If true, every messages sent to the delegate will be dispatched through the main queue
 @property (assign, nonatomic) BOOL dispatchDelegateMessagesOnMainQueue;
+
+// Must be like AVFileType*
+@property (copy, nonatomic) NSString * outputFileType;
 
 @end
