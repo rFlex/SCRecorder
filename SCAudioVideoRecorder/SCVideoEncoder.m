@@ -22,6 +22,10 @@
     
 }
 
+@synthesize outputBitsPerPixel;
+@synthesize outputAffineTransform;
+@synthesize outputVideoSize;
+
 - (id) initWithAudioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder {
     self = [super initWithAudioVideoRecorder:audioVideoRecorder];
     
@@ -29,13 +33,20 @@
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
         self.outputAffineTransform = CGAffineTransformMakeRotation(M_PI / 2);
 #endif
+        // Extra quality!
+        self.outputBitsPerPixel = 1000;
     }
     
     return self;
 }
 
++ (NSInteger) getBitsPerSecondForOutputVideoSize:(CGSize)size andBitsPerPixel:(Float32)bitsPerPixel {
+    int numPixels = size.width * size.height;
+    
+    return (NSInteger)((Float32)numPixels * bitsPerPixel);
+}
+
 - (AVAssetWriterInput*) createWriterInputForSampleBuffer:(CMSampleBufferRef)sampleBuffer error:(NSError **)error {
-    float bitsPerPixel;
     CGSize videoSize = self.outputVideoSize;
     
     if (self.useInputFormatTypeAsOutputType) {
@@ -46,12 +57,7 @@
         videoSize.height = height;
     }
     
-	int numPixels = videoSize.width * videoSize.height;
-	int bitsPerSecond;
-	
-    bitsPerPixel = 11.4; // This bitrate matches the quality produced by AVCaptureSessionPresetHigh.
-	
-	bitsPerSecond = numPixels * bitsPerPixel;
+    NSInteger bitsPerSecond = [SCVideoEncoder getBitsPerSecondForOutputVideoSize:videoSize andBitsPerPixel:self.outputBitsPerPixel];
     
     AVAssetWriterInput * assetWriterVideoIn = nil;
     
@@ -59,10 +65,10 @@
 											  AVVideoCodecH264, AVVideoCodecKey,
 											  [NSNumber numberWithInteger:videoSize.width], AVVideoWidthKey,
 											  [NSNumber numberWithInteger:videoSize.height], AVVideoHeightKey,
-                                              //											  [NSDictionary dictionaryWithObjectsAndKeys:
-                                              //											   [NSNumber numberWithInteger:bitsPerSecond], AVVideoAverageBitRateKey,
-                                              //											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
-                                              //											   nil], AVVideoCompressionPropertiesKey,
+                                              [NSDictionary dictionaryWithObjectsAndKeys:
+                                               [NSNumber numberWithInteger:bitsPerSecond], AVVideoAverageBitRateKey,
+                                               nil],
+                                              AVVideoCompressionPropertiesKey,
 											  nil];
     
 	if ([self.audioVideoRecorder.assetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {

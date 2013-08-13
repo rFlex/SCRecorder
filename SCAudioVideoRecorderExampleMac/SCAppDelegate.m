@@ -30,6 +30,7 @@
     self.camera.previewVideoGravity = SCVideoGravityResizeAspectFill;
     
     self.camera.delegate = self;
+    self.camera.videoEncoder.outputBitsPerPixel = 1;
     [self.camera initialize:^(NSError *audioError, NSError *videoError) {
         NSLog(@"AudioError: %@", audioError);
         NSLog(@"VideoError: %@", videoError);
