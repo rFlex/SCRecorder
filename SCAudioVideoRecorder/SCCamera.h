@@ -7,13 +7,18 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #import "SCAudioVideoRecorder.h"
 
 @class SCCamera;
 @protocol SCCameraDelegate <SCAudioVideoRecorderDelegate>
 
 @end
+
+typedef enum {
+    SCVideoGravityResize,
+    SCVideoGravityResizeAspectFill,
+    SCVideoGravityResizeAspect
+} SCCameraPreviewVideoGravity;
 
 @interface SCCamera : SCAudioVideoRecorder {
     
@@ -28,9 +33,15 @@
 @property (strong, nonatomic, readonly) AVCaptureSession * session;
 @property (weak, nonatomic) id<SCCameraDelegate> delegate;
 @property (copy, nonatomic) NSString * sessionPreset;
-@property (copy, nonatomic) NSString * previewVideoGravity;
+@property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) BOOL enableSound;
 @property (assign, nonatomic) BOOL enableVideo;
+
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 @property (weak, nonatomic) UIView * previewView;
+#else
+@property (weak, nonatomic) NSView * previewView;
+#endif
+
 
 @end

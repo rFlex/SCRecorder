@@ -34,8 +34,8 @@
     
     if (self.useInputFormatTypeAsOutputType) {
         CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-        int width = CVPixelBufferGetWidth(imageBuffer);
-        int height = CVPixelBufferGetHeight(imageBuffer);
+        size_t width = CVPixelBufferGetWidth(imageBuffer);
+        size_t height = CVPixelBufferGetHeight(imageBuffer);
         videoSize.width = width;
         videoSize.height = height;
     }

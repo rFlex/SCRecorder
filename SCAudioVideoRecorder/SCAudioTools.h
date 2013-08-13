@@ -12,6 +12,12 @@
     
 }
 
+//
+// IOS SPECIFIC
+//
+
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 + (void) overrideCategoryMixWithOthers;
+#endif
 
 @end

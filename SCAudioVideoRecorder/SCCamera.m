@@ -10,6 +10,12 @@
 #import "SCCamera.h"
 #import "SCAudioVideoRecorderInternal.h"
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+typedef UIView View;
+#else
+typedef NSView View;
+#endif
+
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
 /////////////////////
@@ -28,13 +34,12 @@
 /////////////////////
 
 @implementation SCCamera {
-    UIView * _previewView;
-    NSString * _previewVideoGravity;
+    View * _previewView;
+    SCCameraPreviewVideoGravity _previewVideoGravity;
 }
 
 @synthesize session;
 @synthesize delegate;
-@synthesize previewVideoGravity;
 @synthesize previewLayer;
 
 - (id) init {
@@ -42,6 +47,7 @@
     
     if (self) {
         self.sessionPreset = AVCaptureSessionPresetHigh;
+        
         self.enableSound = YES;
         self.enableVideo = YES;
     }
@@ -61,7 +67,6 @@
 
 - (void) dealloc {
     self.session = nil;
-    self.previewVideoGravity = nil;
     self.previewLayer = nil;
 }
 
@@ -101,13 +106,13 @@
             [captureSession addOutput:self.videoOutput];
             
             self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
-            self.previewLayer.videoGravity = self.previewVideoGravity;
+            self.previewLayer.videoGravity = [self previewVideoGravityToString];
             
             [captureSession startRunning];
             
             self.session = captureSession;
             dispatch_async(dispatch_get_main_queue(), ^ {
-                UIView * settedPreviewView = self.previewView;
+                View * settedPreviewView = self.previewView;
                 
                 // We force the setter to add the setted preview to the previewLayer
                 if (settedPreviewView != nil) {
@@ -134,6 +139,18 @@
     }
 }
 
+- (NSString*) previewVideoGravityToString {
+    switch (self.previewVideoGravity) {
+        case SCVideoGravityResize:
+            return AVLayerVideoGravityResize;
+        case SCVideoGravityResizeAspect:
+            return AVLayerVideoGravityResizeAspect;
+        case SCVideoGravityResizeAspectFill:
+            return AVLayerVideoGravityResizeAspectFill;
+    }
+    return nil;
+}
+
 - (BOOL) isReady {
     return self.session != nil;
 }
@@ -154,7 +171,7 @@
     return self.videoEncoder.enabled;
 }
 
-- (void) setPreviewView:(UIView *)previewView {
+- (void) setPreviewView:(View *)previewView {
     if (self.previewLayer != nil) {
         [self.previewLayer removeFromSuperlayer];
     }
@@ -162,24 +179,30 @@
     _previewView = previewView;
     
     if (previewView != nil && self.previewLayer != nil) {
+#if !(TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE)
+        self.previewLayer.autoresizingMask = self.previewView.autoresizingMask;
+        [previewView setWantsLayer:YES];
+#endif
+        
         self.previewLayer.frame = previewView.bounds;
-        [previewView.layer addSublayer:self.previewLayer];
+        [previewView.layer insertSublayer:self.previewLayer atIndex:0];
+        
     }
 }
 
-- (UIView*) previewView {
+- (View*) previewView {
     return _previewView;
 }
 
-- (void) setPreviewVideoGravity:(NSString *)newPreviewVideoGravity {
-    _previewVideoGravity = [newPreviewVideoGravity copy];
-    
-    if (self.previewLayer != nil && _previewVideoGravity != nil) {
-        self.previewLayer.videoGravity = _previewVideoGravity;
+- (void) setPreviewVideoGravity:(SCCameraPreviewVideoGravity)newPreviewVideoGravity {
+    _previewVideoGravity = newPreviewVideoGravity;
+    if (self.previewLayer) {
+        self.previewLayer.videoGravity = [self previewVideoGravityToString];
     }
+    
 }
 
-- (NSString*) previewVideoGravity {
+- (SCCameraPreviewVideoGravity) previewVideoGravity {
     return _previewVideoGravity;
 }
 

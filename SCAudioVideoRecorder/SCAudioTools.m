@@ -13,10 +13,12 @@
     
 }
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 + (void) overrideCategoryMixWithOthers {
     UInt32 doSetProperty = 1;
     
     AudioSessionSetProperty (kAudioSessionProperty_OverrideCategoryMixWithOthers, sizeof(doSetProperty), &doSetProperty);
 }
+#endif
 
 @end

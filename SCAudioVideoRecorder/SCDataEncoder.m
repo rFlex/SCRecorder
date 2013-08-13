@@ -125,6 +125,7 @@
     if (!self.enabled) {
         return;
     }
+    
     CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     
     if ([audioVideoRecorder isPrepared] && [audioVideoRecorder isRecording]) {
