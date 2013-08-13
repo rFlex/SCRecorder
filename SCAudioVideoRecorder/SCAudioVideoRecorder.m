@@ -201,7 +201,7 @@
       } else {
 	NSURL * fileUrl = self.outputFileUrl;
 
-	if (self.assetWriter.status != AVAssetWriterStatusUnknown) {
+	if (self.assetWriter.status == AVAssetWriterStatusWriting) {
         [self finishWriter:fileUrl];
 	} else {
 	  [self assetWriterFinished:fileUrl];

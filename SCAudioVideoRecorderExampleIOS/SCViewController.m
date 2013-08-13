@@ -37,7 +37,7 @@
     
     self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720];
     self.camera.delegate = self;
-    self.camera.enableSound = NO;
+//    self.camera.enableSound = NO;
     self.camera.previewVideoGravity = SCVideoGravityResizeAspectFill;
     self.camera.previewView = self.previewView;
     
