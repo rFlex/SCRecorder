@@ -187,6 +187,11 @@
             }];
         } else {
             NSURL * fileUrl = self.outputFileUrl;
+            
+            if(self.assetWriter.status == AVAssetWriterStatusFailed){
+                NSLog(@"assets write failed:%@ ",self.assetWriter.error);
+                return ;
+            }
 
             if (self.assetWriter.status != AVAssetWriterStatusUnknown) {
                 [self.assetWriter finishWritingWithCompletionHandler:^ {

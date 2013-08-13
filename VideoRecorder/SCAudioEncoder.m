@@ -32,7 +32,7 @@
     
     if (self != nil) {
         self.outputBitRate = 128000;
-        self.outputEncodeType = kAudioFormatMPEGLayer3;
+        self.outputEncodeType = kAudioFormatMPEG4AAC;
     }
     
     return self;
