@@ -40,7 +40,11 @@
     
 }
 
+// The Camera roll only exists on iOS
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 - (void) prepareRecordingAtCameraRoll:(NSError**)error;
+#endif
+
 - (NSURL*) prepareRecordingOnTempDir:(NSError**)error;
 - (void) prepareRecordingAtUrl:(NSURL*)url error:(NSError**)error;
 

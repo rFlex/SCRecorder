@@ -24,6 +24,8 @@ typedef enum {
     
 }
 
++ (SCCamera*) camera;
+
 - (id) initWithSessionPreset:(NSString*)sessionPreset;
 
 - (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler;

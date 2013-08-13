@@ -70,6 +70,10 @@ typedef NSView View;
     self.previewLayer = nil;
 }
 
++ (SCCamera*) camera {
+    return [[SCCamera alloc] init];
+}
+
 - (void) addInputToSession:(AVCaptureSession*)captureSession withMediaType:(NSString*)mediaType error:(NSError**)error {
     *error = nil;
     
