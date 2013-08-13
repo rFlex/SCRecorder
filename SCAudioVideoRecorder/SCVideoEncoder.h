@@ -15,5 +15,6 @@
 
 // This value is used only if useInputFormatTypeAsOutputType is false
 @property (assign, nonatomic) CGSize outputVideoSize;
+@property (assign, nonatomic) CGAffineTransform outputAffineTransform;
 
 @end

@@ -25,6 +25,12 @@
 - (id) initWithAudioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder {
     self = [super initWithAudioVideoRecorder:audioVideoRecorder];
     
+    if (self) {
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+        self.outputAffineTransform = CGAffineTransformMakeRotation(M_PI / 2);
+#endif
+    }
+    
     return self;
 }
 
@@ -62,7 +68,7 @@
 	if ([self.audioVideoRecorder.assetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {
 		assetWriterVideoIn = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoCompressionSettings];
 		assetWriterVideoIn.expectsMediaDataInRealTime = YES;
-        assetWriterVideoIn.transform = CGAffineTransformMakeRotation(M_PI / 2);
+        assetWriterVideoIn.transform = self.outputAffineTransform;
         *error = nil;
 	} else {
         *error = [SCAudioVideoRecorder createError:@"Unable to configure output settings"];
