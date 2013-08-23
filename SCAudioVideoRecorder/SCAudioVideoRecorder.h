@@ -61,6 +61,9 @@
 @property (strong, nonatomic, readonly) AVCaptureVideoDataOutput * videoOutput;
 @property (strong, nonatomic, readonly) AVCaptureAudioDataOutput * audioOutput;
 
+@property (assign, nonatomic) BOOL enableSound;
+@property (assign, nonatomic) BOOL enableVideo;
+
 // The VideoEncoder. Accessing this allow the configuration of the video encoder
 @property (strong, nonatomic, readonly) SCVideoEncoder * videoEncoder;
 
@@ -69,6 +72,10 @@
 
 // When the recording is prepared, this getter contains the output file
 @property (strong, nonatomic, readonly) NSURL * outputFileUrl;
+
+// If not null, the asset will be played when the record starts, and pause when it pauses.
+// When the record ends, the audio mix will be mixed with the playback asset
+@property (strong, nonatomic) AVAsset * playbackAsset;
 
 // If true, every messages sent to the delegate will be dispatched through the main queue
 @property (assign, nonatomic) BOOL dispatchDelegateMessagesOnMainQueue;

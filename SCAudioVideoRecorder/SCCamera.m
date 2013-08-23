@@ -47,9 +47,6 @@ typedef NSView View;
     
     if (self) {
         self.sessionPreset = AVCaptureSessionPresetHigh;
-        
-        self.enableSound = YES;
-        self.enableVideo = YES;
     }
     
     return self;
@@ -94,6 +91,7 @@ typedef NSView View;
         dispatch_async(self.dispatch_queue, ^ {
             AVCaptureSession * captureSession = [[AVCaptureSession alloc] init];
             
+			
             NSError * audioError;
             [self addInputToSession:captureSession withMediaType:AVMediaTypeAudio error:&audioError];
             if (!self.enableSound) {
@@ -157,22 +155,6 @@ typedef NSView View;
 
 - (BOOL) isReady {
     return self.session != nil;
-}
-
-- (void) setEnableSound:(BOOL)enableSound {
-    self.audioEncoder.enabled = enableSound;
-}
-
-- (BOOL) enableSound {
-    return self.audioEncoder.enabled;
-}
-
-- (void) setEnableVideo:(BOOL)enableVideo {
-    self.videoEncoder.enabled = enableVideo;
-}
-
-- (BOOL) enableVideo {
-    return self.videoEncoder.enabled;
 }
 
 - (void) setPreviewView:(View *)previewView {
