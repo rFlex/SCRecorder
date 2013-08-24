@@ -196,8 +196,6 @@
 		
 		[exportSession exportAsynchronouslyWithCompletionHandler:^ {
 			[self removeFile:oldUrl];
-			NSLog(@"Status: %ld", exportSession.status);
-			NSLog(@"Error: %@", exportSession.error);
 			completionBlock();
 		}];
 	} else {
