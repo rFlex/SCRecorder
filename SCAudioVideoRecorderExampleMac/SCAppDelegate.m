@@ -36,9 +36,9 @@
         NSLog(@"VideoError: %@", videoError);
     }];
 
-//	NSURL * url = [NSURL URLWithString:@"file:///Users/simoncorsin/Music/iTunes/iTunes%20Media/Music/Various%20Artists/MOS%20The%20Sound%20Of%20Dubstep%203/16%20King%20Kong.mp3"];
-//	AVURLAsset * asset = [AVURLAsset assetWithURL:url];
-//	self.camera.playbackAsset = asset;
+	NSURL * url = [NSURL URLWithString:@"file:///Users/simoncorsin/Music/iTunes/iTunes%20Media/Music/Various%20Artists/MOS%20The%20Sound%20Of%20Dubstep%203/16%20King%20Kong.mp3"];
+	AVURLAsset * asset = [AVURLAsset assetWithURL:url];
+	self.camera.playbackAsset = asset;
 	
     [self.outputFileButton addAction:@selector(outputFileButtonPressed:) forTarget:self];
     [self.outputVideoButton addAction:@selector(outputVideoButtonPressed:) forTarget:self];
