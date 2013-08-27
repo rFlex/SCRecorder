@@ -89,6 +89,10 @@
 	self.assetWriter = nil;
 }
 
+- (void) pleaseDontReleaseObject:(id)object {
+	
+}
+
 //
 // Video Recorder methods
 //
@@ -160,10 +164,10 @@
 	}
 }
 
-- (NSURL*) finalizeAudioMixForUrl:(NSURL*)fileUrl  withCompletionBlock:(void(^)())completionBlock {
+- (void) finalizeAudioMixForUrl:(NSURL*)fileUrl  withCompletionBlock:(void(^)())completionBlock {
 	if (self.playbackAsset != nil) {
 		// Move the file to a tmp one
-		NSURL * oldUrl = [[fileUrl URLByDeletingPathExtension] URLByAppendingPathExtension:@"old.mp4"];
+		NSURL * oldUrl = [[fileUrl URLByDeletingPathExtension] URLByAppendingPathExtension:@"old.mov"];
 		[[NSFileManager defaultManager] moveItemAtURL:fileUrl toURL:oldUrl error:nil];
 		
 		AVMutableComposition * composition = [[AVMutableComposition alloc] init];
@@ -176,7 +180,7 @@
 		
 		// We create an array of tracks containing the audio tracks and the video tracks
 		NSArray * audioTracks = [NSArray arrayWithArrays:[self.playbackAsset tracksWithMediaType:AVMediaTypeAudio], [fileAsset tracksWithMediaType:AVMediaTypeAudio], nil];
-		
+
 		NSArray * videoTracks = [fileAsset tracksWithMediaType:AVMediaTypeVideo];
 		
 		CMTime duration = ((AVAssetTrack*)[videoTracks objectAtIndex:0]).timeRange.duration;
@@ -194,14 +198,16 @@
 		exportSession.shouldOptimizeForNetworkUse = YES;
 		exportSession.outputURL = fileUrl;
 		
+		
 		[exportSession exportAsynchronouslyWithCompletionHandler:^ {
+			[self pleaseDontReleaseObject:exportSession];
+			
 			[self removeFile:oldUrl];
 			completionBlock();
 		}];
 	} else {
 		completionBlock();
 	}
-	return fileUrl;
 }
 
 - (void) assetWriterFinished:(NSURL*)fileUrl {
@@ -210,11 +216,17 @@
 	[self.audioEncoder reset];
 	[self.videoEncoder reset];
 	
-	fileUrl = [self finalizeAudioMixForUrl:fileUrl withCompletionBlock:^ {
+	[self finalizeAudioMixForUrl:fileUrl withCompletionBlock:^ {
 		if (shouldWriteToCameraRoll) {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+			NSLog(@"Writing to saved photo album: %@", fileUrl);
 			ALAssetsLibrary * library = [[ALAssetsLibrary alloc] init];
 			[library writeVideoAtPathToSavedPhotosAlbum:fileUrl completionBlock:^(NSURL *assetUrl, NSError * error) {
+				
+				if (error != nil) {
+					NSLog(@"Error: %@", error);
+				}
+				
 				[self removeFile:fileUrl];
 				
 				[self dispatchBlockOnAskedQueue:^ {

@@ -72,6 +72,7 @@
 		DCB19FC017B089530019AB38 /* SCAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB19FBF17B089520019AB38 /* SCAudioEncoder.m */; };
 		DCCAB6AD17B46C8900CEA47B /* SCAudioTools.m in Sources */ = {isa = PBXBuildFile; fileRef = DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */; };
 		DCCAB6AE17B46CDD00CEA47B /* SCAudioTools.m in Sources */ = {isa = PBXBuildFile; fileRef = DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */; };
+		DCE18D0A17CD51BE0065DF40 /* NSArray+SCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = DC13706E17C818A500AB3F5E /* NSArray+SCAdditions.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -552,6 +553,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCE18D0A17CD51BE0065DF40 /* NSArray+SCAdditions.m in Sources */,
 				DC551C5417ADD66000E37F8F /* main.m in Sources */,
 				DC551C5817ADD66000E37F8F /* SCAppDelegate.m in Sources */,
 				DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */,

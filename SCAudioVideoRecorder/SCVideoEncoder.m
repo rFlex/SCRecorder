@@ -34,7 +34,7 @@
         self.outputAffineTransform = CGAffineTransformMakeRotation(M_PI / 2);
 #endif
         // Extra quality!
-        self.outputBitsPerPixel = 1000;
+        self.outputBitsPerPixel = 12;
     }
     
     return self;
@@ -58,7 +58,7 @@
     }
     
     NSInteger bitsPerSecond = [SCVideoEncoder getBitsPerSecondForOutputVideoSize:videoSize andBitsPerPixel:self.outputBitsPerPixel];
-    
+		    
     AVAssetWriterInput * assetWriterVideoIn = nil;
     
 	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
