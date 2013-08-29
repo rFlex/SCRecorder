@@ -167,7 +167,7 @@
 - (void) finalizeAudioMixForUrl:(NSURL*)fileUrl  withCompletionBlock:(void(^)())completionBlock {
 	if (self.playbackAsset != nil) {
 		// Move the file to a tmp one
-		NSURL * oldUrl = [[fileUrl URLByDeletingPathExtension] URLByAppendingPathExtension:@"old.mp4"];
+		NSURL * oldUrl = [[fileUrl URLByDeletingPathExtension] URLByAppendingPathExtension:@"old.mov"];
 		[[NSFileManager defaultManager] moveItemAtURL:fileUrl toURL:oldUrl error:nil];
 		
 		AVMutableComposition * composition = [[AVMutableComposition alloc] init];
@@ -219,6 +219,7 @@
 		if (shouldWriteToCameraRoll) {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 			NSLog(@"Writing to saved photo album: %@", fileUrl);
+			
 			ALAssetsLibrary * library = [[ALAssetsLibrary alloc] init];
 			[library writeVideoAtPathToSavedPhotosAlbum:fileUrl completionBlock:^(NSURL *assetUrl, NSError * error) {
 				
