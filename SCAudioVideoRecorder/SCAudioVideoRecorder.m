@@ -192,6 +192,7 @@
 		for (AVAssetTrack * track in videoTracks) {
 			[videoTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
 		}
+		videoTrackComposition.preferredTransform = self.videoEncoder.outputAffineTransform;
 		
 		AVAssetExportSession * exportSession = [[AVAssetExportSession alloc] initWithAsset:composition presetName:AVAssetExportPresetPassthrough];
 		exportSession.outputFileType = self.outputFileType;
@@ -218,8 +219,7 @@
 	
 	[self finalizeAudioMixForUrl:fileUrl withCompletionBlock:^ {
 		if (shouldWriteToCameraRoll) {
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-			NSLog(@"Writing to saved photo album: %@", fileUrl);
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE			
 			ALAssetsLibrary * library = [[ALAssetsLibrary alloc] init];
 			[library writeVideoAtPathToSavedPhotosAlbum:fileUrl completionBlock:^(NSURL *assetUrl, NSError * error) {
 				

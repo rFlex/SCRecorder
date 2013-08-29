@@ -36,15 +36,8 @@
         NSLog(@"VideoError: %@", videoError);
     }];
 
-	NSURL * url = [NSURL URLWithString:@"http://a1583.phobos.apple.com/us/r30/Music/e8/b7/41/mzm.zrdadrgh.aac.p.m4a"];
-//	url = [NSURL URLWithString:@"file:///Users/simoncorsin/Downloads/mzm.zrdadrgh.aac.p.m4a"];
-//	NSURL * url = [NSURL URLWithString:@"file:///Users/simoncorsin/Music/iTunes/iTunes%20Media/Music/Various%20Artists/MOS%20The%20Sound%20Of%20Dubstep%203/16%20King%20Kong.mp3"];
-	
+	NSURL * url = [NSURL URLWithString:@"file:///Users/simoncorsin/Music/iTunes/iTunes%20Media/Music/Various%20Artists/MOS%20The%20Sound%20Of%20Dubstep%203/16%20King%20Kong.mp3"];
 	AVURLAsset * asset = [AVURLAsset assetWithURL:url];
-	
-	AVAssetTrack * audioTrack = [[asset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
-	
-	
 	self.camera.playbackAsset = asset;
 	
     [self.outputFileButton addAction:@selector(outputFileButtonPressed:) forTarget:self];
