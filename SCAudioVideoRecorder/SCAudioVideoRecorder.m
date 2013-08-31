@@ -54,7 +54,7 @@
 	self = [super init];
 	
 	if (self) {
-		self.outputFileType = AVFileTypeQuickTimeMovie;
+		self.outputFileType = AVFileTypeMPEG4;
 		
 		self.dispatch_queue = dispatch_queue_create("SCVideoRecorder", nil);
 		

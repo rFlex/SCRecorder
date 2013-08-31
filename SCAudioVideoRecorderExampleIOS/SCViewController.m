@@ -21,7 +21,6 @@
 }
 
 @property (strong, nonatomic) SCCamera * camera;
-@property (strong, nonatomic) AVPlayer * player;
 
 @end
 
@@ -47,14 +46,10 @@
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
 	[SCAudioTools overrideCategoryMixWithOthers];
 	
-	self.player = [AVPlayer playerWithURL:[NSURL URLWithString:@"http://a1583.phobos.apple.com/us/r30/Music/e8/b7/41/mzm.zrdadrgh.aac.p.m4a"]];
-	[self.player play];
-	
 //	NSURL * url = [NSURL URLWithString:@"https://dl.dropboxusercontent.com/u/3402348/Under%20the%20lights%20version%20techno2.mp3"];
 //	AVAsset * asset = [AVAsset assetWithURL:url];
 
 //	self.camera.playbackAsset = asset;
-	self.camera.playbackAsset = self.player.currentItem.asset;
 	
     [self.camera initialize:^(NSError * audioError, NSError * videoError) {
         
@@ -84,7 +79,6 @@
 }
 
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
-	[self.player pause];
     if (touchDetector.state == UIGestureRecognizerStateBegan) {
         NSLog(@"==== STARTING RECORDING ====");
         if (![self.camera isPrepared]) {

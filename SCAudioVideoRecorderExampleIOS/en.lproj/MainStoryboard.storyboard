@@ -99,8 +99,41 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4" sceneMemberID="firstResponder"/>
             </objects>
         </scene>
+        <!--Video Player View Controller-->
+        <scene sceneID="nAI-tE-muv">
+            <objects>
+                <viewController id="VeQ-Zi-V20" customClass="SCVideoPlayerViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="MUX-tX-a5G">
+                        <rect key="frame" x="0.0" y="20" width="320" height="460"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" id="Tmn-ON-3xp" customClass="SCVideoPlayerView">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="320"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <connections>
+                        <outlet property="videoPlayerView" destination="Tmn-ON-3xp" id="G0g-JU-hIU"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="aQF-XH-HvG" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="98" y="589"/>
+        </scene>
     </scenes>
     <classes>
+        <class className="SCVideoPlayerView" superclassName="UIView">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/SCVideoPlayerView.h"/>
+        </class>
+        <class className="SCVideoPlayerViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/SCVideoPlayerViewController.h"/>
+            <relationships>
+                <relationship kind="outlet" name="videoPlayerView" candidateClass="SCVideoPlayerView"/>
+            </relationships>
+        </class>
         <class className="SCViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SCViewController.h"/>
             <relationships>

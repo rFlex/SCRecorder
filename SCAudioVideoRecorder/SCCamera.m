@@ -90,7 +90,7 @@ typedef NSView View;
     if (![self isReady]) {
         dispatch_async(self.dispatch_queue, ^ {
             AVCaptureSession * captureSession = [[AVCaptureSession alloc] init];
-            
+            captureSession.sessionPreset = self.sessionPreset;
 			
             NSError * audioError;
             [self addInputToSession:captureSession withMediaType:AVMediaTypeAudio error:&audioError];
