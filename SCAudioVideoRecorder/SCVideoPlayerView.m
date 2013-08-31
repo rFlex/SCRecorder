@@ -42,6 +42,16 @@
 	return self;
 }
 
+- (id) initWithCoder:(NSCoder *)aDecoder {
+	self = [super initWithCoder:aDecoder];
+	
+	if (self) {
+		[self commonInit];
+	}
+	
+	return self;
+}
+
 - (void) commonInit {
 	self.player = [SCPlayer videoPlayer];
 	self.player.delegate = self;
@@ -63,11 +73,6 @@
 	self.clipsToBounds = YES;
 }
 
-- (void) awakeFromNib {
-	[super awakeFromNib];
-	[self commonInit];
-}
-
 - (void) videoPlayer:(SCPlayer *)videoPlayer didStartLoadingAtItemTime:(CMTime)itemTime {
 	self.loadingView.hidden = NO;
 }
@@ -78,6 +83,10 @@
 
 - (void) videoPlayer:(SCPlayer *)videoPlayer didPlay:(Float64)secondsElapsed secondsTotal:(Float64)secondsTotal {
 	
+}
+
+- (void) videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem *)item {
+	self.loadingView.hidden = item == nil;
 }
 
 - (void) layoutSubviews {

@@ -17,6 +17,7 @@
 - (void) videoPlayer:(SCPlayer*)videoPlayer didPlay:(Float64)secondsElapsed secondsTotal:(Float64)secondsTotal;
 - (void) videoPlayer:(SCPlayer *)videoPlayer didStartLoadingAtItemTime:(CMTime)itemTime;
 - (void) videoPlayer:(SCPlayer *)videoPlayer didEndLoadingAtItemTime:(CMTime)itemTime;
+- (void) videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem*)item;
 
 @end
 

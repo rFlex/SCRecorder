@@ -56,9 +56,13 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void) playReachedEnd:(NSNotification*)notification {
-	if ([self isPlaying]) {
-		[self seekToTime:CMTimeMake(0, 1)];
-		[self play];
+	if (notification.object == self.currentItem) {
+		if (self.shouldLoop) {
+			[self seekToTime:CMTimeMake(0, 1)];
+			if ([self isPlaying]) {
+				[self play];
+			}
+		}
 	}
 }
 
@@ -112,6 +116,10 @@ SCPlayer * currentSCVideoPlayer = nil;
 	self.loading = YES;
 		
 	self.oldItem = self.currentItem;
+	
+	if ([self.delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
+		[self.delegate videoPlayer:self didChangeItem:self.currentItem];
+	}
 }
 
 - (void) play {

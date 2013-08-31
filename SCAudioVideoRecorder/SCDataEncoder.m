@@ -125,34 +125,39 @@
     if (!self.enabled) {
         return;
     }
-    
+	    
     CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-    
-    if ([audioVideoRecorder isPrepared] && [audioVideoRecorder isRecording]) {
-        
-        if (!initialized) {
+	
+	if ([audioVideoRecorder isPrepared]) {
+		if (!initialized) {
             [self initialize:sampleBuffer atFrameTime:frameTime];
+			[audioVideoRecorder prepareWriterAtSourceTime:frameTime fromEncoder:self];
+			
+			audioVideoRecorder.shouldComputeOffset = YES;
+			lastTakenFrame = frameTime;
+			// We always skip the first frame
+			return;
         }
-        
-        [audioVideoRecorder prepareWriterAtSourceTime:frameTime fromEncoder:self];
-        
-        if ([self.writerInput isReadyForMoreMediaData]) {
-            if (audioVideoRecorder.shouldComputeOffset) {
-                [self computeOffset:frameTime];
-            }
-            
-            CMSampleBufferRef adjustedBuffer = [self adjustBuffer:sampleBuffer withTimeOffset:audioVideoRecorder.currentTimeOffset];
-            
-            CMTime currentTime = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer), audioVideoRecorder.startedTime);
-            [self.writerInput appendSampleBuffer:adjustedBuffer];
-            CFRelease(adjustedBuffer);
-            
-            if ([self.delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
-                [self.delegate dataEncoder:self didEncodeFrame:CMTimeGetSeconds(currentTime)];
-            }
-        }
-        lastTakenFrame = frameTime;
-    }
+		
+		if ([audioVideoRecorder isRecording]) {
+			if ([self.writerInput isReadyForMoreMediaData]) {
+				if (audioVideoRecorder.shouldComputeOffset) {
+					[self computeOffset:frameTime];
+				}
+				
+				CMSampleBufferRef adjustedBuffer = [self adjustBuffer:sampleBuffer withTimeOffset:audioVideoRecorder.currentTimeOffset];
+				
+				CMTime currentTime = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer), audioVideoRecorder.startedTime);
+				[self.writerInput appendSampleBuffer:adjustedBuffer];
+				CFRelease(adjustedBuffer);
+				
+				if ([self.delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
+					[self.delegate dataEncoder:self didEncodeFrame:CMTimeGetSeconds(currentTime)];
+				}
+			}
+			lastTakenFrame = frameTime;
+		}
+	}
 }
 
 @end
