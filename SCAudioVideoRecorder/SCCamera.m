@@ -64,8 +64,9 @@ typedef NSView View;
 }
 
 - (void) dealloc {
-    self.session = nil;
-    self.previewLayer = nil;
+	if (self.session != nil) {
+		[self.session stopRunning];
+	}
 }
 
 + (SCCamera*) camera {
