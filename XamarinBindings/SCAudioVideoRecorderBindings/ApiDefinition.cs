@@ -241,6 +241,9 @@ namespace SCorsin {
 
         [Export("session")]
         AVCaptureSession Session { get; }
+
+        [Export("videoOrientation")]
+        int VideoOrientation { get; set; }
     }
 
     [BaseType(typeof(NSObject))]

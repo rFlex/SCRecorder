@@ -42,6 +42,7 @@
     self.camera.enableSound = NO;
     self.camera.previewVideoGravity = SCVideoGravityResizeAspectFill;
     self.camera.previewView = self.previewView;
+	self.camera.videoOrientation = AVCaptureVideoOrientationPortrait;
 	
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
 	[SCAudioTools overrideCategoryMixWithOthers];

@@ -36,6 +36,7 @@ typedef enum {
 @property (weak, nonatomic) id<SCCameraDelegate> delegate;
 @property (copy, nonatomic) NSString * sessionPreset;
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
+@property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 @property (weak, nonatomic) UIView * previewView;

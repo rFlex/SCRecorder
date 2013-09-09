@@ -30,9 +30,6 @@
     self = [super initWithAudioVideoRecorder:audioVideoRecorder];
     
     if (self) {
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-        self.outputAffineTransform = CGAffineTransformMakeRotation(M_PI / 2);
-#endif
         // Extra quality!
         self.outputBitsPerPixel = 12;
     }
@@ -60,7 +57,7 @@
     NSInteger bitsPerSecond = [SCVideoEncoder getBitsPerSecondForOutputVideoSize:videoSize andBitsPerPixel:self.outputBitsPerPixel];
 		    
     AVAssetWriterInput * assetWriterVideoIn = nil;
-    
+	
 	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 											  AVVideoCodecH264, AVVideoCodecKey,
 											  [NSNumber numberWithInteger:videoSize.width], AVVideoWidthKey,

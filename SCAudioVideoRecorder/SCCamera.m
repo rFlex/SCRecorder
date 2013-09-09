@@ -26,6 +26,7 @@ typedef NSView View;
 
 @property (strong, nonatomic) AVCaptureSession * session;
 @property (strong, nonatomic) AVCaptureVideoPreviewLayer * previewLayer;
+@property (assign, nonatomic) AVCaptureVideoOrientation cachedVideoOrientation;
 
 @end
 
@@ -106,13 +107,15 @@ typedef NSView View;
             
             [captureSession addOutput:self.audioOutput];
             [captureSession addOutput:self.videoOutput];
-            
+			
             self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
             self.previewLayer.videoGravity = [self previewVideoGravityToString];
             
             [captureSession startRunning];
             
             self.session = captureSession;
+			self.videoOrientation = self.cachedVideoOrientation;
+			
             dispatch_async(dispatch_get_main_queue(), ^ {
                 View * settedPreviewView = self.previewView;
                 
@@ -139,6 +142,18 @@ typedef NSView View;
             *error = [SCAudioVideoRecorder createError:@"The camera must be initialized before trying to record"];
         }
     }
+}
+
+- (AVCaptureConnection*) getVideoConnection {
+	for (AVCaptureConnection * connection in self.videoOutput.connections) {
+		for (AVCaptureInputPort * port in connection.inputPorts) {
+			if ([port.mediaType isEqual:AVMediaTypeVideo]) {
+				return connection;
+			}
+		}
+	}
+	
+	return nil;
 }
 
 - (NSString*) previewVideoGravityToString {
@@ -190,6 +205,26 @@ typedef NSView View;
 
 - (SCCameraPreviewVideoGravity) previewVideoGravity {
     return _previewVideoGravity;
+}
+
+- (void) setVideoOrientation:(AVCaptureVideoOrientation)videoOrientation {
+	AVCaptureConnection * videoConnection = [self getVideoConnection];
+	
+	if (videoConnection != nil) {
+		[videoConnection setVideoOrientation:videoOrientation];
+	}
+	
+	self.cachedVideoOrientation = videoOrientation;
+}
+
+- (AVCaptureVideoOrientation) videoOrientation {
+	AVCaptureConnection * videoConnection = [self getVideoConnection];
+	
+	if (videoConnection != nil) {
+		return [videoConnection videoOrientation];
+	}
+	
+	return self.cachedVideoOrientation;
 }
 
 @end
