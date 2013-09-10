@@ -18,6 +18,7 @@
 
 @property (strong, nonatomic, readwrite) AVPlayerItem * oldItem;
 @property (assign, nonatomic, readwrite, getter=isLoading) BOOL loading;
+@property (assign, nonatomic) Float32 itemsLoopLength;
 
 @end
 
@@ -45,7 +46,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 		__unsafe_unretained SCPlayer * mySelf = self;
 		[self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
 			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:secondsTotal:)]) {
-				[mySelf.delegate videoPlayer:mySelf didPlay:CMTimeGetSeconds(time) secondsTotal:CMTimeGetSeconds(mySelf.currentItem.duration)];
+				[mySelf.delegate videoPlayer:mySelf didPlay:CMTimeGetSeconds(time) / mySelf.itemsLoopLength secondsTotal:CMTimeGetSeconds(mySelf.currentItem.duration) / mySelf.itemsLoopLength];
 			}
 		}];
 		
@@ -80,7 +81,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 				Float64 minimumTime = self.minimumBufferedTimeBeforePlaying;
 				Float64 itemTime = CMTimeGetSeconds(self.currentItem.duration);
 				
-				if (minimumTime < itemTime) {
+				if (minimumTime > itemTime) {
 					minimumTime = itemTime;
 				}
 				
@@ -170,7 +171,31 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void) setItem:(AVPlayerItem *)item {
+	self.itemsLoopLength = 1;
 	[self replaceCurrentItemWithPlayerItem:item];
+}
+
+- (void) setSmoothLoopItemByStringPath:(NSString *)stringPath smoothLoopCount:(NSUInteger)loopCount {
+	[self setSmoothLoopItemByUrl:[NSURL URLWithString:stringPath] smoothLoopCount:loopCount];
+}
+
+- (void) setSmoothLoopItemByUrl:(NSURL *)url smoothLoopCount:(NSUInteger)loopCount {
+	[self setSmoothLoopItemByAsset:[AVURLAsset URLAssetWithURL:url options:nil] smoothLoopCount:loopCount];
+}
+
+- (void) setSmoothLoopItemByAsset:(AVAsset *)asset smoothLoopCount:(NSUInteger)loopCount {
+	
+	AVMutableComposition * composition = [AVMutableComposition composition];
+	
+	CMTimeRange timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
+	
+	for (NSUInteger i = 0; i < loopCount; i++) {
+		[composition insertTimeRange:timeRange ofAsset:asset atTime:composition.duration error:nil];
+	}
+	
+	[self setItemByAsset:composition];
+	
+	self.itemsLoopLength = loopCount;
 }
 
 - (BOOL) isPlaying {

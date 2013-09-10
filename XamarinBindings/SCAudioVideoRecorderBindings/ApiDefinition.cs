@@ -301,6 +301,15 @@ namespace SCorsin {
 		[Export("setItem:")]
         void SetItem([NullAllowed] AVPlayerItem item);
 
+        [Export("setSmoothLoopItemByStringPath:smoothLoopCount:")]
+        void SetSmoothLoopItem(string stringPath, uint loopCount);
+
+        [Export("setSmoothLoopItemByUrl:smoothLoopCount:")]
+        void SetSmoothLoopItem(NSUrl assetUrl, uint loopCount);
+
+        [Export("setSmoothLoopItemByAsset:smoothLoopCount:")]
+        void SetSmoothLoopItem(AVAsset asset, uint loopCount);
+
 		[Export("playableDuration")]
 		double PlayableDuration { get; }
 

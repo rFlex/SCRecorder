@@ -32,6 +32,14 @@
 - (void) setItemByAsset:(AVAsset*)asset;
 - (void) setItem:(AVPlayerItem*)item;
 
+// These methods allow the player to add the same item "loopCount" time
+// in order to have a smooth loop. The loop system provided by Apple
+// has an unvoidable hiccup. Using these methods will avoid the hiccup for "loopCount" time
+
+- (void) setSmoothLoopItemByStringPath:(NSString*)stringPath smoothLoopCount:(NSUInteger)loopCount;
+- (void) setSmoothLoopItemByUrl:(NSURL*)url smoothLoopCount:(NSUInteger)loopCount;
+- (void) setSmoothLoopItemByAsset:(AVAsset*)asset smoothLoopCount:(NSUInteger)loopCount;
+
 - (Float64) playableDuration;
 - (BOOL) isPlaying;
 - (BOOL) isLoading;
