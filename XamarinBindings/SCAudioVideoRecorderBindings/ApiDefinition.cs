@@ -244,6 +244,12 @@ namespace SCorsin {
 
         [Export("videoOrientation")]
         int VideoOrientation { get; set; }
+
+        [Export("switchCamera")]
+        void SwitchCamera();
+
+        [Export("useFrontCamera")]
+        bool UseFrontCamera { get; set; }
     }
 
     [BaseType(typeof(NSObject))]

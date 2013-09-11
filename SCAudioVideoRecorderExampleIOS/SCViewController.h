@@ -18,5 +18,6 @@
 @property (weak, nonatomic) IBOutlet UIView *loadingView;
 @property (weak, nonatomic) IBOutlet UILabel *timeRecordedLabel;
 @property (weak, nonatomic) IBOutlet UIView *downBar;
+@property (weak, nonatomic) IBOutlet UIButton *reverseCamera;
 
 @end

@@ -39,9 +39,17 @@ typedef enum {
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+
+// Switch between back and front camera
+- (void) switchCamera;
+
 @property (weak, nonatomic) UIView * previewView;
+@property (assign, nonatomic) BOOL useFrontCamera;
+
 #else
+
 @property (weak, nonatomic) NSView * previewView;
+
 #endif
 
 

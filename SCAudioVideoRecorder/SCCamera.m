@@ -21,10 +21,11 @@ typedef NSView View;
 /////////////////////
 
 @interface SCCamera() {
-    
+    BOOL _useFrontCamera;
 }
 
 @property (strong, nonatomic) AVCaptureSession * session;
+@property (weak, nonatomic) AVCaptureDeviceInput * currentVideoDeviceInput;
 @property (strong, nonatomic) AVCaptureVideoPreviewLayer * previewLayer;
 @property (assign, nonatomic) AVCaptureVideoOrientation cachedVideoOrientation;
 
@@ -47,6 +48,7 @@ typedef NSView View;
     self = [super init];
     
     if (self) {
+		_useFrontCamera = NO;
         self.sessionPreset = AVCaptureSessionPresetHigh;
     }
     
@@ -73,19 +75,30 @@ typedef NSView View;
     return [[SCCamera alloc] init];
 }
 
-- (void) addInputToSession:(AVCaptureSession*)captureSession withMediaType:(NSString*)mediaType error:(NSError**)error {
+- (AVCaptureDeviceInput*) addInputToSession:(AVCaptureSession*)captureSession device:(AVCaptureDevice*)device withMediaType:(NSString*)mediaType error:(NSError**)error {
     *error = nil;
-    
-    AVCaptureDevice * device = [AVCaptureDevice defaultDeviceWithMediaType:mediaType];
-    
+	AVCaptureDeviceInput * input = nil;
     if (device != nil) {
-        AVCaptureDeviceInput * input = [AVCaptureDeviceInput deviceInputWithDevice:device error:error];
+        input = [AVCaptureDeviceInput deviceInputWithDevice:device error:error];
         if (*error == nil) {
             [captureSession addInput:input];
         }
     } else {
         *error = [SCAudioVideoRecorder createError:[NSString stringWithFormat:@"No device of type %@ were found", mediaType]];
     }
+	return input;
+}
+
+- (AVCaptureDevice*) videoDeviceWithPosition:(AVCaptureDevicePosition)position {
+	NSArray * videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+	
+	for (AVCaptureDevice * device in videoDevices) {
+		if (device.position == position) {
+			return device;
+		}
+	}
+	
+	return nil;
 }
 
 - (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler {
@@ -95,16 +108,22 @@ typedef NSView View;
             captureSession.sessionPreset = self.sessionPreset;
 			
             NSError * audioError;
-            [self addInputToSession:captureSession withMediaType:AVMediaTypeAudio error:&audioError];
+            [self addInputToSession:captureSession device:[AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio]
+ withMediaType:@"Audio" error:&audioError];
             if (!self.enableSound) {
                 audioError = nil;
             }
             
             NSError * videoError;
-            [self addInputToSession:captureSession withMediaType:AVMediaTypeVideo error:&videoError];
+			
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+			[self initializeCamera:captureSession error:&videoError];
+#else
+            [self addInputToSession:captureSession device:[AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo] withMediaType:@"Video" error:&videoError];
+#endif
             if (!self.enableVideo) {
                 videoError = nil;
-            }
+			}
             
             [captureSession addOutput:self.audioOutput];
             [captureSession addOutput:self.videoOutput];
@@ -227,5 +246,59 @@ typedef NSView View;
 	
 	return self.cachedVideoOrientation;
 }
+
+////////////////////////////////////////////////////////////
+// IOS SPECIFIC
+/////////////////////
+
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+
+- (void) switchCamera {
+	self.useFrontCamera = !self.useFrontCamera;
+}
+
+- (void) initializeCamera:(AVCaptureSession*)captureSession error:(NSError**)error {
+	
+	if (self.currentVideoDeviceInput != nil) {
+		[captureSession removeInput:self.currentVideoDeviceInput];
+		self.currentVideoDeviceInput = nil;
+	}
+	
+	AVCaptureDevice * device = [self videoDeviceWithPosition:(self.useFrontCamera ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack)];
+	
+	if (device != nil) {
+		self.currentVideoDeviceInput = [self addInputToSession:captureSession device:device withMediaType:@"Video" error:error];
+	} else {
+		if (error != nil) {
+			*error = [SCAudioVideoRecorder createError:(self.useFrontCamera ? @"Front camera not found" : @"Back camera not found")];
+		}
+	}
+}
+
+- (BOOL) useFrontCamera {
+	return _useFrontCamera;
+}
+
+- (void) setUseFrontCamera:(BOOL)value {
+	_useFrontCamera = value;
+	
+	if (self.session != nil) {
+		NSError * error;
+		
+		BOOL wasRunning = [self.session isRunning];
+		
+		if (wasRunning) {
+			[self.session stopRunning];
+		}
+		
+		[self initializeCamera:self.session error:&error];
+		
+		if (wasRunning) {
+			[self.session startRunning];			
+		}
+	}
+}
+
+#endif
 
 @end

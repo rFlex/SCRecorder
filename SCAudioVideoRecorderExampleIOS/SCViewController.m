@@ -37,7 +37,7 @@
     [super viewDidLoad];
     
 	
-    self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720];
+    self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh];
     self.camera.delegate = self;
     self.camera.enableSound = NO;
     self.camera.previewVideoGravity = SCVideoGravityResizeAspectFill;
@@ -58,9 +58,14 @@
     
     [self.retakeButton addTarget:self action:@selector(handleRetakeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.stopButton addTarget:self action:@selector(handleStopButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+	[self.reverseCamera addTarget:self action:@selector(handleReverseCameraTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
+}
+
+- (void) handleReverseCameraTapped:(id)sender {
+	[self.camera switchCamera];
 }
 
 - (void) handleStopButtonTapped:(id)sender {
