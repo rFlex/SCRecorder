@@ -131,10 +131,12 @@ typedef NSView View;
             self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
             self.previewLayer.videoGravity = [self previewVideoGravityToString];
             
-            [captureSession startRunning];
-            
             self.session = captureSession;
+			
+			// Apply the video orientation is it was set before the session was created
 			self.videoOrientation = self.cachedVideoOrientation;
+			
+			[captureSession startRunning];
 			
             dispatch_async(dispatch_get_main_queue(), ^ {
                 View * settedPreviewView = self.previewView;
@@ -294,7 +296,8 @@ typedef NSView View;
 		[self initializeCamera:self.session error:&error];
 		
 		if (wasRunning) {
-			[self.session startRunning];			
+			self.videoOrientation = self.cachedVideoOrientation;
+			[self.session startRunning];
 		}
 	}
 }
