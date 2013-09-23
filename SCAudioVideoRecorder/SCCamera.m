@@ -68,6 +68,8 @@ typedef NSView View;
 - (void) dealloc {
 	if (self.session != nil) {
 		[self.session stopRunning];
+		[self.session removeOutput:self.audioOutput];
+		[self.session removeOutput:self.videoOutput];
 	}
 }
 
