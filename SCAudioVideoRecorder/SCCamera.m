@@ -26,6 +26,7 @@ typedef NSView View;
 
 @property (strong, nonatomic) AVCaptureSession * session;
 @property (weak, nonatomic) AVCaptureDeviceInput * currentVideoDeviceInput;
+@property (weak, nonatomic) AVCaptureDeviceInput * currentAudioDeviceInput;
 @property (strong, nonatomic) AVCaptureVideoPreviewLayer * previewLayer;
 @property (assign, nonatomic) AVCaptureVideoOrientation cachedVideoOrientation;
 
@@ -68,6 +69,13 @@ typedef NSView View;
 - (void) dealloc {
 	if (self.session != nil) {
 		[self.session stopRunning];
+		
+		if (self.currentAudioDeviceInput != nil) {
+			[self.session removeInput:self.currentAudioDeviceInput];
+		}
+		if (self.currentVideoDeviceInput != nil) {
+			[self.session removeInput:self.currentVideoDeviceInput];
+		}
 		[self.session removeOutput:self.audioOutput];
 		[self.session removeOutput:self.videoOutput];
 	}
@@ -110,7 +118,7 @@ typedef NSView View;
             captureSession.sessionPreset = self.sessionPreset;
 			
             NSError * audioError;
-            [self addInputToSession:captureSession device:[AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio]
+            self.currentAudioDeviceInput = [self addInputToSession:captureSession device:[AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio]
  withMediaType:@"Audio" error:&audioError];
             if (!self.enableSound) {
                 audioError = nil;

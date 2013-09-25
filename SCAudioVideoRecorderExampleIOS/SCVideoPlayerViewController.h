@@ -12,5 +12,6 @@
 @interface SCVideoPlayerViewController : UIViewController
 
 @property (weak, nonatomic) IBOutlet SCVideoPlayerView *videoPlayerView;
+@property (strong, nonatomic) NSURL * videoUrl;
 
 @end

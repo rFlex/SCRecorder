@@ -19,6 +19,7 @@
 @property (strong, nonatomic, readwrite) AVPlayerItem * oldItem;
 @property (assign, nonatomic, readwrite, getter=isLoading) BOOL loading;
 @property (assign, nonatomic) Float32 itemsLoopLength;
+@property (strong, nonatomic, readwrite) id timeObserver;
 
 @end
 
@@ -41,10 +42,8 @@ SCPlayer * currentSCVideoPlayer = nil;
 
 		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
 		
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
-
 		__unsafe_unretained SCPlayer * mySelf = self;
-		[self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
+		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
 			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:secondsTotal:)]) {
 				[mySelf.delegate videoPlayer:mySelf didPlay:CMTimeGetSeconds(time) / mySelf.itemsLoopLength secondsTotal:CMTimeGetSeconds(mySelf.currentItem.duration) / mySelf.itemsLoopLength];
 			}
@@ -54,6 +53,12 @@ SCPlayer * currentSCVideoPlayer = nil;
 	}
 	
 	return self;
+}
+
+- (void) dispose {
+	[self removeTimeObserver:self.timeObserver];
+	[self setItem:nil];
+	self.oldItem = nil;
 }
 
 - (void) playReachedEnd:(NSNotification*)notification {
@@ -112,8 +117,10 @@ SCPlayer * currentSCVideoPlayer = nil;
 		[self.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:NSKeyValueObservingOptionNew context:nil];
 		[self.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:
 		 NSKeyValueObservingOptionNew context:nil];
-		[[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
+		
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
 	}
+	
 	self.loading = YES;
 		
 	self.oldItem = self.currentItem;

@@ -25,14 +25,18 @@
     return self;
 }
 
+- (void) dealloc {
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	
-	[self.videoPlayerView.player setItemByStringPath:@"http://d385p96fobj9zp.cloudfront.net/videos/116.mp4"];
+	[self.videoPlayerView.player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
+//	[self.videoPlayerView.player setItemByStringPath:@"http://contents.mindie.co/videos/nJCmqzxFWrBJ.mp4"];
 
-	[self.videoPlayerView.player play];
 	self.videoPlayerView.player.shouldLoop = YES;
+	[self.videoPlayerView.player play];
 }
 
 - (void)didReceiveMemoryWarning

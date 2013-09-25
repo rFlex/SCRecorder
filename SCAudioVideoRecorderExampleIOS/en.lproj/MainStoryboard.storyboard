@@ -1,19 +1,62 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="3084" systemVersion="12E55" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="2">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="4510" systemVersion="12E55" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="go9-3b-6zS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="2083"/>
+        <deployment defaultVersion="1552" identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3742"/>
     </dependencies>
     <scenes>
+        <!--Navigation Controller-->
+        <scene sceneID="lof-Pn-gX0">
+            <objects>
+                <navigationController definesPresentationContext="YES" id="go9-3b-6zS" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="3bA-fs-ocs">
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="oWd-V4-Q8L" kind="relationship" relationship="rootViewController" id="XKE-ah-gNQ"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="yJV-J1-WAs" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-793" y="316"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="BaO-9t-Km3">
+            <objects>
+                <viewController id="oWd-V4-Q8L" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="wTZ-Nf-OD2">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="CAK-CP-e4W">
+                                <rect key="frame" x="66" y="225" width="189" height="160"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="CLIC HERE PLEASE">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <segue destination="2" kind="push" id="4up-bO-SbY"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="qQs-0J-wdz"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ttv-0J-X0q" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-417" y="316"/>
+        </scene>
         <!--View Controller-->
         <scene sceneID="5">
             <objects>
                 <viewController id="2" customClass="SCViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3">
-                        <rect key="frame" x="0.0" y="20" width="320" height="460"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="iw9-cB-Pni">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="460"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <view alpha="0.40000000000000002" contentMode="scaleToFill" id="fdr-8e-oyR" userLabel="LoadingView">
@@ -31,7 +74,7 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <view alpha="0.75" contentMode="scaleToFill" id="dDr-zv-xXt" userLabel="DownBar">
-                                <rect key="frame" x="0.0" y="369" width="320" height="91"/>
+                                <rect key="frame" x="0.0" y="389" width="320" height="91"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="jaS-8J-FB6" userLabel="Record View">
@@ -101,6 +144,7 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
+                    <navigationItem key="navigationItem" id="bvx-6l-zji"/>
                     <connections>
                         <outlet property="downBar" destination="dDr-zv-xXt" id="6u4-bO-KcL"/>
                         <outlet property="loadingView" destination="fdr-8e-oyR" id="gkZ-Rd-Fe7"/>
@@ -118,52 +162,21 @@
         <!--Video Player View Controller-->
         <scene sceneID="nAI-tE-muv">
             <objects>
-                <viewController id="VeQ-Zi-V20" customClass="SCVideoPlayerViewController" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="MUX-tX-a5G">
-                        <rect key="frame" x="0.0" y="20" width="320" height="460"/>
+                <viewController storyboardIdentifier="SCVideoPlayerViewController" id="VeQ-Zi-V20" customClass="SCVideoPlayerViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="MUX-tX-a5G" customClass="SCVideoPlayerView">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <subviews>
-                            <view contentMode="scaleToFill" id="Tmn-ON-3xp" customClass="SCVideoPlayerView">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="320"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
-                            </view>
-                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <connections>
-                        <outlet property="videoPlayerView" destination="Tmn-ON-3xp" id="G0g-JU-hIU"/>
+                        <outlet property="videoPlayerView" destination="MUX-tX-a5G" id="Xqd-I2-Qz0"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aQF-XH-HvG" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="98" y="589"/>
+            <point key="canvasLocation" x="8" y="682"/>
         </scene>
     </scenes>
-    <classes>
-        <class className="SCVideoPlayerView" superclassName="UIView">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/SCVideoPlayerView.h"/>
-        </class>
-        <class className="SCVideoPlayerViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/SCVideoPlayerViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="videoPlayerView" candidateClass="SCVideoPlayerView"/>
-            </relationships>
-        </class>
-        <class className="SCViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/SCViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="downBar" candidateClass="UIView"/>
-                <relationship kind="outlet" name="loadingView" candidateClass="UIView"/>
-                <relationship kind="outlet" name="previewView" candidateClass="UIView"/>
-                <relationship kind="outlet" name="recordView" candidateClass="UIView"/>
-                <relationship kind="outlet" name="retakeButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="reverseCamera" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="stopButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="timeRecordedLabel" candidateClass="UILabel"/>
-            </relationships>
-        </class>
-    </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>

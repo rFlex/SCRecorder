@@ -42,6 +42,11 @@
 	return self;
 }
 
+- (void) dealloc {
+	[self.player dispose];
+	self.playerLayer.player = nil;
+}
+
 - (id) initWithCoder:(NSCoder *)aDecoder {
 	self = [super initWithCoder:aDecoder];
 	

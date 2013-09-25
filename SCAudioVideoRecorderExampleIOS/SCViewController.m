@@ -11,6 +11,7 @@
 #import "SCTouchDetector.h"
 #import "SCViewController.h"
 #import "SCAudioTools.h"
+#import "SCVideoPlayerViewController.h"
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -35,7 +36,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
 	
     self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh];
     self.camera.delegate = self;
@@ -44,16 +44,27 @@
     self.camera.previewView = self.previewView;
 	self.camera.videoOrientation = AVCaptureVideoOrientationPortrait;
 	
-	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
-	[SCAudioTools overrideCategoryMixWithOthers];
+	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:nil];
+//	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+//	[SCAudioTools overrideCategoryMixWithOthers];
 	
-//	NSURL * url = [NSURL URLWithString:@"https://dl.dropboxusercontent.com/u/3402348/Under%20the%20lights%20version%20techno2.mp3"];
-//	AVAsset * asset = [AVAsset assetWithURL:url];
+	NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@blabla2.mp3", NSTemporaryDirectory()]];
+	
+	if (![[NSFileManager defaultManager] fileExistsAtPath:fileUrl.path]) {
+		NSLog(@"Downloading...");
+		NSURL * url = [NSURL URLWithString:@"https://dl.dropboxusercontent.com/u/3402348/kingkong.mp3"];
+		NSData * data = [NSData dataWithContentsOfURL:url];
+		NSLog(@"Saving at %@", fileUrl.absoluteString);
+		[data writeToURL:fileUrl atomically:YES];
+		NSLog(@"OK!");
+	}
+	
+	AVAsset * asset = [AVAsset assetWithURL:fileUrl];
 
-//	self.camera.playbackAsset = asset;
+	self.camera.playbackAsset = asset;
 	
     [self.camera initialize:^(NSError * audioError, NSError * videoError) {
-        
+		[self prepareCamera];
     }];
     
     [self.retakeButton addTarget:self action:@selector(handleRetakeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -76,7 +87,22 @@
 
 - (void) handleRetakeButtonTapped:(id)sender {
     [self.camera cancel];
+	[self prepareCamera];
     [self updateLabelForSecond:0];
+}
+
+- (void) prepareCamera {
+	if (![self.camera isPrepared]) {
+		NSError * error;
+		[self.camera prepareRecordingOnTempDir:&error];
+		
+		if (error != nil) {
+			[self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
+			NSLog(@"%@", error);
+		} else {
+			NSLog(@"- CAMERA READY -");
+		}
+	}
 }
 
 - (void) showAlertViewWithTitle:(NSString*)title message:(NSString*) message {
@@ -85,29 +111,23 @@
 }
 
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
-    if (touchDetector.state == UIGestureRecognizerStateBegan) {
-        NSLog(@"==== STARTING RECORDING ====");
-        if (![self.camera isPrepared]) {
-            NSError * error;
-            [self.camera prepareRecordingAtCameraRoll:&error];
-            
-            if (error != nil) {
-                [self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
-                NSLog(@"%@", error);
-            } else {
-                [self.camera record];
-            }
-        } else {
-            [self.camera record];
-        }
-    } else if (touchDetector.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"==== PAUSING RECORDING ====");
-        [self.camera pause];
-    }
+	if (self.camera.isPrepared) {
+		if (touchDetector.state == UIGestureRecognizerStateBegan) {
+			NSLog(@"==== STARTING RECORDING ====");
+			[self.camera record];
+		} else if (touchDetector.state == UIGestureRecognizerStateEnded) {
+			NSLog(@"==== PAUSING RECORDING ====");
+			[self.camera pause];
+		}
+	}
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];    
+    [super viewDidAppear:animated];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+	[super viewDidDisappear:animated];	
 }
 
 - (void) updateLabelForSecond:(Float64)totalRecorded {
@@ -118,13 +138,21 @@
     [self updateLabelForSecond:frameSecond];
 }
 
+- (void) showVideo:(NSURL*)videoUrl {
+	SCVideoPlayerViewController * videoPlayerViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SCVideoPlayerViewController"];
+	videoPlayerViewController.videoUrl = videoUrl;
+	
+	[self.navigationController pushViewController:videoPlayerViewController animated:YES];
+}
+
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
     self.loadingView.hidden = YES;
     self.downBar.userInteractionEnabled = YES;
     if (error != nil) {
-        [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedFailureReason]];
+        [self showAlertViewWithTitle:@"Failed to save video" message:[error description]];
     } else {
-        [self showAlertViewWithTitle:@"Video saved!" message:@"Video saved successfully"];
+		[self showVideo:recordedFile];
+//        [self showAlertViewWithTitle:@"Video saved!" message:@"Video saved successfully"];
     }
 }
 

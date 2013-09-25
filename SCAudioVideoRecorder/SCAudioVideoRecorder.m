@@ -81,12 +81,6 @@
 }
 
 - (void) dealloc {
-	self.videoOutput = nil;
-	self.audioOutput = nil;
-	self.videoEncoder = nil;
-	self.audioEncoder = nil;
-	self.outputFileUrl = nil;
-	self.assetWriter = nil;
 }
 
 - (void) pleaseDontReleaseObject:(id)object {
@@ -104,7 +98,7 @@
 
 - (NSURL*) prepareRecordingOnTempDir:(NSError **)error {
 	long timeInterval =  (long)[[NSDate date] timeIntervalSince1970];
-	NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%ld%@", NSTemporaryDirectory(), timeInterval, @"SCVideo.MOV"]];
+	NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%ld%@", NSTemporaryDirectory(), timeInterval, @"SCVideo.mp4"]];
     
 	NSError * recordError = nil;
 	[self prepareRecordingAtUrl:fileUrl error:&recordError];
@@ -127,14 +121,10 @@
 		[NSException raise:@"Invalid argument" format:@"FileUrl must be not nil"];
 	}
     
-	dispatch_sync(self.dispatch_queue, ^ {
+	dispatch_sync(self.dispatch_queue, ^{
 		[self resetInternal];
 		shouldWriteToCameraRoll = NO;
 		self.currentTimeOffset = CMTimeMake(0, 1);
-		
-		if (self.playbackAsset != nil) {
-			self.playbackPlayer = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:self.playbackAsset]];
-		}
 		
 		NSError * assetError;
 		
@@ -153,6 +143,9 @@
 			}
 		}
 	});
+	if (self.playbackAsset != nil) {
+		self.playbackPlayer = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:self.playbackAsset]];
+	}
 }
 
 - (void) removeFile:(NSURL *)fileURL {
@@ -222,6 +215,7 @@
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE			
 			ALAssetsLibrary * library = [[ALAssetsLibrary alloc] init];
 			[library writeVideoAtPathToSavedPhotosAlbum:fileUrl completionBlock:^(NSURL *assetUrl, NSError * error) {
+				[self pleaseDontReleaseObject:library];
 				
 				if (error != nil) {
 					NSLog(@"Error: %@", error);
@@ -318,6 +312,7 @@
 	self.outputFileUrl = nil;
 	self.assetWriter = nil;
 	self.playbackPlayer = nil;
+
 	recording = NO;
     
 	[self.audioEncoder reset];
@@ -327,6 +322,7 @@
 		if (writer.status != AVAssetWriterStatusUnknown) {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 			[writer finishWritingWithCompletionHandler:^ {
+				[self pleaseDontReleaseObject:writer];
 				if (fileUrl != nil) {
 					[self removeFile:fileUrl];
 				}
