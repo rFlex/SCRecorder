@@ -22,6 +22,9 @@
 	BOOL shouldWriteToCameraRoll;
 	BOOL audioEncoderReady;
 	BOOL videoEncoderReady;
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+	UIBackgroundTaskIdentifier _backgroundIdentifier;
+#endif
 }
 
 @property (strong, nonatomic) AVCaptureVideoDataOutput * videoOutput;
@@ -76,6 +79,9 @@
 		self.dispatchDelegateMessagesOnMainQueue = YES;
 		self.enableSound = YES;
 		self.enableVideo = YES;
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+		_backgroundIdentifier = UIBackgroundTaskInvalid;
+#endif
 	}
 	return self;
 }
@@ -120,9 +126,11 @@
 	if (fileUrl == nil) {
 		[NSException raise:@"Invalid argument" format:@"FileUrl must be not nil"];
 	}
-    
+	   
 	dispatch_sync(self.dispatch_queue, ^{
 		[self resetInternal];
+		[self startBackgroundTask];
+		
 		shouldWriteToCameraRoll = NO;
 		self.currentTimeOffset = CMTimeMake(0, 1);
 		
@@ -251,8 +259,31 @@
 	}];
 }
 
+- (void) startBackgroundTask {
+	[self stopBackgroundTask];
+	
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+	NSLog(@"CALLING START BACKGROUND TASK");
+	_backgroundIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+		NSLog(@"ENDING TACK");
+		[self stopBackgroundTask];
+	}];
+#endif
+}
+
+- (void) stopBackgroundTask {
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+	if (_backgroundIdentifier != UIBackgroundTaskInvalid) {
+		NSLog(@"CALLING STOP BACKGROUND TASK");
+		[[UIApplication sharedApplication] endBackgroundTask:_backgroundIdentifier];
+		_backgroundIdentifier = UIBackgroundTaskInvalid;
+	}
+#endif
+}
+
 - (void) stop {
 	[self pause];
+	[self stopBackgroundTask];
     
 	dispatch_async(self.dispatch_queue, ^ {
 		if (self.assetWriter == nil) {
@@ -315,6 +346,7 @@
 }
 
 - (void) resetInternal {
+	[self stopBackgroundTask];
 	AVAssetWriter * writer = self.assetWriter;
 	NSURL * fileUrl = self.outputFileUrl;
 	
