@@ -48,6 +48,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 				[mySelf.delegate videoPlayer:mySelf didPlay:CMTimeGetSeconds(time) / mySelf.itemsLoopLength secondsTotal:CMTimeGetSeconds(mySelf.currentItem.duration) / mySelf.itemsLoopLength];
 			}
 		}];
+		_loading = NO;
 		
 		self.minimumBufferedTimeBeforePlaying = 2;
 	}
@@ -121,7 +122,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
 	}
 	
-	self.loading = YES;
+	self.loading = NO;
 		
 	self.oldItem = self.currentItem;
 	

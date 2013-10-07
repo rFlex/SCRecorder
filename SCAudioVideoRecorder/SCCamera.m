@@ -216,7 +216,7 @@ typedef NSView View;
         self.previewLayer.autoresizingMask = self.previewView.autoresizingMask;
         [previewView setWantsLayer:YES];
 #endif
-        
+		
         self.previewLayer.frame = previewView.bounds;
         [previewView.layer insertSublayer:self.previewLayer atIndex:0];
         

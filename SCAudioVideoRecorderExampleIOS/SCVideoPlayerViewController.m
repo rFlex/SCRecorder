@@ -33,10 +33,13 @@
     [super viewDidLoad];
 	
 	[self.videoPlayerView.player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
-//	[self.videoPlayerView.player setItemByStringPath:@"http://contents.mindie.co/videos/nJCmqzxFWrBJ.mp4"];
 
 	self.videoPlayerView.player.shouldLoop = YES;
 	[self.videoPlayerView.player play];
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+	self.navigationController.navigationBarHidden = NO;
 }
 
 - (void)didReceiveMemoryWarning

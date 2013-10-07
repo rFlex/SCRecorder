@@ -39,29 +39,30 @@
 	
     self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh];
     self.camera.delegate = self;
-    self.camera.enableSound = NO;
+    self.camera.enableSound = YES;
     self.camera.previewVideoGravity = SCVideoGravityResizeAspectFill;
     self.camera.previewView = self.previewView;
 	self.camera.videoOrientation = AVCaptureVideoOrientationPortrait;
 	
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:nil];
+	
 //	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
 //	[SCAudioTools overrideCategoryMixWithOthers];
 	
-	NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@blabla2.mp3", NSTemporaryDirectory()]];
-	
-	if (![[NSFileManager defaultManager] fileExistsAtPath:fileUrl.path]) {
-		NSLog(@"Downloading...");
-		NSURL * url = [NSURL URLWithString:@"https://dl.dropboxusercontent.com/u/3402348/kingkong.mp3"];
-		NSData * data = [NSData dataWithContentsOfURL:url];
-		NSLog(@"Saving at %@", fileUrl.absoluteString);
-		[data writeToURL:fileUrl atomically:YES];
-		NSLog(@"OK!");
-	}
-	
-	AVAsset * asset = [AVAsset assetWithURL:fileUrl];
-
-	self.camera.playbackAsset = asset;
+//	NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@blabla2.mp3", NSTemporaryDirectory()]];
+//	
+//	if (![[NSFileManager defaultManager] fileExistsAtPath:fileUrl.path]) {
+//		NSLog(@"Downloading...");
+//		NSURL * url = [NSURL URLWithString:@"https://dl.dropboxusercontent.com/u/3402348/kingkong.mp3"];
+//		NSData * data = [NSData dataWithContentsOfURL:url];
+//		NSLog(@"Saving at %@", fileUrl.absoluteString);
+//		[data writeToURL:fileUrl atomically:YES];
+//		NSLog(@"OK!");
+//	}
+//	
+//	AVAsset * asset = [AVAsset assetWithURL:fileUrl];
+//
+//	self.camera.playbackAsset = asset;
 	
     [self.camera initialize:^(NSError * audioError, NSError * videoError) {
 		[self prepareCamera];
@@ -73,6 +74,10 @@
     
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+	self.navigationController.navigationBarHidden = YES;
 }
 
 - (void) handleReverseCameraTapped:(id)sender {
@@ -146,6 +151,8 @@
 }
 
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
+	[self prepareCamera];
+	
     self.loadingView.hidden = YES;
     self.downBar.userInteractionEnabled = YES;
     if (error != nil) {
@@ -162,6 +169,10 @@
 
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
     NSLog(@"Failed to initialize AudioEncoder");
+}
+
+- (UIStatusBarStyle) preferredStatusBarStyle {
+	return UIStatusBarStyleLightContent;
 }
 
 

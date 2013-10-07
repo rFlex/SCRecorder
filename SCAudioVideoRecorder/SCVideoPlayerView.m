@@ -74,7 +74,7 @@
 	[theLoadingView addSubview:theIndicatorView];
 	
 	self.loadingView = theLoadingView;
-	self.loadingView.hidden = NO;
+	self.loadingView.hidden = YES;
 	self.clipsToBounds = YES;
 }
 
@@ -91,7 +91,7 @@
 }
 
 - (void) videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem *)item {
-	self.loadingView.hidden = item == nil;
+//	self.loadingView.hidden = item == nil;
 }
 
 - (void) layoutSubviews {
