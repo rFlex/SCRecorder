@@ -263,9 +263,7 @@
 	[self stopBackgroundTask];
 	
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-	NSLog(@"CALLING START BACKGROUND TASK");
 	_backgroundIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-		NSLog(@"ENDING TACK");
 		[self stopBackgroundTask];
 	}];
 #endif
@@ -274,7 +272,6 @@
 - (void) stopBackgroundTask {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 	if (_backgroundIdentifier != UIBackgroundTaskInvalid) {
-		NSLog(@"CALLING STOP BACKGROUND TASK");
 		[[UIApplication sharedApplication] endBackgroundTask:_backgroundIdentifier];
 		_backgroundIdentifier = UIBackgroundTaskInvalid;
 	}
