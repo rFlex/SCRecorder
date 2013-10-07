@@ -176,10 +176,10 @@ namespace SCorsin {
 		void Stop();
 
 		[Export("isPrepared")]
-		bool IsPrepared();
+		bool IsPrepared { get; }
 
 		[Export("isRecording")]
-		bool IsRecording();
+		bool IsRecording { get; }
 
         [Export("enableSound")]
         bool EnableSound { get; set; }
@@ -228,7 +228,7 @@ namespace SCorsin {
         void Initialize([NullAllowed] InitializerDelegate initializerDelegate);
 
         [Export("isReady")]
-        bool IsReady();
+        bool IsReady { get; }
 
         [Export("previewVideoGravity")]
         int PreviewVideoGravity { get; set; }

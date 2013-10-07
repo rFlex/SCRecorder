@@ -223,19 +223,11 @@
 				
 				[self removeFile:fileUrl];
 				
-				[self dispatchBlockOnAskedQueue:^ {
-					if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didFinishRecordingAtUrl:error:)]) {
-						[self.delegate audioVideoRecorder:self didFinishRecordingAtUrl:assetUrl error:error];
-					}
-				}];
+				[self notifyRecordFinishedAtUrl:assetUrl withError:error];
 			}];
 #endif
 		} else {
-			[self dispatchBlockOnAskedQueue:^ {
-				if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didFinishRecordingAtUrl:error:)]) {
-					[self.delegate audioVideoRecorder:self didFinishRecordingAtUrl:fileUrl error:nil];
-				}
-			}];
+			[self notifyRecordFinishedAtUrl:fileUrl withError:nil];
 		}
 	}];
 }
@@ -251,23 +243,43 @@
 #endif
 }
 
+- (void) notifyRecordFinishedAtUrl:(NSURL*)url withError:(NSError*)error {
+	[self dispatchBlockOnAskedQueue:^{
+		if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didFinishRecordingAtUrl:error:)]) {
+			[self.delegate audioVideoRecorder:self didFinishRecordingAtUrl:url error:error];
+		}
+	}];
+}
+
 - (void) stop {
 	[self pause];
     
 	dispatch_async(self.dispatch_queue, ^ {
 		if (self.assetWriter == nil) {
-			[self dispatchBlockOnAskedQueue:^ {
-				if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didFinishRecordingAtUrl:error:)]) {
-					[self.delegate audioVideoRecorder:self didFinishRecordingAtUrl:nil error:[SCAudioVideoRecorder createError:@"Recording must be started before calling stopRecording"]];
-				}
-			}];
+			[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Recording must be started before calling stopRecording"]];
 		} else {
 			NSURL * fileUrl = self.outputFileUrl;
+			NSError * error = self.assetWriter.error;
 			
-			if (self.assetWriter.status == AVAssetWriterStatusWriting) {
-				[self finishWriter:fileUrl];
-			} else {
-				[self assetWriterFinished:fileUrl];
+			switch (self.assetWriter.status) {
+				case AVAssetWriterStatusWriting:
+					[self finishWriter:fileUrl];
+					break;
+				case AVAssetWriterStatusCompleted:
+					[self assetWriterFinished:fileUrl];
+					break;
+				case AVAssetWriterStatusFailed:
+					[self resetInternal];
+					[self notifyRecordFinishedAtUrl:nil withError:error];
+					break;
+				case AVAssetWriterStatusCancelled:
+					[self resetInternal];
+					[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Writer cancelled"]];
+					break;
+				case AVAssetWriterStatusUnknown:
+					[self resetInternal];
+					[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Writer status unknown"]];
+					break;
 			}
 		}
     });

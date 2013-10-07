@@ -156,10 +156,9 @@
     self.loadingView.hidden = YES;
     self.downBar.userInteractionEnabled = YES;
     if (error != nil) {
-        [self showAlertViewWithTitle:@"Failed to save video" message:[error description]];
+        [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedDescription]];
     } else {
 		[self showVideo:recordedFile];
-//        [self showAlertViewWithTitle:@"Video saved!" message:@"Video saved successfully"];
     }
 }
 

@@ -295,20 +295,13 @@ typedef NSView View;
 	_useFrontCamera = value;
 	
 	if (self.session != nil) {
+		[self.session beginConfiguration];
+		
 		NSError * error;
-		
-		BOOL wasRunning = [self.session isRunning];
-		
-		if (wasRunning) {
-			[self.session stopRunning];
-		}
-		
 		[self initializeCamera:self.session error:&error];
 		
-		if (wasRunning) {
-			self.videoOrientation = self.cachedVideoOrientation;
-			[self.session startRunning];
-		}
+		self.videoOrientation = self.cachedVideoOrientation;
+		[self.session commitConfiguration];
 	}
 }
 
