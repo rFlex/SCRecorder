@@ -33,6 +33,27 @@
 
 @synthesize camera;
 
+- (void) addMusic {
+	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+	[SCAudioTools overrideCategoryMixWithOthers];
+	
+	NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@blabla2.mp3", NSTemporaryDirectory()]];
+	
+	if (![[NSFileManager defaultManager] fileExistsAtPath:fileUrl.path]) {
+		NSLog(@"Downloading...");
+		NSURL * url = [NSURL URLWithString:@"http://a420.phobos.apple.com/us/r1000/041/Music/v4/28/01/5a/28015aa7-72b0-d0b8-9da1-ce414cd6e61b/mzaf_4547488074890633094.plus.aac.p.m4a"];
+		NSData * data = [NSData dataWithContentsOfURL:url];
+		NSLog(@"Saving at %@", fileUrl.absoluteString);
+		[data writeToURL:fileUrl atomically:YES];
+		NSLog(@"OK!");
+	}
+	
+	AVAsset * asset = [AVAsset assetWithURL:fileUrl];
+	
+	self.camera.playbackAsset = asset;
+//	self.camera.enableSound = NO;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -44,25 +65,7 @@
     self.camera.previewView = self.previewView;
 	self.camera.videoOrientation = AVCaptureVideoOrientationPortrait;
 	
-	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:nil];
-	
-//	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
-//	[SCAudioTools overrideCategoryMixWithOthers];
-	
-//	NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@blabla2.mp3", NSTemporaryDirectory()]];
-//	
-//	if (![[NSFileManager defaultManager] fileExistsAtPath:fileUrl.path]) {
-//		NSLog(@"Downloading...");
-//		NSURL * url = [NSURL URLWithString:@"https://dl.dropboxusercontent.com/u/3402348/kingkong.mp3"];
-//		NSData * data = [NSData dataWithContentsOfURL:url];
-//		NSLog(@"Saving at %@", fileUrl.absoluteString);
-//		[data writeToURL:fileUrl atomically:YES];
-//		NSLog(@"OK!");
-//	}
-//	
-//	AVAsset * asset = [AVAsset assetWithURL:fileUrl];
-//
-//	self.camera.playbackAsset = asset;
+	[self addMusic];
 	
     [self.camera initialize:^(NSError * audioError, NSError * videoError) {
 		[self prepareCamera];

@@ -123,6 +123,10 @@ namespace SCorsin {
 		void DidRecordAudioSample(SCAudioVideoRecorder audioVideoRecorder, double sampleSecond);
 
 		[Abstract]
+		[Export("audioVideoRecorder:willFinishRecordingAtTime:"), EventArgs("AudioVideoRecorderRecordWillFinish")]
+		void WillFinishRecording(SCAudioVideoRecorder audioVideoRecorder, float recordedTime);
+
+		[Abstract]
 		[Export("audioVideoRecorder:didFinishRecordingAtUrl:error:"), EventArgs("AudioVideoRecorderRecordFinished")]
 		void DidFinishRecording(SCAudioVideoRecorder audioVideoRecorder, NSUrl recordedFile, NSError error);
 
@@ -207,7 +211,12 @@ namespace SCorsin {
 
         [Export("outputFileType")]
         string OutputFileType { get; set; }
-	
+
+		[Export("recordingDurationLimitSeconds")]
+		float RecordingDurationLimitSeconds { get; set; }	
+
+		[Export("limitRecordingDuration")]
+		bool LimitRecordingDuration { get; set; }
     }
 
     delegate void InitializerDelegate(NSError audioError, NSError videoError);

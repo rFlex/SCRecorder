@@ -33,6 +33,7 @@
 @property (strong, nonatomic) SCAudioEncoder * audioEncoder;
 @property (strong, nonatomic) NSURL * outputFileUrl;
 @property (strong, nonatomic) AVPlayer * playbackPlayer;
+@property (assign, nonatomic) Float32 currentRecordingTime;
 
 @end
 
@@ -52,6 +53,8 @@
 @synthesize outputFileType;
 @synthesize playbackAsset;
 @synthesize playbackPlayer;
+@synthesize limitRecordingDuration;
+@synthesize recordingDurationLimitSeconds;
 
 - (id) init {
 	self = [super init];
@@ -89,6 +92,7 @@
 - (void) dealloc {
 }
 
+// Hack to force ARC to not release an object in a code block
 - (void) pleaseDontReleaseObject:(id)object {
 	
 }
@@ -186,6 +190,13 @@
 		
 		CMTime duration = ((AVAssetTrack*)[videoTracks objectAtIndex:0]).timeRange.duration;
 		
+		if (self.limitRecordingDuration) {
+			// We check if the recorded time if more than the limit
+			if (CMTimeGetSeconds(duration) > self.recordingDurationLimitSeconds) {
+				duration = CMTimeMakeWithSeconds(self.recordingDurationLimitSeconds, 1);
+			}
+		}
+		
 		for (AVAssetTrack * track in audioTracks) {
 			[audioTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
 		}
@@ -281,6 +292,10 @@
 - (void) stop {
 	[self pause];
 	[self stopBackgroundTask];
+	
+	if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:willFinishRecordingAtTime:)]) {
+		[self.delegate audioVideoRecorder:self willFinishRecordingAtTime:self.currentRecordingTime];
+	}
     
 	dispatch_async(self.dispatch_queue, ^ {
 		if (self.assetWriter == nil) {
@@ -384,6 +399,8 @@
 
 - (void) dataEncoder:(SCDataEncoder *)dataEncoder didEncodeFrame:(Float64)frameSecond {
     [self dispatchBlockOnAskedQueue:^ {
+		self.currentRecordingTime = frameSecond;
+		
         if (dataEncoder == self.audioEncoder) {
             if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didRecordAudioSample:)]) {
                 [self.delegate audioVideoRecorder:self didRecordAudioSample:frameSecond];
@@ -393,6 +410,11 @@
                 [self.delegate audioVideoRecorder:self didRecordVideoFrame:frameSecond];
             }
         }
+		if (self.limitRecordingDuration) {
+			if (frameSecond >= self.recordingDurationLimitSeconds) {
+				[self stop];
+			}
+		}
     }];
 }
 
