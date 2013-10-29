@@ -14,7 +14,7 @@
 
 @optional
 
-- (void) videoPlayer:(SCPlayer*)videoPlayer didPlay:(Float64)secondsElapsed secondsTotal:(Float64)secondsTotal;
+- (void) videoPlayer:(SCPlayer*)videoPlayer didPlay:(CMTime)secondsElapsed timeTotal:(CMTime)timeTotal;
 - (void) videoPlayer:(SCPlayer *)videoPlayer didStartLoadingAtItemTime:(CMTime)itemTime;
 - (void) videoPlayer:(SCPlayer *)videoPlayer didEndLoadingAtItemTime:(CMTime)itemTime;
 - (void) videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem*)item;
@@ -42,12 +42,12 @@
 - (void) setSmoothLoopItemByUrl:(NSURL*)url smoothLoopCount:(NSUInteger)loopCount;
 - (void) setSmoothLoopItemByAsset:(AVAsset*)asset smoothLoopCount:(NSUInteger)loopCount;
 
-- (Float64) playableDuration;
+- (CMTime) playableDuration;
 - (BOOL) isPlaying;
 - (BOOL) isLoading;
 
 @property (weak, nonatomic, readwrite) id<SCVideoPlayerDelegate> delegate;
-@property (assign, nonatomic, readwrite) Float64 minimumBufferedTimeBeforePlaying;
+@property (assign, nonatomic, readwrite) CMTime minimumBufferedTimeBeforePlaying;
 @property (assign, nonatomic, readwrite) BOOL shouldLoop;
 
 @end

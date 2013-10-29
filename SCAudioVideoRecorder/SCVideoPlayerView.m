@@ -86,7 +86,7 @@
 	self.loadingView.hidden = YES;
 }
 
-- (void) videoPlayer:(SCPlayer *)videoPlayer didPlay:(Float64)secondsElapsed secondsTotal:(Float64)secondsTotal {
+- (void) videoPlayer:(SCPlayer *)videoPlayer didPlay:(CMTime)timePlayed timeTotal:(CMTime)timeTotal {
 	
 }
 

@@ -18,7 +18,7 @@
 
 @property (strong, nonatomic, readwrite) AVPlayerItem * oldItem;
 @property (assign, nonatomic, readwrite, getter=isLoading) BOOL loading;
-@property (assign, nonatomic) Float32 itemsLoopLength;
+@property (assign, nonatomic) Float64 itemsLoopLength;
 @property (strong, nonatomic, readwrite) id timeObserver;
 
 @end
@@ -45,12 +45,13 @@ SCPlayer * currentSCVideoPlayer = nil;
 		__unsafe_unretained SCPlayer * mySelf = self;
 		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
 			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:secondsTotal:)]) {
-				[mySelf.delegate videoPlayer:mySelf didPlay:CMTimeGetSeconds(time) / mySelf.itemsLoopLength secondsTotal:CMTimeGetSeconds(mySelf.currentItem.duration) / mySelf.itemsLoopLength];
+				Float64 ratio = 1.0 / mySelf.itemsLoopLength;
+				[mySelf.delegate videoPlayer:mySelf didPlay:CMTimeMultiplyByFloat64(time, ratio) timeTotal: CMTimeMultiplyByFloat64(mySelf.currentItem.duration, ratio)];
 			}
 		}];
 		_loading = NO;
 		
-		self.minimumBufferedTimeBeforePlaying = 2;
+		self.minimumBufferedTimeBeforePlaying = CMTimeMake(2, 1);
 	}
 	
 	return self;
@@ -83,15 +84,15 @@ SCPlayer * currentSCVideoPlayer = nil;
 					self.loading = YES;
 				}
 			} else {
-				Float64 playableDuration = [self playableDuration];
-				Float64 minimumTime = self.minimumBufferedTimeBeforePlaying;
-				Float64 itemTime = CMTimeGetSeconds(self.currentItem.duration);
+				CMTime playableDuration = [self playableDuration];
+				CMTime minimumTime = self.minimumBufferedTimeBeforePlaying;
+				CMTime itemTime = self.currentItem.duration;
 				
-				if (minimumTime > itemTime) {
+				if (CMTIME_COMPARE_INLINE(minimumTime, >, itemTime)) {
 					minimumTime = itemTime;
 				}
 				
-				if (playableDuration >= minimumTime) {
+				if (CMTIME_COMPARE_INLINE(playableDuration, >=, minimumTime)) {
 					if ([self isPlaying]) {
 						[self play];
 					}
@@ -149,9 +150,9 @@ SCPlayer * currentSCVideoPlayer = nil;
 	}
 }
 
-- (Float64) playableDuration {
+- (CMTime) playableDuration {
 	AVPlayerItem * item = self.currentItem;
-	Float64 playableDuration = 0;
+	CMTime playableDuration = kCMTimeZero;
 	
 	if (item.status == AVPlayerItemStatusReadyToPlay) {
 		
@@ -159,7 +160,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 			NSValue * value = [item.loadedTimeRanges objectAtIndex:0];
 			CMTimeRange timeRange = [value CMTimeRangeValue];
 			
-			playableDuration = CMTimeGetSeconds(timeRange.duration);
+			playableDuration = timeRange.duration;
 		}
 	}
 	

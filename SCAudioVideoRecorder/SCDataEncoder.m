@@ -58,7 +58,7 @@
     if (self.writerInput != nil) {
         self.writerInput = nil;
         if ([self.delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
-            [self.delegate dataEncoder:self didEncodeFrame:0];
+            [self.delegate dataEncoder:self didEncodeFrame:kCMTimeZero];
         }
     }
     initialized = NO;
@@ -152,7 +152,7 @@
 				CFRelease(adjustedBuffer);
 				
 				if ([self.delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
-					[self.delegate dataEncoder:self didEncodeFrame:CMTimeGetSeconds(currentTime)];
+					[self.delegate dataEncoder:self didEncodeFrame:currentTime];
 				}
 			}
 			lastTakenFrame = frameTime;

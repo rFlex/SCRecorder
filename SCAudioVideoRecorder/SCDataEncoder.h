@@ -19,7 +19,7 @@
 @protocol SCDataEncoderDelegate <NSObject>
 
 @optional
-- (void) dataEncoder:(SCDataEncoder*)dataEncoder didEncodeFrame:(Float64)frameSecond;
+- (void) dataEncoder:(SCDataEncoder*)dataEncoder didEncodeFrame:(CMTime)frameTime;
 - (void) dataEncoder:(SCDataEncoder *)dataEncoder didFailToInitializeEncoder:(NSError*)error;
 
 @end

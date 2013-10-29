@@ -116,15 +116,15 @@ namespace SCorsin {
     interface SCAudioVideoRecorderDelegate {
 		[Abstract]
 		[Export("audioVideoRecorder:didRecordVideoFrame:"), EventArgs("AudioVideoRecorderSecond")]
-		void DidRecordVideoFrame(SCAudioVideoRecorder audioVideoRecorder, double frameSecond);
+		void DidRecordVideoFrame(SCAudioVideoRecorder audioVideoRecorder, CMTime frameTime);
 
 		[Abstract]
 		[Export("audioVideoRecorder:didRecordAudioSample:"), EventArgs("AudioVideoRecorderSecond")]
-		void DidRecordAudioSample(SCAudioVideoRecorder audioVideoRecorder, double sampleSecond);
+		void DidRecordAudioSample(SCAudioVideoRecorder audioVideoRecorder, CMTime sampleTime);
 
 		[Abstract]
 		[Export("audioVideoRecorder:willFinishRecordingAtTime:"), EventArgs("AudioVideoRecorderRecordWillFinish")]
-		void WillFinishRecording(SCAudioVideoRecorder audioVideoRecorder, float recordedTime);
+		void WillFinishRecording(SCAudioVideoRecorder audioVideoRecorder, CMTime recordedTime);
 
 		[Abstract]
 		[Export("audioVideoRecorder:didFinishRecordingAtUrl:error:"), EventArgs("AudioVideoRecorderRecordFinished")]
@@ -143,7 +143,7 @@ namespace SCorsin {
     interface SCDataEncoderDelegate {
         
         [Export ("dataEncoder:didEncodeFrame:")]
-        void DidEncodeFrame (SCDataEncoder dataEncoder, double frameSecond);
+        void DidEncodeFrame (SCDataEncoder dataEncoder, CMTime frameTime);
         
         [Export ("dataEncoder:didFailToInitializeEncoder:")]
         void DidFailToInitializeEncoder (SCDataEncoder dataEncoder, NSError error);
@@ -212,11 +212,11 @@ namespace SCorsin {
         [Export("outputFileType")]
         string OutputFileType { get; set; }
 
-		[Export("recordingDurationLimitSeconds")]
-		float RecordingDurationLimitSeconds { get; set; }	
+		[Export("recordingDurationLimit")]
+		CMTime RecordingDurationLimit { get; set; }	
 
-		[Export("limitRecordingDuration")]
-		bool LimitRecordingDuration { get; set; }
+		[Export("playbackStartTime")]
+		CMTime PlaybackStartTime { get; set; }
     }
 
     delegate void InitializerDelegate(NSError audioError, NSError videoError);
@@ -272,23 +272,29 @@ namespace SCorsin {
 
 	[Model, BaseType(typeof(NSObject))]
 	interface SCPlayerDelegate {
+		[Abstract]	
+		[Export("videoPlayer:didPlay:timeTotal:"), EventArgs("PlayerDidPlay")]
+		void DidPlay(SCPlayer player, CMTime secondsElapsed, CMTime secondsTotal);
 
-		[Export("videoPlayer:didPlay:secondsTotal:")]
-		void DidPlay(SCPlayer player, double secondsElapsed, double secondsTotal);
-
-		[Export("videoPlayer:didStartLoadingAtItemTime:")]
+		[Abstract]
+		[Export("videoPlayer:didStartLoadingAtItemTime:"), EventArgs("PlayerLoading")]
 		void DidStartLoading(SCPlayer player, CMTime itemItem);
 
-		[Export("videoPlayer:didEndLoadingAtItemTime:")]
+		[Abstract]
+		[Export("videoPlayer:didEndLoadingAtItemTime:"), EventArgs("PlayerLoading")]
 		void DidEndLoading(SCPlayer player, CMTime itemItem);
 
-        [Export("videoPlayer:didChangeItem:")]
+		[Abstract]
+		[Export("videoPlayer:didChangeItem:"), EventArgs("PlayerChangedItem")]
         void DidChangeItem(SCPlayer player, [NullAllowed] AVPlayerItem item);
 
 	}
 
-	[BaseType(typeof(AVPlayer))]
+	[BaseType(typeof(AVPlayer), Delegates = new string [] { "Delegate" }, Events = new Type [] { typeof(SCPlayerDelegate) })]
 	interface SCPlayer {
+
+		[Export("dispose")]
+		void Close();
 
 		[Export("delegate")]
 		NSObject WeakDelegate { get; set; }
@@ -326,7 +332,7 @@ namespace SCorsin {
         void SetSmoothLoopItem(AVAsset asset, uint loopCount);
 
 		[Export("playableDuration")]
-		double PlayableDuration { get; }
+		CMTime PlayableDuration { get; }
 
 		[Export("isPlaying")]
 		bool IsPlaying { get; }
@@ -335,7 +341,7 @@ namespace SCorsin {
 		bool IsLoading { get; }
 
 		[Export("minimumBufferedTimeBeforePlaying")]
-		double MinimumBufferedTimeBeforePlaying { get; set; }
+		CMTime MinimumBufferedTimeBeforePlaying { get; set; }
 
 		[Export("shouldLoop")]
 		bool ShouldLoop { get; set; }

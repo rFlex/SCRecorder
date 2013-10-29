@@ -21,9 +21,9 @@
 
 @optional
 
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordVideoFrame:(Float64)frameSecond;
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordAudioSample:(Float64)sampleSecond;
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(Float64)frameSecond;
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordVideoFrame:(CMTime)frameTime;
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordAudioSample:(CMTime)sampleTime;
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime;
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL*)recordedFile error:(NSError*)error;
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError*)error;
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError*)error;
@@ -78,18 +78,19 @@
 // When the record ends, the audio mix will be mixed with the playback asset
 @property (strong, nonatomic) AVAsset * playbackAsset;
 
+// When the playback asset should start
+@property (assign, nonatomic) CMTime playbackStartTime;
+
 // If true, every messages sent to the delegate will be dispatched through the main queue
 @property (assign, nonatomic) BOOL dispatchDelegateMessagesOnMainQueue;
 
 // Must be like AVFileType*
 @property (copy, nonatomic) NSString * outputFileType;
 
-@property (assign, readonly, nonatomic) Float32 currentRecordingTime;
+@property (assign, readonly, nonatomic) CMTime currentRecordingTime;
 
-// If YES, the recording will automatically stop when it reaches "recordingDurationLimitSeconds"
-@property (assign, nonatomic) BOOL limitRecordingDuration;
-
-// If "limitRecordingDuration" is YES, the recording will stop when the total recorded time reaches this value
-@property (assign, nonatomic) Float32 recordingDurationLimitSeconds;
+// The recording will stop when the total recorded time reaches this value
+// Default is kCMTimePositiveInfinity
+@property (assign, nonatomic) CMTime recordingDurationLimit;
 
 @end

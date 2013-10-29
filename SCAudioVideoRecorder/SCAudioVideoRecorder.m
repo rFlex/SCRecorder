@@ -22,6 +22,7 @@
 	BOOL shouldWriteToCameraRoll;
 	BOOL audioEncoderReady;
 	BOOL videoEncoderReady;
+	CMTime _playbackStartTime;
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 	UIBackgroundTaskIdentifier _backgroundIdentifier;
 #endif
@@ -33,7 +34,7 @@
 @property (strong, nonatomic) SCAudioEncoder * audioEncoder;
 @property (strong, nonatomic) NSURL * outputFileUrl;
 @property (strong, nonatomic) AVPlayer * playbackPlayer;
-@property (assign, nonatomic) Float32 currentRecordingTime;
+@property (assign, nonatomic) CMTime currentRecordingTime;
 
 @end
 
@@ -53,14 +54,14 @@
 @synthesize outputFileType;
 @synthesize playbackAsset;
 @synthesize playbackPlayer;
-@synthesize limitRecordingDuration;
-@synthesize recordingDurationLimitSeconds;
+@synthesize recordingDurationLimit;
 
 - (id) init {
 	self = [super init];
 	
 	if (self) {
 		self.outputFileType = AVFileTypeMPEG4;
+		self.recordingDurationLimit = kCMTimePositiveInfinity;
 		
 		self.dispatch_queue = dispatch_queue_create("SCVideoRecorder", nil);
 		
@@ -82,6 +83,7 @@
 		self.dispatchDelegateMessagesOnMainQueue = YES;
 		self.enableSound = YES;
 		self.enableVideo = YES;
+		_playbackStartTime = kCMTimeZero;
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 		_backgroundIdentifier = UIBackgroundTaskInvalid;
 #endif
@@ -157,6 +159,7 @@
 	});
 	if (self.playbackAsset != nil) {
 		self.playbackPlayer = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:self.playbackAsset]];
+		[self.playbackPlayer seekToTime:self.playbackStartTime];
 	}
 }
 
@@ -182,22 +185,21 @@
 		AVMutableCompositionTrack * videoTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
 		
 		AVURLAsset * fileAsset = [AVURLAsset URLAssetWithURL:oldUrl options:nil];
-		
-		// We create an array of tracks containing the audio tracks and the video tracks
-		NSArray * audioTracks = [NSArray arrayWithArrays:[self.playbackAsset tracksWithMediaType:AVMediaTypeAudio], [fileAsset tracksWithMediaType:AVMediaTypeAudio], nil];
 
 		NSArray * videoTracks = [fileAsset tracksWithMediaType:AVMediaTypeVideo];
 		
 		CMTime duration = ((AVAssetTrack*)[videoTracks objectAtIndex:0]).timeRange.duration;
 		
-		if (self.limitRecordingDuration) {
-			// We check if the recorded time if more than the limit
-			if (CMTimeGetSeconds(duration) > self.recordingDurationLimitSeconds) {
-				duration = CMTimeMakeWithSeconds(self.recordingDurationLimitSeconds, 1);
-			}
+		// We check if the recorded time if more than the limit
+		if (CMTIME_COMPARE_INLINE(duration, >, self.recordingDurationLimit)) {
+			duration = self.recordingDurationLimit;
 		}
 		
-		for (AVAssetTrack * track in audioTracks) {
+		for (AVAssetTrack * track in [self.playbackAsset tracksWithMediaType:AVMediaTypeAudio]) {
+			[audioTrackComposition insertTimeRange:CMTimeRangeMake(self.playbackStartTime, duration) ofTrack:track atTime:kCMTimeZero error:nil];
+		}
+		
+		for (AVAssetTrack * track in [fileAsset tracksWithMediaType:AVMediaTypeAudio]) {
 			[audioTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
 		}
 		
@@ -397,23 +399,21 @@
 // DataEncoder Delegate implementation
 //
 
-- (void) dataEncoder:(SCDataEncoder *)dataEncoder didEncodeFrame:(Float64)frameSecond {
+- (void) dataEncoder:(SCDataEncoder *)dataEncoder didEncodeFrame:(CMTime)frameTime {
     [self dispatchBlockOnAskedQueue:^ {
-		self.currentRecordingTime = frameSecond;
+		self.currentRecordingTime = frameTime;
 		
         if (dataEncoder == self.audioEncoder) {
             if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didRecordAudioSample:)]) {
-                [self.delegate audioVideoRecorder:self didRecordAudioSample:frameSecond];
+                [self.delegate audioVideoRecorder:self didRecordAudioSample:frameTime];
             }
         } else if (dataEncoder == self.videoEncoder) {
             if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didRecordVideoFrame:)]) {
-                [self.delegate audioVideoRecorder:self didRecordVideoFrame:frameSecond];
+                [self.delegate audioVideoRecorder:self didRecordVideoFrame:frameTime];
             }
         }
-		if (self.limitRecordingDuration) {
-			if (frameSecond >= self.recordingDurationLimitSeconds) {
-				[self stop];
-			}
+		if (CMTIME_COMPARE_INLINE(frameTime, >=, self.recordingDurationLimit)) {
+			[self stop];
 		}
     }];
 }
@@ -465,7 +465,7 @@
 }
 
 //
-// Getters
+// Getters/Setters
 //
 
 - (BOOL) isPrepared {
@@ -490,6 +490,15 @@
 
 - (BOOL) enableVideo {
     return self.videoEncoder.enabled;
+}
+
+- (CMTime) playbackStartTime {
+	return _playbackStartTime;
+}
+
+- (void) setPlaybackStartTime:(CMTime)startTime {
+	_playbackStartTime = startTime;
+	[self.playbackPlayer seekToTime:startTime];
 }
 
 @end
