@@ -64,8 +64,9 @@
     self.camera.previewVideoGravity = SCVideoGravityResizeAspectFill;
     self.camera.previewView = self.previewView;
 	self.camera.videoOrientation = AVCaptureVideoOrientationPortrait;
+	self.camera.recordingDurationLimit = CMTimeMakeWithSeconds(10, 1);
 	
-	[self addMusic];
+//	[self addMusic];
 	
     [self.camera initialize:^(NSError * audioError, NSError * videoError) {
 		[self prepareCamera];
@@ -80,7 +81,7 @@
 }
 
 - (void) viewWillAppear:(BOOL)animated {
-	self.navigationController.navigationBarHidden = YES;
+//	self.navigationController.navigationBarHidden = YES;
 }
 
 - (void) handleReverseCameraTapped:(id)sender {
@@ -88,8 +89,6 @@
 }
 
 - (void) handleStopButtonTapped:(id)sender {
-    self.loadingView.hidden = NO;
-    self.downBar.userInteractionEnabled = NO;
     [self.camera stop];
 }
 
@@ -132,18 +131,23 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+	if (self.camera.isPrepared) {
+		[self.camera.session startRunning];
+	}
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-	[super viewDidDisappear:animated];	
+	[super viewDidDisappear:animated];
+	
+	[self.camera cancel];
 }
 
 - (void) updateLabelForSecond:(Float64)totalRecorded {
     self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", totalRecorded];
 }
 
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordVideoFrame:(Float64)frameSecond {
-    [self updateLabelForSecond:frameSecond];
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordVideoFrame:(CMTime)frameTime {
+    [self updateLabelForSecond:CMTimeGetSeconds(frameTime)];
 }
 
 - (void) showVideo:(NSURL*)videoUrl {
@@ -163,6 +167,11 @@
     } else {
 		[self showVideo:recordedFile];
     }
+}
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime {
+	self.loadingView.hidden = NO;
+    self.downBar.userInteractionEnabled = NO;
 }
 
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {

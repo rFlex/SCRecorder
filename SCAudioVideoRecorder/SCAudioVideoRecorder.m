@@ -91,9 +91,6 @@
 	return self;
 }
 
-- (void) dealloc {
-}
-
 // Hack to force ARC to not release an object in a code block
 - (void) pleaseDontReleaseObject:(id)object {
 	
@@ -333,12 +330,8 @@
 
 - (void) pause {
 	[self.playbackPlayer pause];
-	dispatch_async(self.dispatch_queue, ^ {
-		recording = NO;
-		// As I don't know any way to get the current time in CMTime, setting this will always
-		// let the last frame to last 1/24th of a second
-		self.lastFrameTimeBeforePause = CMTimeMake(1, 24);
-    });
+	recording = NO;
+	self.lastFrameTimeBeforePause = CMTimeMake(1, 24);
 }
 
 - (void) record {
@@ -354,7 +347,7 @@
 }
 
 - (void) cancel {
-	dispatch_sync(self.dispatch_queue, ^ {
+	dispatch_sync(self.dispatch_queue, ^{
 		[self resetInternal];
     });
 }
@@ -377,20 +370,11 @@
 	[self.videoEncoder reset];
     
 	if (writer != nil) {
-		if (writer.status != AVAssetWriterStatusUnknown) {
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-			[writer finishWritingWithCompletionHandler:^ {
-				[self pleaseDontReleaseObject:writer];
-				if (fileUrl != nil) {
-					[self removeFile:fileUrl];
-				}
-			}];
-#else
-			[writer finishWriting];
-			if (fileUrl != nil) {
-				[self removeFile:fileUrl];
-			}
-#endif
+		if (writer.status == AVAssetWriterStatusWriting) {
+			[writer cancelWriting];
+		}
+		if (fileUrl != nil) {
+			[self removeFile:fileUrl];
 		}
 	}
 }
