@@ -13,6 +13,9 @@
 #import "SCAudioTools.h"
 #import "SCVideoPlayerViewController.h"
 
+#import "SCImageViewDisPlayViewController.h"
+#import <AssetsLibrary/AssetsLibrary.h>
+
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
 /////////////////////
@@ -57,7 +60,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	
+	self.view.backgroundColor = [UIColor grayColor];
+    
     self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh];
     self.camera.delegate = self;
     self.camera.enableSound = YES;
@@ -78,6 +82,9 @@
     
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
+    
+    if (self.camera.cameraMode != SCCameraModePhoto)
+        self.capturePhotoButton.alpha = 0.0;
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -157,6 +164,13 @@
 	[self.navigationController pushViewController:videoPlayerViewController animated:YES];
 }
 
+- (void)showPhoto:(UIImage *)photo {
+    SCImageViewDisPlayViewController *sc_imageViewDisPlayViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SCImageViewDisPlayViewController"];
+    sc_imageViewDisPlayViewController.photo = photo;
+    [self.navigationController pushViewController:sc_imageViewDisPlayViewController animated:YES];
+    sc_imageViewDisPlayViewController = nil;
+}
+
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
 	[self prepareCamera];
 	
@@ -182,9 +196,48 @@
     NSLog(@"Failed to initialize AudioEncoder");
 }
 
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
+    if (!error) {
+        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
+        ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
+        [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Saved!" message: @"Saved to the camera roll."
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"OK", nil];
+            [alert show];
+        }];
+    }
+}
+
 - (UIStatusBarStyle) preferredStatusBarStyle {
 	return UIStatusBarStyleLightContent;
 }
 
 
+- (IBAction)switchCameraMode:(id)sender {
+    if (self.camera.cameraMode == SCCameraModePhoto) {
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            self.capturePhotoButton.alpha = 0.0;
+            self.recordView.alpha = 1.0;
+            self.retakeButton.alpha = 1.0;
+            self.stopButton.alpha = 1.0;
+        }completion:^(BOOL finished) {
+            [self.camera setCameraMode:SCCameraModeVideo];
+        }];
+    } else if (self.camera.cameraMode == SCCameraModeVideo) {
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            self.recordView.alpha = 0.0;
+            self.retakeButton.alpha = 0.0;
+            self.stopButton.alpha = 0.0;
+            self.capturePhotoButton.alpha = 1.0;
+        }completion:^(BOOL finished) {
+            [self.camera setCameraMode:SCCameraModePhoto];
+        }];
+    }
+}
+
+- (IBAction)capturePhoto:(id)sender {
+    [self.camera capturePhoto];
+}
 @end

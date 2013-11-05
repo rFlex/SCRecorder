@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCC89F51829AAB6000D3886 /* ImageIO.framework */; };
+		ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */; };
 		DC13706B17C7FE2800AB3F5E /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC264DEC17BACA3E00A5EF98 /* AVFoundation.framework */; };
 		DC13706D17C8185500AB3F5E /* NSArray+SCAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = DC13706C17C8185500AB3F5E /* NSArray+SCAdditions.h */; };
 		DC13706F17C818A600AB3F5E /* NSArray+SCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = DC13706E17C818A500AB3F5E /* NSArray+SCAdditions.m */; };
@@ -93,6 +95,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		ABCC89F51829AAB6000D3886 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCImageViewDisPlayViewController.h; sourceTree = "<group>"; };
+		ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCImageViewDisPlayViewController.m; sourceTree = "<group>"; };
 		DC0C3FBE17B1D1BD0023DF70 /* SCDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCDataEncoder.h; sourceTree = "<group>"; };
 		DC0C3FBF17B1D1BD0023DF70 /* SCDataEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCDataEncoder.m; sourceTree = "<group>"; };
 		DC0C3FC117B1D3BE0023DF70 /* SCAudioVideoRecorderInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioVideoRecorderInternal.h; sourceTree = "<group>"; };
@@ -204,6 +209,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */,
 				DC599B6617B481BB00500F05 /* AudioToolbox.framework in Frameworks */,
 				DC551C6B17ADDA4400E37F8F /* AVFoundation.framework in Frameworks */,
 				DC36982017AF132600F5012B /* AssetsLibrary.framework in Frameworks */,
@@ -228,6 +234,8 @@
 				DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */,
 				DC551C6217ADD66000E37F8F /* SCViewController.h */,
 				DC551C6317ADD66000E37F8F /* SCViewController.m */,
+				ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */,
+				ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */,
 				DC551C4E17ADD66000E37F8F /* Supporting Files */,
 				DCF6143117D157A400341EC2 /* SCVideoPlayerViewController.h */,
 				DCF6143217D157A400341EC2 /* SCVideoPlayerViewController.m */,
@@ -318,6 +326,7 @@
 		DC551C4617ADD66000E37F8F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				ABCC89F51829AAB6000D3886 /* ImageIO.framework */,
 				DC264DEC17BACA3E00A5EF98 /* AVFoundation.framework */,
 				DC264DEA17BAC67300A5EF98 /* AudioToolbox.framework */,
 				DC599B6517B481BB00500F05 /* AudioToolbox.framework */,
@@ -585,6 +594,7 @@
 				DC551C5417ADD66000E37F8F /* main.m in Sources */,
 				DC551C5817ADD66000E37F8F /* SCAppDelegate.m in Sources */,
 				DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */,
+				ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */,
 				DCF6143317D157A400341EC2 /* SCVideoPlayerViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
