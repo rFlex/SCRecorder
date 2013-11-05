@@ -19,5 +19,8 @@
 @property (weak, nonatomic) IBOutlet UILabel *timeRecordedLabel;
 @property (weak, nonatomic) IBOutlet UIView *downBar;
 @property (weak, nonatomic) IBOutlet UIButton *reverseCamera;
+- (IBAction)switchCameraMode:(id)sender;
 
+- (IBAction)capturePhoto:(id)sender;
+@property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;
 @end

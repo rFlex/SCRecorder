@@ -51,6 +51,7 @@ typedef NSView View;
     if (self) {
 		_useFrontCamera = NO;
         self.sessionPreset = AVCaptureSessionPresetHigh;
+        _cameraMode = SCCameraModeVideo;
     }
     
     return self;
@@ -78,6 +79,7 @@ typedef NSView View;
 		}
 		[self.session removeOutput:self.audioOutput];
 		[self.session removeOutput:self.videoOutput];
+        [self.session removeOutput:self.stillImageOutput];
 	}
 }
 
@@ -137,6 +139,7 @@ typedef NSView View;
             
             [captureSession addOutput:self.audioOutput];
             [captureSession addOutput:self.videoOutput];
+            [captureSession addOutput:self.stillImageOutput];
 			
             self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
             self.previewLayer.videoGravity = [self previewVideoGravityToString];
@@ -255,7 +258,7 @@ typedef NSView View;
 	if (videoConnection != nil) {
 		return [videoConnection videoOrientation];
 	}
-	
+    
 	return self.cachedVideoOrientation;
 }
 
@@ -264,6 +267,14 @@ typedef NSView View;
 /////////////////////
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+
+- (void)setCameraMode:(SCCameraMode)cameraMode {
+    if (_cameraMode == cameraMode)
+        return;
+    
+    _cameraMode = cameraMode;
+    [self restStepSession];
+}
 
 - (void) switchCamera {
 	self.useFrontCamera = !self.useFrontCamera;
@@ -285,6 +296,19 @@ typedef NSView View;
 			*error = [SCAudioVideoRecorder createError:(self.useFrontCamera ? @"Front camera not found" : @"Back camera not found")];
 		}
 	}
+    
+    NSString *sessionPreset = nil;
+    switch (self.cameraMode) {
+        case SCCameraModePhoto:
+            sessionPreset = AVCaptureSessionPresetPhoto;
+            break;
+        case SCCameraModeVideo:
+            sessionPreset = AVCaptureSessionPreset640x480;
+            break;
+        default:
+            break;
+    }
+    [captureSession setSessionPreset:sessionPreset];
 }
 
 - (BOOL) useFrontCamera {
@@ -293,8 +317,11 @@ typedef NSView View;
 
 - (void) setUseFrontCamera:(BOOL)value {
 	_useFrontCamera = value;
-	
-	if (self.session != nil) {
+	[self restStepSession];
+}
+
+- (void)restStepSession {
+    if (self.session != nil) {
 		[self.session beginConfiguration];
 		
 		NSError * error;

@@ -11,6 +11,13 @@
 #import "SCVideoEncoder.h"
 #import "SCAudioEncoder.h"
 
+// photo dictionary keys
+
+extern NSString * const SCAudioVideoRecorderPhotoMetadataKey;
+extern NSString * const SCAudioVideoRecorderPhotoJPEGKey;
+extern NSString * const SCAudioVideoRecorderPhotoImageKey;
+extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
+
 @class SCAudioVideoRecorder;
 
 //
@@ -28,6 +35,7 @@
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError*)error;
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError*)error;
 
+- (void)audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error;
 @end
 
 //
@@ -44,6 +52,8 @@
 // The Camera roll only exists on iOS
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 - (void) prepareRecordingAtCameraRoll:(NSError**)error;
+// Photo
+- (void) capturePhoto;
 #endif
 
 - (NSURL*) prepareRecordingOnTempDir:(NSError**)error;
@@ -61,6 +71,7 @@
 
 @property (strong, nonatomic, readonly) AVCaptureVideoDataOutput * videoOutput;
 @property (strong, nonatomic, readonly) AVCaptureAudioDataOutput * audioOutput;
+@property (strong, nonatomic, readonly) AVCaptureStillImageOutput *stillImageOutput;
 
 @property (assign, nonatomic) BOOL enableSound;
 @property (assign, nonatomic) BOOL enableVideo;

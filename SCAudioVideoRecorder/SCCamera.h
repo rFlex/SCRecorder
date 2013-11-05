@@ -9,6 +9,11 @@
 #import <Foundation/Foundation.h>
 #import "SCAudioVideoRecorder.h"
 
+typedef NS_ENUM(NSInteger, SCCameraMode) {
+    SCCameraModePhoto = UIImagePickerControllerCameraCaptureModePhoto,
+    SCCameraModeVideo = UIImagePickerControllerCameraCaptureModeVideo
+};
+
 @class SCCamera;
 @protocol SCCameraDelegate <SCAudioVideoRecorderDelegate>
 
@@ -38,8 +43,9 @@ typedef enum {
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+@property (nonatomic, assign) SCCameraMode cameraMode;
 // Switch between back and front camera
 - (void) switchCamera;
 
