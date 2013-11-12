@@ -22,6 +22,7 @@ typedef NSView View;
 
 @interface SCCamera() {
     BOOL _useFrontCamera;
+	NSString * _sessionPreset;
 }
 
 @property (strong, nonatomic) AVCaptureSession * session;
@@ -49,9 +50,9 @@ typedef NSView View;
     self = [super init];
     
     if (self) {
+		_sessionPreset = nil;
 		_useFrontCamera = NO;
         self.sessionPreset = AVCaptureSessionPresetHigh;
-        _cameraMode = SCCameraModeVideo;
     }
     
     return self;
@@ -61,6 +62,8 @@ typedef NSView View;
     self = [self init];
     
     if (self) {
+		_sessionPreset = nil;
+		_useFrontCamera = NO;
         self.sessionPreset = sessionPreset;
     }
     
@@ -262,26 +265,34 @@ typedef NSView View;
 	return self.cachedVideoOrientation;
 }
 
+- (NSString*) sessionPreset {
+	return _sessionPreset;
+}
+
+- (void) setSessionPreset:(NSString *)sessionPreset {
+	if (_sessionPreset != sessionPreset) {
+		_sessionPreset = [sessionPreset copy];
+		
+		if (self.session != nil) {
+			[self.session beginConfiguration];
+			self.session.sessionPreset = _sessionPreset;
+			[self.session commitConfiguration];
+		}
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // IOS SPECIFIC
 /////////////////////
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
-- (void)setCameraMode:(SCCameraMode)cameraMode {
-    if (_cameraMode == cameraMode)
-        return;
-    
-    _cameraMode = cameraMode;
-    [self restStepSession];
-}
 
 - (void) switchCamera {
 	self.useFrontCamera = !self.useFrontCamera;
 }
 
 - (void) initializeCamera:(AVCaptureSession*)captureSession error:(NSError**)error {
-	
 	if (self.currentVideoDeviceInput != nil) {
 		[captureSession removeInput:self.currentVideoDeviceInput];
 		self.currentVideoDeviceInput = nil;
@@ -297,18 +308,7 @@ typedef NSView View;
 		}
 	}
     
-    NSString *sessionPreset = nil;
-    switch (self.cameraMode) {
-        case SCCameraModePhoto:
-            sessionPreset = AVCaptureSessionPresetPhoto;
-            break;
-        case SCCameraModeVideo:
-            sessionPreset = AVCaptureSessionPreset640x480;
-            break;
-        default:
-            break;
-    }
-    [captureSession setSessionPreset:sessionPreset];
+    [captureSession setSessionPreset:self.sessionPreset];
 }
 
 - (BOOL) useFrontCamera {
@@ -317,10 +317,10 @@ typedef NSView View;
 
 - (void) setUseFrontCamera:(BOOL)value {
 	_useFrontCamera = value;
-	[self restStepSession];
+	[self reconfigureSessionInputs];
 }
 
-- (void)restStepSession {
+- (void) reconfigureSessionInputs {
     if (self.session != nil) {
 		[self.session beginConfiguration];
 		

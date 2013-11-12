@@ -82,13 +82,10 @@
     
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
-    
-    if (self.camera.cameraMode != SCCameraModePhoto)
-        self.capturePhotoButton.alpha = 0.0;
 }
 
 - (void) viewWillAppear:(BOOL)animated {
-//	self.navigationController.navigationBarHidden = YES;
+	self.navigationController.navigationBarHidden = YES;
 }
 
 - (void) handleReverseCameraTapped:(id)sender {
@@ -138,8 +135,11 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-	if (self.camera.isPrepared) {
+	if (self.camera.isReady) {
+		NSLog(@"Starting to run again");
 		[self.camera.session startRunning];
+	} else {
+		NSLog(@"Not prepared yet");
 	}
 }
 
@@ -216,23 +216,23 @@
 
 
 - (IBAction)switchCameraMode:(id)sender {
-    if (self.camera.cameraMode == SCCameraModePhoto) {
+    if (self.camera.sessionPreset == AVCaptureSessionPresetPhoto) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.capturePhotoButton.alpha = 0.0;
             self.recordView.alpha = 1.0;
             self.retakeButton.alpha = 1.0;
             self.stopButton.alpha = 1.0;
-        }completion:^(BOOL finished) {
-            [self.camera setCameraMode:SCCameraModeVideo];
+        } completion:^(BOOL finished) {
+			self.camera.sessionPreset = AVCaptureSessionPresetHigh;
         }];
-    } else if (self.camera.cameraMode == SCCameraModeVideo) {
+    } else if (self.camera.sessionPreset == AVCaptureSessionPresetHigh) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.recordView.alpha = 0.0;
             self.retakeButton.alpha = 0.0;
             self.stopButton.alpha = 0.0;
             self.capturePhotoButton.alpha = 1.0;
-        }completion:^(BOOL finished) {
-            [self.camera setCameraMode:SCCameraModePhoto];
+        } completion:^(BOOL finished) {
+			self.camera.sessionPreset = AVCaptureSessionPresetPhoto;
         }];
     }
 }

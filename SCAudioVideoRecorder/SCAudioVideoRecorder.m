@@ -308,44 +308,10 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 
 // Photo
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 - (UIImage *)_uiimageFromJPEGData:(NSData *)jpegData
 {
-    CGImageRef jpegCGImage = NULL;
-    CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)jpegData);
-    
-    UIImageOrientation imageOrientation = UIImageOrientationUp;
-    CGFloat imageScale = 1.0;
-    
-    if (provider) {
-        CGImageSourceRef imageSource = CGImageSourceCreateWithDataProvider(provider, NULL);
-        if (imageSource) {
-            if (CGImageSourceGetCount(imageSource) > 0) {
-                jpegCGImage = CGImageSourceCreateImageAtIndex(imageSource, 0, NULL);
-                
-                // extract the cgImage properties
-                CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, NULL);
-                if (properties) {
-                    // set orientation
-                    CFNumberRef orientationProperty = CFDictionaryGetValue(properties, kCGImagePropertyOrientation);
-                    if (orientationProperty) {
-                        CFNumberGetValue(orientationProperty, kCFNumberIntType, &imageOrientation);
-                    }
-                    
-                    CFRelease(properties);
-                }
-                
-            }
-            CFRelease(imageSource);
-        }
-        CGDataProviderRelease(provider);
-    }
-    
-    UIImage *image = nil;
-    if (jpegCGImage) {
-        image = [[UIImage alloc] initWithCGImage:jpegCGImage scale:imageScale orientation:imageOrientation];
-        CGImageRelease(jpegCGImage);
-    }
-    return image;
+	return [UIImage imageWithData:jpegData];
 }
 
 - (UIImage *)_thumbnailJPEGData:(NSData *)jpegData
@@ -370,7 +336,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
     
     UIImage *thumbnail = nil;
     if (thumbnailCGImage) {
-        thumbnail = [[UIImage alloc] initWithCGImage:thumbnailCGImage];
+        thumbnail = [[UIImage alloc] initWithCGImage:thumbnailCGImage scale:1 orientation:UIImageOrientationUp];
         CGImageRelease(thumbnailCGImage);
     }
     return thumbnail;
@@ -389,10 +355,12 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
              }
              
              if (error) {
-                 if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
-                     [self.delegate audioVideoRecorder:self capturedPhoto:nil error:error];
-                 }
-                 return;
+				 [self dispatchBlockOnAskedQueue:^{
+					 if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
+						 [self.delegate audioVideoRecorder:self capturedPhoto:nil error:error];
+					 }
+				 }];
+				 return;
              }
              
              NSMutableDictionary *photoDict = [[NSMutableDictionary alloc] init];
@@ -436,12 +404,15 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
                  // TODO: return delegate on error
              }
              
-             if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
-                 [self.delegate audioVideoRecorder:self capturedPhoto:photoDict error:error];
-             }
+			 [self dispatchBlockOnAskedQueue:^{
+				 if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
+					 [self.delegate audioVideoRecorder:self capturedPhoto:photoDict error:error];
+				 }
+			 }];
          }];
     }
 }
+#endif
 
 - (void) stop {
 	[self pause];
