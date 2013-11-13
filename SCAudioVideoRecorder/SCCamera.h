@@ -16,6 +16,11 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeLigth
 };
 
+typedef NS_ENUM(NSInteger, SCCameraDevice) {
+    SCCameraDeviceBack = AVCaptureDevicePositionBack,
+    SCCameraDeviceFront = AVCaptureDevicePositionFront
+};
+
 @class SCCamera;
 @protocol SCCameraDelegate <SCAudioVideoRecorderDelegate>
 
@@ -44,7 +49,9 @@ typedef enum {
 @property (copy, nonatomic) NSString * sessionPreset;
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
+
 @property (nonatomic) SCFlashMode flashMode;
+@property (nonatomic) SCCameraDevice cameraDevice;
 
 // Focus
 @property (nonatomic, readonly, getter = focusSupported) BOOL isFocusSupported;
@@ -63,7 +70,6 @@ typedef enum {
 - (void) switchCamera;
 
 @property (weak, nonatomic) UIView * previewView;
-@property (assign, nonatomic) BOOL useFrontCamera;
 
 #else
 

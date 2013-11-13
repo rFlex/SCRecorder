@@ -51,6 +51,7 @@ typedef NSView View;
 
 @synthesize flashMode = _flashMode;
 @synthesize isFocusSupported = _isFocusSupported;
+@synthesize cameraDevice = _cameraDevice;
 
 - (void)addObserverForSession {
     // add notification observers
@@ -95,6 +96,7 @@ typedef NSView View;
     if (self) {
 		_sessionPreset = nil;
 		_useFrontCamera = NO;
+        _cameraDevice = SCCameraDeviceBack;
         self.flashMode = SCFlashModeAuto;
         self.sessionPreset = sessionPreset;
     }
@@ -407,7 +409,29 @@ typedef NSView View;
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
 - (void) switchCamera {
-	self.useFrontCamera = !self.useFrontCamera;
+    switch (self.cameraDevice) {
+        case SCCameraDeviceBack:
+            self.cameraDevice = SCCameraDeviceFront;
+            break;
+        case SCCameraDeviceFront:
+            self.cameraDevice = SCCameraDeviceBack;
+            break;
+        default:
+            break;
+    }
+    
+}
+
+- (void)setCameraDevice:(SCCameraDevice)cameraDevice {
+    if (_cameraDevice == cameraDevice)
+        return;
+    
+    _cameraDevice = cameraDevice;
+    [self reconfigureSessionInputs];
+}
+
+- (SCCameraDevice)cameraDevice {
+    return _cameraDevice;
 }
 
 - (void) initializeCamera:(AVCaptureSession*)captureSession error:(NSError**)error {
@@ -417,27 +441,18 @@ typedef NSView View;
 		self.currentVideoDeviceInput = nil;
 	}
 	
-	AVCaptureDevice * device = [self videoDeviceWithPosition:(self.useFrontCamera ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack)];
+	AVCaptureDevice * device = [self videoDeviceWithPosition:(AVCaptureDevicePosition)self.cameraDevice];
 	
 	if (device != nil) {
 		self.currentVideoDeviceInput = [self addInputToSession:captureSession device:device withMediaType:@"Video" error:error];
         [self.currentVideoDeviceInput.device addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)SCCameraFocusObserverContext];
 	} else {
 		if (error != nil) {
-			*error = [SCAudioVideoRecorder createError:(self.useFrontCamera ? @"Front camera not found" : @"Back camera not found")];
+			*error = [SCAudioVideoRecorder createError:(self.cameraDevice ? @"Front camera not found" : @"Back camera not found")];
 		}
 	}
     
     [captureSession setSessionPreset:self.sessionPreset];
-}
-
-- (BOOL) useFrontCamera {
-	return _useFrontCamera;
-}
-
-- (void) setUseFrontCamera:(BOOL)value {
-	_useFrontCamera = value;
-	[self reconfigureSessionInputs];
 }
 
 - (void) reconfigureSessionInputs {
