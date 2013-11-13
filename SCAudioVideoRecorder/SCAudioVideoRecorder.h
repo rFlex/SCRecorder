@@ -11,6 +11,13 @@
 #import "SCVideoEncoder.h"
 #import "SCAudioEncoder.h"
 
+#if DEBUG
+#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+#else
+#define DLog(...)
+#endif
+
+
 // photo dictionary keys
 
 extern NSString * const SCAudioVideoRecorderPhotoMetadataKey;
@@ -35,7 +42,23 @@ extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError*)error;
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError*)error;
 
+// Photo
+- (void)audioVideoRecorderWillCapturePhoto:(SCAudioVideoRecorder *)audioVideoRecorder;
+- (void)audioVideoRecorderDidCapturePhoto:(SCAudioVideoRecorder *)audioVideoRecorder;
 - (void)audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error;
+
+// Focus
+- (void)audioVideoRecorderWillStartFocus:(SCAudioVideoRecorder *)audioVideoRecorder;
+- (void)audioVideoRecorderDidStopFocus:(SCAudioVideoRecorder *)audioVideoRecorder;
+
+// Error 
+- (void)audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailWithError:(NSError *)error;
+
+// session
+- (void)cameraSessionWillStart:(SCAudioVideoRecorder *)audioVideoRecorder;
+- (void)cameraSessionDidStart:(SCAudioVideoRecorder *)audioVideoRecorder;
+- (void)cameraSessionWillStop:(SCAudioVideoRecorder *)audioVideoRecorder;
+- (void)cameraSessionDidStop:(SCAudioVideoRecorder *)audioVideoRecorder;
 @end
 
 //

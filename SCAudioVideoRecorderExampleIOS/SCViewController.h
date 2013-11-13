@@ -18,8 +18,11 @@
 @property (weak, nonatomic) IBOutlet UIView *loadingView;
 @property (weak, nonatomic) IBOutlet UILabel *timeRecordedLabel;
 @property (weak, nonatomic) IBOutlet UIView *downBar;
+@property (weak, nonatomic) IBOutlet UIButton *switchCameraModeButton;
 @property (weak, nonatomic) IBOutlet UIButton *reverseCamera;
 - (IBAction)switchCameraMode:(id)sender;
+- (IBAction)switchFlash:(id)sender;
+@property (weak, nonatomic) IBOutlet UIButton *flashModeButton;
 
 - (IBAction)capturePhoto:(id)sender;
 @property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;

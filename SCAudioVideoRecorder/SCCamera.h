@@ -9,6 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "SCAudioVideoRecorder.h"
 
+typedef NS_ENUM(NSInteger, SCFlashMode) {
+    SCFlashModeOff  = AVCaptureFlashModeOff,
+    SCFlashModeOn   = AVCaptureFlashModeOn,
+    SCFlashModeAuto = AVCaptureFlashModeAuto,
+    SCFlashModeLigth
+};
+
 @class SCCamera;
 @protocol SCCameraDelegate <SCAudioVideoRecorderDelegate>
 
@@ -37,6 +44,14 @@ typedef enum {
 @property (copy, nonatomic) NSString * sessionPreset;
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
+@property (nonatomic) SCFlashMode flashMode;
+
+// Focus
+@property (nonatomic, readonly, getter = focusSupported) BOOL isFocusSupported;
+- (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates;
+- (void)autoFocusAtPoint:(CGPoint)point;
+// Switch to continuous auto focus mode at the specified point
+- (void)continuousFocusAtPoint:(CGPoint)point;
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
