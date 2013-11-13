@@ -10,6 +10,12 @@
 #import "SCCamera.h"
 #import "SCAudioVideoRecorderInternal.h"
 
+static NSString * const SCCameraFocusObserverContext = @"SCCameraFocusObserverContext";
+static NSString * const SCCameraCaptureStillImageIsCapturingStillImageObserverContext = @"SCCameraCaptureStillImageIsCapturingStillImageObserverContext";
+
+static void *SCCameraFocusModeObserverContext = &SCCameraFocusModeObserverContext;
+
+
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 typedef UIView View;
 #else
@@ -46,25 +52,29 @@ typedef NSView View;
 @synthesize delegate;
 @synthesize previewLayer;
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+
+@synthesize flashMode = _flashMode;
+@synthesize isFocusSupported = _isFocusSupported;
+@synthesize cameraDevice = _cameraDevice;
+
+#endif
+
 - (id) init {
+    return [self initWithSessionPreset:AVCaptureSessionPresetHigh];
+}
+
+- (id) initWithSessionPreset:(NSString *)sessionPreset {
     self = [super init];
     
     if (self) {
 		_sessionPreset = nil;
 		_useFrontCamera = NO;
-        self.sessionPreset = AVCaptureSessionPresetHigh;
-    }
-    
-    return self;
-}
-
-- (id) initWithSessionPreset:(NSString *)sessionPreset {
-    self = [self init];
-    
-    if (self) {
-		_sessionPreset = nil;
-		_useFrontCamera = NO;
         self.sessionPreset = sessionPreset;
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+        _cameraDevice = SCCameraDeviceBack;
+        self.flashMode = SCFlashModeAuto;
+#endif
     }
     
     return self;
@@ -72,17 +82,31 @@ typedef NSView View;
 
 - (void) dealloc {
 	if (self.session != nil) {
-		[self.session stopRunning];
-		
+        _sessionPreset = nil;
+        self.previewLayer = nil;
+        
+        [self stopRunningSession];
+        
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+        [self removeObserverForSession];
+#endif
+        
 		if (self.currentAudioDeviceInput != nil) {
 			[self.session removeInput:self.currentAudioDeviceInput];
+            self.currentAudioDeviceInput = nil;
 		}
 		if (self.currentVideoDeviceInput != nil) {
 			[self.session removeInput:self.currentVideoDeviceInput];
+            self.currentAudioDeviceInput = nil;
 		}
+        
 		[self.session removeOutput:self.audioOutput];
 		[self.session removeOutput:self.videoOutput];
-        [self.session removeOutput:self.stillImageOutput];
+        
+        if (self.stillImageOutput) {
+            [self.session removeOutput:self.stillImageOutput];
+        }
+        self.session = nil;
 	}
 }
 
@@ -116,6 +140,37 @@ typedef NSView View;
 	return nil;
 }
 
+// Session
+- (void)startRunningSession {
+//    dispatch_async(self.dispatch_queue, ^{
+        if (!session && session.isRunning)
+            return;
+        
+        [session startRunning];
+        
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+        if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
+            [self.delegate cameraSessionWillStart:self];
+        }
+#endif
+//    });
+}
+
+- (void)stopRunningSession {
+//    dispatch_async(self.dispatch_queue, ^{
+        if (!session && !session.isRunning)
+            return;
+        
+        [session stopRunning];
+        
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+        if ([self.delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
+            [self.delegate cameraSessionWillStop:self];
+        }
+#endif
+//    });
+}
+
 - (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler {
     if (![self isReady]) {
         dispatch_async(self.dispatch_queue, ^ {
@@ -142,6 +197,8 @@ typedef NSView View;
             
             [captureSession addOutput:self.audioOutput];
             [captureSession addOutput:self.videoOutput];
+            // KVO is only used to monitor focus and capture events
+            [self.stillImageOutput addObserver:self forKeyPath:@"capturingStillImage" options:NSKeyValueObservingOptionNew context:(__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext)];
             [captureSession addOutput:self.stillImageOutput];
 			
             self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
@@ -151,9 +208,17 @@ typedef NSView View;
 			
 			// Apply the video orientation is it was set before the session was created
 			self.videoOrientation = self.cachedVideoOrientation;
+            
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+            // add session Observer
+            [self addObserverForSession];
+#endif
 			
-			[captureSession startRunning];
-			
+            #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+			// Because I want to in the controller, the appropriate time to start
+#else
+            [self startRunningSession];
+			#endif
             dispatch_async(dispatch_get_main_queue(), ^ {
                 View * settedPreviewView = self.previewView;
                 
@@ -287,37 +352,112 @@ typedef NSView View;
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
+- (void)setFlashMode:(SCFlashMode)flashMode {
+    AVCaptureDevice *_currentDevice = self.currentVideoDeviceInput.device;
+    BOOL shouldChangeFlashMode = (_flashMode != flashMode);
+    if (![_currentDevice hasFlash] || !shouldChangeFlashMode)
+        return;
+    
+    _flashMode = flashMode;
+    
+    NSError *error = nil;
+    if (_currentDevice && [_currentDevice lockForConfiguration:&error]) {
+        [_currentDevice setTorchMode:(AVCaptureTorchMode)AVCaptureFlashModeOff];
+        
+        if (self.sessionPreset == AVCaptureSessionPresetHigh) {
+            if ([_currentDevice isTorchModeSupported:(AVCaptureTorchMode)_flashMode]) {
+                [_currentDevice setTorchMode:(AVCaptureTorchMode)_flashMode];
+            }
+        } else if (self.sessionPreset == AVCaptureSessionPresetPhoto) {
+            if ([_currentDevice isFlashModeSupported:(AVCaptureFlashMode)_flashMode]) {
+                [_currentDevice setFlashMode:(AVCaptureFlashMode)_flashMode];
+            }
+            
+            if (_flashMode == SCFlashModeLigth) {
+                if ([_currentDevice isTorchModeSupported:(AVCaptureTorchMode)AVCaptureFlashModeOn]) {
+                    [_currentDevice setTorchMode:(AVCaptureTorchMode)AVCaptureFlashModeOn];
+                }
+            }
+        }
+        
+        [_currentDevice unlockForConfiguration];
+        
+    } else if (error) {
+        NSLog(@"error locking device for flash mode change (%@)", error);
+    }
+}
+
+- (SCFlashMode)flashMode {
+    return _flashMode;
+}
+
+- (BOOL)focusSupported {
+    return [[self.currentVideoDeviceInput device] isFocusPointOfInterestSupported];
+}
+
+- (void)_willCapturePhoto
+{
+    if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)])
+        [self.delegate cameraWillCapturePhoto:self];
+}
+
+- (void)_didCapturePhoto
+{
+    if ([self.delegate respondsToSelector:@selector(cameraDidCapturePhoto:)])
+        [self.delegate cameraDidCapturePhoto:self];
+}
 
 - (void) switchCamera {
-	self.useFrontCamera = !self.useFrontCamera;
+    switch (self.cameraDevice) {
+        case SCCameraDeviceBack:
+            self.cameraDevice = SCCameraDeviceFront;
+            break;
+        case SCCameraDeviceFront:
+            self.cameraDevice = SCCameraDeviceBack;
+            break;
+        default:
+            break;
+    }
+    
+}
+
+- (void)setCameraDevice:(SCCameraDevice)cameraDevice {
+    if (_cameraDevice == cameraDevice)
+        return;
+    
+    _cameraDevice = cameraDevice;
+    [self reconfigureSessionInputs];
+}
+
+- (SCCameraDevice)cameraDevice {
+    return _cameraDevice;
 }
 
 - (void) initializeCamera:(AVCaptureSession*)captureSession error:(NSError**)error {
 	if (self.currentVideoDeviceInput != nil) {
+        [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
+        [self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
 		[captureSession removeInput:self.currentVideoDeviceInput];
 		self.currentVideoDeviceInput = nil;
 	}
 	
-	AVCaptureDevice * device = [self videoDeviceWithPosition:(self.useFrontCamera ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack)];
+	AVCaptureDevice * device = [self videoDeviceWithPosition:(AVCaptureDevicePosition)self.cameraDevice];
 	
 	if (device != nil) {
 		self.currentVideoDeviceInput = [self addInputToSession:captureSession device:device withMediaType:@"Video" error:error];
+        [self.currentVideoDeviceInput.device addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)SCCameraFocusObserverContext];
+        [self addObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode" options:NSKeyValueObservingOptionNew context:SCCameraFocusModeObserverContext];
+        if ([self.delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
+            AVCaptureFocusMode initialFocusMode = [device focusMode];
+            [self.delegate cameraUpdateFocusMode:[NSString stringWithFormat:@"focus: %@", [self stringForFocusMode:initialFocusMode]]];
+        }
 	} else {
 		if (error != nil) {
-			*error = [SCAudioVideoRecorder createError:(self.useFrontCamera ? @"Front camera not found" : @"Back camera not found")];
+			*error = [SCAudioVideoRecorder createError:(self.cameraDevice ? @"Front camera not found" : @"Back camera not found")];
 		}
 	}
     
     [captureSession setSessionPreset:self.sessionPreset];
-}
-
-- (BOOL) useFrontCamera {
-	return _useFrontCamera;
-}
-
-- (void) setUseFrontCamera:(BOOL)value {
-	_useFrontCamera = value;
-	[self reconfigureSessionInputs];
 }
 
 - (void) reconfigureSessionInputs {
@@ -329,6 +469,356 @@ typedef NSView View;
 		
 		self.videoOrientation = self.cachedVideoOrientation;
 		[self.session commitConfiguration];
+	}
+}
+
+- (void)addObserverForSession {
+    // add notification observers
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    
+    // session notifications
+    [notificationCenter addObserver:self selector:@selector(_sessionRuntimeErrored:) name:AVCaptureSessionRuntimeErrorNotification object:session];
+    [notificationCenter addObserver:self selector:@selector(_sessionStarted:) name:AVCaptureSessionDidStartRunningNotification object:session];
+    [notificationCenter addObserver:self selector:@selector(_sessionStopped:) name:AVCaptureSessionDidStopRunningNotification object:session];
+    [notificationCenter addObserver:self selector:@selector(_sessionWasInterrupted:) name:AVCaptureSessionWasInterruptedNotification object:session];
+    [notificationCenter addObserver:self selector:@selector(_sessionInterruptionEnded:) name:AVCaptureSessionInterruptionEndedNotification object:session];
+    
+    // capture device notifications
+    [notificationCenter addObserver:self selector:@selector(_deviceSubjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+    
+    // Applicaton
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationWillEnterForeground:) name:@"UIApplicationWillEnterForegroundNotification" object:[UIApplication sharedApplication]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidEnterBackground:) name:@"UIApplicationDidEnterBackgroundNotification" object:[UIApplication sharedApplication]];
+}
+
+- (void)removeObserverForSession {
+    if (!session)
+        return;
+    
+    // remove notification observers (we don't want to just 'remove all' because we're also observing background notifications
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    
+    // session notifications
+    [notificationCenter removeObserver:self name:AVCaptureSessionRuntimeErrorNotification object:session];
+    [notificationCenter removeObserver:self name:AVCaptureSessionDidStartRunningNotification object:session];
+    [notificationCenter removeObserver:self name:AVCaptureSessionDidStopRunningNotification object:session];
+    [notificationCenter removeObserver:self name:AVCaptureSessionWasInterruptedNotification object:session];
+    [notificationCenter removeObserver:self name:AVCaptureSessionInterruptionEndedNotification object:session];
+    
+    // capture device notifications
+    [notificationCenter removeObserver:self name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+    
+    // Applicaton
+    [notificationCenter removeObserver:self];
+    
+    // focus
+    if (self.currentVideoDeviceInput)
+        [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
+    
+    // focusMode
+    [self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
+    
+    // capturingStillImage
+    if (self.stillImageOutput)
+        [self.stillImageOutput removeObserver:self forKeyPath:@"capturingStillImage" context:(__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext)];
+}
+
+
+#pragma mark - App NSNotifications
+
+// TODO: support suspend/resume video recording
+
+- (void)_applicationWillEnterForeground:(NSNotification *)notification
+{
+    DLog(@"applicationWillEnterForeground");
+    [self dispatchBlockOnAskedQueue:^{
+        [self startRunningSession];
+    }];
+}
+
+- (void)_applicationDidEnterBackground:(NSNotification *)notification
+{
+    DLog(@"applicationDidEnterBackground");
+    if (self.isRecording) {
+        [self pause];
+    }
+    
+    [self dispatchBlockOnAskedQueue:^{
+        [self stopRunningSession];
+    }];
+}
+
+#pragma mark - AV NSNotifications
+
+// capture session
+
+// TODO: add in a better error recovery
+
+- (void)_sessionRuntimeErrored:(NSNotification *)notification
+{
+    [self dispatchBlockOnAskedQueue:^{
+        if ([notification object] == session) {
+            NSError *error = [[notification userInfo] objectForKey:AVCaptureSessionErrorKey];
+            if (error) {
+                NSInteger errorCode = [error code];
+                switch (errorCode) {
+                    case AVErrorMediaServicesWereReset:
+                    {
+                        DLog(@"error media services were reset");
+                        break;
+                    }
+                    case AVErrorDeviceIsNotAvailableInBackground:
+                    {
+                        DLog(@"error media services not available in background");
+                        break;
+                    }
+                    default:
+                    {
+                        DLog(@"error media services failed, error (%@)", error);
+                        break;
+                    }
+                }
+            }
+        }
+    }];
+}
+
+- (void)_sessionStarted:(NSNotification *)notification
+{
+    [self dispatchBlockOnAskedQueue:^{
+        if ([notification object] == session) {
+            DLog(@"session was started");
+            
+            if ([self.delegate respondsToSelector:@selector(cameraSessionDidStart:)]) {
+                [self.delegate cameraSessionDidStart:self];
+            }
+        }
+    }];
+}
+
+- (void)_sessionStopped:(NSNotification *)notification
+{
+    [self dispatchBlockOnAskedQueue:^{
+        if ([notification object] == session) {
+            if ([self.delegate respondsToSelector:@selector(cameraSessionDidStop:)]) {
+                [self.delegate cameraSessionDidStop:self];
+            }
+        }
+    }];
+}
+
+- (void)_sessionWasInterrupted:(NSNotification *)notification
+{
+    [self dispatchBlockOnAskedQueue:^{
+        if ([notification object] == session) {
+            DLog(@"session was interrupted");
+            // notify stop?
+        }
+    }];
+}
+
+- (void)_sessionInterruptionEnded:(NSNotification *)notification
+{
+    [self dispatchBlockOnAskedQueue:^{
+        if ([notification object] == session) {
+            DLog(@"session interruption ended");
+            // notify ended?
+        }
+    }];
+}
+
+// capture device
+
+- (void)_deviceSubjectAreaDidChange:(NSNotification *)notification
+{
+    [self _focus];
+}
+
+#pragma mark - focus, exposure, white balance
+
+// Convert from view coordinates to camera coordinates, where {0,0} represents the top left of the picture area, and {1,1} represents
+// the bottom right in landscape mode with the home button on the right.
+- (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates
+{
+    CGPoint pointOfInterest = CGPointMake(.5f, .5f);
+    CGSize frameSize = self.previewView.frame.size;
+    
+    if ([self.previewLayer.connection isVideoMirrored]) {
+        viewCoordinates.x = frameSize.width - viewCoordinates.x;
+    }
+    
+    if ( [[self.previewLayer videoGravity] isEqualToString:AVLayerVideoGravityResize] ) {
+		// Scale, switch x and y, and reverse x
+        pointOfInterest = CGPointMake(viewCoordinates.y / frameSize.height, 1.f - (viewCoordinates.x / frameSize.width));
+    } else {
+        CGRect cleanAperture;
+        for (AVCaptureInputPort *port in [self.currentVideoDeviceInput ports]) {
+            if ([port mediaType] == AVMediaTypeVideo) {
+                cleanAperture = CMVideoFormatDescriptionGetCleanAperture([port formatDescription], YES);
+                CGSize apertureSize = cleanAperture.size;
+                CGPoint point = viewCoordinates;
+                
+                CGFloat apertureRatio = apertureSize.height / apertureSize.width;
+                CGFloat viewRatio = frameSize.width / frameSize.height;
+                CGFloat xc = .5f;
+                CGFloat yc = .5f;
+                
+                if ( [[self.previewLayer videoGravity] isEqualToString:AVLayerVideoGravityResizeAspect] ) {
+                    if (viewRatio > apertureRatio) {
+                        CGFloat y2 = frameSize.height;
+                        CGFloat x2 = frameSize.height * apertureRatio;
+                        CGFloat x1 = frameSize.width;
+                        CGFloat blackBar = (x1 - x2) / 2;
+						// If point is inside letterboxed area, do coordinate conversion; otherwise, don't change the default value returned (.5,.5)
+                        if (point.x >= blackBar && point.x <= blackBar + x2) {
+							// Scale (accounting for the letterboxing on the left and right of the video preview), switch x and y, and reverse x
+                            xc = point.y / y2;
+                            yc = 1.f - ((point.x - blackBar) / x2);
+                        }
+                    } else {
+                        CGFloat y2 = frameSize.width / apertureRatio;
+                        CGFloat y1 = frameSize.height;
+                        CGFloat x2 = frameSize.width;
+                        CGFloat blackBar = (y1 - y2) / 2;
+						// If point is inside letterboxed area, do coordinate conversion. Otherwise, don't change the default value returned (.5,.5)
+                        if (point.y >= blackBar && point.y <= blackBar + y2) {
+							// Scale (accounting for the letterboxing on the top and bottom of the video preview), switch x and y, and reverse x
+                            xc = ((point.y - blackBar) / y2);
+                            yc = 1.f - (point.x / x2);
+                        }
+                    }
+                } else if ([[self.previewLayer videoGravity] isEqualToString:AVLayerVideoGravityResizeAspectFill]) {
+					// Scale, switch x and y, and reverse x
+                    if (viewRatio > apertureRatio) {
+                        CGFloat y2 = apertureSize.width * (frameSize.width / apertureSize.height);
+                        xc = (point.y + ((y2 - frameSize.height) / 2.f)) / y2; // Account for cropped height
+                        yc = (frameSize.width - point.x) / frameSize.width;
+                    } else {
+                        CGFloat x2 = apertureSize.height * (frameSize.height / apertureSize.width);
+                        yc = 1.f - ((point.x + ((x2 - frameSize.width) / 2)) / x2); // Account for cropped width
+                        xc = point.y / frameSize.height;
+                    }
+                }
+                
+                pointOfInterest = CGPointMake(xc, yc);
+                break;
+            }
+        }
+    }
+    
+    return pointOfInterest;
+}
+
+// Perform an auto focus at the specified point. The focus mode will automatically change to locked once the auto focus is complete.
+- (void) autoFocusAtPoint:(CGPoint)point
+{
+    AVCaptureDevice *device = [self.currentVideoDeviceInput device];
+    if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
+        NSError *error;
+        if ([device lockForConfiguration:&error]) {
+            [device setFocusPointOfInterest:point];
+            [device setFocusMode:AVCaptureFocusModeAutoFocus];
+            [device unlockForConfiguration];
+        } else {
+            if ([[self delegate] respondsToSelector:@selector(camera:didFailWithError:)]) {
+                [[self delegate] camera:self didFailWithError:error];
+            }
+        }
+    }
+}
+
+// Switch to continuous auto focus mode at the specified point
+- (void) continuousFocusAtPoint:(CGPoint)point
+{
+    AVCaptureDevice *device = [self.currentVideoDeviceInput device];
+	
+    if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
+		NSError *error;
+		if ([device lockForConfiguration:&error]) {
+			[device setFocusPointOfInterest:point];
+			[device setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
+			[device unlockForConfiguration];
+		} else {
+			if ([[self delegate] respondsToSelector:@selector(camera:didFailWithError:)]) {
+                [[self delegate] camera:self didFailWithError:error];
+			}
+		}
+	}
+}
+
+- (void)_focusStarted
+{
+    if ([self.delegate respondsToSelector:@selector(cameraWillStartFocus:)])
+        [self.delegate cameraWillStartFocus:self];
+}
+
+- (void)_focusEnded
+{
+    if ([self.delegate respondsToSelector:@selector(cameraDidStopFocus:)])
+        [self.delegate cameraDidStopFocus:self];
+}
+
+- (void)_focus
+{
+    AVCaptureDevice *device = [self.currentVideoDeviceInput device];
+    if ([device isAdjustingFocus] || [device isAdjustingExposure])
+        return;
+    
+    // only notify clients when focus is triggered from an event
+    if ([self.delegate respondsToSelector:@selector(cameraWillStartFocus:)])
+        [self.delegate cameraWillStartFocus:self];
+    
+    CGPoint focusPoint = CGPointMake(0.5f, 0.5f);
+    [self autoFocusAtPoint:focusPoint];
+}
+
+// FocusMode
+- (NSString *)stringForFocusMode:(AVCaptureFocusMode)focusMode
+{
+	NSString *focusString = @"";
+	
+	switch (focusMode) {
+		case AVCaptureFocusModeLocked:
+			focusString = @"locked";
+			break;
+		case AVCaptureFocusModeAutoFocus:
+			focusString = @"auto";
+			break;
+		case AVCaptureFocusModeContinuousAutoFocus:
+			focusString = @"continuous";
+			break;
+	}
+	
+	return focusString;
+}
+
+#pragma mark - KVO
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if ( context == (__bridge void *)SCCameraFocusObserverContext ) {
+        
+        BOOL isFocusing = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+        if (isFocusing) {
+            [self _focusStarted];
+        } else {
+            [self _focusEnded];
+        }
+        
+	} else if ( context == (__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext) ) {
+        
+		BOOL isCapturingStillImage = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		if ( isCapturingStillImage ) {
+            [self _willCapturePhoto];
+		} else {
+            [self _didCapturePhoto];
+        }
+        
+	} else if (context == SCCameraFocusModeObserverContext) {
+        // Update the focus UI overlay string when the focus mode changes
+        if ([self.delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
+            [self.delegate cameraUpdateFocusMode:[NSString stringWithFormat:@"focus: %@", [self stringForFocusMode:(AVCaptureFocusMode)[[change objectForKey:NSKeyValueChangeNewKey] integerValue]]]];
+        }
 	}
 }
 

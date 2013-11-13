@@ -16,6 +16,8 @@
 #import "SCImageViewDisPlayViewController.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 
+#import "SCCameraTagetView.h"
+
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
 /////////////////////
@@ -25,7 +27,7 @@
 }
 
 @property (strong, nonatomic) SCCamera * camera;
-
+@property (strong, nonatomic) SCCameraTagetView *cameraTagetView;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -35,6 +37,29 @@
 @implementation SCViewController
 
 @synthesize camera;
+
+#pragma mark - setter / getter
+
+- (SCCameraTagetView *)cameraTagetView {
+    if (!_cameraTagetView) {
+        _cameraTagetView = [[SCCameraTagetView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
+        _cameraTagetView.center = self.previewView.center;
+        [self.previewView addSubview:_cameraTagetView];
+    }
+    return _cameraTagetView;
+}
+
+#pragma mark - UIViewController 
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0
+
+- (UIStatusBarStyle) preferredStatusBarStyle {
+	return UIStatusBarStyleLightContent;
+}
+
+#endif
+
+#pragma mark - Left cycle
 
 - (void) addMusic {
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
@@ -57,10 +82,26 @@
 //	self.camera.enableSound = NO;
 }
 
+- (void)_stupGesture {
+    // Add a single tap gesture to focus on the point tapped, then lock focus
+    UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapToAutoFocus:)];
+    [singleTap setNumberOfTapsRequired:1];
+    [self.previewView addGestureRecognizer:singleTap];
+    
+    // Add a double tap gesture to reset the focus mode to continuous auto focus
+    UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapToContinouslyAutoFocus:)];
+    [doubleTap setNumberOfTapsRequired:2];
+    [singleTap requireGestureRecognizerToFail:doubleTap];
+    [self.previewView addGestureRecognizer:doubleTap];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	self.view.backgroundColor = [UIColor grayColor];
+    self.capturePhotoButton.alpha = 0.0;
+    
+    [self _stupGesture];
     
     self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh];
     self.camera.delegate = self;
@@ -88,56 +129,11 @@
 	self.navigationController.navigationBarHidden = YES;
 }
 
-- (void) handleReverseCameraTapped:(id)sender {
-	[self.camera switchCamera];
-}
-
-- (void) handleStopButtonTapped:(id)sender {
-    [self.camera stop];
-}
-
-- (void) handleRetakeButtonTapped:(id)sender {
-    [self.camera cancel];
-	[self prepareCamera];
-    [self updateLabelForSecond:0];
-}
-
-- (void) prepareCamera {
-	if (![self.camera isPrepared]) {
-		NSError * error;
-		[self.camera prepareRecordingOnTempDir:&error];
-		
-		if (error != nil) {
-			[self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
-			NSLog(@"%@", error);
-		} else {
-			NSLog(@"- CAMERA READY -");
-		}
-	}
-}
-
-- (void) showAlertViewWithTitle:(NSString*)title message:(NSString*) message {
-    UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-    [alertView show];
-}
-
-- (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
-	if (self.camera.isPrepared) {
-		if (touchDetector.state == UIGestureRecognizerStateBegan) {
-			NSLog(@"==== STARTING RECORDING ====");
-			[self.camera record];
-		} else if (touchDetector.state == UIGestureRecognizerStateEnded) {
-			NSLog(@"==== PAUSING RECORDING ====");
-			[self.camera pause];
-		}
-	}
-}
-
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 	if (self.camera.isReady) {
-		NSLog(@"Starting to run again");
-		[self.camera.session startRunning];
+		NSLog(@"Starting to run");
+		[self.camera startRunningSession];
 	} else {
 		NSLog(@"Not prepared yet");
 	}
@@ -145,16 +141,118 @@
 
 - (void)viewDidDisappear:(BOOL)animated {
 	[super viewDidDisappear:animated];
-	
+	[self.camera stopRunningSession];
 	[self.camera cancel];
+}
+
+- (void)dealloc {
+    self.camera = nil;
+    self.cameraTagetView = nil;
 }
 
 - (void) updateLabelForSecond:(Float64)totalRecorded {
     self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", totalRecorded];
 }
 
+#pragma mark - SCAudioVideoRecorder delegate
+
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordVideoFrame:(CMTime)frameTime {
     [self updateLabelForSecond:CMTimeGetSeconds(frameTime)];
+}
+
+// error
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {
+    NSLog(@"Failed to initialize VideoEncoder");
+}
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
+    NSLog(@"Failed to initialize AudioEncoder");
+}
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime {
+	self.loadingView.hidden = NO;
+    self.downBar.userInteractionEnabled = NO;
+}
+
+// Video
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
+	[self prepareCamera];
+	
+    self.loadingView.hidden = YES;
+    self.downBar.userInteractionEnabled = YES;
+    if (error != nil) {
+        [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedDescription]];
+    } else {
+		[self showVideo:recordedFile];
+    }
+}
+
+#pragma mark - Camera Delegate
+
+// Photo
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
+    if (!error) {
+        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
+        ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
+        [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
+            DLog(@"Saved to the camera roll.");
+        }];
+    }
+}
+
+// Camera
+
+- (void)camera:(SCCamera *)camera didFailWithError:(NSError *)error {
+    DLog(@"error : %@", error.description);
+}
+
+// Photo
+- (void)cameraWillCapturePhoto:(SCCamera *)camera {
+    DLog(@"Will capture photo");
+}
+
+- (void)cameraDidCapturePhoto:(SCCamera *)camera {
+    DLog(@"Did capture photo");
+}
+
+// Focus
+- (void)cameraWillStartFocus:(SCCamera *)camera {
+    DLog(@"WillStartFocus");
+    [self.cameraTagetView startTageting];
+}
+
+- (void)cameraDidStopFocus:(SCCamera *)camera {
+    DLog(@"DidStopFocus");
+    [self.cameraTagetView stopTageting];
+}
+
+// Session
+- (void)cameraSessionWillStart:(SCAudioVideoRecorder *)audioVideoRecorder {
+    DLog(@"SessionWillStart");
+}
+
+- (void)cameraSessionDidStart:(SCAudioVideoRecorder *)audioVideoRecorder {
+    DLog(@"SessionDidStart");
+}
+
+- (void)cameraSessionWillStop:(SCAudioVideoRecorder *)audioVideoRecorder {
+    DLog(@"SessionWillStop");
+}
+
+- (void)cameraSessionDidStop:(SCAudioVideoRecorder *)audioVideoRecorder {
+    DLog(@"SessionDidStop");
+}
+
+- (void)cameraUpdateFocusMode:(NSString *)focusModeString {
+    DLog(@"%@", focusModeString);
+}
+
+#pragma mark - Handle
+
+- (void) showAlertViewWithTitle:(NSString*)title message:(NSString*) message {
+    UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
+    [alertView show];
 }
 
 - (void) showVideo:(NSURL*)videoUrl {
@@ -171,49 +269,19 @@
     sc_imageViewDisPlayViewController = nil;
 }
 
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
+- (void) handleReverseCameraTapped:(id)sender {
+	[self.camera switchCamera];
+}
+
+- (void) handleStopButtonTapped:(id)sender {
+    [self.camera stop];
+}
+
+- (void) handleRetakeButtonTapped:(id)sender {
+    [self.camera cancel];
 	[self prepareCamera];
-	
-    self.loadingView.hidden = YES;
-    self.downBar.userInteractionEnabled = YES;
-    if (error != nil) {
-        [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedDescription]];
-    } else {
-		[self showVideo:recordedFile];
-    }
+    [self updateLabelForSecond:0];
 }
-
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime {
-	self.loadingView.hidden = NO;
-    self.downBar.userInteractionEnabled = NO;
-}
-
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize VideoEncoder");
-}
-
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize AudioEncoder");
-}
-
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
-    if (!error) {
-        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
-        ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
-        [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle: @"Saved!" message: @"Saved to the camera roll."
-                                                           delegate:self
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"OK", nil];
-            [alert show];
-        }];
-    }
-}
-
-- (UIStatusBarStyle) preferredStatusBarStyle {
-	return UIStatusBarStyleLightContent;
-}
-
 
 - (IBAction)switchCameraMode:(id)sender {
     if (self.camera.sessionPreset == AVCaptureSessionPresetPhoto) {
@@ -224,6 +292,9 @@
             self.stopButton.alpha = 1.0;
         } completion:^(BOOL finished) {
 			self.camera.sessionPreset = AVCaptureSessionPresetHigh;
+            [self.switchCameraModeButton setTitle:@"Switch Photo" forState:UIControlStateNormal];
+            [self.flashModeButton setTitle:@"Flash : Off" forState:UIControlStateNormal];
+            self.camera.flashMode = SCFlashModeOff;
         }];
     } else if (self.camera.sessionPreset == AVCaptureSessionPresetHigh) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -233,11 +304,102 @@
             self.capturePhotoButton.alpha = 1.0;
         } completion:^(BOOL finished) {
 			self.camera.sessionPreset = AVCaptureSessionPresetPhoto;
+            [self.switchCameraModeButton setTitle:@"Switch Video" forState:UIControlStateNormal];
+            [self.flashModeButton setTitle:@"Flash : Auto" forState:UIControlStateNormal];
+            self.camera.flashMode = SCFlashModeAuto;
         }];
+    }
+}
+
+- (IBAction)switchFlash:(id)sender {
+    NSString *flashModeString = nil;
+    if (self.camera.sessionPreset == AVCaptureSessionPresetPhoto) {
+        switch (self.camera.flashMode) {
+            case SCFlashModeAuto:
+                flashModeString = @"Flash : Off";
+                self.camera.flashMode = SCFlashModeOff;
+                break;
+            case SCFlashModeOff:
+                flashModeString = @"Flash : On";
+                self.camera.flashMode = SCFlashModeOn;
+                break;
+            case SCFlashModeOn:
+                flashModeString = @"Flash : Light";
+                self.camera.flashMode = SCFlashModeLigth;
+                break;
+            case SCFlashModeLigth:
+                flashModeString = @"Flash : Auto";
+                self.camera.flashMode = SCFlashModeAuto;
+                break;
+            default:
+                break;
+        }
+    } else if (self.camera.sessionPreset == AVCaptureSessionPresetHigh) {
+        switch (self.camera.flashMode) {
+            case SCFlashModeOff:
+                flashModeString = @"Flash : On";
+                self.camera.flashMode = SCFlashModeOn;
+                break;
+            case SCFlashModeOn:
+                flashModeString = @"Flash : Off";
+                self.camera.flashMode = SCFlashModeOff;
+                break;
+            default:
+                break;
+        }
+    }
+    
+    [self.flashModeButton setTitle:flashModeString forState:UIControlStateNormal];
+}
+
+- (void) prepareCamera {
+	if (![self.camera isPrepared]) {
+		NSError * error;
+		[self.camera prepareRecordingOnTempDir:&error];
+		
+		if (error != nil) {
+			[self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
+			NSLog(@"%@", error);
+		} else {
+			NSLog(@"- CAMERA READY -");
+		}
+	}
+}
+
+- (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
+	if (self.camera.isPrepared) {
+		if (touchDetector.state == UIGestureRecognizerStateBegan) {
+			NSLog(@"==== STARTING RECORDING ====");
+			[self.camera record];
+		} else if (touchDetector.state == UIGestureRecognizerStateEnded) {
+			NSLog(@"==== PAUSING RECORDING ====");
+			[self.camera pause];
+		}
+	}
+}
+
+// Auto focus at a particular point. The focus mode will change to locked once the auto focus happens.
+- (void)tapToAutoFocus:(UIGestureRecognizer *)gestureRecognizer
+{
+    if (self.camera.isFocusSupported) {
+        CGPoint tapPoint = [gestureRecognizer locationInView:[self previewView]];
+        CGPoint convertedFocusPoint = [self.camera convertToPointOfInterestFromViewCoordinates:tapPoint];
+        self.cameraTagetView.center = tapPoint;
+        [self.camera autoFocusAtPoint:convertedFocusPoint];
+    }
+}
+
+// Change to continuous auto focus. The camera will constantly focus at the point choosen.
+- (void)tapToContinouslyAutoFocus:(UIGestureRecognizer *)gestureRecognizer
+{
+    if (self.camera.isFocusSupported) {
+        self.cameraTagetView.center = self.previewView.center;
+        [self.camera continuousFocusAtPoint:CGPointMake(.5f, .5f)];
     }
 }
 
 - (IBAction)capturePhoto:(id)sender {
     [self.camera capturePhoto];
 }
+
 @end

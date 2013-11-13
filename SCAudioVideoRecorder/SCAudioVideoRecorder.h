@@ -11,6 +11,13 @@
 #import "SCVideoEncoder.h"
 #import "SCAudioEncoder.h"
 
+#if DEBUG
+#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+#else
+#define DLog(...)
+#endif
+
+
 // photo dictionary keys
 
 extern NSString * const SCAudioVideoRecorderPhotoMetadataKey;
@@ -35,7 +42,9 @@ extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError*)error;
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError*)error;
 
+// Photo
 - (void)audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error;
+
 @end
 
 //
