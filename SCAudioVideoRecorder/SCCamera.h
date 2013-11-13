@@ -53,6 +53,10 @@ typedef enum {
 // Switch to continuous auto focus mode at the specified point
 - (void)continuousFocusAtPoint:(CGPoint)point;
 
+// Session
+- (void)startRunningSession;
+- (void)stopRunningSession;
+
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
 // Switch between back and front camera

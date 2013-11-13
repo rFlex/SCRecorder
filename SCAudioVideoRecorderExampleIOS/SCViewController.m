@@ -133,7 +133,7 @@
     [super viewDidAppear:animated];
 	if (self.camera.isReady) {
 		NSLog(@"Starting to run again");
-		[self.camera.session startRunning];
+		[self.camera startRunningSession];
 	} else {
 		NSLog(@"Not prepared yet");
 	}
@@ -141,7 +141,7 @@
 
 - (void)viewDidDisappear:(BOOL)animated {
 	[super viewDidDisappear:animated];
-	
+	[self.camera stopRunningSession];
 	[self.camera cancel];
 }
 

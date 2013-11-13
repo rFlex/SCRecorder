@@ -104,7 +104,7 @@ typedef NSView View;
 
 - (void) dealloc {
 	if (self.session != nil) {
-		[self.session stopRunning];
+        [self stopRunningSession];
         
         [self removeObserverForSession];
 		
@@ -154,6 +154,27 @@ typedef NSView View;
 	return nil;
 }
 
+// Session
+- (void)startRunningSession {
+    if (!session)
+        return;
+    
+    [session startRunning];
+    if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
+        [self.delegate cameraSessionWillStart:self];
+    }
+}
+
+- (void)stopRunningSession {
+    if (!session)
+        return;
+    
+    [session stopRunning];
+    if ([self.delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
+        [self.delegate cameraSessionWillStop:self];
+    }
+}
+
 - (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler {
     if (![self isReady]) {
         dispatch_async(self.dispatch_queue, ^ {
@@ -195,10 +216,7 @@ typedef NSView View;
             // add session Observer
             [self addObserverForSession];
 			
-			[captureSession startRunning];
-            if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
-                [self.delegate cameraSessionWillStart:self];
-            }
+			[self startRunningSession];
 			
             dispatch_async(dispatch_get_main_queue(), ^ {
                 View * settedPreviewView = self.previewView;
