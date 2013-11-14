@@ -13,6 +13,9 @@
 static NSString * const SCCameraFocusObserverContext = @"SCCameraFocusObserverContext";
 static NSString * const SCCameraCaptureStillImageIsCapturingStillImageObserverContext = @"SCCameraCaptureStillImageIsCapturingStillImageObserverContext";
 
+static void *SCCameraFocusModeObserverContext = &SCCameraFocusModeObserverContext;
+
+
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 typedef UIView View;
 #else
@@ -93,9 +96,6 @@ typedef NSView View;
             self.currentAudioDeviceInput = nil;
 		}
 		if (self.currentVideoDeviceInput != nil) {
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-            [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
-#endif
 			[self.session removeInput:self.currentVideoDeviceInput];
             self.currentAudioDeviceInput = nil;
 		}
@@ -104,7 +104,6 @@ typedef NSView View;
 		[self.session removeOutput:self.videoOutput];
         
         if (self.stillImageOutput) {
-            [self.stillImageOutput removeObserver:self forKeyPath:@"capturingStillImage" context:(__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext)];
             [self.session removeOutput:self.stillImageOutput];
         }
         self.session = nil;
@@ -437,6 +436,7 @@ typedef NSView View;
 - (void) initializeCamera:(AVCaptureSession*)captureSession error:(NSError**)error {
 	if (self.currentVideoDeviceInput != nil) {
         [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
+        [self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
 		[captureSession removeInput:self.currentVideoDeviceInput];
 		self.currentVideoDeviceInput = nil;
 	}
@@ -446,6 +446,11 @@ typedef NSView View;
 	if (device != nil) {
 		self.currentVideoDeviceInput = [self addInputToSession:captureSession device:device withMediaType:@"Video" error:error];
         [self.currentVideoDeviceInput.device addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)SCCameraFocusObserverContext];
+        [self addObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode" options:NSKeyValueObservingOptionNew context:SCCameraFocusModeObserverContext];
+        if ([self.delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
+            AVCaptureFocusMode initialFocusMode = [device focusMode];
+            [self.delegate cameraUpdateFocusMode:[NSString stringWithFormat:@"focus: %@", [self stringForFocusMode:initialFocusMode]]];
+        }
 	} else {
 		if (error != nil) {
 			*error = [SCAudioVideoRecorder createError:(self.cameraDevice ? @"Front camera not found" : @"Back camera not found")];
@@ -505,6 +510,17 @@ typedef NSView View;
     
     // Applicaton
     [notificationCenter removeObserver:self];
+    
+    // focus
+    if (self.currentVideoDeviceInput)
+        [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
+    
+    // focusMode
+    [self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
+    
+    // capturingStillImage
+    if (self.stillImageOutput)
+        [self.stillImageOutput removeObserver:self forKeyPath:@"capturingStillImage" context:(__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext)];
 }
 
 
@@ -756,6 +772,26 @@ typedef NSView View;
     [self autoFocusAtPoint:focusPoint];
 }
 
+// FocusMode
+- (NSString *)stringForFocusMode:(AVCaptureFocusMode)focusMode
+{
+	NSString *focusString = @"";
+	
+	switch (focusMode) {
+		case AVCaptureFocusModeLocked:
+			focusString = @"locked";
+			break;
+		case AVCaptureFocusModeAutoFocus:
+			focusString = @"auto";
+			break;
+		case AVCaptureFocusModeContinuousAutoFocus:
+			focusString = @"continuous";
+			break;
+	}
+	
+	return focusString;
+}
+
 #pragma mark - KVO
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -778,6 +814,11 @@ typedef NSView View;
             [self _didCapturePhoto];
         }
         
+	} else if (context == SCCameraFocusModeObserverContext) {
+        // Update the focus UI overlay string when the focus mode changes
+        if ([self.delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
+            [self.delegate cameraUpdateFocusMode:[NSString stringWithFormat:@"focus: %@", [self stringForFocusMode:(AVCaptureFocusMode)[[change objectForKey:NSKeyValueChangeNewKey] integerValue]]]];
+        }
 	}
 }
 

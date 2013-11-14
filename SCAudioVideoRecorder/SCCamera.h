@@ -37,6 +37,9 @@ typedef NS_ENUM(NSInteger, SCCameraDevice) {
 - (void)cameraWillStartFocus:(SCCamera *)camera;
 - (void)cameraDidStopFocus:(SCCamera *)camera;
 
+// FocusMode
+- (void)cameraUpdateFocusMode:(NSString *)focusModeString;
+
 // Error
 - (void)camera:(SCCamera *)camera didFailWithError:(NSError *)error;
 

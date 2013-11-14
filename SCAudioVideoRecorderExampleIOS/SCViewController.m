@@ -244,6 +244,10 @@
     DLog(@"SessionDidStop");
 }
 
+- (void)cameraUpdateFocusMode:(NSString *)focusModeString {
+    DLog(@"%@", focusModeString);
+}
+
 #pragma mark - Handle
 
 - (void) showAlertViewWithTitle:(NSString*)title message:(NSString*) message {
@@ -274,10 +278,9 @@
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
-    [self.navigationController popViewControllerAnimated:YES];
-//    [self.camera cancel];
-//	[self prepareCamera];
-//    [self updateLabelForSecond:0];
+    [self.camera cancel];
+	[self prepareCamera];
+    [self updateLabelForSecond:0];
 }
 
 - (IBAction)switchCameraMode:(id)sender {
