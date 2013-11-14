@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "SCAudioVideoRecorder.h"
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+
 typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
     SCFlashModeOn   = AVCaptureFlashModeOn,
@@ -21,9 +23,30 @@ typedef NS_ENUM(NSInteger, SCCameraDevice) {
     SCCameraDeviceFront = AVCaptureDevicePositionFront
 };
 
+#endif
+
 @class SCCamera;
 @protocol SCCameraDelegate <SCAudioVideoRecorderDelegate>
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+// These methods are prepared to take pictures animation
+- (void)cameraWillCapturePhoto:(SCCamera *)camera;
+- (void)cameraDidCapturePhoto:(SCCamera *)camera;
+
+// Focus
+- (void)cameraWillStartFocus:(SCCamera *)camera;
+- (void)cameraDidStopFocus:(SCCamera *)camera;
+
+// Error
+- (void)camera:(SCCamera *)camera didFailWithError:(NSError *)error;
+
+// session，Because these methods are in order to open the animation of the session and the closing session
+- (void)cameraSessionWillStart:(SCCamera *)camera;
+- (void)cameraSessionDidStart:(SCCamera *)camera;
+- (void)cameraSessionWillStop:(SCCamera *)camera;
+- (void)cameraSessionDidStop:(SCCamera *)camera;
+
+#endif
 @end
 
 typedef enum {
@@ -50,6 +73,8 @@ typedef enum {
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+
 @property (nonatomic) SCFlashMode flashMode;
 @property (nonatomic) SCCameraDevice cameraDevice;
 
@@ -63,8 +88,6 @@ typedef enum {
 // Session
 - (void)startRunningSession;
 - (void)stopRunningSession;
-
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
 // Switch between back and front camera
 - (void) switchCamera;

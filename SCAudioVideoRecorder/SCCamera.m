@@ -49,42 +49,13 @@ typedef NSView View;
 @synthesize delegate;
 @synthesize previewLayer;
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+
 @synthesize flashMode = _flashMode;
 @synthesize isFocusSupported = _isFocusSupported;
 @synthesize cameraDevice = _cameraDevice;
 
-- (void)addObserverForSession {
-    // add notification observers
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    
-    // session notifications
-    [notificationCenter addObserver:self selector:@selector(_sessionRuntimeErrored:) name:AVCaptureSessionRuntimeErrorNotification object:session];
-    [notificationCenter addObserver:self selector:@selector(_sessionStarted:) name:AVCaptureSessionDidStartRunningNotification object:session];
-    [notificationCenter addObserver:self selector:@selector(_sessionStopped:) name:AVCaptureSessionDidStopRunningNotification object:session];
-    [notificationCenter addObserver:self selector:@selector(_sessionWasInterrupted:) name:AVCaptureSessionWasInterruptedNotification object:session];
-    [notificationCenter addObserver:self selector:@selector(_sessionInterruptionEnded:) name:AVCaptureSessionInterruptionEndedNotification object:session];
-    
-    // capture device notifications
-    [notificationCenter addObserver:self selector:@selector(_deviceSubjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
-}
-
-- (void)removeObserverForSession {
-    if (!session)
-        return;
-    
-    // remove notification observers (we don't want to just 'remove all' because we're also observing background notifications
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    
-    // session notifications
-    [notificationCenter removeObserver:self name:AVCaptureSessionRuntimeErrorNotification object:session];
-    [notificationCenter removeObserver:self name:AVCaptureSessionDidStartRunningNotification object:session];
-    [notificationCenter removeObserver:self name:AVCaptureSessionDidStopRunningNotification object:session];
-    [notificationCenter removeObserver:self name:AVCaptureSessionWasInterruptedNotification object:session];
-    [notificationCenter removeObserver:self name:AVCaptureSessionInterruptionEndedNotification object:session];
-    
-    // capture device notifications
-    [notificationCenter removeObserver:self name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
-}
+#endif
 
 - (id) init {
     return [self initWithSessionPreset:AVCaptureSessionPresetHigh];
@@ -96,9 +67,11 @@ typedef NSView View;
     if (self) {
 		_sessionPreset = nil;
 		_useFrontCamera = NO;
+        self.sessionPreset = sessionPreset;
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
         _cameraDevice = SCCameraDeviceBack;
         self.flashMode = SCFlashModeAuto;
-        self.sessionPreset = sessionPreset;
+#endif
     }
     
     return self;
@@ -106,23 +79,35 @@ typedef NSView View;
 
 - (void) dealloc {
 	if (self.session != nil) {
+        _sessionPreset = nil;
+        self.previewLayer = nil;
+        
         [self stopRunningSession];
         
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
         [self removeObserverForSession];
-		
+#endif
+        
 		if (self.currentAudioDeviceInput != nil) {
 			[self.session removeInput:self.currentAudioDeviceInput];
+            self.currentAudioDeviceInput = nil;
 		}
 		if (self.currentVideoDeviceInput != nil) {
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
             [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
+#endif
 			[self.session removeInput:self.currentVideoDeviceInput];
+            self.currentAudioDeviceInput = nil;
 		}
+        
 		[self.session removeOutput:self.audioOutput];
 		[self.session removeOutput:self.videoOutput];
+        
         if (self.stillImageOutput) {
             [self.stillImageOutput removeObserver:self forKeyPath:@"capturingStillImage" context:(__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext)];
             [self.session removeOutput:self.stillImageOutput];
         }
+        self.session = nil;
 	}
 }
 
@@ -158,23 +143,33 @@ typedef NSView View;
 
 // Session
 - (void)startRunningSession {
-    if (!session)
-        return;
-    
-    [session startRunning];
-    if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
-        [self.delegate cameraSessionWillStart:self];
-    }
+//    dispatch_async(self.dispatch_queue, ^{
+        if (!session && session.isRunning)
+            return;
+        
+        [session startRunning];
+        
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+        if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
+            [self.delegate cameraSessionWillStart:self];
+        }
+#endif
+//    });
 }
 
 - (void)stopRunningSession {
-    if (!session)
-        return;
-    
-    [session stopRunning];
-    if ([self.delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
-        [self.delegate cameraSessionWillStop:self];
-    }
+//    dispatch_async(self.dispatch_queue, ^{
+        if (!session && !session.isRunning)
+            return;
+        
+        [session stopRunning];
+        
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+        if ([self.delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
+            [self.delegate cameraSessionWillStop:self];
+        }
+#endif
+//    });
 }
 
 - (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler {
@@ -215,11 +210,16 @@ typedef NSView View;
 			// Apply the video orientation is it was set before the session was created
 			self.videoOrientation = self.cachedVideoOrientation;
             
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
             // add session Observer
             [self addObserverForSession];
+#endif
 			
-			[self startRunningSession];
-			
+            #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+			// Because I want to in the controller, the appropriate time to start
+#else
+            [self startRunningSession];
+			#endif
             dispatch_async(dispatch_get_main_queue(), ^ {
                 View * settedPreviewView = self.previewView;
                 
@@ -331,18 +331,6 @@ typedef NSView View;
 	return self.cachedVideoOrientation;
 }
 
-- (void)_willCapturePhoto
-{
-    if ([self.delegate respondsToSelector:@selector(audioVideoRecorderWillCapturePhoto:)])
-        [self.delegate audioVideoRecorderWillCapturePhoto:self];
-}
-
-- (void)_didCapturePhoto
-{
-    if ([self.delegate respondsToSelector:@selector(audioVideoRecorderDidCapturePhoto:)])
-        [self.delegate audioVideoRecorderDidCapturePhoto:self];
-}
-
 - (NSString*) sessionPreset {
 	return _sessionPreset;
 }
@@ -358,6 +346,12 @@ typedef NSView View;
 		}
 	}
 }
+
+////////////////////////////////////////////////////////////
+// IOS SPECIFIC
+/////////////////////
+
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
 - (void)setFlashMode:(SCFlashMode)flashMode {
     AVCaptureDevice *_currentDevice = self.currentVideoDeviceInput.device;
@@ -402,11 +396,17 @@ typedef NSView View;
     return [[self.currentVideoDeviceInput device] isFocusPointOfInterestSupported];
 }
 
-////////////////////////////////////////////////////////////
-// IOS SPECIFIC
-/////////////////////
+- (void)_willCapturePhoto
+{
+    if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)])
+        [self.delegate cameraWillCapturePhoto:self];
+}
 
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+- (void)_didCapturePhoto
+{
+    if ([self.delegate respondsToSelector:@selector(cameraDidCapturePhoto:)])
+        [self.delegate cameraDidCapturePhoto:self];
+}
 
 - (void) switchCamera {
     switch (self.cameraDevice) {
@@ -467,7 +467,70 @@ typedef NSView View;
 	}
 }
 
-#endif
+- (void)addObserverForSession {
+    // add notification observers
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    
+    // session notifications
+    [notificationCenter addObserver:self selector:@selector(_sessionRuntimeErrored:) name:AVCaptureSessionRuntimeErrorNotification object:session];
+    [notificationCenter addObserver:self selector:@selector(_sessionStarted:) name:AVCaptureSessionDidStartRunningNotification object:session];
+    [notificationCenter addObserver:self selector:@selector(_sessionStopped:) name:AVCaptureSessionDidStopRunningNotification object:session];
+    [notificationCenter addObserver:self selector:@selector(_sessionWasInterrupted:) name:AVCaptureSessionWasInterruptedNotification object:session];
+    [notificationCenter addObserver:self selector:@selector(_sessionInterruptionEnded:) name:AVCaptureSessionInterruptionEndedNotification object:session];
+    
+    // capture device notifications
+    [notificationCenter addObserver:self selector:@selector(_deviceSubjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+    
+    // Applicaton
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationWillEnterForeground:) name:@"UIApplicationWillEnterForegroundNotification" object:[UIApplication sharedApplication]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidEnterBackground:) name:@"UIApplicationDidEnterBackgroundNotification" object:[UIApplication sharedApplication]];
+}
+
+- (void)removeObserverForSession {
+    if (!session)
+        return;
+    
+    // remove notification observers (we don't want to just 'remove all' because we're also observing background notifications
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    
+    // session notifications
+    [notificationCenter removeObserver:self name:AVCaptureSessionRuntimeErrorNotification object:session];
+    [notificationCenter removeObserver:self name:AVCaptureSessionDidStartRunningNotification object:session];
+    [notificationCenter removeObserver:self name:AVCaptureSessionDidStopRunningNotification object:session];
+    [notificationCenter removeObserver:self name:AVCaptureSessionWasInterruptedNotification object:session];
+    [notificationCenter removeObserver:self name:AVCaptureSessionInterruptionEndedNotification object:session];
+    
+    // capture device notifications
+    [notificationCenter removeObserver:self name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+    
+    // Applicaton
+    [notificationCenter removeObserver:self];
+}
+
+
+#pragma mark - App NSNotifications
+
+// TODO: support suspend/resume video recording
+
+- (void)_applicationWillEnterForeground:(NSNotification *)notification
+{
+    DLog(@"applicationWillEnterForeground");
+    [self dispatchBlockOnAskedQueue:^{
+        [self startRunningSession];
+    }];
+}
+
+- (void)_applicationDidEnterBackground:(NSNotification *)notification
+{
+    DLog(@"applicationDidEnterBackground");
+    if (self.isRecording) {
+        [self pause];
+    }
+    
+    [self dispatchBlockOnAskedQueue:^{
+        [self stopRunningSession];
+    }];
+}
 
 #pragma mark - AV NSNotifications
 
@@ -641,8 +704,8 @@ typedef NSView View;
             [device setFocusMode:AVCaptureFocusModeAutoFocus];
             [device unlockForConfiguration];
         } else {
-            if ([[self delegate] respondsToSelector:@selector(audioVideoRecorder::didFailWithError:)]) {
-                [[self delegate] audioVideoRecorder:self didFailWithError:error];
+            if ([[self delegate] respondsToSelector:@selector(camera:didFailWithError:)]) {
+                [[self delegate] camera:self didFailWithError:error];
             }
         }
     }
@@ -660,8 +723,8 @@ typedef NSView View;
 			[device setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
 			[device unlockForConfiguration];
 		} else {
-			if ([[self delegate] respondsToSelector:@selector(audioVideoRecorder:didFailWithError:)]) {
-                [[self delegate] audioVideoRecorder:self didFailWithError:error];
+			if ([[self delegate] respondsToSelector:@selector(camera:didFailWithError:)]) {
+                [[self delegate] camera:self didFailWithError:error];
 			}
 		}
 	}
@@ -669,14 +732,14 @@ typedef NSView View;
 
 - (void)_focusStarted
 {
-    if ([self.delegate respondsToSelector:@selector(audioVideoRecorderWillStartFocus:)])
-        [self.delegate audioVideoRecorderWillStartFocus:self];
+    if ([self.delegate respondsToSelector:@selector(cameraWillStartFocus:)])
+        [self.delegate cameraWillStartFocus:self];
 }
 
 - (void)_focusEnded
 {
-    if ([self.delegate respondsToSelector:@selector(audioVideoRecorderDidStopFocus:)])
-        [self.delegate audioVideoRecorderDidStopFocus:self];
+    if ([self.delegate respondsToSelector:@selector(cameraDidStopFocus:)])
+        [self.delegate cameraDidStopFocus:self];
 }
 
 - (void)_focus
@@ -686,8 +749,8 @@ typedef NSView View;
         return;
     
     // only notify clients when focus is triggered from an event
-    if ([self.delegate respondsToSelector:@selector(visionWillStartFocus:)])
-        [self.delegate audioVideoRecorderWillStartFocus:self];
+    if ([self.delegate respondsToSelector:@selector(cameraWillStartFocus:)])
+        [self.delegate cameraWillStartFocus:self];
     
     CGPoint focusPoint = CGPointMake(0.5f, 0.5f);
     [self autoFocusAtPoint:focusPoint];
@@ -717,5 +780,7 @@ typedef NSView View;
         
 	}
 }
+
+#endif
 
 @end

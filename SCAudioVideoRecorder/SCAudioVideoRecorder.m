@@ -109,6 +109,25 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	return self;
 }
 
+- (void)dealloc {
+    self.videoOutput = nil;
+    self.audioOutput = nil;
+    self.stillImageOutput = nil;
+    
+    self.videoEncoder = nil;
+    self.audioEncoder = nil;
+    
+    self.outputFileUrl = nil;
+    
+    self.playbackAsset = nil;
+    
+    self.outputFileType = nil;
+    
+    self.dispatch_queue = nil;
+    
+    self.assetWriter = nil;
+}
+
 // Hack to force ARC to not release an object in a code block
 - (void) pleaseDontReleaseObject:(id)object {
 	

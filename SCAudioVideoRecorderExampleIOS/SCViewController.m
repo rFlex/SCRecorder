@@ -132,7 +132,7 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 	if (self.camera.isReady) {
-		NSLog(@"Starting to run again");
+		NSLog(@"Starting to run");
 		[self.camera startRunningSession];
 	} else {
 		NSLog(@"Not prepared yet");
@@ -145,6 +145,11 @@
 	[self.camera cancel];
 }
 
+- (void)dealloc {
+    self.camera = nil;
+    self.cameraTagetView = nil;
+}
+
 - (void) updateLabelForSecond:(Float64)totalRecorded {
     self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", totalRecorded];
 }
@@ -154,6 +159,22 @@
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordVideoFrame:(CMTime)frameTime {
     [self updateLabelForSecond:CMTimeGetSeconds(frameTime)];
 }
+
+// error
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {
+    NSLog(@"Failed to initialize VideoEncoder");
+}
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
+    NSLog(@"Failed to initialize AudioEncoder");
+}
+
+- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime {
+	self.loadingView.hidden = NO;
+    self.downBar.userInteractionEnabled = NO;
+}
+
+// Video
 
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
 	[self prepareCamera];
@@ -167,34 +188,9 @@
     }
 }
 
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime {
-	self.loadingView.hidden = NO;
-    self.downBar.userInteractionEnabled = NO;
-}
-
-// error
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize VideoEncoder");
-}
-
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize AudioEncoder");
-}
-
-- (void)audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailWithError:(NSError *)error {
-    DLog(@"error : %@", error.description);
-}
+#pragma mark - Camera Delegate
 
 // Photo
-- (void)audioVideoRecorderWillCapturePhoto:(SCAudioVideoRecorder *)audioVideoRecorder {
-    DLog(@"Will capture photo");
-}
-
-- (void)audioVideoRecorderDidCapturePhoto:(SCAudioVideoRecorder *)audioVideoRecorder {
-    DLog(@"Did capture photo");
-}
-
-// Video
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
     if (!error) {
         [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
@@ -205,13 +201,28 @@
     }
 }
 
+// Camera
+
+- (void)camera:(SCCamera *)camera didFailWithError:(NSError *)error {
+    DLog(@"error : %@", error.description);
+}
+
+// Photo
+- (void)cameraWillCapturePhoto:(SCCamera *)camera {
+    DLog(@"Will capture photo");
+}
+
+- (void)cameraDidCapturePhoto:(SCCamera *)camera {
+    DLog(@"Did capture photo");
+}
+
 // Focus
-- (void)audioVideoRecorderWillStartFocus:(SCAudioVideoRecorder *)audioVideoRecorder {
+- (void)cameraWillStartFocus:(SCCamera *)camera {
     DLog(@"WillStartFocus");
     [self.cameraTagetView startTageting];
 }
 
-- (void)audioVideoRecorderDidStopFocus:(SCAudioVideoRecorder *)audioVideoRecorder {
+- (void)cameraDidStopFocus:(SCCamera *)camera {
     DLog(@"DidStopFocus");
     [self.cameraTagetView stopTageting];
 }
@@ -263,9 +274,10 @@
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
-    [self.camera cancel];
-	[self prepareCamera];
-    [self updateLabelForSecond:0];
+    [self.navigationController popViewControllerAnimated:YES];
+//    [self.camera cancel];
+//	[self prepareCamera];
+//    [self updateLabelForSecond:0];
 }
 
 - (IBAction)switchCameraMode:(id)sender {
