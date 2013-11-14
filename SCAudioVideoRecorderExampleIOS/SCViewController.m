@@ -16,7 +16,7 @@
 #import "SCImageViewDisPlayViewController.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 
-#import "SCCameraTagetView.h"
+#import "SCCameraTargetView.h"
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -27,7 +27,7 @@
 }
 
 @property (strong, nonatomic) SCCamera * camera;
-@property (strong, nonatomic) SCCameraTagetView *cameraTagetView;
+@property (strong, nonatomic) SCCameraTargetView *cameraTagetView;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -40,9 +40,9 @@
 
 #pragma mark - setter / getter
 
-- (SCCameraTagetView *)cameraTagetView {
+- (SCCameraTargetView *)cameraTagetView {
     if (!_cameraTagetView) {
-        _cameraTagetView = [[SCCameraTagetView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
+        _cameraTagetView = [[SCCameraTargetView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
         _cameraTagetView.center = self.previewView.center;
         [self.previewView addSubview:_cameraTagetView];
     }
@@ -219,12 +219,16 @@
 // Focus
 - (void)cameraWillStartFocus:(SCCamera *)camera {
     DLog(@"WillStartFocus");
-    [self.cameraTagetView startTageting];
+    [self.cameraTagetView startTargeting];
 }
 
 - (void)cameraDidStopFocus:(SCCamera *)camera {
-    DLog(@"DidStopFocus");
-    [self.cameraTagetView stopTageting];
+    [self.cameraTagetView stopTargeting];	
+}
+
+- (void)camera:(SCCamera *)camera didFailFocus:(NSError *)error {
+    DLog(@"DidFailFocus");
+    [self.cameraTagetView stopTargeting];
 }
 
 // Session
@@ -325,22 +329,22 @@
                 break;
             case SCFlashModeOn:
                 flashModeString = @"Flash : Light";
-                self.camera.flashMode = SCFlashModeLigth;
+                self.camera.flashMode = SCFlashModeLight;
                 break;
-            case SCFlashModeLigth:
+            case SCFlashModeLight:
                 flashModeString = @"Flash : Auto";
                 self.camera.flashMode = SCFlashModeAuto;
                 break;
             default:
                 break;
         }
-    } else if (self.camera.sessionPreset == AVCaptureSessionPresetHigh) {
+    } else {
         switch (self.camera.flashMode) {
             case SCFlashModeOff:
                 flashModeString = @"Flash : On";
-                self.camera.flashMode = SCFlashModeOn;
+                self.camera.flashMode = SCFlashModeLight;
                 break;
-            case SCFlashModeOn:
+            case SCFlashModeLight:
                 flashModeString = @"Flash : Off";
                 self.camera.flashMode = SCFlashModeOff;
                 break;

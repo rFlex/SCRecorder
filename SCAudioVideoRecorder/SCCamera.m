@@ -362,23 +362,22 @@ typedef NSView View;
     
     NSError *error = nil;
     if (_currentDevice && [_currentDevice lockForConfiguration:&error]) {
-        [_currentDevice setTorchMode:(AVCaptureTorchMode)AVCaptureFlashModeOff];
-        
-        if (self.sessionPreset == AVCaptureSessionPresetHigh) {
-            if ([_currentDevice isTorchModeSupported:(AVCaptureTorchMode)_flashMode]) {
-                [_currentDevice setTorchMode:(AVCaptureTorchMode)_flashMode];
-            }
-        } else if (self.sessionPreset == AVCaptureSessionPresetPhoto) {
-            if ([_currentDevice isFlashModeSupported:(AVCaptureFlashMode)_flashMode]) {
-                [_currentDevice setFlashMode:(AVCaptureFlashMode)_flashMode];
-            }
-            
-            if (_flashMode == SCFlashModeLigth) {
-                if ([_currentDevice isTorchModeSupported:(AVCaptureTorchMode)AVCaptureFlashModeOn]) {
-                    [_currentDevice setTorchMode:(AVCaptureTorchMode)AVCaptureFlashModeOn];
-                }
-            }
-        }
+		
+		if (_flashMode == SCFlashModeLight) {
+			if ([_currentDevice isTorchModeSupported:AVCaptureTorchModeOn]) {
+				[_currentDevice setTorchMode:AVCaptureTorchModeOn];
+			}
+			if ([_currentDevice isFlashModeSupported:AVCaptureFlashModeOff]) {
+				[_currentDevice setFlashMode:AVCaptureFlashModeOff];
+			}
+		} else {
+			if ([_currentDevice isTorchModeSupported:AVCaptureTorchModeOff]) {
+				[_currentDevice setTorchMode:AVCaptureTorchModeOff];
+			}
+			if ([_currentDevice isFlashModeSupported:(AVCaptureFlashMode)_flashMode]) {
+				[_currentDevice setFlashMode:(AVCaptureFlashMode)_flashMode];
+			}
+		}
         
         [_currentDevice unlockForConfiguration];
         
@@ -720,8 +719,8 @@ typedef NSView View;
             [device setFocusMode:AVCaptureFocusModeAutoFocus];
             [device unlockForConfiguration];
         } else {
-            if ([[self delegate] respondsToSelector:@selector(camera:didFailWithError:)]) {
-                [[self delegate] camera:self didFailWithError:error];
+            if ([[self delegate] respondsToSelector:@selector(camera:didFailFocus:)]) {
+                [[self delegate] camera:self didFailFocus:error];
             }
         }
     }
@@ -739,8 +738,8 @@ typedef NSView View;
 			[device setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
 			[device unlockForConfiguration];
 		} else {
-			if ([[self delegate] respondsToSelector:@selector(camera:didFailWithError:)]) {
-                [[self delegate] camera:self didFailWithError:error];
+			if ([[self delegate] respondsToSelector:@selector(camera:didFailFocus:)]) {
+                [[self delegate] camera:self didFailFocus:error];
 			}
 		}
 	}

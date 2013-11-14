@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SCCameraTagetView : UIView
-- (void)startTageting;
-- (void)stopTageting;
+@interface SCCameraTargetView : UIView
+- (void)startTargeting;
+- (void)stopTargeting;
 @end

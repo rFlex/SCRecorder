@@ -15,7 +15,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
     SCFlashModeOn   = AVCaptureFlashModeOn,
     SCFlashModeAuto = AVCaptureFlashModeAuto,
-    SCFlashModeLigth
+    SCFlashModeLight
 };
 
 typedef NS_ENUM(NSInteger, SCCameraDevice) {
@@ -28,22 +28,25 @@ typedef NS_ENUM(NSInteger, SCCameraDevice) {
 @class SCCamera;
 @protocol SCCameraDelegate <SCAudioVideoRecorderDelegate>
 
+@optional
+
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-// These methods are prepared to take pictures animation
+
+// Photo
+// These methods are commonly used to show a custom animation
 - (void)cameraWillCapturePhoto:(SCCamera *)camera;
 - (void)cameraDidCapturePhoto:(SCCamera *)camera;
 
 // Focus
 - (void)cameraWillStartFocus:(SCCamera *)camera;
 - (void)cameraDidStopFocus:(SCCamera *)camera;
+- (void)camera:(SCCamera *)camera didFailFocus:(NSError *)error;
 
 // FocusMode
 - (void)cameraUpdateFocusMode:(NSString *)focusModeString;
 
-// Error
-- (void)camera:(SCCamera *)camera didFailWithError:(NSError *)error;
-
-// session，Because these methods are in order to open the animation of the session and the closing session
+// Session
+// These methods are commonly used to show an open/close session animation
 - (void)cameraSessionWillStart:(SCCamera *)camera;
 - (void)cameraSessionDidStart:(SCCamera *)camera;
 - (void)cameraSessionWillStop:(SCCamera *)camera;

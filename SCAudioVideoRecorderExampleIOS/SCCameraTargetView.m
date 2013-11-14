@@ -6,14 +6,14 @@
 //  Copyright (c) 2013年 曾 宪华 开发团队(http://iyilunba.com ). All rights reserved.
 //
 
-#import "SCCameraTagetView.h"
+#import "SCCameraTargetView.h"
 
 #define kInsideCircleAnimationKey @"insideCircleAnimationKey"
 #define kOutsideCircleAnimationKey @"outsideCircleAnimationKey"
 
 #define kRemoveCircleAnimationKey @"removeCircleAnimationKey"
 
-@interface SCCameraTagetView ()
+@interface SCCameraTargetView ()
 
 @property (nonatomic, strong) UIImageView *outsideCircle;
 @property (nonatomic, strong) UIImageView *insideCircle;
@@ -21,9 +21,9 @@
 
 @end
 
-@implementation SCCameraTagetView
+@implementation SCCameraTargetView
 
-- (void)startTageting {
+- (void)startTargeting {
     // 判断是否已经add了这个animation
     if ([self.insideCircle.layer.animationKeys containsObject:kInsideCircleAnimationKey] && [self.outsideCircle.layer.animationKeys containsObject:kOutsideCircleAnimationKey]) {
         return;
@@ -58,7 +58,7 @@
     [self.outsideCircle.layer addAnimation:outsideCircleAnimation forKey:kOutsideCircleAnimationKey];
 }
 
-- (void)stopTageting {
+- (void)stopTargeting {
     if (!([self.insideCircle.layer.animationKeys containsObject:kInsideCircleAnimationKey] && [self.outsideCircle.layer.animationKeys containsObject:kOutsideCircleAnimationKey])) {
         return;
     }
@@ -87,7 +87,7 @@
     [self.outsideCircle.layer addAnimation:group forKey:kRemoveCircleAnimationKey];
 }
 
-- (void)stup {
+- (void)setup {
     // insideCircle
     CGRect bounds = self.bounds;
     CGPoint center = CGPointMake(CGRectGetWidth(bounds) / 2.0, CGRectGetHeight(bounds) / 2.0);
@@ -113,7 +113,7 @@
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-        [self stup];
+        [self setup];
     }
     return self;
 }
