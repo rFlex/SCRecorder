@@ -12,10 +12,10 @@ They are compatible both for OS X and iOS.
 Examples for both OS X and IOS are provided.
 
 
-Straightfoward recording using SCCamera
+Straightforward recording using SCCamera
 ---------------------------------------
 
-Initializing the camera:
+Initialising the camera:
 
 	// Create the camera
 	SCCamera * camera = [SCCamera camera];
