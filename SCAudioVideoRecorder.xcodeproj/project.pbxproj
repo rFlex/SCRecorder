@@ -11,6 +11,7 @@
 		AB2BA3FE18338DAE00B7CFA2 /* capture_flip@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB2BA3FD18338DAE00B7CFA2 /* capture_flip@2x.png */; };
 		AB2BA4011833B34A00B7CFA2 /* SCCameraTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */; };
 		AB2BA4031833B4A700B7CFA2 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */; };
+		AB32FD50183D0735007869C1 /* SCBlurOverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32FD4F183D0735007869C1 /* SCBlurOverlayView.m */; };
 		ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCC89F51829AAB6000D3886 /* ImageIO.framework */; };
 		ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */; };
 		DC13706B17C7FE2800AB3F5E /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC264DEC17BACA3E00A5EF98 /* AVFoundation.framework */; };
@@ -104,6 +105,8 @@
 		AB2BA3FF1833B34A00B7CFA2 /* SCCameraTargetView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCCameraTargetView.h; sourceTree = "<group>"; };
 		AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCCameraTargetView.m; sourceTree = "<group>"; };
 		AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		AB32FD4E183D0735007869C1 /* SCBlurOverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCBlurOverlayView.h; sourceTree = "<group>"; };
+		AB32FD4F183D0735007869C1 /* SCBlurOverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCBlurOverlayView.m; sourceTree = "<group>"; };
 		ABCC89F51829AAB6000D3886 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCImageViewDisPlayViewController.h; sourceTree = "<group>"; };
 		ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCImageViewDisPlayViewController.m; sourceTree = "<group>"; };
@@ -244,6 +247,8 @@
 				DC551C6317ADD66000E37F8F /* SCViewController.m */,
 				AB2BA3FF1833B34A00B7CFA2 /* SCCameraTargetView.h */,
 				AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */,
+				AB32FD4E183D0735007869C1 /* SCBlurOverlayView.h */,
+				AB32FD4F183D0735007869C1 /* SCBlurOverlayView.m */,
 				ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */,
 				ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */,
 				DC551C4E17ADD66000E37F8F /* Supporting Files */,
@@ -606,6 +611,7 @@
 				DCF6143417D1584200341EC2 /* SCVideoPlayerView.m in Sources */,
 				5B439A9C183006F000F83EFA /* SCTouchDetector.m in Sources */,
 				DC551C5417ADD66000E37F8F /* main.m in Sources */,
+				AB32FD50183D0735007869C1 /* SCBlurOverlayView.m in Sources */,
 				DC551C5817ADD66000E37F8F /* SCAppDelegate.m in Sources */,
 				DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */,
 				ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */,
