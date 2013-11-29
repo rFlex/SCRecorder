@@ -214,10 +214,10 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		
 		AVMutableComposition * composition = [[AVMutableComposition alloc] init];
 		
-		AVMutableCompositionTrack * audioTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
-		
 		AVMutableCompositionTrack * videoTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
 		
+		AVMutableCompositionTrack * audioTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+				
 		AVURLAsset * fileAsset = [AVURLAsset URLAssetWithURL:oldUrl options:nil];
 
 		NSArray * videoTracks = [fileAsset tracksWithMediaType:AVMediaTypeVideo];
@@ -240,13 +240,13 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		for (AVAssetTrack * track in videoTracks) {
 			[videoTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
 		}
+		
 		videoTrackComposition.preferredTransform = self.videoEncoder.outputAffineTransform;
 		
 		AVAssetExportSession * exportSession = [[AVAssetExportSession alloc] initWithAsset:composition presetName:AVAssetExportPresetPassthrough];
 		exportSession.outputFileType = self.outputFileType;
 		exportSession.shouldOptimizeForNetworkUse = YES;
 		exportSession.outputURL = fileUrl;
-		
 		
 		[exportSession exportAsynchronouslyWithCompletionHandler:^ {
 			[self pleaseDontReleaseObject:exportSession];
