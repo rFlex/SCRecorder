@@ -31,6 +31,7 @@
     
     if (self) {
         // Extra quality!
+		self.outputAffineTransform = CGAffineTransformIdentity;
         self.outputBitsPerPixel = 12;
     }
     

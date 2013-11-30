@@ -447,7 +447,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		} else {
 			NSURL * fileUrl = self.outputFileUrl;
 			NSError * error = self.assetWriter.error;
-			
+
 			switch (self.assetWriter.status) {
 				case AVAssetWriterStatusWriting:
 					[self finishWriter:fileUrl];
