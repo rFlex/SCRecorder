@@ -92,6 +92,9 @@ namespace SCorsin {
 		[Export("outputVideoSize")]
 		SizeF OutputVideoSize { get; set; }
 
+		[Export("outputBitsPerPixel")]
+		float OutputBitsPerPixel { get; set; }
+
 	}
 
 	[BaseType(typeof(SCDataEncoder))]
@@ -137,6 +140,10 @@ namespace SCorsin {
 		[Abstract]
 		[Export("audioVideoRecorder:didFailToInitializeAudioEncoder:"), EventArgs("AudioVideoRecorderInitializeFailed")]
 		void DidFailInitializeAudioEncoder(SCAudioVideoRecorder audioVideoRecorder, NSError error);
+
+		[Abstract]
+		[Export("audioVideoRecorder:capturedPhoto:error:"), EventArgs("AudioVideoRecorderTookPhoto")]
+		void DidCapturePhoto(SCAudioVideoRecorder audioVideoRecorder, NSDictionary photoDict, NSError error);
 	}
 
     [Model, BaseType (typeof (NSObject))]
@@ -247,6 +254,12 @@ namespace SCorsin {
 
         [Export("previewView"), NullAllowed]
         UIView PreviewView { get; set; }
+
+		[Export("startRunningSession")]
+		void StartRunningSession();
+
+		[Export("stopRunningSession")]
+		void StopRunningSession();
 
         [Export("session")]
         AVCaptureSession Session { get; }
