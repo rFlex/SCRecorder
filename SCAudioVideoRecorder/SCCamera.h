@@ -36,6 +36,7 @@ typedef NS_ENUM(NSInteger, SCCameraDevice) {
 // These methods are commonly used to show a custom animation
 - (void)cameraWillCapturePhoto:(SCCamera *)camera;
 - (void)cameraDidCapturePhoto:(SCCamera *)camera;
+- (void)camera:(SCCamera *)camera cleanApertureDidChange:(CGRect)cleanAperture;
 
 // Focus
 - (void)cameraWillStartFocus:(SCCamera *)camera;
@@ -98,7 +99,9 @@ typedef enum {
 // Switch between back and front camera
 - (void) switchCamera;
 
+// preview
 @property (weak, nonatomic) UIView * previewView;
+@property (nonatomic, readonly) CGRect cleanAperture;
 
 #else
 

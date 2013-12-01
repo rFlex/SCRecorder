@@ -142,33 +142,29 @@ typedef NSView View;
 
 // Session
 - (void)startRunningSession {
-//    dispatch_async(self.dispatch_queue, ^{
-        if (!session && session.isRunning)
-            return;
-        
-        [session startRunning];
-        
+    if (!session && session.isRunning)
+        return;
+    
+    [session startRunning];
+    
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-        if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
-            [self.delegate cameraSessionWillStart:self];
-        }
+    if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
+        [self.delegate cameraSessionWillStart:self];
+    }
 #endif
-//    });
 }
 
 - (void)stopRunningSession {
-//    dispatch_async(self.dispatch_queue, ^{
-        if (!session && !session.isRunning)
-            return;
-        
-        [session stopRunning];
-        
+    if (!session && !session.isRunning)
+        return;
+    
+    [session stopRunning];
+    
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-        if ([self.delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
-            [self.delegate cameraSessionWillStop:self];
-        }
+    if ([self.delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
+        [self.delegate cameraSessionWillStop:self];
+    }
 #endif
-//    });
 }
 
 - (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler {
@@ -482,6 +478,9 @@ typedef NSView View;
     [notificationCenter addObserver:self selector:@selector(_sessionWasInterrupted:) name:AVCaptureSessionWasInterruptedNotification object:session];
     [notificationCenter addObserver:self selector:@selector(_sessionInterruptionEnded:) name:AVCaptureSessionInterruptionEndedNotification object:session];
     
+    // capture input notifications
+    [notificationCenter addObserver:self selector:@selector(_inputPortFormatDescriptionDidChange:) name:AVCaptureInputPortFormatDescriptionDidChangeNotification object:nil];
+    
     // capture device notifications
     [notificationCenter addObserver:self selector:@selector(_deviceSubjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
     
@@ -503,6 +502,9 @@ typedef NSView View;
     [notificationCenter removeObserver:self name:AVCaptureSessionDidStopRunningNotification object:session];
     [notificationCenter removeObserver:self name:AVCaptureSessionWasInterruptedNotification object:session];
     [notificationCenter removeObserver:self name:AVCaptureSessionInterruptionEndedNotification object:session];
+    
+    // capture input notifications
+    [notificationCenter removeObserver:self name:AVCaptureInputPortFormatDescriptionDidChangeNotification object:nil];
     
     // capture device notifications
     [notificationCenter removeObserver:self name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
@@ -624,6 +626,24 @@ typedef NSView View;
             // notify ended?
         }
     }];
+}
+
+// capture input
+
+- (void)_inputPortFormatDescriptionDidChange:(NSNotification *)notification
+{
+    // when the input format changes, store the clean aperture
+    // (clean aperture is the rect that represents the valid image data for this display)
+    AVCaptureInputPort *inputPort = (AVCaptureInputPort *)[notification object];
+    if (inputPort) {
+        CMFormatDescriptionRef formatDescription = [inputPort formatDescription];
+        if (formatDescription) {
+            _cleanAperture = CMVideoFormatDescriptionGetCleanAperture(formatDescription, YES);
+            if ([self.delegate respondsToSelector:@selector(camera:cleanApertureDidChange:)]) {
+                [self.delegate camera:self cleanApertureDidChange:_cleanAperture];
+            }
+        }
+    }
 }
 
 // capture device

@@ -252,6 +252,10 @@
     DLog(@"%@", focusModeString);
 }
 
+- (void)camera:(SCCamera *)camera cleanApertureDidChange:(CGRect)cleanAperture {
+    DLog(@"%@", NSStringFromCGRect(cleanAperture));
+}
+
 #pragma mark - Handle
 
 - (void) showAlertViewWithTitle:(NSString*)title message:(NSString*) message {
