@@ -70,7 +70,11 @@ SCPlayer * currentSCVideoPlayer = nil;
 			if ([self isPlaying]) {
 				[self play];
 			}
-		}
+		} else {
+            if ([[self delegate] respondsToSelector:@selector(videoPlayer:didFinishPlaying:)]) {
+                [self.delegate videoPlayer:self didFinishPlaying:self.currentItem];
+            }
+        }
 	}
 }
 

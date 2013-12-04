@@ -94,6 +94,10 @@
 //	self.loadingView.hidden = item == nil;
 }
 
+- (void) videoPlayer:(SCPlayer *)videoPlayer didFinishPlaying:(AVPlayerItem *)item {
+    
+}
+
 - (void) layoutSubviews {
 	[super layoutSubviews];
 	
