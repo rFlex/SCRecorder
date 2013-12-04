@@ -392,8 +392,10 @@ typedef NSView View;
 
 - (void)_willCapturePhoto
 {
-    if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)])
+    if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)]) {
+        [self stopRunningSession];
         [self.delegate cameraWillCapturePhoto:self];
+    }
 }
 
 - (void)_didCapturePhoto

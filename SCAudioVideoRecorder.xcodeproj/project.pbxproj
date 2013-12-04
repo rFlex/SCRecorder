@@ -11,7 +11,17 @@
 		AB2BA3FE18338DAE00B7CFA2 /* capture_flip@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB2BA3FD18338DAE00B7CFA2 /* capture_flip@2x.png */; };
 		AB2BA4011833B34A00B7CFA2 /* SCCameraTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */; };
 		AB2BA4031833B4A700B7CFA2 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */; };
-		AB32FD50183D0735007869C1 /* SCBlurOverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32FD4F183D0735007869C1 /* SCBlurOverlayView.m */; };
+		AB32F59E184F877E00134728 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB32F59D184F877D00134728 /* Accelerate.framework */; };
+		AB32F5C2184F96F200134728 /* band.png in Resources */ = {isa = PBXBuildFile; fileRef = AB32F5B2184F96F200134728 /* band.png */; };
+		AB32F5C3184F96F200134728 /* circle.png in Resources */ = {isa = PBXBuildFile; fileRef = AB32F5B3184F96F200134728 /* circle.png */; };
+		AB32F5C4184F96F200134728 /* icon_band.png in Resources */ = {isa = PBXBuildFile; fileRef = AB32F5B4184F96F200134728 /* icon_band.png */; };
+		AB32F5C5184F96F200134728 /* icon_circle.png in Resources */ = {isa = PBXBuildFile; fileRef = AB32F5B5184F96F200134728 /* icon_circle.png */; };
+		AB32F5C6184F96F200134728 /* icon_normal.png in Resources */ = {isa = PBXBuildFile; fileRef = AB32F5B6184F96F200134728 /* icon_normal.png */; };
+		AB32F5C7184F96F200134728 /* SCBlurBand.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5B8184F96F200134728 /* SCBlurBand.m */; };
+		AB32F5C8184F96F200134728 /* SCBlurCircle.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5BA184F96F200134728 /* SCBlurCircle.m */; };
+		AB32F5C9184F96F200134728 /* SCImageBlurTool.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5BD184F96F200134728 /* SCImageBlurTool.m */; };
+		AB32F5D1184F9B0800134728 /* UIImage+Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5CE184F9B0800134728 /* UIImage+Utility.m */; };
+		AB32F5D2184F9B0800134728 /* UIView+Frame.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5D0184F9B0800134728 /* UIView+Frame.m */; };
 		ABCB9421184BAC2C00BB5927 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */; };
 		ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCC89F51829AAB6000D3886 /* ImageIO.framework */; };
 		ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */; };
@@ -106,8 +116,23 @@
 		AB2BA3FF1833B34A00B7CFA2 /* SCCameraTargetView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCCameraTargetView.h; sourceTree = "<group>"; };
 		AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCCameraTargetView.m; sourceTree = "<group>"; };
 		AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		AB32FD4E183D0735007869C1 /* SCBlurOverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCBlurOverlayView.h; sourceTree = "<group>"; };
-		AB32FD4F183D0735007869C1 /* SCBlurOverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCBlurOverlayView.m; sourceTree = "<group>"; };
+		AB32F59D184F877D00134728 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		AB32F5B2184F96F200134728 /* band.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = band.png; sourceTree = "<group>"; };
+		AB32F5B3184F96F200134728 /* circle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = circle.png; sourceTree = "<group>"; };
+		AB32F5B4184F96F200134728 /* icon_band.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_band.png; sourceTree = "<group>"; };
+		AB32F5B5184F96F200134728 /* icon_circle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_circle.png; sourceTree = "<group>"; };
+		AB32F5B6184F96F200134728 /* icon_normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_normal.png; sourceTree = "<group>"; };
+		AB32F5B7184F96F200134728 /* SCBlurBand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCBlurBand.h; sourceTree = "<group>"; };
+		AB32F5B8184F96F200134728 /* SCBlurBand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCBlurBand.m; sourceTree = "<group>"; };
+		AB32F5B9184F96F200134728 /* SCBlurCircle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCBlurCircle.h; sourceTree = "<group>"; };
+		AB32F5BA184F96F200134728 /* SCBlurCircle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCBlurCircle.m; sourceTree = "<group>"; };
+		AB32F5BB184F96F200134728 /* SCImageBlurHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCImageBlurHeader.h; sourceTree = "<group>"; };
+		AB32F5BC184F96F200134728 /* SCImageBlurTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCImageBlurTool.h; sourceTree = "<group>"; };
+		AB32F5BD184F96F200134728 /* SCImageBlurTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCImageBlurTool.m; sourceTree = "<group>"; };
+		AB32F5CD184F9B0800134728 /* UIImage+Utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Utility.h"; sourceTree = "<group>"; };
+		AB32F5CE184F9B0800134728 /* UIImage+Utility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Utility.m"; sourceTree = "<group>"; };
+		AB32F5CF184F9B0800134728 /* UIView+Frame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Frame.h"; sourceTree = "<group>"; };
+		AB32F5D0184F9B0800134728 /* UIView+Frame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Frame.m"; sourceTree = "<group>"; };
 		ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		ABCC89F51829AAB6000D3886 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCImageViewDisPlayViewController.h; sourceTree = "<group>"; };
@@ -221,6 +246,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB32F59E184F877E00134728 /* Accelerate.framework in Frameworks */,
 				ABCB9421184BAC2C00BB5927 /* OpenGLES.framework in Frameworks */,
 				AB2BA4031833B4A700B7CFA2 /* QuartzCore.framework in Frameworks */,
 				ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */,
@@ -238,6 +264,45 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AB32F5B0184F96F200134728 /* SCImageBlurTool */ = {
+			isa = PBXGroup;
+			children = (
+				AB32F5B1184F96F200134728 /* resource */,
+				AB32F5B7184F96F200134728 /* SCBlurBand.h */,
+				AB32F5B8184F96F200134728 /* SCBlurBand.m */,
+				AB32F5B9184F96F200134728 /* SCBlurCircle.h */,
+				AB32F5BA184F96F200134728 /* SCBlurCircle.m */,
+				AB32F5BB184F96F200134728 /* SCImageBlurHeader.h */,
+				AB32F5BC184F96F200134728 /* SCImageBlurTool.h */,
+				AB32F5BD184F96F200134728 /* SCImageBlurTool.m */,
+				AB32F5CC184F9B0800134728 /* Categorys */,
+			);
+			path = SCImageBlurTool;
+			sourceTree = "<group>";
+		};
+		AB32F5B1184F96F200134728 /* resource */ = {
+			isa = PBXGroup;
+			children = (
+				AB32F5B2184F96F200134728 /* band.png */,
+				AB32F5B3184F96F200134728 /* circle.png */,
+				AB32F5B4184F96F200134728 /* icon_band.png */,
+				AB32F5B5184F96F200134728 /* icon_circle.png */,
+				AB32F5B6184F96F200134728 /* icon_normal.png */,
+			);
+			path = resource;
+			sourceTree = "<group>";
+		};
+		AB32F5CC184F9B0800134728 /* Categorys */ = {
+			isa = PBXGroup;
+			children = (
+				AB32F5CD184F9B0800134728 /* UIImage+Utility.h */,
+				AB32F5CE184F9B0800134728 /* UIImage+Utility.m */,
+				AB32F5CF184F9B0800134728 /* UIView+Frame.h */,
+				AB32F5D0184F9B0800134728 /* UIView+Frame.m */,
+			);
+			path = Categorys;
+			sourceTree = "<group>";
+		};
 		DC23FE0C17B41FAB00389EDA /* SCAudioVideoRecorderExampleIOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -250,10 +315,9 @@
 				DC551C6317ADD66000E37F8F /* SCViewController.m */,
 				AB2BA3FF1833B34A00B7CFA2 /* SCCameraTargetView.h */,
 				AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */,
-				AB32FD4E183D0735007869C1 /* SCBlurOverlayView.h */,
-				AB32FD4F183D0735007869C1 /* SCBlurOverlayView.m */,
 				ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */,
 				ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */,
+				AB32F5B0184F96F200134728 /* SCImageBlurTool */,
 				DC551C4E17ADD66000E37F8F /* Supporting Files */,
 				DCF6143117D157A400341EC2 /* SCVideoPlayerViewController.h */,
 				DCF6143217D157A400341EC2 /* SCVideoPlayerViewController.m */,
@@ -344,6 +408,7 @@
 		DC551C4617ADD66000E37F8F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AB32F59D184F877D00134728 /* Accelerate.framework */,
 				ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */,
 				AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */,
 				ABCC89F51829AAB6000D3886 /* ImageIO.framework */,
@@ -546,12 +611,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB32F5C4184F96F200134728 /* icon_band.png in Resources */,
+				AB32F5C2184F96F200134728 /* band.png in Resources */,
+				AB32F5C5184F96F200134728 /* icon_circle.png in Resources */,
+				AB32F5C6184F96F200134728 /* icon_normal.png in Resources */,
 				AB2BA3FE18338DAE00B7CFA2 /* capture_flip@2x.png in Resources */,
 				DC551C5217ADD66000E37F8F /* InfoPlist.strings in Resources */,
 				DC551C5A17ADD66000E37F8F /* Default.png in Resources */,
 				DC551C5C17ADD66000E37F8F /* Default@2x.png in Resources */,
 				DC551C5E17ADD66000E37F8F /* Default-568h@2x.png in Resources */,
 				DC551C6117ADD66000E37F8F /* MainStoryboard.storyboard in Resources */,
+				AB32F5C3184F96F200134728 /* circle.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -606,6 +676,7 @@
 				DCF6143517D15AFB00341EC2 /* SCAudioVideoRecorder.m in Sources */,
 				DCF6143617D15AFB00341EC2 /* SCVideoEncoder.m in Sources */,
 				DCF6143717D15AFB00341EC2 /* SCAudioEncoder.m in Sources */,
+				AB32F5D2184F9B0800134728 /* UIView+Frame.m in Sources */,
 				DCF6143817D15AFB00341EC2 /* SCDataEncoder.m in Sources */,
 				DCF6143917D15AFB00341EC2 /* SCCamera.m in Sources */,
 				DCF6143A17D15AFB00341EC2 /* SCAudioTools.m in Sources */,
@@ -613,11 +684,14 @@
 				AB2BA4011833B34A00B7CFA2 /* SCCameraTargetView.m in Sources */,
 				DCF6143C17D15AFB00341EC2 /* SCPlayer.m in Sources */,
 				DCF6143417D1584200341EC2 /* SCVideoPlayerView.m in Sources */,
+				AB32F5C8184F96F200134728 /* SCBlurCircle.m in Sources */,
 				5B439A9C183006F000F83EFA /* SCTouchDetector.m in Sources */,
+				AB32F5D1184F9B0800134728 /* UIImage+Utility.m in Sources */,
 				DC551C5417ADD66000E37F8F /* main.m in Sources */,
-				AB32FD50183D0735007869C1 /* SCBlurOverlayView.m in Sources */,
 				DC551C5817ADD66000E37F8F /* SCAppDelegate.m in Sources */,
 				DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */,
+				AB32F5C9184F96F200134728 /* SCImageBlurTool.m in Sources */,
+				AB32F5C7184F96F200134728 /* SCBlurBand.m in Sources */,
 				ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */,
 				DCF6143317D157A400341EC2 /* SCVideoPlayerViewController.m in Sources */,
 			);
