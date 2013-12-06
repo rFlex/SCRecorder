@@ -206,56 +206,61 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	}
 }
 
-- (void) finalizeAudioMixForUrl:(NSURL*)fileUrl  withCompletionBlock:(void(^)())completionBlock {
+- (void) finalizeAudioMixForUrl:(NSURL*)fileUrl  withCompletionBlock:(void(^)(NSError *))completionBlock {
+	NSError * error = nil;
 	if (self.playbackAsset != nil) {
 		// Move the file to a tmp one
-		NSURL * oldUrl = [[fileUrl URLByDeletingPathExtension] URLByAppendingPathExtension:@"old.mov"];
-		[[NSFileManager defaultManager] moveItemAtURL:fileUrl toURL:oldUrl error:nil];
+		NSURL * oldUrl = [[fileUrl URLByDeletingPathExtension] URLByAppendingPathExtension:@"old.mp4"];
+		[[NSFileManager defaultManager] moveItemAtURL:fileUrl toURL:oldUrl error:&error];
 		
-		AVMutableComposition * composition = [[AVMutableComposition alloc] init];
-		
-		AVMutableCompositionTrack * videoTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-		
-		AVMutableCompositionTrack * audioTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
-				
-		AVURLAsset * fileAsset = [AVURLAsset URLAssetWithURL:oldUrl options:nil];
-
-		NSArray * videoTracks = [fileAsset tracksWithMediaType:AVMediaTypeVideo];
-		
-		CMTime duration = ((AVAssetTrack*)[videoTracks objectAtIndex:0]).timeRange.duration;
-		
-		// We check if the recorded time if more than the limit
-		if (CMTIME_COMPARE_INLINE(duration, >, self.recordingDurationLimit)) {
-			duration = self.recordingDurationLimit;
-		}
-		
-		for (AVAssetTrack * track in [self.playbackAsset tracksWithMediaType:AVMediaTypeAudio]) {
-			[audioTrackComposition insertTimeRange:CMTimeRangeMake(self.playbackStartTime, duration) ofTrack:track atTime:kCMTimeZero error:nil];
-		}
-		
-		for (AVAssetTrack * track in [fileAsset tracksWithMediaType:AVMediaTypeAudio]) {
-			[audioTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
-		}
-		
-		for (AVAssetTrack * track in videoTracks) {
-			[videoTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
-		}
-		
-		videoTrackComposition.preferredTransform = self.videoEncoder.outputAffineTransform;
-		
-		AVAssetExportSession * exportSession = [[AVAssetExportSession alloc] initWithAsset:composition presetName:AVAssetExportPresetPassthrough];
-		exportSession.outputFileType = self.outputFileType;
-		exportSession.shouldOptimizeForNetworkUse = YES;
-		exportSession.outputURL = fileUrl;
-		
-		[exportSession exportAsynchronouslyWithCompletionHandler:^ {
-			[self pleaseDontReleaseObject:exportSession];
+		if (error == nil) {
+			AVMutableComposition * composition = [[AVMutableComposition alloc] init];
 			
-			[self removeFile:oldUrl];
-			completionBlock();
-		}];
+			AVMutableCompositionTrack * videoTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+			
+			AVMutableCompositionTrack * audioTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+			
+			AVURLAsset * fileAsset = [AVURLAsset URLAssetWithURL:oldUrl options:nil];
+			
+			NSArray * videoTracks = [fileAsset tracksWithMediaType:AVMediaTypeVideo];
+			
+			CMTime duration = ((AVAssetTrack*)[videoTracks objectAtIndex:0]).timeRange.duration;
+			
+			// We check if the recorded time if more than the limit
+			if (CMTIME_COMPARE_INLINE(duration, >, self.recordingDurationLimit)) {
+				duration = self.recordingDurationLimit;
+			}
+			
+			for (AVAssetTrack * track in [self.playbackAsset tracksWithMediaType:AVMediaTypeAudio]) {
+				[audioTrackComposition insertTimeRange:CMTimeRangeMake(self.playbackStartTime, duration) ofTrack:track atTime:kCMTimeZero error:nil];
+			}
+			
+			for (AVAssetTrack * track in [fileAsset tracksWithMediaType:AVMediaTypeAudio]) {
+				[audioTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
+			}
+			
+			for (AVAssetTrack * track in videoTracks) {
+				[videoTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
+			}
+			
+			videoTrackComposition.preferredTransform = self.videoEncoder.outputAffineTransform;
+			
+			AVAssetExportSession * exportSession = [[AVAssetExportSession alloc] initWithAsset:composition presetName:AVAssetExportPresetPassthrough];
+			exportSession.outputFileType = self.outputFileType;
+			exportSession.shouldOptimizeForNetworkUse = YES;
+			exportSession.outputURL = fileUrl;
+			
+			[exportSession exportAsynchronouslyWithCompletionHandler:^ {
+				[self pleaseDontReleaseObject:exportSession];
+				
+				[self removeFile:oldUrl];
+				completionBlock(exportSession.error);
+			}];
+		} else {
+			completionBlock(error);
+		}
 	} else {
-		completionBlock();
+		completionBlock(error);
 	}
 }
 
@@ -265,8 +270,8 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	[self.audioEncoder reset];
 	[self.videoEncoder reset];
 	
-	[self finalizeAudioMixForUrl:fileUrl withCompletionBlock:^ {
-		if (shouldWriteToCameraRoll) {
+	[self finalizeAudioMixForUrl:fileUrl withCompletionBlock:^(NSError * error) {
+		if (shouldWriteToCameraRoll && error == nil) {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE			
 			ALAssetsLibrary * library = [[ALAssetsLibrary alloc] init];
 			[library writeVideoAtPathToSavedPhotosAlbum:fileUrl completionBlock:^(NSURL *assetUrl, NSError * error) {
@@ -282,7 +287,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 			}];
 #endif
 		} else {
-			[self notifyRecordFinishedAtUrl:fileUrl withError:nil];
+			[self notifyRecordFinishedAtUrl:fileUrl withError:error];
 		}
 	}];
 }
