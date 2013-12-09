@@ -26,4 +26,8 @@
 
 - (IBAction)capturePhoto:(id)sender;
 @property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;
+
+@property (weak, nonatomic) IBOutlet UISlider *cameraEffectiveScaleSlider;
+- (IBAction)cameraEffectiveScaleSliderValueChange:(UISlider *)sender;
+
 @end

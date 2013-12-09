@@ -105,8 +105,9 @@
 
 - (void)executeWithCompletionBlock:(void(^)(UIImage *image, NSError *error, NSDictionary *userInfo))completionBlock
 {
+    __block UIActivityIndicatorView *indicator = nil;
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIActivityIndicatorView *indicator = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 80, 80)];
+        indicator = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 80, 80)];
         indicator.backgroundColor = [UIColor colorWithWhite:0 alpha:0.6];
         indicator.layer.cornerRadius = 5;
         indicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyleWhiteLarge;
@@ -120,6 +121,8 @@
         UIImage *image = [self buildResultImage:_originalImage withBlurImage:blurImage];
         
         dispatch_async(dispatch_get_main_queue(), ^{
+            [indicator stopAnimating];
+            [indicator removeFromSuperview];
             completionBlock(image, nil, nil);
         });
     });

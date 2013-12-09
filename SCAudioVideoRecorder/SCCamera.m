@@ -34,8 +34,10 @@ typedef NSView View;
 @property (strong, nonatomic) AVCaptureSession * session;
 @property (weak, nonatomic) AVCaptureDeviceInput * currentVideoDeviceInput;
 @property (weak, nonatomic) AVCaptureDeviceInput * currentAudioDeviceInput;
-@property (strong, nonatomic) AVCaptureVideoPreviewLayer * previewLayer;
+
 @property (assign, nonatomic) AVCaptureVideoOrientation cachedVideoOrientation;
+
+@property (strong, nonatomic, readwrite) AVCaptureVideoPreviewLayer * previewLayer;
 
 @end
 
@@ -393,8 +395,8 @@ typedef NSView View;
 - (void)_willCapturePhoto
 {
     if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)]) {
-        [self stopRunningSession];
         [self.delegate cameraWillCapturePhoto:self];
+        [self stopRunningSession];
     }
 }
 

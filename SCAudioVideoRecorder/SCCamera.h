@@ -79,6 +79,7 @@ typedef enum {
 @property (copy, nonatomic) NSString * sessionPreset;
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
+@property (strong, nonatomic, readonly) AVCaptureVideoPreviewLayer * previewLayer;
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 

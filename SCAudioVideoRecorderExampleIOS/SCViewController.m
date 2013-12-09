@@ -22,12 +22,15 @@
 // PRIVATE DEFINITION
 /////////////////////
 
-@interface SCViewController () {
-
+@interface SCViewController () <UIGestureRecognizerDelegate> {
+    CGFloat beginGestureScale;
+	CGFloat effectiveScale;
 }
 
 @property (strong, nonatomic) SCCamera * camera;
 @property (strong, nonatomic) SCCameraTargetView *cameraTagetView;
+
+@property (strong, nonatomic) UIView *flashView;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -93,6 +96,11 @@
     [doubleTap setNumberOfTapsRequired:2];
     [singleTap requireGestureRecognizerToFail:doubleTap];
     [self.previewView addGestureRecognizer:doubleTap];
+    
+    // Add pin gesture
+    UIPinchGestureRecognizer *pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchGesture:)];
+    pinchGestureRecognizer.delegate = self;
+    [self.previewView addGestureRecognizer:pinchGestureRecognizer];
 }
 
 - (void)viewDidLoad
@@ -190,10 +198,15 @@
 
 #pragma mark - Camera Delegate
 
+// Camera
+- (void)camera:(SCCamera *)camera didFailWithError:(NSError *)error {
+    DLog(@"error : %@", error.description);
+}
+
 // Photo
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
     if (!error) {
-        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
+        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoThumbnailKey]];
         ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
         [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
             DLog(@"Saved to the camera roll.");
@@ -201,19 +214,36 @@
     }
 }
 
-// Camera
-
-- (void)camera:(SCCamera *)camera didFailWithError:(NSError *)error {
-    DLog(@"error : %@", error.description);
-}
 
 // Photo
 - (void)cameraWillCapturePhoto:(SCCamera *)camera {
     DLog(@"Will capture photo");
+    // do flash bulb like animation
+    if (!_flashView) {
+        _flashView = [[UIView alloc] initWithFrame:[self.previewView frame]];
+        [_flashView setBackgroundColor:[UIColor whiteColor]];
+        [_flashView setAlpha:0.f];
+        [[[self view] window] addSubview:self.flashView];
+    }
+    
+    [UIView animateWithDuration:.4f
+                     animations:^{
+                         [_flashView setAlpha:1.f];
+                     }
+     ];
 }
 
 - (void)cameraDidCapturePhoto:(SCCamera *)camera {
     DLog(@"Did capture photo");
+    [UIView animateWithDuration:.4f
+                     animations:^{
+                         [_flashView setAlpha:0.f];
+                     }
+                     completion:^(BOOL finished){
+                         [_flashView removeFromSuperview];
+                         self.flashView = nil;
+                     }
+     ];
 }
 
 // Focus
@@ -223,6 +253,7 @@
 }
 
 - (void)cameraDidStopFocus:(SCCamera *)camera {
+    DLog(@"cameraDidStopFocus");
     [self.cameraTagetView stopTargeting];	
 }
 
@@ -254,6 +285,16 @@
 
 - (void)camera:(SCCamera *)camera cleanApertureDidChange:(CGRect)cleanAperture {
     DLog(@"%@", NSStringFromCGRect(cleanAperture));
+}
+
+#pragma mark - UIGestureRecognizer delegate
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] ) {
+		beginGestureScale = effectiveScale;
+	}
+	return [self isAllowAVCaptureSessionPresetPhoto];
 }
 
 #pragma mark - Handle
@@ -291,25 +332,35 @@
     [self updateLabelForSecond:0];
 }
 
+- (BOOL)isAllowAVCaptureSessionPresetPhoto {
+    return self.camera.sessionPreset == AVCaptureSessionPresetPhoto;
+}
+
+- (BOOL)isAllowAVCaptureSessionPresetHigh {
+    return self.camera.sessionPreset == AVCaptureSessionPresetHigh;
+}
+
 - (IBAction)switchCameraMode:(id)sender {
-    if (self.camera.sessionPreset == AVCaptureSessionPresetPhoto) {
+    if ([self isAllowAVCaptureSessionPresetPhoto]) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.capturePhotoButton.alpha = 0.0;
             self.recordView.alpha = 1.0;
             self.retakeButton.alpha = 1.0;
             self.stopButton.alpha = 1.0;
+            self.cameraEffectiveScaleSlider.alpha = 0.0;
         } completion:^(BOOL finished) {
 			self.camera.sessionPreset = AVCaptureSessionPresetHigh;
             [self.switchCameraModeButton setTitle:@"Switch Photo" forState:UIControlStateNormal];
             [self.flashModeButton setTitle:@"Flash : Off" forState:UIControlStateNormal];
             self.camera.flashMode = SCFlashModeOff;
         }];
-    } else if (self.camera.sessionPreset == AVCaptureSessionPresetHigh) {
+    } else if ([self isAllowAVCaptureSessionPresetHigh]) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.recordView.alpha = 0.0;
             self.retakeButton.alpha = 0.0;
             self.stopButton.alpha = 0.0;
             self.capturePhotoButton.alpha = 1.0;
+            self.cameraEffectiveScaleSlider.alpha = 1.0;
         } completion:^(BOOL finished) {
 			self.camera.sessionPreset = AVCaptureSessionPresetPhoto;
             [self.switchCameraModeButton setTitle:@"Switch Video" forState:UIControlStateNormal];
@@ -321,7 +372,7 @@
 
 - (IBAction)switchFlash:(id)sender {
     NSString *flashModeString = nil;
-    if (self.camera.sessionPreset == AVCaptureSessionPresetPhoto) {
+    if ([self isAllowAVCaptureSessionPresetPhoto]) {
         switch (self.camera.flashMode) {
             case SCFlashModeAuto:
                 flashModeString = @"Flash : Off";
@@ -360,17 +411,64 @@
     [self.flashModeButton setTitle:flashModeString forState:UIControlStateNormal];
 }
 
+- (IBAction)capturePhoto:(id)sender {
+    [self.camera capturePhoto];
+}
+
+- (IBAction)cameraEffectiveScaleSliderValueChange:(UISlider *)sender {
+    effectiveScale = sender.value;
+    [self effectiveScaleWithPreviewLayer];
+}
+
 - (void) prepareCamera {
+    // silder with camera stillImageOutput maxScaleAndCropFactor
+    self.cameraEffectiveScaleSlider.minimumValue = 1.0;
+    self.cameraEffectiveScaleSlider.maximumValue = self.camera.maxScaleAndCropFactor;
+    
 	if (![self.camera isPrepared]) {
 		NSError * error;
 		[self.camera prepareRecordingOnTempDir:&error];
-		
+        
 		if (error != nil) {
 			[self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
 			NSLog(@"%@", error);
 		} else {
 			NSLog(@"- CAMERA READY -");
 		}
+	}
+}
+
+// scale image depending on users pinch gesture
+- (void)effectiveScaleWithPreviewLayer {
+    if (effectiveScale < 1.0)
+        effectiveScale = 1.0;
+    CGFloat maxScaleAndCropFactor = self.camera.maxScaleAndCropFactor;
+    if (effectiveScale > maxScaleAndCropFactor)
+        effectiveScale = maxScaleAndCropFactor;
+    
+    self.camera.effectiveScale = effectiveScale;
+    [CATransaction begin];
+    [CATransaction setAnimationDuration:.025];
+    [self.camera.previewLayer setAffineTransform:CGAffineTransformMakeScale(effectiveScale, effectiveScale)];
+    [CATransaction commit];
+}
+
+- (void)handlePinchGesture:(UIPinchGestureRecognizer *)recognizer
+{
+	BOOL allTouchesAreOnThePreviewLayer = YES;
+	NSUInteger numTouches = [recognizer numberOfTouches], i;
+	for ( i = 0; i < numTouches; ++i ) {
+		CGPoint location = [recognizer locationOfTouch:i inView:self.previewView];
+		CGPoint convertedLocation = [self.camera.previewLayer convertPoint:location fromLayer:self.camera.previewLayer.superlayer];
+		if ( ! [self.camera.previewLayer containsPoint:convertedLocation] ) {
+			allTouchesAreOnThePreviewLayer = NO;
+			break;
+		}
+	}
+	
+	if ( allTouchesAreOnThePreviewLayer ) {
+		effectiveScale = beginGestureScale * recognizer.scale;
+		[self effectiveScaleWithPreviewLayer];
 	}
 }
 
@@ -404,10 +502,6 @@
         self.cameraTagetView.center = self.previewView.center;
         [self.camera continuousFocusAtPoint:CGPointMake(.5f, .5f)];
     }
-}
-
-- (IBAction)capturePhoto:(id)sender {
-    [self.camera capturePhoto];
 }
 
 @end

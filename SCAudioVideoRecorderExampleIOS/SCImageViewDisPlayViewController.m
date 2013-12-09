@@ -8,12 +8,22 @@
 
 #import "SCImageViewDisPlayViewController.h"
 #import "SCImageBlurTool.h"
+#import <AssetsLibrary/AssetsLibrary.h>
 
 @interface SCImageViewDisPlayViewController ()
 @property (nonatomic, strong) SCImageBlurTool *imageBlurTool;
 @end
 
 @implementation SCImageViewDisPlayViewController
+
+
+#pragma mark - Handler
+
+- (void)saveBlurImage {
+    [self.imageBlurTool executeWithCompletionBlock:^(UIImage *image, NSError *error, NSDictionary *userInfo) {
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+    }];
+}
 
 #pragma mark - Left cycle init
 
@@ -32,7 +42,9 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     self.title = NSLocalizedString(@"PhotoEditor", @"");
-        
+    
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"save", @"") style:UIBarButtonItemStyleBordered target:self action:@selector(saveBlurImage)];
+    
     if (self.photo)
         self.disPlayImageView.image = self.photo;
     
