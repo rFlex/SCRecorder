@@ -209,7 +209,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 - (void) finalizeAudioMixForUrl:(NSURL*)fileUrl  withCompletionBlock:(void(^)(NSError *))completionBlock {
 	NSError * error = nil;
 	if (self.playbackAsset != nil) {
-		// Move the file to a tmp one
+		// Move the file to a temporary one
 		NSURL * oldUrl = [[fileUrl URLByDeletingPathExtension] URLByAppendingPathExtension:@"old.mp4"];
 		[[NSFileManager defaultManager] moveItemAtURL:fileUrl toURL:oldUrl error:&error];
 		
@@ -220,7 +220,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 			
 			AVMutableCompositionTrack * audioTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
 			
-			AVURLAsset * fileAsset = [AVURLAsset URLAssetWithURL:oldUrl options:nil];
+			AVURLAsset * fileAsset = [AVURLAsset URLAssetWithURL:oldUrl options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:AVURLAssetPreferPreciseDurationAndTimingKey]];
 			
 			NSArray * videoTracks = [fileAsset tracksWithMediaType:AVMediaTypeVideo];
 			
@@ -232,15 +232,26 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 			}
 			
 			for (AVAssetTrack * track in [self.playbackAsset tracksWithMediaType:AVMediaTypeAudio]) {
-				[audioTrackComposition insertTimeRange:CMTimeRangeMake(self.playbackStartTime, duration) ofTrack:track atTime:kCMTimeZero error:nil];
+				[audioTrackComposition insertTimeRange:CMTimeRangeMake(self.playbackStartTime, duration) ofTrack:track atTime:kCMTimeZero error:&error];
+				
+				if (error != nil) {
+					completionBlock(error);
+					return;
+				}
 			}
-			
-			for (AVAssetTrack * track in [fileAsset tracksWithMediaType:AVMediaTypeAudio]) {
-				[audioTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
-			}
+
+			// Disabling that for now, this doesn't work well
+//			for (AVAssetTrack * track in [fileAsset tracksWithMediaType:AVMediaTypeAudio]) {
+//				[audioTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
+//			}
 			
 			for (AVAssetTrack * track in videoTracks) {
-				[videoTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
+				[videoTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:&error];
+				
+				if (error != nil) {
+					completionBlock(error);
+					return;
+				}
 			}
 			
 			videoTrackComposition.preferredTransform = self.videoEncoder.outputAffineTransform;
@@ -252,9 +263,29 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 			
 			[exportSession exportAsynchronouslyWithCompletionHandler:^ {
 				[self pleaseDontReleaseObject:exportSession];
+								
+				NSError * error = nil;
+				if (exportSession.error != nil) {
+					NSMutableDictionary * userInfo = [NSMutableDictionary dictionaryWithDictionary:exportSession.error.userInfo];
+					NSString * subLocalizedDescription = [userInfo objectForKey:NSLocalizedDescriptionKey];
+					[userInfo removeObjectForKey:NSLocalizedDescriptionKey];
+					[userInfo setObject:@"Failed to mix audio and video" forKey:NSLocalizedDescriptionKey];
+					[userInfo setObject:exportSession.outputFileType forKey:@"OutputFileType"];
+					[userInfo setObject:exportSession.outputURL forKey:@"OutputUrl"];
+					[userInfo setObject:oldUrl forKey:@"InputUrl"];
+					[userInfo setObject:subLocalizedDescription forKey:@"CauseLocalizedDescription"];
+					[userInfo setObject:self.playbackAsset.commonMetadata forKey:@"PlaybackMetadata"];
+					
+					[userInfo setObject:[AVAssetExportSession allExportPresets] forKey:@"AllExportSessions"];
+					
+					error = [NSError errorWithDomain:@"SCAudioVideoRecorder" code:500 userInfo:userInfo];
+				}
+
+				if (error == nil) {
+					[self removeFile:oldUrl];
+				}
 				
-				[self removeFile:oldUrl];
-				completionBlock(exportSession.error);
+				completionBlock(error);
 			}];
 		} else {
 			completionBlock(error);
@@ -295,11 +326,11 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 - (void) finishWriter:(NSURL*)fileUrl {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
     [self.assetWriter finishWritingWithCompletionHandler:^ {
-        [self assetWriterFinished:fileUrl];
+		[self stopInternal];
     }];
 #else
     [self.assetWriter finishWriting];
-    [self assetWriterFinished:fileUrl];
+	[self stopInternal];
 #endif
 }
 
@@ -450,31 +481,35 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		if (self.assetWriter == nil) {
 			[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Recording must be started before calling stopRecording"]];
 		} else {
-			NSURL * fileUrl = self.outputFileUrl;
-			NSError * error = self.assetWriter.error;
-
-			switch (self.assetWriter.status) {
-				case AVAssetWriterStatusWriting:
-					[self finishWriter:fileUrl];
-					break;
-				case AVAssetWriterStatusCompleted:
-					[self assetWriterFinished:fileUrl];
-					break;
-				case AVAssetWriterStatusFailed:
-					[self resetInternal];
-					[self notifyRecordFinishedAtUrl:nil withError:error];
-					break;
-				case AVAssetWriterStatusCancelled:
-					[self resetInternal];
-					[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Writer cancelled"]];
-					break;
-				case AVAssetWriterStatusUnknown:
-					[self resetInternal];
-					[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Writer status unknown"]];
-					break;
-			}
+			[self stopInternal];
 		}
     });
+}
+
+- (void) stopInternal {
+	NSURL * fileUrl = self.outputFileUrl;
+	NSError * error = self.assetWriter.error;
+	
+	switch (self.assetWriter.status) {
+		case AVAssetWriterStatusWriting:
+			[self finishWriter:fileUrl];
+			break;
+		case AVAssetWriterStatusCompleted:
+			[self assetWriterFinished:fileUrl];
+			break;
+		case AVAssetWriterStatusFailed:
+			[self resetInternal];
+			[self notifyRecordFinishedAtUrl:nil withError:error];
+			break;
+		case AVAssetWriterStatusCancelled:
+			[self resetInternal];
+			[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Writer cancelled"]];
+			break;
+		case AVAssetWriterStatusUnknown:
+			[self resetInternal];
+			[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Writer status unknown"]];
+			break;
+	}
 }
 
 - (void) pause {

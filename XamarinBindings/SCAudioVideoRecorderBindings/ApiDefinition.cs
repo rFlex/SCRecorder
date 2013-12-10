@@ -217,7 +217,7 @@ namespace SCorsin {
 		NSUrl OutputFileUrl { get; }
 
         [Export("outputFileType")]
-        string OutputFileType { get; set; }
+		NSString OutputFileType { get; set; }
 
 		[Export("recordingDurationLimit")]
 		CMTime RecordingDurationLimit { get; set; }	
