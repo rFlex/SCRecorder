@@ -18,6 +18,8 @@
 
 #import "SCCameraTargetView.h"
 
+#import <CoreMotion/CoreMotion.h>
+
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
 /////////////////////
@@ -31,6 +33,10 @@
 @property (strong, nonatomic) SCCameraTargetView *cameraTagetView;
 
 @property (strong, nonatomic) UIView *flashView;
+
+@property (strong, nonatomic) CMMotionManager *motionManager;
+@property (strong, nonatomic) NSOperationQueue *motionGyroUpdatesQueue;
+@property (assign, nonatomic) __block BOOL isAllowCaptureWithMotion;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -42,6 +48,21 @@
 @synthesize camera;
 
 #pragma mark - setter / getter
+
+- (void)setIsAllowCaptureWithMotion:(BOOL)isAllowCaptureWithMotion {
+    _isAllowCaptureWithMotion = isAllowCaptureWithMotion;
+    if (isAllowCaptureWithMotion) {
+        [self.motionManager stopAccelerometerUpdates];
+        [self.motionManager stopDeviceMotionUpdates];
+        [self.motionManager stopMagnetometerUpdates];
+        [self.motionManager stopGyroUpdates];
+        self.motionManager = nil;
+        [self.motionGyroUpdatesQueue cancelAllOperations];
+        self.motionGyroUpdatesQueue = nil;
+        self.shakeproofProgressView.progress = 0.0;
+        [self capturePhoto:nil];
+    }
+}
 
 - (SCCameraTargetView *)cameraTagetView {
     if (!_cameraTagetView) {
@@ -206,11 +227,15 @@
 // Photo
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
     if (!error) {
-        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoThumbnailKey]];
+        self.isAllowCaptureWithMotion = NO;
+        [self.camera stopRunningSession];
+        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
+        /*
         ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
         [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
             DLog(@"Saved to the camera roll.");
         }];
+         */
     }
 }
 
@@ -341,6 +366,9 @@
 }
 
 - (IBAction)switchCameraMode:(id)sender {
+    if (!self.camera.isReady)
+        return;
+    
     if ([self isAllowAVCaptureSessionPresetPhoto]) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.capturePhotoButton.alpha = 0.0;
@@ -348,6 +376,7 @@
             self.retakeButton.alpha = 1.0;
             self.stopButton.alpha = 1.0;
             self.cameraEffectiveScaleSlider.alpha = 0.0;
+            self.shakeproofProgressView.alpha = 0.0;
         } completion:^(BOOL finished) {
 			self.camera.sessionPreset = AVCaptureSessionPresetHigh;
             [self.switchCameraModeButton setTitle:@"Switch Photo" forState:UIControlStateNormal];
@@ -361,6 +390,7 @@
             self.stopButton.alpha = 0.0;
             self.capturePhotoButton.alpha = 1.0;
             self.cameraEffectiveScaleSlider.alpha = 1.0;
+            self.shakeproofProgressView.alpha = 1.0;
         } completion:^(BOOL finished) {
 			self.camera.sessionPreset = AVCaptureSessionPresetPhoto;
             [self.switchCameraModeButton setTitle:@"Switch Video" forState:UIControlStateNormal];
@@ -503,5 +533,42 @@
         [self.camera continuousFocusAtPoint:CGPointMake(.5f, .5f)];
     }
 }
+
+- (IBAction)shakeproofCapturePhoto:(UIButton *)sender {
+    if (!_motionManager) {
+        _motionManager = [[CMMotionManager alloc] init];
+        if (_motionManager.gyroAvailable) {
+            if (!_motionGyroUpdatesQueue) {
+                _motionGyroUpdatesQueue = [[NSOperationQueue alloc] init];
+            }
+            
+            _motionManager.gyroUpdateInterval = 1.0 / 60.0;
+            [_motionManager startGyroUpdatesToQueue:self.motionGyroUpdatesQueue withHandler:^(CMGyroData *gyroData, NSError *error) {
+                if (error) {
+                    [_motionManager stopGyroUpdates];
+                    NSLog(@"%@", [NSString stringWithFormat:@"Gyroscope encountered error: %@", error]);
+                } else {
+                    double xx = fabs(gyroData.rotationRate.x);
+                    double yy = fabs(gyroData.rotationRate.y);
+                    double zz = fabs(gyroData.rotationRate.z);
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        self.shakeproofProgressView.progress = xx;
+                        
+                        float accelerationThreshold = 0.012;
+                        //DLog(@"xx : %f yy:%f zz:%f", xx, yy, zz);
+                        if (xx < accelerationThreshold && yy < accelerationThreshold && zz < accelerationThreshold) {
+                            self.isAllowCaptureWithMotion = YES;
+                        } else {
+                            self.isAllowCaptureWithMotion = NO;
+                        }
+                    });
+                }
+            }];
+            
+        }
+    }
+}
+
 
 @end

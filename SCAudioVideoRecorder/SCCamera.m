@@ -212,11 +212,11 @@ typedef NSView View;
             [self addObserverForSession];
 #endif
 			
-            #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 			// Because I want to in the controller, the appropriate time to start
 #else
             [self startRunningSession];
-			#endif
+#endif
             dispatch_async(dispatch_get_main_queue(), ^ {
                 View * settedPreviewView = self.previewView;
                 
@@ -396,7 +396,6 @@ typedef NSView View;
 {
     if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)]) {
         [self.delegate cameraWillCapturePhoto:self];
-        [self stopRunningSession];
     }
 }
 

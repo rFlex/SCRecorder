@@ -26,6 +26,8 @@
 
 - (IBAction)capturePhoto:(id)sender;
 @property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;
+- (IBAction)shakeproofCapturePhoto:(UIButton *)sender;
+@property (weak, nonatomic) IBOutlet UIProgressView *shakeproofProgressView;
 
 @property (weak, nonatomic) IBOutlet UISlider *cameraEffectiveScaleSlider;
 - (IBAction)cameraEffectiveScaleSliderValueChange:(UISlider *)sender;

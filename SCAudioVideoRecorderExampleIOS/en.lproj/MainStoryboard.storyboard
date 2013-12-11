@@ -82,7 +82,7 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="HiJ-TG-pdG">
-                                        <rect key="frame" x="0.0" y="28" width="320" height="63"/>
+                                        <rect key="frame" x="0.0" y="28" width="159" height="63"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <color key="backgroundColor" red="0.3294117647" green="0.87843137250000003" blue="0.51372549020000002" alpha="1" colorSpace="calibratedRGB"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
@@ -97,6 +97,26 @@
                                             <action selector="capturePhoto:" destination="2" eventType="touchUpInside" id="OyD-lE-pch"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="1lA-EJ-yHV" userLabel="Button - motion take a photo">
+                                        <rect key="frame" x="161" y="28" width="159" height="63"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                        <color key="backgroundColor" red="0.3294117647" green="0.87843137250000003" blue="0.51372549020000002" alpha="1" colorSpace="calibratedRGB"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                        <state key="normal" title="motion take a photo">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <state key="highlighted">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="shakeproofCapturePhoto:" destination="2" eventType="touchUpInside" id="u1o-Hr-pSl"/>
+                                        </connections>
+                                    </button>
+                                    <progressView opaque="NO" alpha="0.0" contentMode="scaleToFill" verticalHuggingPriority="750" id="5yk-pI-gaG">
+                                        <rect key="frame" x="20" y="14" width="280" height="2"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    </progressView>
                                     <view contentMode="scaleToFill" id="jaS-8J-FB6" userLabel="Record View">
                                         <rect key="frame" x="0.0" y="0.0" width="162" height="91"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -108,6 +128,13 @@
                                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
+                                            <slider opaque="NO" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" minValue="0.0" maxValue="1" id="fN7-LJ-OtI">
+                                                <rect key="frame" x="18" y="-19" width="284" height="34"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <connections>
+                                                    <action selector="cameraEffectiveScaleSliderValueChange:" destination="2" eventType="valueChanged" id="9Fx-vq-laQ"/>
+                                                </connections>
+                                            </slider>
                                         </subviews>
                                         <color key="backgroundColor" red="1" green="0.29803921570000003" blue="0.29803921570000003" alpha="1" colorSpace="calibratedRGB"/>
                                     </view>
@@ -194,13 +221,6 @@
                                 <nil key="highlightedColor"/>
                                 <color key="shadowColor" cocoaTouchSystemColor="darkTextColor"/>
                             </label>
-                            <slider opaque="NO" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" minValue="0.0" maxValue="1" id="fN7-LJ-OtI">
-                                <rect key="frame" x="18" y="370" width="284" height="34"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <connections>
-                                    <action selector="cameraEffectiveScaleSliderValueChange:" destination="2" eventType="valueChanged" id="9Fx-vq-laQ"/>
-                                </connections>
-                            </slider>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
@@ -215,6 +235,7 @@
                         <outlet property="recordView" destination="jaS-8J-FB6" id="3pb-b1-yXb"/>
                         <outlet property="retakeButton" destination="L9d-q2-oZh" id="yze-eL-02K"/>
                         <outlet property="reverseCamera" destination="M4R-qi-aeH" id="uRn-Fc-ixj"/>
+                        <outlet property="shakeproofProgressView" destination="5yk-pI-gaG" id="UOd-i9-eac"/>
                         <outlet property="stopButton" destination="5gb-yz-quo" id="ckH-jh-xcs"/>
                         <outlet property="switchCameraModeButton" destination="Ugv-l0-Q37" id="WNC-Z2-vod"/>
                         <outlet property="timeRecordedLabel" destination="cCO-VC-azk" id="8mA-ME-xof"/>

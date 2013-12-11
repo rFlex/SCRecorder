@@ -22,6 +22,7 @@
 		AB32F5C9184F96F200134728 /* SCImageBlurTool.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5BD184F96F200134728 /* SCImageBlurTool.m */; };
 		AB32F5D1184F9B0800134728 /* UIImage+Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5CE184F9B0800134728 /* UIImage+Utility.m */; };
 		AB32F5D2184F9B0800134728 /* UIView+Frame.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5D0184F9B0800134728 /* UIView+Frame.m */; };
+		AB719F971857CE48009BF725 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB719F961857CE48009BF725 /* CoreMotion.framework */; };
 		ABCB9421184BAC2C00BB5927 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */; };
 		ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCC89F51829AAB6000D3886 /* ImageIO.framework */; };
 		ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */; };
@@ -133,6 +134,7 @@
 		AB32F5CE184F9B0800134728 /* UIImage+Utility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Utility.m"; sourceTree = "<group>"; };
 		AB32F5CF184F9B0800134728 /* UIView+Frame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Frame.h"; sourceTree = "<group>"; };
 		AB32F5D0184F9B0800134728 /* UIView+Frame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Frame.m"; sourceTree = "<group>"; };
+		AB719F961857CE48009BF725 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		ABCC89F51829AAB6000D3886 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCImageViewDisPlayViewController.h; sourceTree = "<group>"; };
@@ -246,6 +248,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB719F971857CE48009BF725 /* CoreMotion.framework in Frameworks */,
 				AB32F59E184F877E00134728 /* Accelerate.framework in Frameworks */,
 				ABCB9421184BAC2C00BB5927 /* OpenGLES.framework in Frameworks */,
 				AB2BA4031833B4A700B7CFA2 /* QuartzCore.framework in Frameworks */,
@@ -408,6 +411,7 @@
 		DC551C4617ADD66000E37F8F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AB719F961857CE48009BF725 /* CoreMotion.framework */,
 				AB32F59D184F877D00134728 /* Accelerate.framework */,
 				ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */,
 				AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */,
