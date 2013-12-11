@@ -24,6 +24,12 @@
 // PRIVATE DEFINITION
 /////////////////////
 
+typedef NS_ENUM(NSInteger, CapturePhotoType) {
+    kNormal = 0,
+    kMotion,
+    kContinuous,
+};
+
 @interface SCViewController () <UIGestureRecognizerDelegate> {
     CGFloat beginGestureScale;
 	CGFloat effectiveScale;
@@ -36,7 +42,8 @@
 
 @property (strong, nonatomic) CMMotionManager *motionManager;
 @property (strong, nonatomic) NSOperationQueue *motionGyroUpdatesQueue;
-@property (assign, nonatomic) __block BOOL isAllowCaptureWithMotion;
+
+@property (assign, nonatomic) CapturePhotoType capturePhotoType;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -49,18 +56,31 @@
 
 #pragma mark - setter / getter
 
-- (void)setIsAllowCaptureWithMotion:(BOOL)isAllowCaptureWithMotion {
-    _isAllowCaptureWithMotion = isAllowCaptureWithMotion;
-    if (isAllowCaptureWithMotion) {
-        [self.motionManager stopAccelerometerUpdates];
-        [self.motionManager stopDeviceMotionUpdates];
-        [self.motionManager stopMagnetometerUpdates];
-        [self.motionManager stopGyroUpdates];
-        self.motionManager = nil;
-        [self.motionGyroUpdatesQueue cancelAllOperations];
-        self.motionGyroUpdatesQueue = nil;
-        self.shakeproofProgressView.progress = 0.0;
-        [self capturePhoto:nil];
+- (void)_motion {
+    [self.motionGyroUpdatesQueue cancelAllOperations];
+    self.motionGyroUpdatesQueue = nil;
+    
+    [self.motionManager stopAccelerometerUpdates];
+    [self.motionManager stopDeviceMotionUpdates];
+    [self.motionManager stopMagnetometerUpdates];
+    [self.motionManager stopGyroUpdates];
+    self.motionManager = nil;
+    
+    self.shakeproofProgressView.progress = 0.0;
+    
+    self.capturePhotoType = kNormal;
+    
+    [self capturePhoto:nil];
+}
+
+- (void)setCapturePhotoType:(CapturePhotoType)capturePhotoType {
+    _capturePhotoType = capturePhotoType;
+    switch (_capturePhotoType) {
+        case kMotion:
+            [self _motion];
+            break;
+        default:
+            break;
     }
 }
 
@@ -92,12 +112,12 @@
 	NSURL * fileUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@blabla2.mp3", NSTemporaryDirectory()]];
 	
 	if (![[NSFileManager defaultManager] fileExistsAtPath:fileUrl.path]) {
-		NSLog(@"Downloading...");
+		DLog(@"Downloading...");
 		NSURL * url = [NSURL URLWithString:@"http://a420.phobos.apple.com/us/r1000/041/Music/v4/28/01/5a/28015aa7-72b0-d0b8-9da1-ce414cd6e61b/mzaf_4547488074890633094.plus.aac.p.m4a"];
 		NSData * data = [NSData dataWithContentsOfURL:url];
-		NSLog(@"Saving at %@", fileUrl.absoluteString);
+		DLog(@"Saving at %@", fileUrl.absoluteString);
 		[data writeToURL:fileUrl atomically:YES];
-		NSLog(@"OK!");
+		DLog(@"OK!");
 	}
 	
 	AVAsset * asset = [AVAsset assetWithURL:fileUrl];
@@ -161,10 +181,10 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 	if (self.camera.isReady) {
-		NSLog(@"Starting to run");
+		DLog(@"Starting to run");
 		[self.camera startRunningSession];
 	} else {
-		NSLog(@"Not prepared yet");
+		DLog(@"Not prepared yet");
 	}
 }
 
@@ -191,11 +211,11 @@
 
 // error
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize VideoEncoder");
+    DLog(@"Failed to initialize VideoEncoder");
 }
 
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize AudioEncoder");
+    DLog(@"Failed to initialize AudioEncoder");
 }
 
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime {
@@ -227,15 +247,15 @@
 // Photo
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
     if (!error) {
-        self.isAllowCaptureWithMotion = NO;
-        [self.camera stopRunningSession];
-        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
-        /*
-        ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
-        [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
-            DLog(@"Saved to the camera roll.");
-        }];
-         */
+//        self.isAllowCaptureWithMotion = NO;
+//        [self.camera stopRunningSession];
+//        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
+            [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
+                DLog(@"Saved to the camera roll.");
+            }];
+        });
     }
 }
 
@@ -450,6 +470,40 @@
     [self effectiveScaleWithPreviewLayer];
 }
 
+- (void)_startTimer {
+    void (^capturePhoto)() = ^{
+        if (self.capturePhotoType == kContinuous)
+            [self capturePhoto:nil];
+    };
+    __block int timeout = 10; //倒计时时间
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+    dispatch_source_set_timer(_timer, dispatch_walltime(NULL, 1), 1.0*NSEC_PER_SEC, 0); //每秒执行
+    dispatch_source_set_event_handler(_timer, ^{
+        if(timeout <= 0){ //倒计时结束，关闭
+            dispatch_async(dispatch_get_main_queue(), ^{
+                //设置界面的按钮显示 根据自己需求设置
+                self.capturePhotoType = kNormal;
+                DLog(@"什么地方来了，是结束了嘛？");
+            });
+            dispatch_source_cancel(_timer);
+        } else {
+            int minutes = timeout / 60;
+            int seconds = timeout % 60;
+            NSString *strTime = [NSString stringWithFormat:@"%d分%.2d秒后重新获取验证码",minutes, seconds];
+            DLog(@"%@", strTime);
+            dispatch_async(dispatch_get_main_queue(), capturePhoto);
+            timeout --;
+        }
+    });
+    dispatch_resume(_timer);
+}
+
+- (IBAction)continuousBegin:(id)sender {
+    self.capturePhotoType = kContinuous;
+    [self _startTimer];
+}
+
 - (void) prepareCamera {
     // silder with camera stillImageOutput maxScaleAndCropFactor
     self.cameraEffectiveScaleSlider.minimumValue = 1.0;
@@ -461,9 +515,9 @@
         
 		if (error != nil) {
 			[self showAlertViewWithTitle:@"Failed to start camera" message:[error localizedFailureReason]];
-			NSLog(@"%@", error);
+			DLog(@"%@", error);
 		} else {
-			NSLog(@"- CAMERA READY -");
+			DLog(@"- CAMERA READY -");
 		}
 	}
 }
@@ -505,10 +559,10 @@
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
 	if (self.camera.isPrepared) {
 		if (touchDetector.state == UIGestureRecognizerStateBegan) {
-			NSLog(@"==== STARTING RECORDING ====");
+			DLog(@"==== STARTING RECORDING ====");
 			[self.camera record];
 		} else if (touchDetector.state == UIGestureRecognizerStateEnded) {
-			NSLog(@"==== PAUSING RECORDING ====");
+			DLog(@"==== PAUSING RECORDING ====");
 			[self.camera pause];
 		}
 	}
@@ -546,7 +600,7 @@
             [_motionManager startGyroUpdatesToQueue:self.motionGyroUpdatesQueue withHandler:^(CMGyroData *gyroData, NSError *error) {
                 if (error) {
                     [_motionManager stopGyroUpdates];
-                    NSLog(@"%@", [NSString stringWithFormat:@"Gyroscope encountered error: %@", error]);
+                    DLog(@"%@", [NSString stringWithFormat:@"Gyroscope encountered error: %@", error]);
                 } else {
                     double xx = fabs(gyroData.rotationRate.x);
                     double yy = fabs(gyroData.rotationRate.y);
@@ -555,17 +609,14 @@
                     dispatch_async(dispatch_get_main_queue(), ^{
                         self.shakeproofProgressView.progress = xx;
                         
-                        float accelerationThreshold = 0.012;
+                        float accelerationThreshold = 0.011;
                         //DLog(@"xx : %f yy:%f zz:%f", xx, yy, zz);
                         if (xx < accelerationThreshold && yy < accelerationThreshold && zz < accelerationThreshold) {
-                            self.isAllowCaptureWithMotion = YES;
-                        } else {
-                            self.isAllowCaptureWithMotion = NO;
+                            self.capturePhotoType = kMotion;
                         }
                     });
                 }
             }];
-            
         }
     }
 }

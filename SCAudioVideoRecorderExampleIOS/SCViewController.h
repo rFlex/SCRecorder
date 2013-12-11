@@ -11,24 +11,39 @@
 
 @interface SCViewController : UIViewController<SCCameraDelegate>
 
+// Video
 @property (weak, nonatomic) IBOutlet UIView *recordView;
 @property (weak, nonatomic) IBOutlet UIButton *stopButton;
 @property (weak, nonatomic) IBOutlet UIButton *retakeButton;
 @property (weak, nonatomic) IBOutlet UIView *previewView;
-@property (weak, nonatomic) IBOutlet UIView *loadingView;
 @property (weak, nonatomic) IBOutlet UILabel *timeRecordedLabel;
 @property (weak, nonatomic) IBOutlet UIView *downBar;
-@property (weak, nonatomic) IBOutlet UIButton *switchCameraModeButton;
+
+// Video record finish loading
+@property (weak, nonatomic) IBOutlet UIView *loadingView;
+
 @property (weak, nonatomic) IBOutlet UIButton *reverseCamera;
+
+// CameraMode
+@property (weak, nonatomic) IBOutlet UIButton *switchCameraModeButton;
 - (IBAction)switchCameraMode:(id)sender;
-- (IBAction)switchFlash:(id)sender;
+
+// flash with take photo
 @property (weak, nonatomic) IBOutlet UIButton *flashModeButton;
+- (IBAction)switchFlash:(id)sender;
 
-- (IBAction)capturePhoto:(id)sender;
+// Normal capture photo
 @property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;
-- (IBAction)shakeproofCapturePhoto:(UIButton *)sender;
-@property (weak, nonatomic) IBOutlet UIProgressView *shakeproofProgressView;
+- (IBAction)capturePhoto:(id)sender;
 
+// Take Photo with motion
+@property (weak, nonatomic) IBOutlet UIProgressView *shakeproofProgressView;
+- (IBAction)shakeproofCapturePhoto:(UIButton *)sender;
+
+// Continuous take Photo
+- (IBAction)continuousBegin:(id)sender;
+
+// Camera Scale
 @property (weak, nonatomic) IBOutlet UISlider *cameraEffectiveScaleSlider;
 - (IBAction)cameraEffectiveScaleSliderValueChange:(UISlider *)sender;
 
