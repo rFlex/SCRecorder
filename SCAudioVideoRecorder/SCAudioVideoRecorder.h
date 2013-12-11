@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AVFoundation/AVFoundation.h>
 #import "SCVideoEncoder.h"
 #import "SCAudioEncoder.h"
 

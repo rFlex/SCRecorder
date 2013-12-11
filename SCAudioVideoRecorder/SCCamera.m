@@ -516,11 +516,11 @@ typedef NSView View;
     [notificationCenter removeObserver:self];
     
     // focus
-    if (self.currentVideoDeviceInput)
+    if (self.currentVideoDeviceInput) {
         [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
-    
-    // focusMode
-    [self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
+		// focusMode
+		[self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
+	}
     
     // capturingStillImage
     if (self.stillImageOutput)
