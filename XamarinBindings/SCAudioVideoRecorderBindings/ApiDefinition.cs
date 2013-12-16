@@ -274,12 +274,18 @@ namespace SCorsin {
         bool UseFrontCamera { get; set; }
     }
 
+	delegate void CompletionHandler(NSError error);
+
     [BaseType(typeof(NSObject))]
     interface SCAudioTools {
 
         [Static]
         [Export("overrideCategoryMixWithOthers")]
         void OverrideCategoryMixWithOthers();
+
+		[Static]
+		[Export("mixAudio:startTime:withVideo:affineTransform:toUrl:outputFileType:withMaxDuration:withCompletionBlock:")]
+		void MixAudioWithVideo(AVAsset audioAsset, CMTime audioStartTime, NSUrl inputUrl, CGAffineTransform affineTransform, NSUrl outputUrl, NSString outputFileType, CMTime maxDuration, CompletionHandler completionHandler);
 
     }
 

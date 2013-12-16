@@ -90,22 +90,17 @@ typedef NSView View;
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
         [self removeObserverForSession];
 #endif
-        
-		if (self.currentAudioDeviceInput != nil) {
-			[self.session removeInput:self.currentAudioDeviceInput];
-            self.currentAudioDeviceInput = nil;
+      
+		while (self.session.inputs.count > 0) {
+			AVCaptureInput * input = [self.session.inputs objectAtIndex:0];
+			[self.session removeInput:input];
 		}
-		if (self.currentVideoDeviceInput != nil) {
-			[self.session removeInput:self.currentVideoDeviceInput];
-            self.currentAudioDeviceInput = nil;
+		
+		while (self.session.outputs.count > 0) {
+			AVCaptureOutput * output = [self.session.outputs objectAtIndex:0];
+			[self.session removeOutput:output];
 		}
-        
-		[self.session removeOutput:self.audioOutput];
-		[self.session removeOutput:self.videoOutput];
-        
-        if (self.stillImageOutput) {
-            [self.session removeOutput:self.stillImageOutput];
-        }
+	
         self.session = nil;
 	}
 }

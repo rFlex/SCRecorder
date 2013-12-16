@@ -12,6 +12,7 @@
 #import "SCAudioVideoRecorderInternal.h"
 
 #import "NSArray+SCAdditions.h"
+#import "SCAudioTools.h"
 
 #import <ImageIO/ImageIO.h>
 // photo dictionary key definitions
@@ -206,7 +207,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	}
 }
 
-- (void) finalizeAudioMixForUrl:(NSURL*)fileUrl  withCompletionBlock:(void(^)(NSError *))completionBlock {
+- (void) finalizeAudioMixForUrl:(NSURL*)fileUrl withCompletionBlock:(void(^)(NSError *))completionBlock {
 	NSError * error = nil;
 	if (self.playbackAsset != nil) {
 		// Move the file to a temporary one
@@ -214,78 +215,12 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		[[NSFileManager defaultManager] moveItemAtURL:fileUrl toURL:oldUrl error:&error];
 		
 		if (error == nil) {
-			AVMutableComposition * composition = [[AVMutableComposition alloc] init];
-			
-			AVMutableCompositionTrack * videoTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-			
-			AVMutableCompositionTrack * audioTrackComposition = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
-			
-			AVURLAsset * fileAsset = [AVURLAsset URLAssetWithURL:oldUrl options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:AVURLAssetPreferPreciseDurationAndTimingKey]];
-			
-			NSArray * videoTracks = [fileAsset tracksWithMediaType:AVMediaTypeVideo];
-			
-			CMTime duration = ((AVAssetTrack*)[videoTracks objectAtIndex:0]).timeRange.duration;
-			
-			// We check if the recorded time if more than the limit
-			if (CMTIME_COMPARE_INLINE(duration, >, self.recordingDurationLimit)) {
-				duration = self.recordingDurationLimit;
-			}
-			
-			for (AVAssetTrack * track in [self.playbackAsset tracksWithMediaType:AVMediaTypeAudio]) {
-				[audioTrackComposition insertTimeRange:CMTimeRangeMake(self.playbackStartTime, duration) ofTrack:track atTime:kCMTimeZero error:&error];
-				
-				if (error != nil) {
-					completionBlock(error);
-					return;
-				}
-			}
-
-			// Disabling that for now, this doesn't work well
-//			for (AVAssetTrack * track in [fileAsset tracksWithMediaType:AVMediaTypeAudio]) {
-//				[audioTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
-//			}
-			
-			for (AVAssetTrack * track in videoTracks) {
-				[videoTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:&error];
-				
-				if (error != nil) {
-					completionBlock(error);
-					return;
-				}
-			}
-			
-			videoTrackComposition.preferredTransform = self.videoEncoder.outputAffineTransform;
-			
-			AVAssetExportSession * exportSession = [[AVAssetExportSession alloc] initWithAsset:composition presetName:AVAssetExportPresetPassthrough];
-			exportSession.outputFileType = self.outputFileType;
-			exportSession.shouldOptimizeForNetworkUse = YES;
-			exportSession.outputURL = fileUrl;
-			
-			[exportSession exportAsynchronouslyWithCompletionHandler:^ {
-				[self pleaseDontReleaseObject:exportSession];
-								
-				NSError * error = nil;
-				if (exportSession.error != nil) {
-					NSMutableDictionary * userInfo = [NSMutableDictionary dictionaryWithDictionary:exportSession.error.userInfo];
-					NSString * subLocalizedDescription = [userInfo objectForKey:NSLocalizedDescriptionKey];
-					[userInfo removeObjectForKey:NSLocalizedDescriptionKey];
-					[userInfo setObject:@"Failed to mix audio and video" forKey:NSLocalizedDescriptionKey];
-					[userInfo setObject:exportSession.outputFileType forKey:@"OutputFileType"];
-					[userInfo setObject:exportSession.outputURL forKey:@"OutputUrl"];
-					[userInfo setObject:oldUrl forKey:@"InputUrl"];
-					[userInfo setObject:subLocalizedDescription forKey:@"CauseLocalizedDescription"];
-					[userInfo setObject:self.playbackAsset.commonMetadata forKey:@"PlaybackMetadata"];
-					
-					[userInfo setObject:[AVAssetExportSession allExportPresets] forKey:@"AllExportSessions"];
-					
-					error = [NSError errorWithDomain:@"SCAudioVideoRecorder" code:500 userInfo:userInfo];
-				}
-
-				if (error == nil) {
+			[SCAudioTools mixAudio:self.playbackAsset startTime:self.playbackStartTime withVideo:oldUrl affineTransform:self.videoEncoder.outputAffineTransform toUrl:fileUrl outputFileType:self.outputFileType withMaxDuration:self.recordingDurationLimit withCompletionBlock:^(NSError * error2) {
+				if (error2 == nil) {
 					[self removeFile:oldUrl];
 				}
 				
-				completionBlock(error);
+				completionBlock(error2);
 			}];
 		} else {
 			completionBlock(error);
