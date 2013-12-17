@@ -272,6 +272,15 @@ namespace SCorsin {
 
         [Export("useFrontCamera")]
         bool UseFrontCamera { get; set; }
+
+		[Export("isFrameRateSupported:")]
+		bool IsFrameRateSupported(int frameRate);
+
+		[Export("framePerSeconds")]
+		int FramePerSeconds { get; set; }
+
+		[Export("currentDevice")]
+		AVCaptureDevice CurrentDevice { get; }
     }
 
 	delegate void CompletionHandler(NSError error);

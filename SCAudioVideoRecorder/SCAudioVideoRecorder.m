@@ -33,6 +33,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	BOOL shouldWriteToCameraRoll;
 	BOOL audioEncoderReady;
 	BOOL videoEncoderReady;
+    float _recordingRate;
 	CMTime _playbackStartTime;
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 	UIBackgroundTaskIdentifier _backgroundIdentifier;
@@ -72,6 +73,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	self = [super init];
 	
 	if (self) {
+        _recordingRate = 1.0;
 		self.outputFileType = AVFileTypeMPEG4;
 		self.recordingDurationLimit = kCMTimePositiveInfinity;
 		
@@ -261,7 +263,9 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 - (void) finishWriter:(NSURL*)fileUrl {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
     [self.assetWriter finishWritingWithCompletionHandler:^ {
-		[self stopInternal];
+        dispatch_async(self.dispatch_queue, ^{
+            [self stopInternal];
+        });
     }];
 #else
     [self.assetWriter finishWriting];
@@ -412,7 +416,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		[self.delegate audioVideoRecorder:self willFinishRecordingAtTime:self.currentRecordingTime];
 	}
     
-	dispatch_async(self.dispatch_queue, ^ {
+	dispatch_async(self.dispatch_queue, ^{
 		if (self.assetWriter == nil) {
 			[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Recording must be started before calling stopRecording"]];
 		} else {
@@ -458,7 +462,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		[NSException raise:@"Recording not previously started" format:@"Recording should be started using startRecording before trying to resume it"];
 	}
 	
-	[self.playbackPlayer play];
+    self.playbackPlayer.rate = self.recordingRate;
 	dispatch_async(self.dispatch_queue, ^ {
 		self.shouldComputeOffset = YES;
 		recording = YES;
@@ -602,6 +606,14 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 - (void) setPlaybackStartTime:(CMTime)startTime {
 	_playbackStartTime = startTime;
 	[self.playbackPlayer seekToTime:startTime];
+}
+
+- (float) recordingRate {
+    return _recordingRate;
+}
+
+- (void) setRecordingRate:(float)recordingRate {
+    _recordingRate = recordingRate;
 }
 
 @end

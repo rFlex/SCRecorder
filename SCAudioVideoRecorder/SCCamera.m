@@ -209,7 +209,7 @@ typedef NSView View;
 			// Because I want to in the controller, the appropriate time to start
 #else
             [self startRunningSession];
-			#endif
+#endif
             dispatch_async(dispatch_get_main_queue(), ^ {
                 View * settedPreviewView = self.previewView;
                 
@@ -225,6 +225,10 @@ typedef NSView View;
                 }];
             }
         });
+    } else {
+        if (completionHandler != nil) {
+            completionHandler(nil, nil);
+        }
     }
 }
 
@@ -421,6 +425,56 @@ typedef NSView View;
 
 - (SCCameraDevice)cameraDevice {
     return _cameraDevice;
+}
+
+- (BOOL)isFrameRateSupported:(NSInteger)frameRate {
+    AVCaptureDevice * device = self.currentVideoDeviceInput.device;
+    
+    if (device != nil) {
+        for (AVCaptureDeviceFormat * format in device.formats) {
+            for (AVFrameRateRange * frameRateRange in format.videoSupportedFrameRateRanges) {
+                if (((NSInteger)frameRateRange.minFrameRate <= frameRate) && (frameRate <= (NSInteger)frameRateRange.maxFrameRate)) {
+                    return YES;
+                }
+            }
+        }        
+    }
+    
+    return NO;
+}
+
+- (void)setFrameRate:(NSInteger)framePerSeconds {
+    CMTime fps = CMTimeMake(1, framePerSeconds);
+    
+    AVCaptureDevice * device = self.currentVideoDeviceInput.device;
+    
+    if (device != nil) {
+        NSError * error = nil;
+        if ([device lockForConfiguration:&error]) {
+            BOOL formatSupported = NO;
+            for (AVFrameRateRange * frameRateRange in device.activeFormat.videoSupportedFrameRateRanges) {
+                if (((NSInteger)frameRateRange.minFrameRate <= framePerSeconds) && (framePerSeconds <= (NSInteger)frameRateRange.maxFrameRate)) {
+                    formatSupported = YES;
+                    break;
+                }
+            }
+            
+            if (formatSupported) {
+                device.activeVideoMaxFrameDuration = fps;
+                device.activeVideoMinFrameDuration = fps;
+            } else {
+                NSLog(@"Unsupported frame rate %d on current device format.", framePerSeconds);
+            }
+            
+            [device unlockForConfiguration];
+        } else {
+            NSLog(@"Failed to set FramePerSeconds into camera device: %@", error.description);
+        }
+    }
+}
+
+- (NSInteger)frameRate {
+    return self.currentVideoDeviceInput.device.activeVideoMaxFrameDuration.timescale;
 }
 
 - (void) initializeCamera:(AVCaptureSession*)captureSession error:(NSError**)error {
@@ -837,5 +891,9 @@ typedef NSView View;
 }
 
 #endif
+
+- (AVCaptureDevice*) currentDevice {
+    return self.currentVideoDeviceInput.device;
+}
 
 @end

@@ -79,6 +79,7 @@ typedef enum {
 @property (copy, nonatomic) NSString * sessionPreset;
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
+@property (readonly) AVCaptureDevice * currentDevice;
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
@@ -98,6 +99,9 @@ typedef enum {
 
 // Switch between back and front camera
 - (void) switchCamera;
+
+- (BOOL)isFrameRateSupported:(NSInteger)frameRate;
+@property (assign, nonatomic) NSInteger frameRate;
 
 // preview
 @property (weak, nonatomic) UIView * previewView;
