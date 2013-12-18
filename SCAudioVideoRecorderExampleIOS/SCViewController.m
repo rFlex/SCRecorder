@@ -247,7 +247,6 @@ typedef NS_ENUM(NSInteger, CapturePhotoType) {
 // Photo
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
     if (!error) {
-//        self.isAllowCaptureWithMotion = NO;
 //        [self.camera stopRunningSession];
 //        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -484,14 +483,16 @@ typedef NS_ENUM(NSInteger, CapturePhotoType) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 //设置界面的按钮显示 根据自己需求设置
                 self.capturePhotoType = kNormal;
-                DLog(@"什么地方来了，是结束了嘛？");
+                DLog(@"什么地方来了，是已经连拍结束了");
             });
             dispatch_source_cancel(_timer);
         } else {
+            /*
             int minutes = timeout / 60;
             int seconds = timeout % 60;
             NSString *strTime = [NSString stringWithFormat:@"%d分%.2d秒后重新获取验证码",minutes, seconds];
             DLog(@"%@", strTime);
+             */
             dispatch_async(dispatch_get_main_queue(), capturePhoto);
             timeout --;
         }
