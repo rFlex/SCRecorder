@@ -240,7 +240,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	
 	[self finalizeAudioMixForUrl:fileUrl withCompletionBlock:^(NSError * error) {
 		if (shouldWriteToCameraRoll && error == nil) {
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE			
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 			ALAssetsLibrary * library = [[ALAssetsLibrary alloc] init];
 			[library writeVideoAtPathToSavedPhotosAlbum:fileUrl completionBlock:^(NSURL *assetUrl, NSError * error) {
 				[self pleaseDontReleaseObject:library];
@@ -308,34 +308,6 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	return [UIImage imageWithData:jpegData];
 }
 
-- (UIImage *)_thumbnailJPEGData:(NSData *)jpegData
-{
-    CGImageRef thumbnailCGImage = NULL;
-    CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)jpegData);
-    
-    if (provider) {
-        CGImageSourceRef imageSource = CGImageSourceCreateWithDataProvider(provider, NULL);
-        if (imageSource) {
-            if (CGImageSourceGetCount(imageSource) > 0) {
-                NSMutableDictionary *options = [[NSMutableDictionary alloc] initWithCapacity:3];
-                [options setObject:[NSNumber numberWithBool:YES] forKey:(id)kCGImageSourceCreateThumbnailFromImageAlways];
-                [options setObject:[NSNumber numberWithFloat:SCAudioVideoRecorderThumbnailWidth] forKey:(id)kCGImageSourceThumbnailMaxPixelSize];
-                [options setObject:[NSNumber numberWithBool:NO] forKey:(id)kCGImageSourceCreateThumbnailWithTransform];
-                thumbnailCGImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, (__bridge CFDictionaryRef)options);
-            }
-            CFRelease(imageSource);
-        }
-        CGDataProviderRelease(provider);
-    }
-    
-    UIImage *thumbnail = nil;
-    if (thumbnailCGImage) {
-        thumbnail = [[UIImage alloc] initWithCGImage:thumbnailCGImage scale:1 orientation:UIImageOrientationUp];
-        CGImageRelease(thumbnailCGImage);
-    }
-    return thumbnail;
-}
-
 - (void) capturePhoto {
     if (self.stillImageOutput) {
         AVCaptureConnection *connection = [self.stillImageOutput connectionWithMediaType:AVMediaTypeVideo];
@@ -383,16 +355,6 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
                      NSLog(@"failed to create image from JPEG");
                      // TODO: return delegate on error
                  }
-                 
-                 // add thumbnail
-                 UIImage *thumbnail = [self _thumbnailJPEGData:jpegData];
-                 if (thumbnail) {
-                     [photoDict setObject:thumbnail forKey:SCAudioVideoRecorderPhotoThumbnailKey];
-                 } else {
-                     NSLog(@"failed to create a thumnbail");
-                     // TODO: return delegate on error
-                 }
-                 
              } else {
                  NSLog(@"failed to create jpeg still image data");
                  // TODO: return delegate on error
