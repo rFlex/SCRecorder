@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="4514" systemVersion="13A603" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="go9-3b-6zS">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="4514" systemVersion="13A3028" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="go9-3b-6zS">
     <dependencies>
         <deployment defaultVersion="1552" identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3747"/>
@@ -22,7 +22,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yJV-J1-WAs" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-843" y="316"/>
+            <point key="canvasLocation" x="-903" y="316"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="BaO-9t-Km3">
@@ -33,13 +33,23 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="CAK-CP-e4W">
-                                <rect key="frame" x="58" y="224" width="204" height="160"/>
+                                <rect key="frame" x="33" y="79" width="255" height="135"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Tap here to start the camera">
+                                <state key="normal" title="Camera Example">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
                                     <segue destination="2" kind="push" id="hul-uo-3gb"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="I5L-pM-Cbw">
+                                <rect key="frame" x="33" y="252" width="255" height="135"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Audio Example">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <segue destination="BNR-hx-qTK" kind="push" id="WVa-T8-0zd"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -198,6 +208,7 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="bvx-6l-zji"/>
+                    <nil key="simulatedTopBarMetrics"/>
                     <connections>
                         <outlet property="capturePhotoButton" destination="HiJ-TG-pdG" id="TgE-z1-oHF"/>
                         <outlet property="downBar" destination="dDr-zv-xXt" id="6u4-bO-KcL"/>
@@ -214,6 +225,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="130" y="188"/>
         </scene>
         <!--Video Player View Controller-->
         <scene sceneID="nAI-tE-muv">
@@ -230,7 +242,113 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aQF-XH-HvG" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="8" y="682"/>
+            <point key="canvasLocation" x="620" y="166"/>
+        </scene>
+        <!--Audio Record View Controller-->
+        <scene sceneID="4ds-US-klh">
+            <objects>
+                <viewController id="BNR-hx-qTK" customClass="SCAudioRecordViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cjZ-hL-QjL">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="sbY-mU-PLt" userLabel="RecordButton">
+                                <rect key="frame" x="110" y="64" width="100" height="100"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <state key="normal" backgroundImage="Record-Normal-icon.png">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="selected" backgroundImage="Record-Pressed-icon.png"/>
+                                <connections>
+                                    <action selector="recordPressed:" destination="BNR-hx-qTK" eventType="touchUpInside" id="5vT-0u-VAg"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0.0s" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="gWO-Ob-TmG">
+                                <rect key="frame" x="56" y="157" width="208" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="rii-ZM-oqE" userLabel="StopButton">
+                                <rect key="frame" x="125" y="191" width="70" height="70"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <state key="normal" backgroundImage="Stop-Normal-Red-icon.png">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="stopRecordPressed:" destination="BNR-hx-qTK" eventType="touchUpInside" id="0MN-GT-boS"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Stop recording" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="wrC-tL-b3t">
+                                <rect key="frame" x="84" y="269" width="153" height="24"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" id="5Bc-N7-E6R" userLabel="PlayView">
+                                <rect key="frame" x="0.0" y="387" width="325" height="93"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="cZ4-mN-djs" userLabel="PlayButton">
+                                        <rect key="frame" x="272" y="8" width="33" height="33"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <state key="normal" backgroundImage="Play-Normal-icon.png">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <state key="selected" backgroundImage="Pause-Normal-icon.png"/>
+                                        <connections>
+                                            <action selector="playButtonPressed:" destination="BNR-hx-qTK" eventType="touchUpInside" id="2E1-S4-xzh"/>
+                                        </connections>
+                                    </button>
+                                    <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" continuous="NO" id="RFA-ym-LqG" userLabel="PlaySlider">
+                                        <rect key="frame" x="18" y="8" width="248" height="34"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="playSliderValueChanged:" destination="BNR-hx-qTK" eventType="valueChanged" id="tve-OK-jaX"/>
+                                        </connections>
+                                    </slider>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="6YD-sK-fFB">
+                                        <rect key="frame" x="103" y="57" width="119" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="Delete">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="deletePressed:" destination="BNR-hx-qTK" eventType="touchUpInside" id="Pds-tw-Cmo"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0.0s" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="KtN-pS-vcr">
+                                        <rect key="frame" x="250" y="49" width="55" height="21"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="lV4-0t-cb3"/>
+                    <connections>
+                        <outlet property="deleteButton" destination="6YD-sK-fFB" id="gzO-XA-Sl2"/>
+                        <outlet property="playButton" destination="cZ4-mN-djs" id="GZH-cX-kXT"/>
+                        <outlet property="playLabel" destination="KtN-pS-vcr" id="cf5-x8-dvi"/>
+                        <outlet property="playSlider" destination="RFA-ym-LqG" id="fQD-ZN-0zp"/>
+                        <outlet property="playView" destination="5Bc-N7-E6R" id="gzv-PN-Aj6"/>
+                        <outlet property="recordButton" destination="sbY-mU-PLt" id="vaE-hi-rpL"/>
+                        <outlet property="recordTimeLabel" destination="gWO-Ob-TmG" id="7zS-JO-pIp"/>
+                        <outlet property="stopRecordingButton" destination="rii-ZM-oqE" id="nFR-XC-4di"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4qo-Mv-Wcy" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="130" y="792"/>
         </scene>
         <!--Image View Dis Play View Controller-->
         <scene sceneID="Tj9-NG-6ch">
@@ -253,10 +371,15 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4oW-9Q-aD6" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="340" y="632"/>
+            <point key="canvasLocation" x="620" y="792"/>
         </scene>
     </scenes>
     <resources>
+        <image name="Pause-Normal-icon.png" width="256" height="256"/>
+        <image name="Play-Normal-icon.png" width="256" height="256"/>
+        <image name="Record-Normal-icon.png" width="256" height="256"/>
+        <image name="Record-Pressed-icon.png" width="256" height="256"/>
+        <image name="Stop-Normal-Red-icon.png" width="256" height="256"/>
         <image name="capture_flip.png" width="36" height="30"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

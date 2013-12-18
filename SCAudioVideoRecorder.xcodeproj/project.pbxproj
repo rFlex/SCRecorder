@@ -72,6 +72,13 @@
 		DC551C7017ADF12200E37F8F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6F17ADF12200E37F8F /* CoreMedia.framework */; };
 		DC551C7217ADF12800E37F8F /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C7117ADF12800E37F8F /* CoreVideo.framework */; };
 		DC599B6617B481BB00500F05 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC599B6517B481BB00500F05 /* AudioToolbox.framework */; };
+		DC6722ED1861B3CE0001A15E /* SCAudioRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC6722EC1861B3CE0001A15E /* SCAudioRecordViewController.m */; };
+		DC6722EF1861B4930001A15E /* Record-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722EE1861B4930001A15E /* Record-Normal-icon.png */; };
+		DC6722F11861B4F00001A15E /* Record-Pressed-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F01861B4F00001A15E /* Record-Pressed-icon.png */; };
+		DC6722F31861B5D50001A15E /* Stop-Normal-Red-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F21861B5D50001A15E /* Stop-Normal-Red-icon.png */; };
+		DC6722F61861B6260001A15E /* Play-Pressed-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F41861B6260001A15E /* Play-Pressed-icon.png */; };
+		DC6722F71861B6260001A15E /* Play-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F51861B6260001A15E /* Play-Normal-icon.png */; };
+		DC6722F91861B6F00001A15E /* Pause-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F81861B6F00001A15E /* Pause-Normal-icon.png */; };
 		DCC4E9B8184E4B5200F1BE43 /* SCAudioVideoRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = DC551C6C17ADDB4000E37F8F /* SCAudioVideoRecorder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCC4E9B9184E4B5E00F1BE43 /* SCVideoEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = DCB19FBB17B087D20019AB38 /* SCVideoEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCC4E9BA184E4B5E00F1BE43 /* SCAudioEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = DCB19FBE17B089520019AB38 /* SCAudioEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -170,6 +177,14 @@
 		DC551C6F17ADF12200E37F8F /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		DC551C7117ADF12800E37F8F /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		DC599B6517B481BB00500F05 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		DC6722EB1861B3CE0001A15E /* SCAudioRecordViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioRecordViewController.h; sourceTree = "<group>"; };
+		DC6722EC1861B3CE0001A15E /* SCAudioRecordViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCAudioRecordViewController.m; sourceTree = "<group>"; };
+		DC6722EE1861B4930001A15E /* Record-Normal-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Record-Normal-icon.png"; sourceTree = "<group>"; };
+		DC6722F01861B4F00001A15E /* Record-Pressed-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Record-Pressed-icon.png"; sourceTree = "<group>"; };
+		DC6722F21861B5D50001A15E /* Stop-Normal-Red-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Stop-Normal-Red-icon.png"; sourceTree = "<group>"; };
+		DC6722F41861B6260001A15E /* Play-Pressed-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Play-Pressed-icon.png"; sourceTree = "<group>"; };
+		DC6722F51861B6260001A15E /* Play-Normal-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Play-Normal-icon.png"; sourceTree = "<group>"; };
+		DC6722F81861B6F00001A15E /* Pause-Normal-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Pause-Normal-icon.png"; sourceTree = "<group>"; };
 		DCB19FBB17B087D20019AB38 /* SCVideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCVideoEncoder.h; sourceTree = "<group>"; };
 		DCB19FBC17B087D20019AB38 /* SCVideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCVideoEncoder.m; sourceTree = "<group>"; };
 		DCB19FBE17B089520019AB38 /* SCAudioEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioEncoder.h; sourceTree = "<group>"; };
@@ -259,6 +274,8 @@
 				DC551C4E17ADD66000E37F8F /* Supporting Files */,
 				DCF6143117D157A400341EC2 /* SCVideoPlayerViewController.h */,
 				DCF6143217D157A400341EC2 /* SCVideoPlayerViewController.m */,
+				DC6722EB1861B3CE0001A15E /* SCAudioRecordViewController.h */,
+				DC6722EC1861B3CE0001A15E /* SCAudioRecordViewController.m */,
 			);
 			path = SCAudioVideoRecorderExampleIOS;
 			sourceTree = "<group>";
@@ -414,6 +431,12 @@
 		DC551C4E17ADD66000E37F8F /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				DC6722F81861B6F00001A15E /* Pause-Normal-icon.png */,
+				DC6722F41861B6260001A15E /* Play-Pressed-icon.png */,
+				DC6722F51861B6260001A15E /* Play-Normal-icon.png */,
+				DC6722F21861B5D50001A15E /* Stop-Normal-Red-icon.png */,
+				DC6722F01861B4F00001A15E /* Record-Pressed-icon.png */,
+				DC6722EE1861B4930001A15E /* Record-Normal-icon.png */,
 				AB2BA3FD18338DAE00B7CFA2 /* capture_flip@2x.png */,
 				DC551C4F17ADD66000E37F8F /* SCAudioVideoRecorder-Info.plist */,
 				DC551C5017ADD66000E37F8F /* InfoPlist.strings */,
@@ -586,10 +609,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB2BA3FE18338DAE00B7CFA2 /* capture_flip@2x.png in Resources */,
+				DC6722F61861B6260001A15E /* Play-Pressed-icon.png in Resources */,
 				DC551C5217ADD66000E37F8F /* InfoPlist.strings in Resources */,
+				DC6722F71861B6260001A15E /* Play-Normal-icon.png in Resources */,
+				DC6722F11861B4F00001A15E /* Record-Pressed-icon.png in Resources */,
+				DC6722F31861B5D50001A15E /* Stop-Normal-Red-icon.png in Resources */,
 				DC551C5A17ADD66000E37F8F /* Default.png in Resources */,
 				DC551C5C17ADD66000E37F8F /* Default@2x.png in Resources */,
 				DC551C5E17ADD66000E37F8F /* Default-568h@2x.png in Resources */,
+				DC6722EF1861B4930001A15E /* Record-Normal-icon.png in Resources */,
+				DC6722F91861B6F00001A15E /* Pause-Normal-icon.png in Resources */,
 				DC551C6117ADD66000E37F8F /* MainStoryboard.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -658,6 +687,7 @@
 				DC551C5817ADD66000E37F8F /* SCAppDelegate.m in Sources */,
 				DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */,
 				ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */,
+				DC6722ED1861B3CE0001A15E /* SCAudioRecordViewController.m in Sources */,
 				DCF6143317D157A400341EC2 /* SCVideoPlayerViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

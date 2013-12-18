@@ -58,7 +58,7 @@
 }
 
 - (void) commonInit {
-	self.player = [SCPlayer videoPlayer];
+	self.player = [SCPlayer player];
 	self.player.delegate = self;
 	self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
 	self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
