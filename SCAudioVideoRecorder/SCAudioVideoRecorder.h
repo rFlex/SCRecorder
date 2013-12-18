@@ -115,4 +115,8 @@ extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
 // Default is kCMTimePositiveInfinity
 @property (assign, nonatomic) CMTime recordingDurationLimit;
 
+// The rate at which the record should be processed
+// The recording will be slower if between 0 and 1 exclusive, faster in more than 1
+@property (assign, nonatomic) float recordingRate;
+
 @end

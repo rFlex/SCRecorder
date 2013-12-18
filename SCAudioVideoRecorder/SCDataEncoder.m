@@ -39,7 +39,7 @@
         self.audioVideoRecorder = aVR;
         self.enabled = YES;
         self.useInputFormatTypeAsOutputType = YES;
-        lastTakenFrame = CMTimeMake(0, 1);
+        lastTakenFrame = kCMTimeInvalid;
         initialized = NO;
     }
     return self;
@@ -62,21 +62,24 @@
         }
     }
     initialized = NO;
-    lastTakenFrame = CMTimeMake(0, 1);
+    lastTakenFrame = kCMTimeInvalid;
 }
 
 //
 // The following function is from http://www.gdcl.co.uk/2013/02/20/iPhone-Pause.html
 //
-- (CMSampleBufferRef) adjustBuffer:(CMSampleBufferRef)sample withTimeOffset:(CMTime)offset {
+- (CMSampleBufferRef) adjustBuffer:(CMSampleBufferRef)sample withTimeOffset:(CMTime)offset andDuration:(CMTime)duration {
     CMItemCount count;
     CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
     CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
     CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
+    
     for (CMItemCount i = 0; i < count; i++) {
         pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
         pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
+        pInfo[i].duration = duration;
     }
+    
     CMSampleBufferRef sout;
     CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
     free(pInfo);
@@ -127,7 +130,8 @@
     }
 	    
     CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-	
+    CMTime realDuration = CMSampleBufferGetDuration(sampleBuffer);
+    
 	if ([audioVideoRecorder isPrepared]) {
 		if (!initialized) {
             [self initialize:sampleBuffer atFrameTime:frameTime];
@@ -143,9 +147,19 @@
 			if ([self.writerInput isReadyForMoreMediaData]) {
 				if (audioVideoRecorder.shouldComputeOffset) {
 					[self computeOffset:frameTime];
+                    lastTakenFrame = kCMTimeInvalid;
 				}
+                
+                CMTime duration = kCMTimeZero;
+                if (CMTIME_IS_VALID(lastTakenFrame)) {
+                    duration = CMTimeSubtract(frameTime, lastTakenFrame);
+                }
+  
+                CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, self.audioVideoRecorder.recordingRate);
+                CMTime timeOffset = CMTimeSubtract(duration, computedFrameDuration);
+                self.audioVideoRecorder.currentTimeOffset = CMTimeAdd(audioVideoRecorder.currentTimeOffset, timeOffset);
 				
-				CMSampleBufferRef adjustedBuffer = [self adjustBuffer:sampleBuffer withTimeOffset:audioVideoRecorder.currentTimeOffset];
+				CMSampleBufferRef adjustedBuffer = [self adjustBuffer:sampleBuffer withTimeOffset:audioVideoRecorder.currentTimeOffset andDuration:realDuration];
 				
 				CMTime currentTime = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer), audioVideoRecorder.startedTime);
 				[self.writerInput appendSampleBuffer:adjustedBuffer];
@@ -155,7 +169,7 @@
 					[self.delegate dataEncoder:self didEncodeFrame:currentTime];
 				}
 			}
-			lastTakenFrame = frameTime;
+            lastTakenFrame = frameTime;
 		}
 	}
 }
