@@ -224,6 +224,9 @@ namespace SCorsin {
 
 		[Export("playbackStartTime")]
 		CMTime PlaybackStartTime { get; set; }
+
+		[Export("recordingRate")]
+		float RecordingRate { get; set; }
     }
 
     delegate void InitializerDelegate(NSError audioError, NSError videoError);
@@ -261,6 +264,9 @@ namespace SCorsin {
 		[Export("stopRunningSession")]
 		void StopRunningSession();
 
+		[Export("setActiveFormatThatSupportsFrameRate:width:andHeight:error:")]
+		bool SetActiveFormatThatSupportsFrameRate(int frameRate, int width, int height, out NSError error);
+
         [Export("session")]
         AVCaptureSession Session { get; }
 
@@ -276,8 +282,8 @@ namespace SCorsin {
 		[Export("isFrameRateSupported:")]
 		bool IsFrameRateSupported(int frameRate);
 
-		[Export("framePerSeconds")]
-		int FramePerSeconds { get; set; }
+		[Export("frameRate")]
+		int FrameRate { get; set; }
 
 		[Export("currentDevice")]
 		AVCaptureDevice CurrentDevice { get; }

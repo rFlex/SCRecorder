@@ -33,6 +33,7 @@
         // Extra quality!
 		self.outputAffineTransform = CGAffineTransformIdentity;
         self.outputBitsPerPixel = 12;
+        self.outputVideoSize = CGSizeZero;
     }
     
     return self;
@@ -47,7 +48,7 @@
 - (AVAssetWriterInput*) createWriterInputForSampleBuffer:(CMSampleBufferRef)sampleBuffer error:(NSError **)error {
     CGSize videoSize = self.outputVideoSize;
     
-    if (self.useInputFormatTypeAsOutputType) {
+    if (CGSizeEqualToSize(videoSize, CGSizeZero)) {
         CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
         size_t width = CVPixelBufferGetWidth(imageBuffer);
         size_t height = CVPixelBufferGetHeight(imageBuffer);

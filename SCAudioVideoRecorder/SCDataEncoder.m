@@ -30,7 +30,6 @@
     BOOL initialized;
 }
 
-@synthesize useInputFormatTypeAsOutputType;
 @synthesize writerInput;
 @synthesize audioVideoRecorder;
 
@@ -38,7 +37,6 @@
     if (self) {
         self.audioVideoRecorder = aVR;
         self.enabled = YES;
-        self.useInputFormatTypeAsOutputType = YES;
         lastTakenFrame = kCMTimeInvalid;
         initialized = NO;
     }
