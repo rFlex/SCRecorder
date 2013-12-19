@@ -87,12 +87,12 @@ typedef NSView View;
         _sessionPreset = nil;
         self.previewLayer = nil;
         
-        [self stopRunningSession];
-        
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
         [self removeObserverForSession];
 #endif
-      
+        
+        [self stopRunningSession];
+        
 		while (self.session.inputs.count > 0) {
 			AVCaptureInput * input = [self.session.inputs objectAtIndex:0];
 			[self.session removeInput:input];
@@ -102,7 +102,6 @@ typedef NSView View;
 			AVCaptureOutput * output = [self.session.outputs objectAtIndex:0];
 			[self.session removeOutput:output];
 		}
-	
         self.session = nil;
 	}
 }
@@ -453,31 +452,58 @@ typedef NSView View;
     
     if (device != nil) {
         NSError * error = nil;
-        if ([device lockForConfiguration:&error]) {
-            BOOL formatSupported = NO;
-            for (AVFrameRateRange * frameRateRange in device.activeFormat.videoSupportedFrameRateRanges) {
-                if (((NSInteger)frameRateRange.minFrameRate <= framePerSeconds) && (framePerSeconds <= (NSInteger)frameRateRange.maxFrameRate)) {
-                    formatSupported = YES;
-                    break;
+        BOOL formatSupported = NO;
+        for (AVFrameRateRange * frameRateRange in device.activeFormat.videoSupportedFrameRateRanges) {
+            if (((NSInteger)frameRateRange.minFrameRate <= framePerSeconds) && (framePerSeconds <= (NSInteger)frameRateRange.maxFrameRate)) {
+                formatSupported = YES;
+                break;
+            }
+        }
+        
+        if (formatSupported) {
+            if ([device respondsToSelector:@selector(activeVideoMinFrameDuration)]) {
+                if ([device lockForConfiguration:&error]) {
+                    device.activeVideoMaxFrameDuration = fps;
+                    device.activeVideoMinFrameDuration = fps;
+                    [device unlockForConfiguration];
+                } else {
+                    NSLog(@"Failed to set FramePerSeconds into camera device: %@", error.description);
                 }
-            }
-            
-            if (formatSupported) {
-                device.activeVideoMaxFrameDuration = fps;
-                device.activeVideoMinFrameDuration = fps;
             } else {
-                NSLog(@"Unsupported frame rate %d on current device format.", framePerSeconds);
+                AVCaptureConnection * connection = [self getVideoConnection];
+                if (connection.isVideoMaxFrameDurationSupported) {
+                    connection.videoMaxFrameDuration = fps;
+                } else {
+                    NSLog(@"Failed to set FrameRate into camera device");
+                }
+                if (connection.isVideoMinFrameDurationSupported) {
+                    connection.videoMinFrameDuration = fps;
+                } else {
+                    NSLog(@"Failed to set FrameRate into camera device");
+                }
+
             }
-            
-            [device unlockForConfiguration];
         } else {
-            NSLog(@"Failed to set FramePerSeconds into camera device: %@", error.description);
+            NSLog(@"Unsupported frame rate %d on current device format.", framePerSeconds);
         }
     }
 }
 
 - (NSInteger)frameRate {
-    return self.currentVideoDeviceInput.device.activeVideoMaxFrameDuration.timescale;
+    AVCaptureDeviceInput * deviceInput = self.currentVideoDeviceInput;
+    
+    NSInteger framerate = 0;
+    
+    if (deviceInput != nil) {
+        if ([deviceInput.device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
+            framerate = deviceInput.device.activeVideoMaxFrameDuration.timescale;
+        } else {
+            AVCaptureConnection * videoConnection = [self getVideoConnection];
+            framerate = videoConnection.videoMaxFrameDuration.timescale;
+        }
+    }
+    
+    return framerate;
 }
 
 - (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(NSInteger)frameRate dimensions:(CMVideoDimensions)dimensions {
@@ -595,8 +621,8 @@ typedef NSView View;
     [notificationCenter addObserver:self selector:@selector(_deviceSubjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
     
     // Applicaton
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationWillEnterForeground:) name:@"UIApplicationWillEnterForegroundNotification" object:[UIApplication sharedApplication]];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidEnterBackground:) name:@"UIApplicationDidEnterBackgroundNotification" object:[UIApplication sharedApplication]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:[UIApplication sharedApplication]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:[UIApplication sharedApplication]];
 }
 
 - (void)removeObserverForSession {
@@ -630,8 +656,9 @@ typedef NSView View;
 	}
     
     // capturingStillImage
-    if (self.stillImageOutput)
+    if (self.stillImageOutput) {
         [self.stillImageOutput removeObserver:self forKeyPath:@"capturingStillImage" context:(__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext)];
+    }
 }
 
 
@@ -641,7 +668,6 @@ typedef NSView View;
 
 - (void)_applicationWillEnterForeground:(NSNotification *)notification
 {
-    DLog(@"applicationWillEnterForeground");
     [self dispatchBlockOnAskedQueue:^{
         [self startRunningSession];
     }];
@@ -649,7 +675,6 @@ typedef NSView View;
 
 - (void)_applicationDidEnterBackground:(NSNotification *)notification
 {
-    DLog(@"applicationDidEnterBackground");
     if (self.isRecording) {
         [self pause];
     }
@@ -698,8 +723,6 @@ typedef NSView View;
 {
     [self dispatchBlockOnAskedQueue:^{
         if ([notification object] == session) {
-            DLog(@"session was started");
-            
             if ([self.delegate respondsToSelector:@selector(cameraSessionDidStart:)]) {
                 [self.delegate cameraSessionDidStart:self];
             }
@@ -709,6 +732,7 @@ typedef NSView View;
 
 - (void)_sessionStopped:(NSNotification *)notification
 {
+    NSLog(@"Session: %@", self.session);
     [self dispatchBlockOnAskedQueue:^{
         if ([notification object] == session) {
             if ([self.delegate respondsToSelector:@selector(cameraSessionDidStop:)]) {
@@ -955,6 +979,11 @@ typedef NSView View;
 
 - (AVCaptureDevice*) currentDevice {
     return self.currentVideoDeviceInput.device;
+}
+
+- (SCCameraFocusMode)focusMode
+{
+    return (SCCameraFocusMode)self.currentDevice.focusMode;
 }
 
 @end

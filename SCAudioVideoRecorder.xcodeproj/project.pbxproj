@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		5B439A9C183006F000F83EFA /* SCTouchDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B439A9B183006F000F83EFA /* SCTouchDetector.m */; };
 		AB2BA3FE18338DAE00B7CFA2 /* capture_flip@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB2BA3FD18338DAE00B7CFA2 /* capture_flip@2x.png */; };
-		AB2BA4011833B34A00B7CFA2 /* SCCameraTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */; };
 		AB2BA4031833B4A700B7CFA2 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */; };
 		AB32F59E184F877E00134728 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB32F59D184F877D00134728 /* Accelerate.framework */; };
 		AB32F5C2184F96F200134728 /* band.png in Resources */ = {isa = PBXBuildFile; fileRef = AB32F5B2184F96F200134728 /* band.png */; };
@@ -23,6 +22,8 @@
 		AB32F5D1184F9B0800134728 /* UIImage+Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5CE184F9B0800134728 /* UIImage+Utility.m */; };
 		AB32F5D2184F9B0800134728 /* UIView+Frame.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32F5D0184F9B0800134728 /* UIView+Frame.m */; };
 		AB719F971857CE48009BF725 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB719F961857CE48009BF725 /* CoreMotion.framework */; };
+		ABBCBE811863B8780043B413 /* SCCameraFocusTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = ABBCBE801863B8780043B413 /* SCCameraFocusTargetView.m */; };
+		ABBCBE841863B8C60043B413 /* SCCameraFocusView.m in Sources */ = {isa = PBXBuildFile; fileRef = ABBCBE831863B8C60043B413 /* SCCameraFocusView.m */; };
 		ABCB9421184BAC2C00BB5927 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */; };
 		ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCC89F51829AAB6000D3886 /* ImageIO.framework */; };
 		ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */; };
@@ -119,8 +120,6 @@
 		5B439A9A183006F000F83EFA /* SCTouchDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCTouchDetector.h; sourceTree = "<group>"; };
 		5B439A9B183006F000F83EFA /* SCTouchDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCTouchDetector.m; sourceTree = "<group>"; };
 		AB2BA3FD18338DAE00B7CFA2 /* capture_flip@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "capture_flip@2x.png"; sourceTree = "<group>"; };
-		AB2BA3FF1833B34A00B7CFA2 /* SCCameraTargetView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCCameraTargetView.h; sourceTree = "<group>"; };
-		AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCCameraTargetView.m; sourceTree = "<group>"; };
 		AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		AB32F59D184F877D00134728 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		AB32F5B2184F96F200134728 /* band.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = band.png; sourceTree = "<group>"; };
@@ -140,6 +139,10 @@
 		AB32F5CF184F9B0800134728 /* UIView+Frame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Frame.h"; sourceTree = "<group>"; };
 		AB32F5D0184F9B0800134728 /* UIView+Frame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Frame.m"; sourceTree = "<group>"; };
 		AB719F961857CE48009BF725 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		ABBCBE7F1863B8780043B413 /* SCCameraFocusTargetView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCCameraFocusTargetView.h; sourceTree = "<group>"; };
+		ABBCBE801863B8780043B413 /* SCCameraFocusTargetView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCCameraFocusTargetView.m; sourceTree = "<group>"; };
+		ABBCBE821863B8C60043B413 /* SCCameraFocusView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCCameraFocusView.h; sourceTree = "<group>"; };
+		ABBCBE831863B8C60043B413 /* SCCameraFocusView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCCameraFocusView.m; sourceTree = "<group>"; };
 		ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		ABCC89F51829AAB6000D3886 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCImageViewDisPlayViewController.h; sourceTree = "<group>"; };
@@ -333,8 +336,8 @@
 				DC551C5F17ADD66000E37F8F /* MainStoryboard.storyboard */,
 				DC551C6217ADD66000E37F8F /* SCViewController.h */,
 				DC551C6317ADD66000E37F8F /* SCViewController.m */,
-				AB2BA3FF1833B34A00B7CFA2 /* SCCameraTargetView.h */,
-				AB2BA4001833B34A00B7CFA2 /* SCCameraTargetView.m */,
+				ABBCBE7F1863B8780043B413 /* SCCameraFocusTargetView.h */,
+				ABBCBE801863B8780043B413 /* SCCameraFocusTargetView.m */,
 				ABCC89F71829AD8B000D3886 /* SCImageViewDisPlayViewController.h */,
 				ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */,
 				AB32F5B0184F96F200134728 /* SCImageBlurTool */,
@@ -483,6 +486,8 @@
 				DC0C3FBE17B1D1BD0023DF70 /* SCDataEncoder.h */,
 				DC0C3FBF17B1D1BD0023DF70 /* SCDataEncoder.m */,
 				DC0C3FC117B1D3BE0023DF70 /* SCAudioVideoRecorderInternal.h */,
+				ABBCBE821863B8C60043B413 /* SCCameraFocusView.h */,
+				ABBCBE831863B8C60043B413 /* SCCameraFocusView.m */,
 				DC0C3FC417B1E0310023DF70 /* SCCamera.h */,
 				DC0C3FC517B1E0310023DF70 /* SCCamera.m */,
 				DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */,
@@ -752,14 +757,15 @@
 				DCF6143817D15AFB00341EC2 /* SCDataEncoder.m in Sources */,
 				DCF6143917D15AFB00341EC2 /* SCCamera.m in Sources */,
 				DCF6143A17D15AFB00341EC2 /* SCAudioTools.m in Sources */,
+				ABBCBE811863B8780043B413 /* SCCameraFocusTargetView.m in Sources */,
 				DCF6143B17D15AFB00341EC2 /* NSArray+SCAdditions.m in Sources */,
-				AB2BA4011833B34A00B7CFA2 /* SCCameraTargetView.m in Sources */,
 				DCF6143C17D15AFB00341EC2 /* SCPlayer.m in Sources */,
 				DCF6143417D1584200341EC2 /* SCVideoPlayerView.m in Sources */,
 				AB32F5C8184F96F200134728 /* SCBlurCircle.m in Sources */,
 				5B439A9C183006F000F83EFA /* SCTouchDetector.m in Sources */,
 				AB32F5D1184F9B0800134728 /* UIImage+Utility.m in Sources */,
 				DC551C5417ADD66000E37F8F /* main.m in Sources */,
+				ABBCBE841863B8C60043B413 /* SCCameraFocusView.m in Sources */,
 				DC551C5817ADD66000E37F8F /* SCAppDelegate.m in Sources */,
 				DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */,
 				AB32F5C9184F96F200134728 /* SCImageBlurTool.m in Sources */,

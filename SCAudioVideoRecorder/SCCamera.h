@@ -23,6 +23,12 @@ typedef NS_ENUM(NSInteger, SCCameraDevice) {
     SCCameraDeviceFront = AVCaptureDevicePositionFront
 };
 
+typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
+    SCCameraFocusModeLocked = AVCaptureFocusModeLocked,
+    SCCameraFocusModeAutoFocus = AVCaptureFocusModeAutoFocus,
+    SCCameraFocusModeContinuousAutoFocus = AVCaptureFocusModeContinuousAutoFocus
+};
+
 #endif
 
 @class SCCamera;
@@ -114,6 +120,7 @@ typedef enum {
 // preview
 @property (weak, nonatomic) UIView * previewView;
 @property (nonatomic, readonly) CGRect cleanAperture;
+@property (readonly, nonatomic) SCCameraFocusMode focusMode;
 
 #else
 
