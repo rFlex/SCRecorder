@@ -78,9 +78,6 @@ namespace SCorsin {
 	[BaseType(typeof(NSObject))]
 	interface SCDataEncoder {
 
-		[Export("useInputFormatTypeAsOutputType")]
-		bool UseInputFormatTypeAsOutputType { get; set; }
-
 		[Export("enabled")]
 		bool Enabled { get; set; }
 
@@ -144,6 +141,18 @@ namespace SCorsin {
 		[Abstract]
 		[Export("audioVideoRecorder:capturedPhoto:error:"), EventArgs("AudioVideoRecorderTookPhoto")]
 		void DidCapturePhoto(SCAudioVideoRecorder audioVideoRecorder, NSDictionary photoDict, NSError error);
+
+		[Abstract]
+		[Export("cameraWillStartFocus:")]
+		void WillStartFocus(SCCamera camera);
+
+		[Abstract]
+		[Export("cameraDidStopFocus:")]
+		void DidStopFocus(SCCamera camera);
+
+		[Abstract]
+		[Export("camera:didFailFocus:"), EventArgs("CameraFailedFocus")]
+		void DidFailFocus(SCCamera camera, NSError error);
 	}
 
     [Model, BaseType (typeof (NSObject))]
@@ -267,6 +276,21 @@ namespace SCorsin {
 		[Export("setActiveFormatThatSupportsFrameRate:width:andHeight:error:")]
 		bool SetActiveFormatThatSupportsFrameRate(int frameRate, int width, int height, out NSError error);
 
+		[Export("flashMode")]
+		AVCaptureFlashMode FlashMode { get; set; }
+
+		[Export("convertToPointOfInterestFromViewCoordinates:")]
+		PointF ConvertToPointOfInterestFromViewCoordinates(PointF point);
+
+		[Export("autoFocusAtPoint")]
+		void AutoFocusAtPoint(PointF point);
+
+		[Export("continuousFocusAtPoint")]
+		void ContinuousFocusAtPoint(PointF point);
+
+		[Export("isFocusSupported")]
+		bool IsFocusSupported { get; }
+
         [Export("session")]
         AVCaptureSession Session { get; }
 
@@ -276,8 +300,8 @@ namespace SCorsin {
         [Export("switchCamera")]
         void SwitchCamera();
 
-        [Export("useFrontCamera")]
-        bool UseFrontCamera { get; set; }
+		[Export("cameraDevice")]
+		AVCaptureDevicePosition CameraDevice { get; set; }
 
 		[Export("isFrameRateSupported:")]
 		bool IsFrameRateSupported(int frameRate);
@@ -388,8 +412,34 @@ namespace SCorsin {
 		[Export("player")]
 		SCPlayer Player { get; }
 
+		[Export("playerLayer")]
+		AVPlayerLayer PlayerLayer { get; }
+
 		[Export("loadingView")]
 		UIView LoadingView { get; set; }
+
+	}
+
+	[BaseType(typeof(UIView))]
+	interface SCCameraFocusView {
+
+		[Export("camera")]
+		SCCamera Camera { get; set; }
+
+		[Export("outsideFocusTargetImage")]
+		UIImage OutsideFocusTargetImage { get; set; }
+
+		[Export("insideFocusTargetImage")]
+		UIImage InsideFocusTargetImage { get; set; }
+
+		[Export("focusTargetSize")]
+		SizeF FocusTargetSize { get; set; }
+
+		[Export("showFocusAnimation")]
+		void ShowFocusAnimation();
+
+		[Export("hideFocusAnimation")]
+		void HideFocusAnimation();
 
 	}
 }

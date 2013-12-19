@@ -6,22 +6,53 @@
 //  Copyright (c) 2013年 曾 宪华 开发团队(http://iyilunba.com ). All rights reserved.
 //
 
-#import "SCCameraTargetView.h"
+#import "SCCameraFocusTargetView.h"
 
 #define kInsideCircleAnimationKey @"insideCircleAnimationKey"
 #define kOutsideCircleAnimationKey @"outsideCircleAnimationKey"
 
 #define kRemoveCircleAnimationKey @"removeCircleAnimationKey"
 
-@interface SCCameraTargetView ()
+@interface SCCameraFocusTargetView ()
 
 @property (nonatomic, strong) UIImageView *outsideCircle;
 @property (nonatomic, strong) UIImageView *insideCircle;
 
-
 @end
 
-@implementation SCCameraTargetView
+@implementation SCCameraFocusTargetView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setup];
+    }
+    return self;
+}
+
+- (void)setup {
+    self.insideFocusTargetImageSizeRatio = 0.5;
+    CGRect bounds = self.bounds;
+    CGPoint center = CGPointMake(CGRectGetWidth(bounds) / 2.0, CGRectGetHeight(bounds) / 2.0);
+    
+    CGRect insideCircleFrame = bounds;
+    insideCircleFrame.size.width = insideCircleFrame.size.height = insideCircleFrame.size.width - 25;
+    UIImageView *insideCircle = [[UIImageView alloc] initWithFrame:insideCircleFrame];
+    insideCircle.image = nil;
+    insideCircle.center = center;
+    self.insideCircle = insideCircle;
+    
+    CGRect outsideCircleFrame = bounds;
+    outsideCircleFrame.size.width = outsideCircleFrame.size.height = outsideCircleFrame.size.width;
+    UIImageView *outsideCircle = [[UIImageView alloc] initWithFrame:outsideCircleFrame];
+    outsideCircle.image = nil;
+    outsideCircle.center = center;
+    self.outsideCircle = outsideCircle;
+    
+    [self addSubview:self.outsideCircle];
+    [self addSubview:self.insideCircle];    
+}
 
 - (void)startTargeting {
     // 判断是否已经add了这个animation
@@ -87,49 +118,41 @@
     [self.outsideCircle.layer addAnimation:group forKey:kRemoveCircleAnimationKey];
 }
 
-- (void)setup {
-    // insideCircle
-    CGRect bounds = self.bounds;
-    CGPoint center = CGPointMake(CGRectGetWidth(bounds) / 2.0, CGRectGetHeight(bounds) / 2.0);
+- (void)layoutSubviews {
+    [super layoutSubviews];
     
-    CGRect insideCircleFrame = bounds;
-    insideCircleFrame.size.width = insideCircleFrame.size.height = insideCircleFrame.size.width - 25;
-    _insideCircle = [[UIImageView alloc] initWithFrame:insideCircleFrame];
-    _insideCircle.image = [UIImage imageNamed:@"capture_flip"];
-    _insideCircle.center = center;
+    CGRect frame = self.bounds;
+    self.outsideCircle.frame = frame;
     
-    CGRect outsideCircleFrame = bounds;
-    outsideCircleFrame.size.width = outsideCircleFrame.size.height = outsideCircleFrame.size.width;
-    _outsideCircle = [[UIImageView alloc] initWithFrame:outsideCircleFrame];
-    _outsideCircle.image = [UIImage imageNamed:@"capture_flip"];
-    _outsideCircle.center = center;
+    float width = self.bounds.size.width;
+    float height = self.bounds.size.height;
     
-    [self addSubview:self.outsideCircle];
-    [self addSubview:self.insideCircle];
+    frame.size.width = width * self.insideFocusTargetImageSizeRatio;
+    frame.size.height = height * self.insideFocusTargetImageSizeRatio;
+    frame.origin.x = width / 2 - frame.size.width / 2;
+    frame.origin.y = height / 2 - frame.size.height / 2;
+    
+    self.insideCircle.frame = frame;
 }
 
-- (id)initWithFrame:(CGRect)frame
+- (UIImage*)insideFocusTargetImage
 {
-    self = [super initWithFrame:frame];
-    if (self) {
-        // Initialization code
-        [self setup];
-    }
-    return self;
+    return self.insideCircle.image;
 }
 
-- (void)dealloc {
-    self.insideCircle = nil;
-    self.outsideCircle = nil;
-}
-
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
+- (void)setInsideFocusTargetImage:(UIImage *)insideFocusTargetImage
 {
-    // Drawing code
+    self.insideCircle.image = insideFocusTargetImage;
 }
-*/
+
+- (UIImage*)outsideFocusTargetImage
+{
+    return self.outsideCircle.image;
+}
+
+- (void)setOutsideFocusTargetImage:(UIImage *)outsideFocusTargetImage
+{
+    self.outsideCircle.image = outsideFocusTargetImage;
+}
 
 @end

@@ -12,11 +12,11 @@
 #import "SCViewController.h"
 #import "SCAudioTools.h"
 #import "SCVideoPlayerViewController.h"
-
+#import "SCCameraFocusView.h"
 #import "SCImageViewDisPlayViewController.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 
-#import "SCCameraTargetView.h"
+#import "SCCameraFocusTargetView.h"
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -27,7 +27,7 @@
 }
 
 @property (strong, nonatomic) SCCamera * camera;
-@property (strong, nonatomic) SCCameraTargetView *cameraTagetView;
+@property (strong, nonatomic) SCCameraFocusView *focusView;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -37,17 +37,6 @@
 @implementation SCViewController
 
 @synthesize camera;
-
-#pragma mark - setter / getter
-
-- (SCCameraTargetView *)cameraTagetView {
-    if (!_cameraTagetView) {
-        _cameraTagetView = [[SCCameraTargetView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
-        _cameraTagetView.center = self.previewView.center;
-        [self.previewView addSubview:_cameraTagetView];
-    }
-    return _cameraTagetView;
-}
 
 #pragma mark - UIViewController 
 
@@ -82,26 +71,11 @@
 //	self.camera.enableSound = NO;
 }
 
-- (void)_stupGesture {
-    // Add a single tap gesture to focus on the point tapped, then lock focus
-    UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapToAutoFocus:)];
-    [singleTap setNumberOfTapsRequired:1];
-    [self.previewView addGestureRecognizer:singleTap];
-    
-    // Add a double tap gesture to reset the focus mode to continuous auto focus
-    UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapToContinouslyAutoFocus:)];
-    [doubleTap setNumberOfTapsRequired:2];
-    [singleTap requireGestureRecognizerToFail:doubleTap];
-    [self.previewView addGestureRecognizer:doubleTap];
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	self.view.backgroundColor = [UIColor grayColor];
     self.capturePhotoButton.alpha = 0.0;
-    
-    [self _stupGesture];
     
     self.camera = [[SCCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh];
     self.camera.delegate = self;
@@ -123,6 +97,12 @@
     
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
+    
+    self.focusView = [[SCCameraFocusView alloc] initWithFrame:self.previewView.bounds];
+    self.focusView.camera = self.camera;
+    [self.previewView addSubview:self.focusView];
+    self.focusView.outsideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
+    self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -147,7 +127,6 @@
 
 - (void)dealloc {
     self.camera = nil;
-    self.cameraTagetView = nil;
 }
 
 - (void) updateLabelForSecond:(Float64)totalRecorded {
@@ -162,11 +141,11 @@
 
 // error
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize VideoEncoder");
+    NSLog(@"Failed to initialize VideoEncoder: %@", error);
 }
 
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize AudioEncoder");
+    NSLog(@"Failed to initialize AudioEncoder: %@", error);
 }
 
 - (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime {
@@ -209,47 +188,41 @@
 
 // Photo
 - (void)cameraWillCapturePhoto:(SCCamera *)camera {
-    DLog(@"Will capture photo");
 }
 
 - (void)cameraDidCapturePhoto:(SCCamera *)camera {
-    DLog(@"Did capture photo");
+
 }
 
 // Focus
 - (void)cameraWillStartFocus:(SCCamera *)camera {
-    DLog(@"WillStartFocus");
-    [self.cameraTagetView startTargeting];
+    [self.focusView showFocusAnimation];
 }
 
 - (void)cameraDidStopFocus:(SCCamera *)camera {
-    [self.cameraTagetView stopTargeting];	
+    [self.focusView hideFocusAnimation];
 }
 
 - (void)camera:(SCCamera *)camera didFailFocus:(NSError *)error {
     DLog(@"DidFailFocus");
-    [self.cameraTagetView stopTargeting];
+    [self.focusView hideFocusAnimation];
 }
 
 // Session
 - (void)cameraSessionWillStart:(SCAudioVideoRecorder *)audioVideoRecorder {
-    DLog(@"SessionWillStart");
+
 }
 
 - (void)cameraSessionDidStart:(SCAudioVideoRecorder *)audioVideoRecorder {
-    DLog(@"SessionDidStart");
 }
 
 - (void)cameraSessionWillStop:(SCAudioVideoRecorder *)audioVideoRecorder {
-    DLog(@"SessionWillStop");
 }
 
 - (void)cameraSessionDidStop:(SCAudioVideoRecorder *)audioVideoRecorder {
-    DLog(@"SessionDidStop");
 }
 
 - (void)cameraUpdateFocusMode:(NSString *)focusModeString {
-    DLog(@"%@", focusModeString);
 }
 
 - (void)camera:(SCCamera *)camera cleanApertureDidChange:(CGRect)cleanAperture {
@@ -384,26 +357,6 @@
 			[self.camera pause];
 		}
 	}
-}
-
-// Auto focus at a particular point. The focus mode will change to locked once the auto focus happens.
-- (void)tapToAutoFocus:(UIGestureRecognizer *)gestureRecognizer
-{
-    if (self.camera.isFocusSupported) {
-        CGPoint tapPoint = [gestureRecognizer locationInView:[self previewView]];
-        CGPoint convertedFocusPoint = [self.camera convertToPointOfInterestFromViewCoordinates:tapPoint];
-        self.cameraTagetView.center = tapPoint;
-        [self.camera autoFocusAtPoint:convertedFocusPoint];
-    }
-}
-
-// Change to continuous auto focus. The camera will constantly focus at the point choosen.
-- (void)tapToContinouslyAutoFocus:(UIGestureRecognizer *)gestureRecognizer
-{
-    if (self.camera.isFocusSupported) {
-        self.cameraTagetView.center = self.previewView.center;
-        [self.camera continuousFocusAtPoint:CGPointMake(.5f, .5f)];
-    }
 }
 
 - (IBAction)capturePhoto:(id)sender {
