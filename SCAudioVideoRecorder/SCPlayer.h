@@ -24,7 +24,7 @@
 
 @interface SCPlayer : AVPlayer
 
-+ (SCPlayer*) videoPlayer;
++ (SCPlayer*) player;
 + (void) pauseCurrentPlayer;
 + (SCPlayer*) currentPlayer;
 

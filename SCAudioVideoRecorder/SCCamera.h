@@ -101,6 +101,10 @@ typedef enum {
 - (void)startRunningSession;
 - (void)stopRunningSession;
 
+// Set an activeFormat that supports the requested framerate
+// This does not change the framerate
+- (BOOL)setActiveFormatThatSupportsFrameRate:(NSInteger)frameRate width:(NSInteger)width andHeight:(NSInteger)height error:(NSError**)error;
+
 // Switch between back and front camera
 - (void) switchCamera;
 

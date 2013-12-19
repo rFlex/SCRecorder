@@ -14,6 +14,7 @@
 
 @interface SCPlayer() {
 	BOOL _loading;
+    BOOL _shouldLoop;
 }
 
 @property (strong, nonatomic, readwrite) AVPlayerItem * oldItem;
@@ -38,13 +39,13 @@ SCPlayer * currentSCVideoPlayer = nil;
 	self = [super init];
 	
 	if (self) {
-		self.actionAtItemEnd = AVPlayerActionAtItemEndNone;
+        self.shouldLoop = NO;
 
 		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
 		
 		__unsafe_unretained SCPlayer * mySelf = self;
 		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
-			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:secondsTotal:)]) {
+			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:timeTotal:)]) {
 				Float64 ratio = 1.0 / mySelf.itemsLoopLength;
 				[mySelf.delegate videoPlayer:mySelf didPlay:CMTimeMultiplyByFloat64(time, ratio) timeTotal: CMTimeMultiplyByFloat64(mySelf.currentItem.duration, ratio)];
 			}
@@ -95,7 +96,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 				if (CMTIME_COMPARE_INLINE(minimumTime, >, itemTime)) {
 					minimumTime = itemTime;
 				}
-				
+                
 				if (CMTIME_COMPARE_INLINE(playableDuration, >=, minimumTime)) {
 					if ([self isPlaying]) {
 						[self play];
@@ -126,14 +127,12 @@ SCPlayer * currentSCVideoPlayer = nil;
 		
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
 	}
-	
-	self.loading = NO;
 		
 	self.oldItem = self.currentItem;
-	
 	if ([self.delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
 		[self.delegate videoPlayer:self didChangeItem:self.currentItem];
 	}
+    self.loading = YES;
 }
 
 - (void) play {
@@ -158,7 +157,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 	AVPlayerItem * item = self.currentItem;
 	CMTime playableDuration = kCMTimeZero;
 	
-	if (item.status == AVPlayerItemStatusReadyToPlay) {
+	if (item.status != AVPlayerItemStatusFailed) {
 		
 		if (item.loadedTimeRanges.count > 0) {
 			NSValue * value = [item.loadedTimeRanges objectAtIndex:0];
@@ -229,7 +228,17 @@ SCPlayer * currentSCVideoPlayer = nil;
 	}
 }
 
-+ (SCPlayer*) videoPlayer {
+- (BOOL)shouldLoop {
+    return _shouldLoop;
+}
+
+- (void)setShouldLoop:(BOOL)shouldLoop {
+    _shouldLoop = shouldLoop;
+    
+    self.actionAtItemEnd = shouldLoop ? AVPlayerActionAtItemEndNone : AVPlayerActionAtItemEndPause;
+}
+
++ (SCPlayer*) player {
 	return [[SCPlayer alloc] init];
 }
 

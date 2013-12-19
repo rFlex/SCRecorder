@@ -34,7 +34,6 @@
 // Abstract method
 - (AVAssetWriterInput*) createWriterInputForSampleBuffer:(CMSampleBufferRef)sampleBuffer error:(NSError**)error;
 
-@property (assign, nonatomic) BOOL useInputFormatTypeAsOutputType;
 @property (assign, nonatomic) BOOL enabled;
 @property (strong, nonatomic) AVAssetWriterInput * writerInput;
 @property (weak, nonatomic) id<SCDataEncoderDelegate> delegate;

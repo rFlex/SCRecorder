@@ -480,6 +480,64 @@ typedef NSView View;
     return self.currentVideoDeviceInput.device.activeVideoMaxFrameDuration.timescale;
 }
 
+- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(NSInteger)frameRate dimensions:(CMVideoDimensions)dimensions {
+    CMVideoDimensions size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
+    
+    if (size.width >= dimensions.width && size.height >= dimensions.height) {
+        for (AVFrameRateRange * range in format.videoSupportedFrameRateRanges) {
+            if ((NSInteger)range.minFrameRate <= frameRate && (NSInteger)range.maxFrameRate >= frameRate) {
+                return YES;
+            }
+        }
+    }
+    
+    return NO;
+}
+
+- (BOOL)setActiveFormatThatSupportsFrameRate:(NSInteger)frameRate width:(NSInteger)width andHeight:(NSInteger)height error:(NSError *__autoreleasing *)error {
+    AVCaptureDevice * device = self.currentDevice;
+    CMVideoDimensions dimensions;
+    dimensions.width = width;
+    dimensions.height = height;
+    
+    BOOL foundSupported = NO;
+    
+    if (device != nil) {
+        if (device.activeFormat != nil) {
+            foundSupported = [self formatInRange:device.activeFormat frameRate:frameRate dimensions:dimensions];
+        }
+        
+        if (!foundSupported) {
+            for (AVCaptureDeviceFormat * format in device.formats) {
+                if ([self formatInRange:format frameRate:frameRate dimensions:dimensions]) {
+                    NSInteger oldFrameRate = self.frameRate;
+                    if ([device lockForConfiguration:error]) {
+                        device.activeFormat = format;
+                        [device unlockForConfiguration];
+                        foundSupported = YES;
+                        self.frameRate = oldFrameRate;
+                        break;
+                    }
+                }
+            }
+            
+            if (!foundSupported && error != nil) {
+                *error = [SCAudioVideoRecorder createError:[NSString stringWithFormat:@"No format that supports framerate %d and dimensions %d/%d was found", (int)frameRate, dimensions.width, dimensions.height]];
+            }
+        }
+    } else {
+        if (error != nil) {
+            *error = [SCAudioVideoRecorder createError:@"The camera must be initialized before setting active format"];
+        }
+    }
+    
+    if (foundSupported && error != nil) {
+        *error = nil;
+    }
+    
+    return foundSupported;
+}
+
 - (void) initializeCamera:(AVCaptureSession*)captureSession error:(NSError**)error {
 	if (self.currentVideoDeviceInput != nil) {
         [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];

@@ -11,6 +11,9 @@ They are straightforward to use, only a few lines of code is needed to start rec
 They are compatible both for OS X and iOS.
 Examples for both OS X and IOS are provided.
 
+Framework needed:
+- AssetsLibrary
+
 
 Straightforward recording using SCCamera
 ---------------------------------------
