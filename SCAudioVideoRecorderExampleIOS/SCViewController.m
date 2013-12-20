@@ -195,7 +195,7 @@
 }
 
 // Focus
-- (void)cameraWillStartFocus:(SCCamera *)camera {
+- (void)cameraDidStartFocus:(SCCamera *)camera {
     [self.focusView showFocusAnimation];
 }
 

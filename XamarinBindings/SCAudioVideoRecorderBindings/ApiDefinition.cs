@@ -147,6 +147,10 @@ namespace SCorsin {
 		void WillStartFocus(SCCamera camera);
 
 		[Abstract]
+		[Export("cameraDidStartFocus:")]
+		void DidStartFocus(SCCamera camera);
+
+		[Abstract]
 		[Export("cameraDidStopFocus:")]
 		void DidStopFocus(SCCamera camera);
 

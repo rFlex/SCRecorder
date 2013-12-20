@@ -729,7 +729,6 @@ typedef NSView View;
 
 - (void)_sessionStopped:(NSNotification *)notification
 {
-    NSLog(@"Session: %@", self.session);
     [self dispatchBlockOnAskedQueue:^{
         if ([notification object] == session) {
             if ([self.delegate respondsToSelector:@selector(cameraSessionDidStop:)]) {
@@ -869,6 +868,11 @@ typedef NSView View;
             [device setFocusPointOfInterest:point];
             [device setFocusMode:AVCaptureFocusModeAutoFocus];
             [device unlockForConfiguration];
+
+            if ([[self delegate] respondsToSelector:@selector(cameraWillStartFocus:)]) {
+                [[self delegate] cameraWillStartFocus:self];
+            }
+
         } else {
             if ([[self delegate] respondsToSelector:@selector(camera:didFailFocus:)]) {
                 [[self delegate] camera:self didFailFocus:error];
@@ -898,8 +902,8 @@ typedef NSView View;
 
 - (void)_focusStarted
 {
-    if ([self.delegate respondsToSelector:@selector(cameraWillStartFocus:)])
-        [self.delegate cameraWillStartFocus:self];
+    if ([self.delegate respondsToSelector:@selector(cameraDidStartFocus:)])
+        [self.delegate cameraDidStartFocus:self];
 }
 
 - (void)_focusEnded
@@ -913,11 +917,7 @@ typedef NSView View;
     AVCaptureDevice *device = [self.currentVideoDeviceInput device];
     if ([device isAdjustingFocus] || [device isAdjustingExposure])
         return;
-    
-    // only notify clients when focus is triggered from an event
-    if ([self.delegate respondsToSelector:@selector(cameraWillStartFocus:)])
-        [self.delegate cameraWillStartFocus:self];
-    
+
     CGPoint focusPoint = CGPointMake(0.5f, 0.5f);
     [self autoFocusAtPoint:focusPoint];
 }
