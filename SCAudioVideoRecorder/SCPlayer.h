@@ -27,7 +27,7 @@
 + (void) pauseCurrentPlayer;
 + (SCPlayer*) currentPlayer;
 
-- (void) dispose;
+- (void) cleanUp;
 
 - (void) setItemByStringPath:(NSString*)stringPath;
 - (void) setItemByUrl:(NSURL*)url;

@@ -332,7 +332,8 @@ namespace SCorsin {
 
     }
 
-	[Model, BaseType(typeof(NSObject))]
+	[BaseType(typeof(NSObject))]
+	[Model]
 	interface SCPlayerDelegate {
 		[Abstract]	
 		[Export("videoPlayer:didPlay:timeTotal:"), EventArgs("PlayerDidPlay")]
@@ -407,6 +408,9 @@ namespace SCorsin {
 
 		[Export("shouldLoop")]
 		bool ShouldLoop { get; set; }
+
+		[Export("cleanUp")]
+		void CleanUp();
 	
 	}
 
