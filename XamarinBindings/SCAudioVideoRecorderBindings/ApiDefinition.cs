@@ -147,6 +147,10 @@ namespace SCorsin {
 		void WillStartFocus(SCCamera camera);
 
 		[Abstract]
+		[Export("cameraDidStartFocus:")]
+		void DidStartFocus(SCCamera camera);
+
+		[Abstract]
 		[Export("cameraDidStopFocus:")]
 		void DidStopFocus(SCCamera camera);
 
@@ -328,7 +332,8 @@ namespace SCorsin {
 
     }
 
-	[Model, BaseType(typeof(NSObject))]
+	[BaseType(typeof(NSObject))]
+	[Model]
 	interface SCPlayerDelegate {
 		[Abstract]	
 		[Export("videoPlayer:didPlay:timeTotal:"), EventArgs("PlayerDidPlay")]
@@ -403,6 +408,9 @@ namespace SCorsin {
 
 		[Export("shouldLoop")]
 		bool ShouldLoop { get; set; }
+
+		[Export("cleanUp")]
+		void CleanUp();
 	
 	}
 

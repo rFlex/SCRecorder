@@ -58,7 +58,11 @@ SCPlayer * currentSCVideoPlayer = nil;
 	return self;
 }
 
-- (void) dispose {
+- (void) dealloc {
+    [self removeObserver:self forKeyPath:@"currentItem"];
+}
+
+- (void) cleanUp {
 	[self removeTimeObserver:self.timeObserver];
 	[self setItem:nil];
 	self.oldItem = nil;

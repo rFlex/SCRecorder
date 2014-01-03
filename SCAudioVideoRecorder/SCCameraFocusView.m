@@ -64,12 +64,13 @@
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapToAutoFocus:)];
     [singleTap setNumberOfTapsRequired:1];
     [self addGestureRecognizer:singleTap];
-    
-    // Add a double tap gesture to reset the focus mode to continuous auto focus
-    UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapToContinouslyAutoFocus:)];
-    [doubleTap setNumberOfTapsRequired:2];
-    [singleTap requireGestureRecognizerToFail:doubleTap];
-    [self addGestureRecognizer:doubleTap];
+
+    // Desactivating this as this heavily slow down the focus process
+//    // Add a double tap gesture to reset the focus mode to continuous auto focus
+//    UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapToContinouslyAutoFocus:)];
+//    [doubleTap setNumberOfTapsRequired:2];
+//    [singleTap requireGestureRecognizerToFail:doubleTap];
+//    [self addGestureRecognizer:doubleTap];
 }
 
 - (void)showFocusAnimation

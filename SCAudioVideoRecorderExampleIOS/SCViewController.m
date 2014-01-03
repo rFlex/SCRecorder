@@ -286,7 +286,7 @@ typedef NS_ENUM(NSInteger, CapturePhotoType) {
 }
 
 // Focus
-- (void)cameraWillStartFocus:(SCCamera *)camera {
+- (void)cameraDidStartFocus:(SCCamera *)camera {
     [self.focusView showFocusAnimation];
 }
 
