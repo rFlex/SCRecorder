@@ -104,6 +104,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		self.dispatchDelegateMessagesOnMainQueue = YES;
 		self.enableSound = YES;
 		self.enableVideo = YES;
+        self.playPlaybackAssetWhenRecording = YES;
 		_playbackStartTime = kCMTimeZero;
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 		_backgroundIdentifier = UIBackgroundTaskInvalid;
@@ -424,7 +425,9 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		[NSException raise:@"Recording not previously started" format:@"Recording should be started using startRecording before trying to resume it"];
 	}
 	
-    self.playbackPlayer.rate = self.recordingRate;
+    if (self.playPlaybackAssetWhenRecording) {
+        self.playbackPlayer.rate = self.recordingRate;
+    }
 	dispatch_async(self.dispatch_queue, ^ {
 		self.shouldComputeOffset = YES;
 		recording = YES;
