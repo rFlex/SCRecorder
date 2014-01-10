@@ -9,8 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "SCAudioVideoRecorder.h"
 
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-
 typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
     SCFlashModeOn   = AVCaptureFlashModeOn,
@@ -29,14 +27,10 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
     SCCameraFocusModeContinuousAutoFocus = AVCaptureFocusModeContinuousAutoFocus
 };
 
-#endif
-
 @class SCCamera;
 @protocol SCCameraDelegate <SCAudioVideoRecorderDelegate>
 
 @optional
-
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
 // Photo
 // These methods are commonly used to show a custom animation
@@ -60,7 +54,6 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
 - (void)cameraSessionWillStop:(SCCamera *)camera;
 - (void)cameraSessionDidStop:(SCCamera *)camera;
 
-#endif
 @end
 
 typedef enum {
@@ -86,13 +79,8 @@ typedef enum {
 @property (copy, nonatomic) NSString * sessionPreset;
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
-
 @property (strong, nonatomic, readonly) AVCaptureVideoPreviewLayer * previewLayer;
-
 @property (readonly) AVCaptureDevice * currentDevice;
-
-
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 
 @property (nonatomic) SCFlashMode flashMode;
 @property (nonatomic) SCCameraDevice cameraDevice;
@@ -122,12 +110,5 @@ typedef enum {
 @property (weak, nonatomic) UIView * previewView;
 @property (nonatomic, readonly) CGRect cleanAperture;
 @property (readonly, nonatomic) SCCameraFocusMode focusMode;
-
-#else
-
-@property (weak, nonatomic) NSView * previewView;
-
-#endif
-
 
 @end

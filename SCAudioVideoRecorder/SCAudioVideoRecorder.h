@@ -99,6 +99,7 @@ extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
 // If not null, the asset will be played when the record starts, and pause when it pauses.
 // When the record ends, the audio mix will be mixed with the playback asset
 @property (strong, nonatomic) AVAsset * playbackAsset;
+@property (assign, nonatomic) BOOL playPlaybackAssetWhenRecording;
 
 // When the playback asset should start
 @property (assign, nonatomic) CMTime playbackStartTime;
