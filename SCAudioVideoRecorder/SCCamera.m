@@ -141,11 +141,9 @@ typedef NSView View;
     
     [session startRunning];
     
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
     if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
         [self.delegate cameraSessionWillStart:self];
     }
-#endif
 }
 
 - (void)stopRunningSession {
@@ -154,16 +152,14 @@ typedef NSView View;
     
     [session stopRunning];
     
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
     if ([self.delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
         [self.delegate cameraSessionWillStop:self];
     }
-#endif
 }
 
 - (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler {
     if (![self isReady]) {
-        dispatch_async(self.dispatch_queue, ^ {
+        dispatch_async(self.dispatch_queue, ^{
             AVCaptureSession * captureSession = [[AVCaptureSession alloc] init];
             captureSession.sessionPreset = self.sessionPreset;
 			

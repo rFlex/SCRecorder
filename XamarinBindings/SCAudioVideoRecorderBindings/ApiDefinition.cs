@@ -283,8 +283,8 @@ namespace SCorsin {
 	[Model]
 	interface SCPlayerDelegate {
 		[Abstract]	
-		[Export("videoPlayer:didPlay:timeTotal:"), EventArgs("PlayerDidPlay")]
-		void DidPlay(SCPlayer player, CMTime secondsElapsed, CMTime secondsTotal);
+		[Export("videoPlayer:didPlay:"), EventArgs("PlayerDidPlay")]
+		void DidPlay(SCPlayer player, double secondsElapsed);
 
 		[Abstract]
 		[Export("videoPlayer:didStartLoadingAtItemTime:"), EventArgs("PlayerLoading")]
