@@ -32,6 +32,8 @@
 {
     [super viewDidLoad];
 	
+    NSLog(@"Logging use of %@ too see if it's a linker problem", [SCVideoPlayerView class]);
+    
 	[self.videoPlayerView.player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
 
 	self.videoPlayerView.player.shouldLoop = YES;
