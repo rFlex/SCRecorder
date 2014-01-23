@@ -81,6 +81,7 @@ typedef enum {
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 @property (readonly) AVCaptureDevice * currentDevice;
 
+
 @property (nonatomic) SCFlashMode flashMode;
 @property (nonatomic) SCCameraDevice cameraDevice;
 
@@ -103,10 +104,19 @@ typedef enum {
 - (void) switchCamera;
 
 - (BOOL)isFrameRateSupported:(NSInteger)frameRate;
+
+// Offer a way to configure multiple things at once
+// You can call multiple beginSessionConfiguration recursively
+// Each call of beginSessionConfiguration must be followed by a commitSessionConfiguration at some point
+// Only the latest commitSessionConfiguration will in fact actually commit the configuration
+- (void)beginSessionConfiguration;
+- (void)commitSessionConfiguration;
+
 @property (assign, nonatomic) NSInteger frameRate;
 
 // preview
 @property (weak, nonatomic) UIView * previewView;
+
 @property (nonatomic, readonly) CGRect cleanAperture;
 @property (readonly, nonatomic) SCCameraFocusMode focusMode;
 

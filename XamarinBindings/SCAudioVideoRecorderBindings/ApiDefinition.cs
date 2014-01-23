@@ -262,6 +262,13 @@ namespace SCorsin {
 
 		[Export("currentDevice")]
 		AVCaptureDevice CurrentDevice { get; }
+
+		[Export("beginSessionConfiguration")]
+		void BeginSessionConfiguration();
+
+		[Export("commitSessionConfiguration")]
+		void CommitSessionConfiguration();
+
     }
 
 	delegate void CompletionHandler(NSError error);
