@@ -262,6 +262,13 @@ namespace SCorsin {
 
 		[Export("currentDevice")]
 		AVCaptureDevice CurrentDevice { get; }
+
+		[Export("beginSessionConfiguration")]
+		void BeginSessionConfiguration();
+
+		[Export("commitSessionConfiguration")]
+		void CommitSessionConfiguration();
+
     }
 
 	delegate void CompletionHandler(NSError error);
@@ -283,8 +290,8 @@ namespace SCorsin {
 	[Model]
 	interface SCPlayerDelegate {
 		[Abstract]	
-		[Export("videoPlayer:didPlay:timeTotal:"), EventArgs("PlayerDidPlay")]
-		void DidPlay(SCPlayer player, CMTime secondsElapsed, CMTime secondsTotal);
+		[Export("videoPlayer:didPlay:"), EventArgs("PlayerDidPlay")]
+		void DidPlay(SCPlayer player, double secondsElapsed);
 
 		[Abstract]
 		[Export("videoPlayer:didStartLoadingAtItemTime:"), EventArgs("PlayerLoading")]

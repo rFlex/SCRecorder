@@ -45,9 +45,11 @@ SCPlayer * currentSCVideoPlayer = nil;
 		
 		__unsafe_unretained SCPlayer * mySelf = self;
 		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
-			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:timeTotal:)]) {
+			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:)]) {
 				Float64 ratio = 1.0 / mySelf.itemsLoopLength;
-				[mySelf.delegate videoPlayer:mySelf didPlay:CMTimeMultiplyByFloat64(time, ratio) timeTotal: CMTimeMultiplyByFloat64(mySelf.currentItem.duration, ratio)];
+                Float64 seconds = CMTimeGetSeconds(CMTimeMultiplyByFloat64(time, ratio));
+                
+				[mySelf.delegate videoPlayer:mySelf didPlay:seconds];
 			}
 		}];
 		_loading = NO;
@@ -63,7 +65,10 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void) cleanUp {
-	[self removeTimeObserver:self.timeObserver];
+    if (self.timeObserver != nil) {
+        [self removeTimeObserver:self.timeObserver];
+        self.timeObserver = nil;
+    }
 	[self setItem:nil];
 	self.oldItem = nil;
 }
