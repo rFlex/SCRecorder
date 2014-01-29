@@ -924,6 +924,11 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SCAudioVideoRecorderExampleIOS/SCAudioVideoRecorder-Prefix.pch";
 				INFOPLIST_FILE = "SCAudioVideoRecorderExampleIOS/SCAudioVideoRecorder-Info.plist";
+				KEEP_PRIVATE_EXTERNS = NO;
+				OTHER_LDFLAGS = (
+					"-all_load",
+					"-ObjC",
+				);
 				PRODUCT_NAME = SCAudioVideoRecorderExample;
 				WRAPPER_EXTENSION = app;
 			};
@@ -935,6 +940,11 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SCAudioVideoRecorderExampleIOS/SCAudioVideoRecorder-Prefix.pch";
 				INFOPLIST_FILE = "SCAudioVideoRecorderExampleIOS/SCAudioVideoRecorder-Info.plist";
+				KEEP_PRIVATE_EXTERNS = NO;
+				OTHER_LDFLAGS = (
+					"-all_load",
+					"-ObjC",
+				);
 				PRODUCT_NAME = SCAudioVideoRecorderExample;
 				WRAPPER_EXTENSION = app;
 			};
