@@ -101,6 +101,10 @@ namespace SCorsin {
 		[Abstract]
 		[Export("camera:didFailFocus:"), EventArgs("CameraFailedFocus")]
 		void DidFailFocus(SCCamera camera, NSError error);
+
+		[Abstract]
+		[Export("audioVideoRecorder:willFinalizeAudioMixAtUrl:"), EventArgs("AudioVideoRecordedWillFinalizeAudioMix")]
+		void WillFinalizeAudioMix(SCAudioVideoRecorder audioVideoRecorder, NSUrl recordedFile);
 	}
 
     [Model, BaseType (typeof (NSObject))]

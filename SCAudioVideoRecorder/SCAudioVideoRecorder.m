@@ -213,6 +213,10 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 - (void) finalizeAudioMixForUrl:(NSURL*)fileUrl withCompletionBlock:(void(^)(NSError *))completionBlock {
 	NSError * error = nil;
 	if (self.playbackAsset != nil) {
+        if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:willFinalizeAudioMixAtUrl:)]) {
+            [self.delegate audioVideoRecorder:self willFinalizeAudioMixAtUrl:fileUrl];
+        }
+        
 		// Move the file to a temporary one
 		NSURL * oldUrl = [[fileUrl URLByDeletingPathExtension] URLByAppendingPathExtension:@"old.mp4"];
 		[[NSFileManager defaultManager] moveItemAtURL:fileUrl toURL:oldUrl error:&error];
