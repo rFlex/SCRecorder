@@ -189,6 +189,9 @@ namespace SCorsin {
 		[Export("playbackStartTime")]
 		CMTime PlaybackStartTime { get; set; }
 
+		[Export("currentRecordingTime")]
+		CMTime CurrentRecordingTime { get; set; }
+
 		[Export("recordingRate")]
 		float RecordingRate { get; set; }
     }
