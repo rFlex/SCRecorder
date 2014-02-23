@@ -18,6 +18,7 @@
 - (void) videoPlayer:(SCPlayer *)videoPlayer didStartLoadingAtItemTime:(CMTime)itemTime;
 - (void) videoPlayer:(SCPlayer *)videoPlayer didEndLoadingAtItemTime:(CMTime)itemTime;
 - (void) videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem*)item;
+- (void) videoPlayer:(SCPlayer *)videoPlayer didFinishPlaying:(AVPlayerItem*)item;
 
 @end
 

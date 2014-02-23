@@ -62,7 +62,10 @@ extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
 - (void) prepareRecordingAtCameraRoll:(NSError**)error;
 // Photo
 - (void) capturePhoto;
+@property (nonatomic, assign) CGFloat effectiveScale;
+@property (nonatomic, assign) CGFloat maxScaleAndCropFactor;
 #endif
+
 
 - (NSURL*) prepareRecordingOnTempDir:(NSError**)error;
 - (void) prepareRecordingAtUrl:(NSURL*)url error:(NSError**)error;

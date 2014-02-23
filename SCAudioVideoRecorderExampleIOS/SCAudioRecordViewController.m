@@ -40,6 +40,7 @@
     self.camera.delegate = self;
     self.camera.outputFileType = AVFileTypeAppleM4A;
     self.camera.enableVideo = NO;
+    self.camera.recordingDurationLimit = CMTimeMakeWithSeconds(10, 1);
     
     [self.camera initialize:^(NSError *audioError, NSError *videoError) {
         if (audioError != nil) {

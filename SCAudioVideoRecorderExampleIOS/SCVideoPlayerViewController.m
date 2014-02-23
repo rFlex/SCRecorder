@@ -32,9 +32,9 @@
 {
     [super viewDidLoad];
 	
-	[self.videoPlayerView.player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
+	[self.videoPlayerView.player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:3];
 
-	self.videoPlayerView.player.shouldLoop = YES;
+	self.videoPlayerView.player.shouldLoop = NO;
 	[self.videoPlayerView.player play];
 }
 

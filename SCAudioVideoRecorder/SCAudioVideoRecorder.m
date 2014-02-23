@@ -108,6 +108,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		_playbackStartTime = kCMTimeZero;
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 		_backgroundIdentifier = UIBackgroundTaskInvalid;
+        self.effectiveScale = 1.0;
 #endif
 	}
 	return self;
@@ -309,63 +310,124 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	return [UIImage imageWithData:jpegData];
 }
 
+- (UIImage *)_thumbnailJPEGData:(NSData *)jpegData
+{
+    CGImageRef thumbnailCGImage = NULL;
+    CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)jpegData);
+    
+    if (provider) {
+        CGImageSourceRef imageSource = CGImageSourceCreateWithDataProvider(provider, NULL);
+        if (imageSource) {
+            if (CGImageSourceGetCount(imageSource) > 0) {
+                NSMutableDictionary *options = [[NSMutableDictionary alloc] initWithCapacity:3];
+                [options setObject:[NSNumber numberWithBool:YES] forKey:(id)kCGImageSourceCreateThumbnailFromImageAlways];
+                [options setObject:[NSNumber numberWithFloat:SCAudioVideoRecorderThumbnailWidth] forKey:(id)kCGImageSourceThumbnailMaxPixelSize];
+                [options setObject:[NSNumber numberWithBool:NO] forKey:(id)kCGImageSourceCreateThumbnailWithTransform];
+                thumbnailCGImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, (__bridge CFDictionaryRef)options);
+            }
+            CFRelease(imageSource);
+        }
+        CGDataProviderRelease(provider);
+    }
+    
+    UIImage *thumbnail = nil;
+    if (thumbnailCGImage) {
+        thumbnail = [[UIImage alloc] initWithCGImage:thumbnailCGImage scale:1 orientation:UIImageOrientationUp];
+        CGImageRelease(thumbnailCGImage);
+    }
+    return thumbnail;
+}
+
+// utility routing used during image capture to set up capture orientation
+- (AVCaptureVideoOrientation)avOrientationForDeviceOrientation:(UIDeviceOrientation)deviceOrientation
+{
+	AVCaptureVideoOrientation result = (AVCaptureVideoOrientation)deviceOrientation;
+	if ( deviceOrientation == UIDeviceOrientationLandscapeLeft )
+		result = AVCaptureVideoOrientationLandscapeRight;
+	else if ( deviceOrientation == UIDeviceOrientationLandscapeRight )
+		result = AVCaptureVideoOrientationLandscapeLeft;
+	return result;
+}
+
+- (CGFloat)maxScaleAndCropFactor {
+    return [[self.stillImageOutput connectionWithMediaType:AVMediaTypeVideo] videoMaxScaleAndCropFactor];
+}
+
 - (void) capturePhoto {
     if (self.stillImageOutput) {
-        AVCaptureConnection *connection = [self.stillImageOutput connectionWithMediaType:AVMediaTypeVideo];
-        [self.stillImageOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:
+        AVCaptureConnection *stillImageConnection = [self.stillImageOutput connectionWithMediaType:AVMediaTypeVideo];
+        UIDeviceOrientation curDeviceOrientation = [[UIDevice currentDevice] orientation];
+        AVCaptureVideoOrientation avcaptureOrientation = [self avOrientationForDeviceOrientation:curDeviceOrientation];
+        [stillImageConnection setVideoOrientation:avcaptureOrientation];
+        [stillImageConnection setVideoScaleAndCropFactor:self.effectiveScale];
+        [self.stillImageOutput captureStillImageAsynchronouslyFromConnection:stillImageConnection completionHandler:
          ^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
-             
-             if (!imageDataSampleBuffer) {
-                 NSLog(@"failed to obtain image data sample buffer");
-                 // TODO: return delegate error
-                 return;
-             }
-             
-             if (error) {
-				 [self dispatchBlockOnAskedQueue:^{
-					 if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
-						 [self.delegate audioVideoRecorder:self capturedPhoto:nil error:error];
-					 }
-				 }];
-				 return;
-             }
-             
-             NSMutableDictionary *photoDict = [[NSMutableDictionary alloc] init];
-             NSDictionary *metadata = nil;
-             
-             // add photo metadata (ie EXIF: Aperture, Brightness, Exposure, FocalLength, etc)
-             metadata = (__bridge NSDictionary *)CMCopyDictionaryOfAttachments(kCFAllocatorDefault, imageDataSampleBuffer, kCMAttachmentMode_ShouldPropagate);
-             if (metadata) {
-                 [photoDict setObject:metadata forKey:SCAudioVideoRecorderPhotoMetadataKey];
-                 CFRelease((__bridge CFTypeRef)(metadata));
-             } else {
-                 NSLog(@"failed to generate metadata for photo");
-             }
-             
-             // add JPEG and image data
-             NSData *jpegData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
-             if (jpegData) {
-                 // add JPEG
-                 [photoDict setObject:jpegData forKey:SCAudioVideoRecorderPhotoJPEGKey];
+             CFRetain(imageDataSampleBuffer);
+             dispatch_async(self.dispatch_queue, ^{
                  
-                 // add image
-                 UIImage *image = [self _uiimageFromJPEGData:jpegData];
-                 if (image) {
-                     [photoDict setObject:image forKey:SCAudioVideoRecorderPhotoImageKey];
+                 if (!imageDataSampleBuffer) {
+                     NSLog(@"failed to obtain image data sample buffer");
+                     // TODO: return delegate error
+                     return;
+                 }
+                 
+                 if (error) {
+                     [self dispatchBlockOnAskedQueue:^{
+                         if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
+                             [self.delegate audioVideoRecorder:self capturedPhoto:nil error:error];
+                         }
+                     }];
+                     return;
+                 }
+                 
+                 NSMutableDictionary *photoDict = [[NSMutableDictionary alloc] init];
+                 NSDictionary *metadata = nil;
+                 
+                 // add photo metadata (ie EXIF: Aperture, Brightness, Exposure, FocalLength, etc)
+                 metadata = (__bridge NSDictionary *)CMCopyDictionaryOfAttachments(kCFAllocatorDefault, imageDataSampleBuffer, kCMAttachmentMode_ShouldPropagate);
+                 if (metadata) {
+                     [photoDict setObject:metadata forKey:SCAudioVideoRecorderPhotoMetadataKey];
+                     CFRelease((__bridge CFTypeRef)(metadata));
                  } else {
-                     NSLog(@"failed to create image from JPEG");
+                     NSLog(@"failed to generate metadata for photo");
+                 }
+                 
+                 // add JPEG and image data
+                 NSData *jpegData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
+                 if (jpegData) {
+                     // add JPEG
+                     [photoDict setObject:jpegData forKey:SCAudioVideoRecorderPhotoJPEGKey];
+                     
+                     // add image
+                     UIImage *image = [self _uiimageFromJPEGData:jpegData];
+                     if (image) {
+                         [photoDict setObject:image forKey:SCAudioVideoRecorderPhotoImageKey];
+                     } else {
+                         NSLog(@"failed to create image from JPEG");
+                         // TODO: return delegate on error
+                     }
+                     
+                     // add thumbnail
+                     UIImage *thumbnail = [self _thumbnailJPEGData:jpegData];
+                     if (thumbnail) {
+                         [photoDict setObject:thumbnail forKey:SCAudioVideoRecorderPhotoThumbnailKey];
+                     } else {
+                         NSLog(@"failed to create a thumnbail");
+                         // TODO: return delegate on error
+                     }
+                     
+                 } else {
+                     NSLog(@"failed to create jpeg still image data");
                      // TODO: return delegate on error
                  }
-             } else {
-                 NSLog(@"failed to create jpeg still image data");
-                 // TODO: return delegate on error
-             }
-             
-			 [self dispatchBlockOnAskedQueue:^{
-				 if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
-					 [self.delegate audioVideoRecorder:self capturedPhoto:photoDict error:error];
-				 }
-			 }];
+                 
+                 [self dispatchBlockOnAskedQueue:^{
+                     if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
+                         [self.delegate audioVideoRecorder:self capturedPhoto:photoDict error:error];
+                     }
+                 }];
+                 CFRelease(imageDataSampleBuffer);
+             });
          }];
     }
 }
