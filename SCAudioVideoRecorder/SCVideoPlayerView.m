@@ -58,6 +58,9 @@
 }
 
 - (void) commonInit {
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureRecognizerHandle:)];
+    [self addGestureRecognizer:tapGestureRecognizer];
+    
 	self.player = [SCPlayer player];
 	self.player.delegate = self;
 	self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
@@ -76,6 +79,23 @@
 	self.loadingView = theLoadingView;
 	self.loadingView.hidden = YES;
 	self.clipsToBounds = YES;
+}
+
+#pragma mark - Gesture
+
+- (void)tapGestureRecognizerHandle:(UITapGestureRecognizer *)tapGestureRecognizer {
+    switch (tapGestureRecognizer.state) {
+        case UIGestureRecognizerStateEnded:
+            if (self.player.isPlaying) {
+                [self.player pause];
+            } else {
+                [self.player play];
+            }
+            break;
+            
+        default:
+            break;
+    }
 }
 
 - (void) videoPlayer:(SCPlayer *)videoPlayer didStartLoadingAtItemTime:(CMTime)itemTime {
