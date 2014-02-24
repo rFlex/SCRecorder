@@ -648,21 +648,14 @@ typedef UIView View;
 
 - (void)_applicationWillEnterForeground:(NSNotification *)notification
 {
-    [self dispatchBlockOnAskedQueue:^{
-        [self startRunningSession];
-    }];
+
 }
 
 - (void)_applicationDidEnterBackground:(NSNotification *)notification
 {
-    
     if (self.isRecording) {
         [self pause];
     }
-    
-    [self dispatchBlockOnAskedQueue:^{
-        [self stopRunningSession];
-    }];
 }
 
 #pragma mark - AV NSNotifications
