@@ -30,8 +30,10 @@ typedef UIView View;
 @property (strong, nonatomic) AVCaptureSession * session;
 @property (weak, nonatomic) AVCaptureDeviceInput * currentVideoDeviceInput;
 @property (weak, nonatomic) AVCaptureDeviceInput * currentAudioDeviceInput;
-@property (strong, nonatomic) AVCaptureVideoPreviewLayer * previewLayer;
+
 @property (assign, nonatomic) AVCaptureVideoOrientation cachedVideoOrientation;
+
+@property (strong, nonatomic, readwrite) AVCaptureVideoPreviewLayer * previewLayer;
 
 @end
 
@@ -354,8 +356,9 @@ typedef UIView View;
 
 - (void)_willCapturePhoto
 {
-    if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)])
+    if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)]) {
         [self.delegate cameraWillCapturePhoto:self];
+    }
 }
 
 - (void)_didCapturePhoto
