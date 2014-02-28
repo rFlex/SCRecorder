@@ -13,6 +13,8 @@ Examples for both OS X and IOS are provided.
 
 Framework needed:
 - AssetsLibrary
+- CoreVideo
+- AudioToolbox
 
 
 Straightforward recording using SCCamera
