@@ -62,6 +62,7 @@
 	
 	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 											  AVVideoCodecH264, AVVideoCodecKey,
+                                              AVVideoScalingModeResizeAspectFill, AVVideoScalingModeKey,
 											  [NSNumber numberWithInteger:videoSize.width], AVVideoWidthKey,
 											  [NSNumber numberWithInteger:videoSize.height], AVVideoHeightKey,
                                               [NSDictionary dictionaryWithObjectsAndKeys:
