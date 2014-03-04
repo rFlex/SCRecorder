@@ -23,6 +23,7 @@ typedef UIView View;
 
 @interface SCCamera() {
     BOOL _useFrontCamera;
+    BOOL _openingSession;
     NSInteger _configurationBeganCount;
 	NSString * _sessionPreset;
 }
@@ -72,24 +73,7 @@ typedef UIView View;
 }
 
 - (void) dealloc {
-	if (self.session != nil) {
-        _sessionPreset = nil;
-        self.previewLayer = nil;
-        
-        [self removeObserverForSession];
-        [self stopRunningSession];
-        
-		while (self.session.inputs.count > 0) {
-			AVCaptureInput * input = [self.session.inputs objectAtIndex:0];
-			[self.session removeInput:input];
-		}
-		
-		while (self.session.outputs.count > 0) {
-			AVCaptureOutput * output = [self.session.outputs objectAtIndex:0];
-			[self.session removeOutput:output];
-		}
-        self.session = nil;
-	}
+    [self disposeSession];
 }
 
 + (SCCamera*) camera {
@@ -145,8 +129,13 @@ typedef UIView View;
     }
 }
 
-- (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler {
-    if (![self isReady]) {
+- (void)initialize:(void (^)(NSError *, NSError *))completionHandler {
+    [self openSession:completionHandler];
+}
+
+- (void) openSession:(void(^)(NSError * audioError, NSError * videoError))completionHandler {
+    if (![self isSessionOpened]) {
+        _openingSession = YES;
         dispatch_async(self.dispatch_queue, ^{
             AVCaptureSession * captureSession = [[AVCaptureSession alloc] init];
             captureSession.sessionPreset = self.sessionPreset;
@@ -191,6 +180,7 @@ typedef UIView View;
                     self.previewView = settedPreviewView;
                 }
             });
+            _openingSession = NO;
             if (completionHandler != nil) {
                 [self dispatchBlockOnAskedQueue:^ {
                     completionHandler(audioError, videoError);
@@ -204,12 +194,38 @@ typedef UIView View;
     }
 }
 
+- (void)disposeSession {
+    if (self.session != nil) {
+        [self.previewLayer removeFromSuperlayer];
+        self.previewLayer = nil;
+        
+        [self removeObserverForSession];
+        [self stopRunningSession];
+        
+		while (self.session.inputs.count > 0) {
+			AVCaptureInput * input = [self.session.inputs objectAtIndex:0];
+			[self.session removeInput:input];
+		}
+		
+		while (self.session.outputs.count > 0) {
+			AVCaptureOutput * output = [self.session.outputs objectAtIndex:0];
+			[self.session removeOutput:output];
+		}
+        self.session = nil;
+	}
+}
+
+- (void)closeSession {
+    [self reset];
+    [self disposeSession];
+}
+
 - (void) prepareRecordingAtUrl:(NSURL *)fileUrl error:(NSError **)error {
-    if ([self isReady]) {
+    if ([self isSessionOpened]) {
         [super prepareRecordingAtUrl:fileUrl error:error];
     } else {
         if (error != nil) {
-            *error = [SCAudioVideoRecorder createError:@"The camera must be initialized before trying to record"];
+            *error = [SCAudioVideoRecorder createError:@"The camera session must be opened before trying to record"];
         }
     }
 }
@@ -238,8 +254,16 @@ typedef UIView View;
     return nil;
 }
 
-- (BOOL) isReady {
+- (BOOL)isSessionOpened {
     return self.session != nil;
+}
+
+- (BOOL)isSessionRunning {
+    return self.session.isRunning;
+}
+
+- (BOOL)isOpeningSession {
+    return _openingSession;
 }
 
 - (void) setPreviewView:(View *)previewView {
@@ -633,6 +657,7 @@ typedef UIView View;
         [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
 		// focusMode
 		[self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
+        self.currentVideoDeviceInput = nil;
 	}
     
     // capturingStillImage

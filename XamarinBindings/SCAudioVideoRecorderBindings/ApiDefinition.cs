@@ -103,6 +103,14 @@ namespace SCorsin {
 		void DidFailFocus(SCCamera camera, NSError error);
 
 		[Abstract]
+		[Export("cameraSessionDidStart:")]
+		void DidCameraSessionStart(SCCamera camera);
+
+		[Abstract]
+		[Export("cameraSessionDidStop:")]
+		void DidCameraSessionStop(SCCamera camera);
+
+		[Abstract]
 		[Export("audioVideoRecorder:willFinalizeAudioMixAtUrl:"), EventArgs("AudioVideoRecordedWillFinalizeAudioMix")]
 		void WillFinalizeAudioMix(SCAudioVideoRecorder audioVideoRecorder, NSUrl recordedFile);
 	}
@@ -210,11 +218,20 @@ namespace SCorsin {
         [Export("initWithSessionPreset:")]
         IntPtr Constructor(string sessionPresset);
 
-        [Export("initialize:")]
-        void Initialize([NullAllowed] InitializerDelegate initializerDelegate);
+		[Export("openSession:")]
+		void OpenSession([NullAllowed] InitializerDelegate initializerDelegate);
 
-        [Export("isReady")]
-        bool IsReady { get; }
+		[Export("closeSession")]
+		void CloseSession();
+
+		[Export("isSessionOpened")]
+		bool IsSessionOpened { get; }
+
+		[Export("isOpeningSession")]
+		bool IsOpeningSession { get; }
+
+		[Export("isSessionRunning")]
+		bool IsSessionRunning { get; }
 
         [Export("previewVideoGravity")]
         int PreviewVideoGravity { get; set; }

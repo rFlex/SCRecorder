@@ -41,7 +41,7 @@
     self.camera.outputFileType = AVFileTypeAppleM4A;
     self.camera.enableVideo = NO;
     
-    [self.camera initialize:^(NSError *audioError, NSError *videoError) {
+    [self.camera openSession:^(NSError *audioError, NSError *videoError) {
         if (audioError != nil) {
             [self showError:audioError];
         } else {

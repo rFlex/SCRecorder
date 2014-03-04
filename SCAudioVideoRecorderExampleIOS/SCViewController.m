@@ -87,7 +87,7 @@
 	
 //	[self addMusic];
 	
-    [self.camera initialize:^(NSError * audioError, NSError * videoError) {
+    [self.camera openSession:^(NSError * audioError, NSError * videoError) {
 		[self prepareCamera];
     }];
     
@@ -111,7 +111,7 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-	if (self.camera.isReady) {
+	if (self.camera.isSessionOpened) {
 		NSLog(@"Starting to run");
 		[self.camera startRunningSession];
 	} else {

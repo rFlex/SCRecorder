@@ -77,6 +77,8 @@ extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
 - (BOOL) isPrepared;
 - (BOOL) isRecording;
 
+- (void) reset;
+
 @property (weak, nonatomic) id<SCAudioVideoRecorderDelegate> delegate;
 
 @property (strong, nonatomic, readonly) AVCaptureVideoDataOutput * videoOutput;

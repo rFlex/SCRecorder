@@ -70,9 +70,9 @@ typedef enum {
 
 - (id) initWithSessionPreset:(NSString*)sessionPreset;
 
-- (void) initialize:(void(^)(NSError * audioError, NSError * videoError))completionHandler;
-
-- (BOOL) isReady;
+// Replaces initialize:
+- (void)openSession:(void(^)(NSError * audioError, NSError * videoError))completionHandler;
+- (void)closeSession;
 
 @property (strong, nonatomic, readonly) AVCaptureSession * session;
 @property (weak, nonatomic) id<SCCameraDelegate> delegate;
@@ -80,7 +80,9 @@ typedef enum {
 @property (assign, nonatomic) SCCameraPreviewVideoGravity previewVideoGravity;
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 @property (readonly) AVCaptureDevice * currentDevice;
-
+@property (readonly) BOOL isOpeningSession;
+@property (readonly) BOOL isSessionOpened;
+@property (readonly) BOOL isSessionRunning;
 
 @property (nonatomic) SCFlashMode flashMode;
 @property (nonatomic) SCCameraDevice cameraDevice;

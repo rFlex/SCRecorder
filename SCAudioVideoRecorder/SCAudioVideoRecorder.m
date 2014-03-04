@@ -114,22 +114,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 }
 
 - (void)dealloc {
-    self.videoOutput = nil;
-    self.audioOutput = nil;
-    self.stillImageOutput = nil;
-    
-    self.videoEncoder = nil;
-    self.audioEncoder = nil;
-    
-    self.outputFileUrl = nil;
-    
-    self.playbackAsset = nil;
-    
-    self.outputFileType = nil;
-    
-    self.dispatch_queue = nil;
-    
-    self.assetWriter = nil;
+    [self reset];
 }
 
 // Hack to force ARC to not release an object in a code block
@@ -159,7 +144,6 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		}
 		[self removeFile:fileUrl];
 		fileUrl = nil;
-        
 	}
     
 	return fileUrl;
@@ -172,7 +156,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	}
 	   
 	dispatch_sync(self.dispatch_queue, ^{
-		[self resetInternal];
+		[self reset];
 		[self startBackgroundTask];
 		
 		shouldWriteToCameraRoll = NO;
@@ -404,15 +388,15 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 			[self assetWriterFinished:fileUrl];
 			break;
 		case AVAssetWriterStatusFailed:
-			[self resetInternal];
+			[self reset];
 			[self notifyRecordFinishedAtUrl:nil withError:error];
 			break;
 		case AVAssetWriterStatusCancelled:
-			[self resetInternal];
+			[self reset];
 			[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Writer cancelled"]];
 			break;
 		case AVAssetWriterStatusUnknown:
-			[self resetInternal];
+			[self reset];
 			[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Writer status unknown"]];
 			break;
 	}
@@ -440,11 +424,11 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 
 - (void) cancel {
 	dispatch_sync(self.dispatch_queue, ^{
-		[self resetInternal];
+		[self reset];
     });
 }
 
-- (void) resetInternal {
+- (void) reset {
 	[self stopBackgroundTask];
 	AVAssetWriter * writer = self.assetWriter;
 	NSURL * fileUrl = self.outputFileUrl;
