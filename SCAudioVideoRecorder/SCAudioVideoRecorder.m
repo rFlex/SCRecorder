@@ -22,7 +22,7 @@ NSString * const SCAudioVideoRecorderPhotoJPEGKey = @"SCAudioVideoRecorderPhotoJ
 NSString * const SCAudioVideoRecorderPhotoImageKey = @"SCAudioVideoRecorderPhotoImageKey";
 NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderPhotoThumbnailKey";
 
-static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
+//static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -57,7 +57,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 
 @implementation SCAudioVideoRecorder
 
-@synthesize delegate;
+@synthesize delegate = _delegate;
 @synthesize videoOutput;
 @synthesize audioOutput;
 @synthesize outputFileUrl;
@@ -141,9 +141,10 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 // Video Recorder methods
 //
 
-- (void) prepareRecordingAtCameraRoll:(NSError **)error {
-	[self prepareRecordingOnTempDir:error];
+- (BOOL) prepareRecordingAtCameraRoll:(NSError **)error {
+    BOOL success = [self prepareRecordingOnTempDir:error] != nil;
 	shouldWriteToCameraRoll = YES;
+    return success;
 }
 
 - (NSURL*) prepareRecordingOnTempDir:(NSError **)error {
@@ -166,11 +167,12 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 }
 
 
-- (void) prepareRecordingAtUrl:(NSURL *)fileUrl error:(NSError **)error {
+- (BOOL) prepareRecordingAtUrl:(NSURL *)fileUrl error:(NSError **)error {
 	if (fileUrl == nil) {
 		[NSException raise:@"Invalid argument" format:@"FileUrl must be not nil"];
 	}
 	   
+    __block BOOL success;
 	dispatch_sync(self.dispatch_queue, ^{
 		[self resetInternal];
 		[self startBackgroundTask];
@@ -194,11 +196,13 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 				*error = assetError;
 			}
 		}
+        success = assetError == nil;
 	});
 	if (self.playbackAsset != nil) {
 		self.playbackPlayer = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:self.playbackAsset]];
 		[self.playbackPlayer seekToTime:self.playbackStartTime];
 	}
+    return success;
 }
 
 - (void) removeFile:(NSURL *)fileURL {
@@ -213,8 +217,9 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 - (void) finalizeAudioMixForUrl:(NSURL*)fileUrl withCompletionBlock:(void(^)(NSError *))completionBlock {
 	NSError * error = nil;
 	if (self.playbackAsset != nil) {
-        if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:willFinalizeAudioMixAtUrl:)]) {
-            [self.delegate audioVideoRecorder:self willFinalizeAudioMixAtUrl:fileUrl];
+        id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(audioVideoRecorder:willFinalizeAudioMixAtUrl:)]) {
+            [delegate audioVideoRecorder:self willFinalizeAudioMixAtUrl:fileUrl];
         }
         
 		// Move the file to a temporary one
@@ -280,8 +285,9 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 
 - (void) notifyRecordFinishedAtUrl:(NSURL*)url withError:(NSError*)error {
 	[self dispatchBlockOnAskedQueue:^{
-		if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didFinishRecordingAtUrl:error:)]) {
-			[self.delegate audioVideoRecorder:self didFinishRecordingAtUrl:url error:error];
+        id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+		if ([delegate respondsToSelector:@selector(audioVideoRecorder:didFinishRecordingAtUrl:error:)]) {
+			[delegate audioVideoRecorder:self didFinishRecordingAtUrl:url error:error];
 		}
 	}];
 }
@@ -327,8 +333,9 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
              
              if (error) {
 				 [self dispatchBlockOnAskedQueue:^{
-					 if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
-						 [self.delegate audioVideoRecorder:self capturedPhoto:nil error:error];
+                     id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+					 if ([delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
+						 [delegate audioVideoRecorder:self capturedPhoto:nil error:error];
 					 }
 				 }];
 				 return;
@@ -366,8 +373,9 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
              }
              
 			 [self dispatchBlockOnAskedQueue:^{
-				 if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
-					 [self.delegate audioVideoRecorder:self capturedPhoto:photoDict error:error];
+                 id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+				 if ([delegate respondsToSelector:@selector(audioVideoRecorder:capturedPhoto:error:)]) {
+					 [delegate audioVideoRecorder:self capturedPhoto:photoDict error:error];
 				 }
 			 }];
          }];
@@ -379,8 +387,9 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 	[self pause];
 	[self stopBackgroundTask];
 	
-	if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:willFinishRecordingAtTime:)]) {
-		[self.delegate audioVideoRecorder:self willFinishRecordingAtTime:self.currentRecordingTime];
+    id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+	if ([delegate respondsToSelector:@selector(audioVideoRecorder:willFinishRecordingAtTime:)]) {
+		[delegate audioVideoRecorder:self willFinishRecordingAtTime:self.currentRecordingTime];
 	}
     
 	dispatch_async(self.dispatch_queue, ^{
@@ -480,12 +489,14 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		self.currentRecordingTime = frameTime;
 		
         if (dataEncoder == self.audioEncoder) {
-            if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didRecordAudioSample:)]) {
-                [self.delegate audioVideoRecorder:self didRecordAudioSample:frameTime];
+            id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(audioVideoRecorder:didRecordAudioSample:)]) {
+                [delegate audioVideoRecorder:self didRecordAudioSample:frameTime];
             }
         } else if (dataEncoder == self.videoEncoder) {
-            if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didRecordVideoFrame:)]) {
-                [self.delegate audioVideoRecorder:self didRecordVideoFrame:frameTime];
+            id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(audioVideoRecorder:didRecordVideoFrame:)]) {
+                [delegate audioVideoRecorder:self didRecordVideoFrame:frameTime];
             }
         }
 		if (CMTIME_COMPARE_INLINE(frameTime, >=, self.recordingDurationLimit)) {
@@ -497,12 +508,14 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 - (void) dataEncoder:(SCDataEncoder *)dataEncoder didFailToInitializeEncoder:(NSError *)error {
     [self dispatchBlockOnAskedQueue: ^ {
         if (dataEncoder == self.audioEncoder) {
-            if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didFailToInitializeAudioEncoder:)]) {
-                [self.delegate audioVideoRecorder:self didFailToInitializeAudioEncoder:error];
+            id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(audioVideoRecorder:didFailToInitializeAudioEncoder:)]) {
+                [delegate audioVideoRecorder:self didFailToInitializeAudioEncoder:error];
             }
         } else if (dataEncoder == self.videoEncoder) {
-            if ([self.delegate respondsToSelector:@selector(audioVideoRecorder:didFailToInitializeVideoEncoder:)]) {
-                [self.delegate audioVideoRecorder:self didFailToInitializeVideoEncoder:error];
+            id<SCAudioVideoRecorderDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(audioVideoRecorder:didFailToInitializeVideoEncoder:)]) {
+                [delegate audioVideoRecorder:self didFailToInitializeVideoEncoder:error];
             }
         }
     }];

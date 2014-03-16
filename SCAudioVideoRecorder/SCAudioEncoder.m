@@ -66,9 +66,11 @@
     if ([self.audioVideoRecorder.assetWriter canApplyOutputSettings:audioCompressionSetings forMediaType:AVMediaTypeAudio]) {
         audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioCompressionSetings];
         audioInput.expectsMediaDataInRealTime = YES;
-        *error = nil;
+        if (error != nil)
+            *error = nil;
     } else {
-        *error = [SCAudioVideoRecorder createError:@"Cannot apply Audio settings"];
+        if (error != nil)
+            *error = [SCAudioVideoRecorder createError:@"Cannot apply Audio settings"];
     }
 
     return audioInput;

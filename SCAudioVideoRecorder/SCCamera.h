@@ -98,12 +98,12 @@ typedef enum {
 
 // Set an activeFormat that supports the requested framerate
 // This does not change the framerate
-- (BOOL)setActiveFormatThatSupportsFrameRate:(NSInteger)frameRate width:(NSInteger)width andHeight:(NSInteger)height error:(NSError**)error;
+- (BOOL)setActiveFormatThatSupportsFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError**)error;
 
 // Switch between back and front camera
 - (void) switchCamera;
 
-- (BOOL)isFrameRateSupported:(NSInteger)frameRate;
+- (BOOL)isFrameRateSupported:(CMTimeScale)frameRate;
 
 // Offer a way to configure multiple things at once
 // You can call multiple beginSessionConfiguration recursively
@@ -112,7 +112,7 @@ typedef enum {
 - (void)beginSessionConfiguration;
 - (void)commitSessionConfiguration;
 
-@property (assign, nonatomic) NSInteger frameRate;
+@property (assign, nonatomic) CMTimeScale frameRate;
 
 // preview
 @property (weak, nonatomic) UIView * previewView;

@@ -81,7 +81,8 @@
     self.camera.delegate = self;
     self.camera.enableSound = YES;
     self.camera.previewVideoGravity = SCVideoGravityResizeAspectFill;
-    self.camera.previewView = self.previewView;
+    UIView *previewView = self.previewView;
+    self.camera.previewView = previewView;
 	self.camera.videoOrientation = AVCaptureVideoOrientationPortrait;
 	self.camera.recordingDurationLimit = CMTimeMakeWithSeconds(10, 1);
 	
@@ -98,9 +99,9 @@
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
     
-    self.focusView = [[SCCameraFocusView alloc] initWithFrame:self.previewView.bounds];
+    self.focusView = [[SCCameraFocusView alloc] initWithFrame:previewView.bounds];
     self.focusView.camera = self.camera;
-    [self.previewView addSubview:self.focusView];
+    [previewView addSubview:self.focusView];
     self.focusView.outsideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
 }
