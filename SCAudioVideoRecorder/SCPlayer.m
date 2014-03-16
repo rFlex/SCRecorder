@@ -45,11 +45,12 @@ SCPlayer * currentSCVideoPlayer = nil;
 		
 		__unsafe_unretained SCPlayer * mySelf = self;
 		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
-			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:)]) {
+            id<SCVideoPlayerDelegate> delegate = mySelf.delegate;
+			if ([delegate respondsToSelector:@selector(videoPlayer:didPlay:)]) {
 				Float64 ratio = 1.0 / mySelf.itemsLoopLength;
                 Float64 seconds = CMTimeGetSeconds(CMTimeMultiplyByFloat64(time, ratio));
                 
-				[mySelf.delegate videoPlayer:mySelf didPlay:seconds];
+				[delegate videoPlayer:mySelf didPlay:seconds];
 			}
 		}];
 		_loading = NO;
@@ -134,8 +135,9 @@ SCPlayer * currentSCVideoPlayer = nil;
 	}
 		
 	self.oldItem = self.currentItem;
-	if ([self.delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
-		[self.delegate videoPlayer:self didChangeItem:self.currentItem];
+    id<SCVideoPlayerDelegate> delegate = self.delegate;
+	if ([delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
+		[delegate videoPlayer:self didChangeItem:self.currentItem];
 	}
     self.loading = YES;
 }
@@ -222,13 +224,14 @@ SCPlayer * currentSCVideoPlayer = nil;
 - (void) setLoading:(BOOL)loading {
 	_loading = loading;
 	
+    id<SCVideoPlayerDelegate> delegate = self.delegate;
 	if (loading) {
-		if ([self.delegate respondsToSelector:@selector(videoPlayer:didStartLoadingAtItemTime:)]) {
-			[self.delegate videoPlayer:self didStartLoadingAtItemTime:self.currentItem.currentTime];
+		if ([delegate respondsToSelector:@selector(videoPlayer:didStartLoadingAtItemTime:)]) {
+			[delegate videoPlayer:self didStartLoadingAtItemTime:self.currentItem.currentTime];
 		}
 	} else {
-		if ([self.delegate respondsToSelector:@selector(videoPlayer:didEndLoadingAtItemTime:)]) {
-			[self.delegate videoPlayer:self didEndLoadingAtItemTime:self.currentItem.currentTime];
+		if ([delegate respondsToSelector:@selector(videoPlayer:didEndLoadingAtItemTime:)]) {
+			[delegate videoPlayer:self didEndLoadingAtItemTime:self.currentItem.currentTime];
 		}
 	}
 }

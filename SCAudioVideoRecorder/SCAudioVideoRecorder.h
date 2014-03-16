@@ -61,13 +61,13 @@ extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
 
 // The Camera roll only exists on iOS
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-- (void) prepareRecordingAtCameraRoll:(NSError**)error;
+- (BOOL) prepareRecordingAtCameraRoll:(NSError**)error;
 // Photo
 - (void) capturePhoto;
 #endif
 
 - (NSURL*) prepareRecordingOnTempDir:(NSError**)error;
-- (void) prepareRecordingAtUrl:(NSURL*)url error:(NSError**)error;
+- (BOOL) prepareRecordingAtUrl:(NSURL*)url error:(NSError**)error;
 
 - (void) record;
 - (void) pause;
@@ -79,18 +79,18 @@ extern NSString * const SCAudioVideoRecorderPhotoThumbnailKey; // 160x120
 
 @property (weak, nonatomic) id<SCAudioVideoRecorderDelegate> delegate;
 
-@property (strong, nonatomic, readonly) AVCaptureVideoDataOutput * videoOutput;
-@property (strong, nonatomic, readonly) AVCaptureAudioDataOutput * audioOutput;
+@property (strong, nonatomic, readonly) AVCaptureVideoDataOutput *videoOutput;
+@property (strong, nonatomic, readonly) AVCaptureAudioDataOutput *audioOutput;
 @property (strong, nonatomic, readonly) AVCaptureStillImageOutput *stillImageOutput;
 
 @property (assign, nonatomic) BOOL enableSound;
 @property (assign, nonatomic) BOOL enableVideo;
 
 // The VideoEncoder. Accessing this allow the configuration of the video encoder
-@property (strong, nonatomic, readonly) SCVideoEncoder * videoEncoder;
+@property (strong, nonatomic, readonly) SCVideoEncoder *videoEncoder;
 
 // The AudioEncoder. Accessing this allow the configuration of the audio encoder
-@property (strong, nonatomic, readonly) SCAudioEncoder * audioEncoder;
+@property (strong, nonatomic, readonly) SCAudioEncoder *audioEncoder;
 
 // When the recording is prepared, this getter contains the output file
 @property (strong, nonatomic, readonly) NSURL * outputFileUrl;

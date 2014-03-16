@@ -32,10 +32,11 @@
 {
     [super viewDidLoad];
 	
-	[self.videoPlayerView.player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
-
-	self.videoPlayerView.player.shouldLoop = YES;
-	[self.videoPlayerView.player play];
+    SCPlayer *player = self.videoPlayerView.player;
+	[player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
+    
+	player.shouldLoop = YES;
+	[player play];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
