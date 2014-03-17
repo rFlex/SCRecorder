@@ -13,6 +13,7 @@
 
 #import "NSArray+SCAdditions.h"
 #import "SCAudioTools.h"
+#import "SCPlayer.h"
 
 #import <ImageIO/ImageIO.h>
 // photo dictionary key definitions
@@ -46,7 +47,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 @property (strong, nonatomic) SCVideoEncoder * videoEncoder;
 @property (strong, nonatomic) SCAudioEncoder * audioEncoder;
 @property (strong, nonatomic) NSURL * outputFileUrl;
-@property (strong, nonatomic) AVPlayer * playbackPlayer;
+@property (strong, nonatomic) SCPlayer * playbackPlayer;
 @property (assign, nonatomic) CMTime currentRecordingTime;
 
 @end
@@ -106,6 +107,9 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		self.enableVideo = YES;
         self.playPlaybackAssetWhenRecording = YES;
 		_playbackStartTime = kCMTimeZero;
+        self.playbackPlayer = [SCPlayer player];
+        self.playbackPlayer.shouldLoop = YES;
+        
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 		_backgroundIdentifier = UIBackgroundTaskInvalid;
 #endif
@@ -114,6 +118,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 }
 
 - (void)dealloc {
+    [self.playbackPlayer cleanUp];
     [self reset];
 }
 
@@ -180,8 +185,8 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
 		}
 	});
 	if (self.playbackAsset != nil) {
-		self.playbackPlayer = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:self.playbackAsset]];
-		[self.playbackPlayer seekToTime:self.playbackStartTime];
+        [self.playbackPlayer setItemByAsset:self.playbackAsset];
+        [self.playbackPlayer seekToTime:self.playbackStartTime];
 	}
 }
 
@@ -416,6 +421,7 @@ static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
     if (self.playPlaybackAssetWhenRecording) {
         self.playbackPlayer.rate = self.recordingRate;
     }
+    
 	dispatch_async(self.dispatch_queue, ^ {
 		self.shouldComputeOffset = YES;
 		recording = YES;

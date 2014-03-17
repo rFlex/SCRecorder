@@ -43,7 +43,7 @@
 }
 
 - (void) dealloc {
-	[self.player cleanUp];
+//	[self.player cleanUp];
 	self.playerLayer.player = nil;
 }
 
@@ -86,8 +86,8 @@
 	self.loadingView.hidden = YES;
 }
 
-- (void) videoPlayer:(SCPlayer *)videoPlayer didPlay:(Float32)secondsElapsed {
-	
+- (void) videoPlayer:(SCPlayer *)videoPlayer didPlay:(Float64)secondsElapsed loopsCount:(NSInteger)loopsCount {
+    
 }
 
 - (void) videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem *)item {

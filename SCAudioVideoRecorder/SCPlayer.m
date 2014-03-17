@@ -26,7 +26,6 @@
 
 SCPlayer * currentSCVideoPlayer = nil;
 
-
 ////////////////////////////////////////////////////////////
 // IMPLEMENTATION
 /////////////////////
@@ -43,13 +42,16 @@ SCPlayer * currentSCVideoPlayer = nil;
 
 		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
 		
-		__unsafe_unretained SCPlayer * mySelf = self;
-		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
-			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:)]) {
+		__block SCPlayer * mySelf = self;
+        
+		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:nil usingBlock:^(CMTime time) {
+			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:loopsCount:)]) {
 				Float64 ratio = 1.0 / mySelf.itemsLoopLength;
                 Float64 seconds = CMTimeGetSeconds(CMTimeMultiplyByFloat64(time, ratio));
                 
-				[mySelf.delegate videoPlayer:mySelf didPlay:seconds];
+                NSInteger loopCount = CMTimeGetSeconds(time) / (CMTimeGetSeconds(mySelf.currentItem.duration) / (Float64)mySelf.itemsLoopLength);
+                                
+				[mySelf.delegate videoPlayer:mySelf didPlay:seconds loopsCount:loopCount];
 			}
 		}];
 		_loading = NO;
@@ -69,8 +71,6 @@ SCPlayer * currentSCVideoPlayer = nil;
         [self removeTimeObserver:self.timeObserver];
         self.timeObserver = nil;
     }
-	[self setItem:nil];
-	self.oldItem = nil;
 }
 
 - (void) playReachedEnd:(NSNotification*)notification {
@@ -241,6 +241,12 @@ SCPlayer * currentSCVideoPlayer = nil;
     _shouldLoop = shouldLoop;
     
     self.actionAtItemEnd = shouldLoop ? AVPlayerActionAtItemEndNone : AVPlayerActionAtItemEndPause;
+}
+
+- (CMTime)itemDuration {
+    Float64 ratio = 1.0 / self.itemsLoopLength;
+
+    return CMTimeMultiply(self.currentItem.duration, ratio);
 }
 
 + (SCPlayer*) player {

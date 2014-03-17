@@ -29,6 +29,10 @@
     return self;
 }
 
+- (void)dealloc {
+    [self.player cleanUp];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];

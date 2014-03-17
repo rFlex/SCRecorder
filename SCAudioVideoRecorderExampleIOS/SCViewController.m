@@ -262,6 +262,7 @@
     [self.camera cancel];
 	[self prepareCamera];
     [self updateLabelForSecond:0];
+    
 }
 
 - (IBAction)switchCameraMode:(id)sender {
