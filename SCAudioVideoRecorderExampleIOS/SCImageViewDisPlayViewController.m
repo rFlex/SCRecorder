@@ -21,9 +21,10 @@
 
 - (SCBlurOverlayView *)blurOverlayView {
     if (!_blurOverlayView) {
-        _blurOverlayView = [[SCBlurOverlayView alloc] initWithFrame:self.disPlayImageView.bounds];
+        UIImageView *disPlayImageView = self.disPlayImageView;
+        _blurOverlayView = [[SCBlurOverlayView alloc] initWithFrame:disPlayImageView.bounds];
         _blurOverlayView.alpha = 0;
-        [self.disPlayImageView addSubview:self.blurOverlayView];
+        [disPlayImageView addSubview:self.blurOverlayView];
     }
     return _blurOverlayView;
 }
@@ -41,14 +42,15 @@
 }
 
 - (void)_setupGesture {
-    self.disPlayImageView.userInteractionEnabled = YES;
+    UIImageView *disPlayImageView = self.disPlayImageView;
+    disPlayImageView.userInteractionEnabled = YES;
     
     UIPinchGestureRecognizer *pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchGestureRecognizerHandle:)];
-    [self.disPlayImageView addGestureRecognizer:pinchGestureRecognizer];
+    [disPlayImageView addGestureRecognizer:pinchGestureRecognizer];
     
     UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureRecognizerHandle:)];
     panGestureRecognizer.minimumNumberOfTouches = 1;
-    [self.disPlayImageView addGestureRecognizer:panGestureRecognizer];
+    [disPlayImageView addGestureRecognizer:panGestureRecognizer];
 }
 
 - (void)viewDidLoad

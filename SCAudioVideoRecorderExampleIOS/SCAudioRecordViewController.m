@@ -88,17 +88,19 @@
 
 - (void)hidePlayControl:(BOOL)animated {
     [UIView animateWithDuration:animated ? 0.3 : 0 animations:^{
-        CGRect frame = self.playView.frame;
+        UIView *playView = self.playView;
+        CGRect frame = playView.frame;
         frame.origin.y = self.view.frame.size.height;
-        self.playView.frame = frame;
+        playView.frame = frame;
     }];
 }
 
 - (void)showPlayControl:(BOOL)animated {
     [UIView animateWithDuration:animated ? 0.3 : 0 animations:^{
-        CGRect frame = self.playView.frame;
+        UIView *playView = self.playView;
+        CGRect frame = playView.frame;
         frame.origin.y = self.view.frame.size.height - frame.size.height;
-        self.playView.frame = frame;
+        playView.frame = frame;
     }];
 }
 

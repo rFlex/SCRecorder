@@ -46,7 +46,7 @@ typedef UIView View;
 }
 
 @synthesize session;
-@synthesize delegate;
+@synthesize delegate = _delegate;
 @synthesize previewLayer;
 @synthesize flashMode = _flashMode;
 @synthesize isFocusSupported = _isFocusSupported;
@@ -81,15 +81,20 @@ typedef UIView View;
 }
 
 - (AVCaptureDeviceInput*) addInputToSession:(AVCaptureSession*)captureSession device:(AVCaptureDevice*)device withMediaType:(NSString*)mediaType error:(NSError**)error {
-    *error = nil;
+    if (error != nil)
+        *error = nil;
 	AVCaptureDeviceInput * input = nil;
     if (device != nil) {
-        input = [AVCaptureDeviceInput deviceInputWithDevice:device error:error];
-        if (*error == nil) {
+        NSError *outError = nil;
+        input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&outError];
+        if (error != nil)
+            *error = outError;
+        if (outError == nil) {
             [captureSession addInput:input];
         }
     } else {
-        *error = [SCAudioVideoRecorder createError:[NSString stringWithFormat:@"No device of type %@ were found", mediaType]];
+        if (error != nil)
+            *error = [SCAudioVideoRecorder createError:[NSString stringWithFormat:@"No device of type %@ were found", mediaType]];
     }
 	return input;
 }
@@ -113,8 +118,9 @@ typedef UIView View;
     
     [session startRunning];
     
-    if ([self.delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
-        [self.delegate cameraSessionWillStart:self];
+    id<SCCameraDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(cameraSessionWillStart:)]) {
+        [delegate cameraSessionWillStart:self];
     }
 }
 
@@ -124,8 +130,9 @@ typedef UIView View;
     
     [session stopRunning];
     
-    if ([self.delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
-        [self.delegate cameraSessionWillStop:self];
+    id<SCCameraDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(cameraSessionWillStop:)]) {
+        [delegate cameraSessionWillStop:self];
     }
 }
 
@@ -220,13 +227,14 @@ typedef UIView View;
     [self disposeSession];
 }
 
-- (void) prepareRecordingAtUrl:(NSURL *)fileUrl error:(NSError **)error {
+- (BOOL) prepareRecordingAtUrl:(NSURL *)fileUrl error:(NSError **)error {
     if ([self isSessionOpened]) {
-        [super prepareRecordingAtUrl:fileUrl error:error];
+        return [super prepareRecordingAtUrl:fileUrl error:error];
     } else {
         if (error != nil) {
             *error = [SCAudioVideoRecorder createError:@"The camera session must be opened before trying to record"];
         }
+        return NO;
     }
 }
 
@@ -378,14 +386,16 @@ typedef UIView View;
 
 - (void)_willCapturePhoto
 {
-    if ([self.delegate respondsToSelector:@selector(cameraWillCapturePhoto:)])
-        [self.delegate cameraWillCapturePhoto:self];
+    id<SCCameraDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(cameraWillCapturePhoto:)])
+        [delegate cameraWillCapturePhoto:self];
 }
 
 - (void)_didCapturePhoto
 {
-    if ([self.delegate respondsToSelector:@selector(cameraDidCapturePhoto:)])
-        [self.delegate cameraDidCapturePhoto:self];
+    id<SCCameraDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(cameraDidCapturePhoto:)])
+        [delegate cameraDidCapturePhoto:self];
 }
 
 - (void) switchCamera {
@@ -430,13 +440,13 @@ typedef UIView View;
     return _cameraDevice;
 }
 
-- (BOOL)isFrameRateSupported:(NSInteger)frameRate {
+- (BOOL)isFrameRateSupported:(CMTimeScale)frameRate {
     AVCaptureDevice * device = self.currentVideoDeviceInput.device;
     
     if (device != nil) {
         for (AVCaptureDeviceFormat * format in device.formats) {
             for (AVFrameRateRange * frameRateRange in format.videoSupportedFrameRateRanges) {
-                if (((NSInteger)frameRateRange.minFrameRate <= frameRate) && (frameRate <= (NSInteger)frameRateRange.maxFrameRate)) {
+                if (((CMTimeScale)frameRateRange.minFrameRate <= frameRate) && (frameRate <= (CMTimeScale)frameRateRange.maxFrameRate)) {
                     return YES;
                 }
             }
@@ -446,7 +456,7 @@ typedef UIView View;
     return NO;
 }
 
-- (void)setFrameRate:(NSInteger)framePerSeconds {
+- (void)setFrameRate:(CMTimeScale)framePerSeconds {
     CMTime fps = CMTimeMake(1, framePerSeconds);
     
     AVCaptureDevice * device = self.currentVideoDeviceInput.device;
@@ -485,15 +495,15 @@ typedef UIView View;
 
             }
         } else {
-            NSLog(@"Unsupported frame rate %d on current device format.", framePerSeconds);
+            NSLog(@"Unsupported frame rate %ld on current device format.", (long)framePerSeconds);
         }
     }
 }
 
-- (NSInteger)frameRate {
+- (CMTimeScale)frameRate {
     AVCaptureDeviceInput * deviceInput = self.currentVideoDeviceInput;
     
-    NSInteger framerate = 0;
+    CMTimeScale framerate = 0;
     
     if (deviceInput != nil) {
         if ([deviceInput.device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
@@ -507,12 +517,12 @@ typedef UIView View;
     return framerate;
 }
 
-- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(NSInteger)frameRate dimensions:(CMVideoDimensions)dimensions {
+- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate dimensions:(CMVideoDimensions)dimensions {
     CMVideoDimensions size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
     
     if (size.width >= dimensions.width && size.height >= dimensions.height) {
         for (AVFrameRateRange * range in format.videoSupportedFrameRateRanges) {
-            if ((NSInteger)range.minFrameRate <= frameRate && (NSInteger)range.maxFrameRate >= frameRate) {
+            if ((CMTimeScale)range.minFrameRate <= frameRate && (CMTimeScale)range.maxFrameRate >= frameRate) {
                 return YES;
             }
         }
@@ -521,7 +531,7 @@ typedef UIView View;
     return NO;
 }
 
-- (BOOL)setActiveFormatThatSupportsFrameRate:(NSInteger)frameRate width:(NSInteger)width andHeight:(NSInteger)height error:(NSError *__autoreleasing *)error {
+- (BOOL)setActiveFormatThatSupportsFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError *__autoreleasing *)error {
     AVCaptureDevice * device = self.currentDevice;
     CMVideoDimensions dimensions;
     dimensions.width = width;
@@ -537,7 +547,7 @@ typedef UIView View;
         if (!foundSupported) {
             for (AVCaptureDeviceFormat * format in device.formats) {
                 if ([self formatInRange:format frameRate:frameRate dimensions:dimensions]) {
-                    NSInteger oldFrameRate = self.frameRate;
+                    CMTimeScale oldFrameRate = self.frameRate;
                     if ([device lockForConfiguration:error]) {
                         device.activeFormat = format;
                         [device unlockForConfiguration];
@@ -565,33 +575,40 @@ typedef UIView View;
     return foundSupported;
 }
 
-- (void) initializeCamera:(AVCaptureSession*)captureSession error:(NSError**)error {
-	if (self.currentVideoDeviceInput != nil) {
-        [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
+- (BOOL) initializeCamera:(AVCaptureSession *)captureSession error:(NSError**)error {
+    AVCaptureDeviceInput *currentVideoDeviceInput = self.currentVideoDeviceInput;
+	if (currentVideoDeviceInput != nil) {
+        [currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
         [self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
-		[captureSession removeInput:self.currentVideoDeviceInput];
+		[captureSession removeInput:currentVideoDeviceInput];
 		self.currentVideoDeviceInput = nil;
 	}
 	
 	AVCaptureDevice * device = [self videoDeviceWithPosition:(AVCaptureDevicePosition)self.cameraDevice];
 	
+    BOOL success;
 	if (device != nil) {
-		self.currentVideoDeviceInput = [self addInputToSession:captureSession device:device withMediaType:@"Video" error:error];
-        [self.currentVideoDeviceInput.device addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)SCCameraFocusObserverContext];
+        currentVideoDeviceInput = [self addInputToSession:captureSession device:device withMediaType:@"Video" error:error];
+		self.currentVideoDeviceInput = currentVideoDeviceInput;
+        [currentVideoDeviceInput.device addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)SCCameraFocusObserverContext];
         [self addObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode" options:NSKeyValueObservingOptionNew context:SCCameraFocusModeObserverContext];
-        if ([self.delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
+        id<SCCameraDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
             AVCaptureFocusMode initialFocusMode = [device focusMode];
-            [self.delegate cameraUpdateFocusMode:[NSString stringWithFormat:@"focus: %@", [self stringForFocusMode:initialFocusMode]]];
+            [delegate cameraUpdateFocusMode:[NSString stringWithFormat:@"focus: %@", [self stringForFocusMode:initialFocusMode]]];
         }
+        success = currentVideoDeviceInput != nil;
 	} else {
 		if (error != nil) {
 			*error = [SCAudioVideoRecorder createError:(self.cameraDevice ? @"Front camera not found" : @"Back camera not found")];
 		}
+        success = NO;
 	}
     
     if ([captureSession canSetSessionPreset:self.sessionPreset]) {
         [captureSession setSessionPreset:self.sessionPreset];
     }
+    return  success;
 }
 
 - (void) reconfigureSessionInputs {
@@ -653,8 +670,9 @@ typedef UIView View;
     [notificationCenter removeObserver:self];
     
     // focus
-    if (self.currentVideoDeviceInput) {
-        [self.currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
+    AVCaptureDeviceInput *currentVideoDeviceInput = self.currentVideoDeviceInput;
+    if (currentVideoDeviceInput) {
+        [currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
 		// focusMode
 		[self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
         self.currentVideoDeviceInput = nil;
@@ -723,8 +741,9 @@ typedef UIView View;
 
     [self dispatchBlockOnAskedQueue:^{
         if ([notification object] == session) {
-            if ([self.delegate respondsToSelector:@selector(cameraSessionDidStart:)]) {
-                [self.delegate cameraSessionDidStart:self];
+            id<SCCameraDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(cameraSessionDidStart:)]) {
+                [delegate cameraSessionDidStart:self];
             }
         }
     }];
@@ -735,8 +754,9 @@ typedef UIView View;
     
     [self dispatchBlockOnAskedQueue:^{
         if ([notification object] == session) {
-            if ([self.delegate respondsToSelector:@selector(cameraSessionDidStop:)]) {
-                [self.delegate cameraSessionDidStop:self];
+            id<SCCameraDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(cameraSessionDidStop:)]) {
+                [delegate cameraSessionDidStop:self];
             }
         }
     }];
@@ -775,8 +795,9 @@ typedef UIView View;
         CMFormatDescriptionRef formatDescription = [inputPort formatDescription];
         if (formatDescription) {
             _cleanAperture = CMVideoFormatDescriptionGetCleanAperture(formatDescription, YES);
-            if ([self.delegate respondsToSelector:@selector(camera:cleanApertureDidChange:)]) {
-                [self.delegate camera:self cleanApertureDidChange:_cleanAperture];
+            id<SCCameraDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(camera:cleanApertureDidChange:)]) {
+                [delegate camera:self cleanApertureDidChange:_cleanAperture];
             }
         }
     }
@@ -870,18 +891,19 @@ typedef UIView View;
     AVCaptureDevice *device = [self.currentVideoDeviceInput device];
     if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
         NSError *error;
+        id<SCCameraDelegate> delegate = self.delegate;
         if ([device lockForConfiguration:&error]) {
             [device setFocusPointOfInterest:point];
             [device setFocusMode:AVCaptureFocusModeAutoFocus];
             [device unlockForConfiguration];
 
-            if ([[self delegate] respondsToSelector:@selector(cameraWillStartFocus:)]) {
-                [[self delegate] cameraWillStartFocus:self];
+            if ([delegate respondsToSelector:@selector(cameraWillStartFocus:)]) {
+                [delegate cameraWillStartFocus:self];
             }
 
         } else {
-            if ([[self delegate] respondsToSelector:@selector(camera:didFailFocus:)]) {
-                [[self delegate] camera:self didFailFocus:error];
+            if ([delegate respondsToSelector:@selector(camera:didFailFocus:)]) {
+                [delegate camera:self didFailFocus:error];
             }
         }
     }
@@ -899,8 +921,9 @@ typedef UIView View;
 			[device setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
 			[device unlockForConfiguration];
 		} else {
-			if ([[self delegate] respondsToSelector:@selector(camera:didFailFocus:)]) {
-                [[self delegate] camera:self didFailFocus:error];
+            id<SCCameraDelegate> delegate = self.delegate;
+			if ([delegate respondsToSelector:@selector(camera:didFailFocus:)]) {
+                [delegate camera:self didFailFocus:error];
 			}
 		}
 	}
@@ -908,14 +931,16 @@ typedef UIView View;
 
 - (void)_focusStarted
 {
-    if ([self.delegate respondsToSelector:@selector(cameraDidStartFocus:)])
-        [self.delegate cameraDidStartFocus:self];
+    id<SCCameraDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(cameraDidStartFocus:)])
+        [delegate cameraDidStartFocus:self];
 }
 
 - (void)_focusEnded
 {
-    if ([self.delegate respondsToSelector:@selector(cameraDidStopFocus:)])
-        [self.delegate cameraDidStopFocus:self];
+    id<SCCameraDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(cameraDidStopFocus:)])
+        [delegate cameraDidStopFocus:self];
 }
 
 - (void)_focus
@@ -972,8 +997,9 @@ typedef UIView View;
         
 	} else if (context == SCCameraFocusModeObserverContext) {
         // Update the focus UI overlay string when the focus mode changes
-        if ([self.delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
-            [self.delegate cameraUpdateFocusMode:[NSString stringWithFormat:@"focus: %@", [self stringForFocusMode:(AVCaptureFocusMode)[[change objectForKey:NSKeyValueChangeNewKey] integerValue]]]];
+        id<SCCameraDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
+            [delegate cameraUpdateFocusMode:[NSString stringWithFormat:@"focus: %@", [self stringForFocusMode:(AVCaptureFocusMode)[[change objectForKey:NSKeyValueChangeNewKey] integerValue]]]];
         }
 	}
 }

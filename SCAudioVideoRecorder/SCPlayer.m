@@ -45,13 +45,14 @@ SCPlayer * currentSCVideoPlayer = nil;
 		__block SCPlayer * mySelf = self;
         
 		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:nil usingBlock:^(CMTime time) {
-			if ([mySelf.delegate respondsToSelector:@selector(videoPlayer:didPlay:loopsCount:)]) {
+            id<SCVideoPlayerDelegate> delegate = mySelf.delegate;
+			if ([delegate respondsToSelector:@selector(videoPlayer:didPlay:loopsCount:)]) {
 				Float64 ratio = 1.0 / mySelf.itemsLoopLength;
                 Float64 seconds = CMTimeGetSeconds(CMTimeMultiplyByFloat64(time, ratio));
                 
                 NSInteger loopCount = CMTimeGetSeconds(time) / (CMTimeGetSeconds(mySelf.currentItem.duration) / (Float64)mySelf.itemsLoopLength);
                                 
-				[mySelf.delegate videoPlayer:mySelf didPlay:seconds loopsCount:loopCount];
+				[delegate videoPlayer:mySelf didPlay:seconds loopsCount:loopCount];
 			}
 		}];
 		_loading = NO;
@@ -134,8 +135,9 @@ SCPlayer * currentSCVideoPlayer = nil;
 	}
 		
 	self.oldItem = self.currentItem;
-	if ([self.delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
-		[self.delegate videoPlayer:self didChangeItem:self.currentItem];
+    id<SCVideoPlayerDelegate> delegate = self.delegate;
+	if ([delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
+		[delegate videoPlayer:self didChangeItem:self.currentItem];
 	}
     self.loading = YES;
 }
@@ -222,13 +224,14 @@ SCPlayer * currentSCVideoPlayer = nil;
 - (void) setLoading:(BOOL)loading {
 	_loading = loading;
 	
+    id<SCVideoPlayerDelegate> delegate = self.delegate;
 	if (loading) {
-		if ([self.delegate respondsToSelector:@selector(videoPlayer:didStartLoadingAtItemTime:)]) {
-			[self.delegate videoPlayer:self didStartLoadingAtItemTime:self.currentItem.currentTime];
+		if ([delegate respondsToSelector:@selector(videoPlayer:didStartLoadingAtItemTime:)]) {
+			[delegate videoPlayer:self didStartLoadingAtItemTime:self.currentItem.currentTime];
 		}
 	} else {
-		if ([self.delegate respondsToSelector:@selector(videoPlayer:didEndLoadingAtItemTime:)]) {
-			[self.delegate videoPlayer:self didEndLoadingAtItemTime:self.currentItem.currentTime];
+		if ([delegate respondsToSelector:@selector(videoPlayer:didEndLoadingAtItemTime:)]) {
+			[delegate videoPlayer:self didEndLoadingAtItemTime:self.currentItem.currentTime];
 		}
 	}
 }

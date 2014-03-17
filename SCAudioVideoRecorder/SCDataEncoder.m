@@ -31,7 +31,7 @@
 }
 
 @synthesize writerInput;
-@synthesize audioVideoRecorder;
+@synthesize audioVideoRecorder = _audioVideoRecorder;
 
 - (id) initWithAudioVideoRecorder:(SCAudioVideoRecorder *)aVR {
     if (self) {
@@ -48,15 +48,17 @@
 }
 
 - (AVAssetWriterInput*) createWriterInputForSampleBuffer:(CMSampleBufferRef)sampleBuffer error:(NSError **)error {
-    *error = [SCAudioVideoRecorder createError:@"Inherited objects must override createWriterInput"];
+    if (error != nil)
+        *error = [SCAudioVideoRecorder createError:@"Inherited objects must override createWriterInput"];
     return nil;
 }
 
 - (void) reset {
     if (self.writerInput != nil) {
         self.writerInput = nil;
-        if ([self.delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
-            [self.delegate dataEncoder:self didEncodeFrame:kCMTimeZero];
+        id<SCDataEncoderDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
+            [delegate dataEncoder:self didEncodeFrame:kCMTimeZero];
         }
     }
     initialized = NO;
@@ -95,21 +97,24 @@
     }
     
     if (self.writerInput != nil) {
-        if ([self.audioVideoRecorder.assetWriter canAddInput:self.writerInput]) {
-            [self.audioVideoRecorder.assetWriter addInput:self.writerInput];
+        SCAudioVideoRecorder *audioVideoRecorder = self.audioVideoRecorder;
+        if ([audioVideoRecorder.assetWriter canAddInput:self.writerInput]) {
+            [audioVideoRecorder.assetWriter addInput:self.writerInput];
         } else {
             error = [SCAudioVideoRecorder createError:@"Unable to add WriterInput to the AssetWriter"];
         }
     }
     
     if (error != nil) {
-        if ([self.delegate respondsToSelector:@selector(dataEncoder:didFailToInitializeEncoder:)]) {
-            [self.delegate dataEncoder:self didFailToInitializeEncoder:error];
+        id<SCDataEncoderDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(dataEncoder:didFailToInitializeEncoder:)]) {
+            [delegate dataEncoder:self didFailToInitializeEncoder:error];
         }
     }
 }
 
 - (void) computeOffset:(CMTime)frameTime {
+    SCAudioVideoRecorder *audioVideoRecorder = _audioVideoRecorder;
     audioVideoRecorder.shouldComputeOffset = NO;
     
     if (CMTIME_IS_VALID(lastTakenFrame)) {
@@ -130,6 +135,7 @@
     CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     CMTime realDuration = CMSampleBufferGetDuration(sampleBuffer);
     
+    SCAudioVideoRecorder *audioVideoRecorder = _audioVideoRecorder;
 	if ([audioVideoRecorder isPrepared]) {
 		if (!initialized) {
             [self initialize:sampleBuffer atFrameTime:frameTime];
@@ -153,7 +159,7 @@
                     duration = CMTimeSubtract(frameTime, lastTakenFrame);
                 }
   
-                CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, self.audioVideoRecorder.recordingRate);
+                CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, audioVideoRecorder.recordingRate);
                 CMTime timeOffset = CMTimeSubtract(duration, computedFrameDuration);
                 self.audioVideoRecorder.currentTimeOffset = CMTimeAdd(audioVideoRecorder.currentTimeOffset, timeOffset);
 				
@@ -163,8 +169,9 @@
 				[self.writerInput appendSampleBuffer:adjustedBuffer];
 				CFRelease(adjustedBuffer);
 				
-				if ([self.delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
-					[self.delegate dataEncoder:self didEncodeFrame:currentTime];
+                id<SCDataEncoderDelegate> delegate = self.delegate;
+				if ([delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
+					[delegate dataEncoder:self didEncodeFrame:currentTime];
 				}
 			}
             lastTakenFrame = frameTime;
