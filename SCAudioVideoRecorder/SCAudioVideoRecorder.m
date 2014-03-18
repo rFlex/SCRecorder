@@ -118,7 +118,6 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 }
 
 - (void)dealloc {
-    [self.playbackPlayer cleanUp];
     [self reset];
 }
 
@@ -453,7 +452,6 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 	
 	self.outputFileUrl = nil;
 	self.assetWriter = nil;
-	self.playbackPlayer = nil;
 
 	recording = NO;
     

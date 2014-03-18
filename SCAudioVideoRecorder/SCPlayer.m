@@ -42,19 +42,6 @@ SCPlayer * currentSCVideoPlayer = nil;
 
 		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
 		
-		__block SCPlayer * mySelf = self;
-        
-		self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:nil usingBlock:^(CMTime time) {
-            id<SCVideoPlayerDelegate> delegate = mySelf.delegate;
-			if ([delegate respondsToSelector:@selector(videoPlayer:didPlay:loopsCount:)]) {
-				Float64 ratio = 1.0 / mySelf.itemsLoopLength;
-                Float64 seconds = CMTimeGetSeconds(CMTimeMultiplyByFloat64(time, ratio));
-                
-                NSInteger loopCount = CMTimeGetSeconds(time) / (CMTimeGetSeconds(mySelf.currentItem.duration) / (Float64)mySelf.itemsLoopLength);
-                                
-				[delegate videoPlayer:mySelf didPlay:seconds loopsCount:loopCount];
-			}
-		}];
 		_loading = NO;
 		
 		self.minimumBufferedTimeBeforePlaying = CMTimeMake(2, 1);
@@ -67,7 +54,24 @@ SCPlayer * currentSCVideoPlayer = nil;
     [self removeObserver:self forKeyPath:@"currentItem"];
 }
 
-- (void) cleanUp {
+- (void)beginSendingPlayMessages {
+    [self endSendingPlayMessages];
+    __block SCPlayer * mySelf = self;
+    
+    self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:nil usingBlock:^(CMTime time) {
+        id<SCVideoPlayerDelegate> delegate = mySelf.delegate;
+        if ([delegate respondsToSelector:@selector(videoPlayer:didPlay:loopsCount:)]) {
+            Float64 ratio = 1.0 / mySelf.itemsLoopLength;
+            Float64 seconds = CMTimeGetSeconds(CMTimeMultiplyByFloat64(time, ratio));
+            
+            NSInteger loopCount = CMTimeGetSeconds(time) / (CMTimeGetSeconds(mySelf.currentItem.duration) / (Float64)mySelf.itemsLoopLength);
+            
+            [delegate videoPlayer:mySelf didPlay:seconds loopsCount:loopCount];
+        }
+    }];
+}
+
+- (void)endSendingPlayMessages {
     if (self.timeObserver != nil) {
         [self removeTimeObserver:self.timeObserver];
         self.timeObserver = nil;
@@ -250,6 +254,10 @@ SCPlayer * currentSCVideoPlayer = nil;
     Float64 ratio = 1.0 / self.itemsLoopLength;
 
     return CMTimeMultiply(self.currentItem.duration, ratio);
+}
+
+- (BOOL)isSendingPlayMessages {
+    return self.timeObserver != nil;
 }
 
 + (SCPlayer*) player {

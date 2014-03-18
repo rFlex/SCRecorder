@@ -16,6 +16,7 @@ using MonoTouch.UIKit;
 using MonoTouch.AVFoundation;
 using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
+using System.Runtime.InteropServices;
 
 namespace SCorsin {
 
@@ -334,9 +335,6 @@ namespace SCorsin {
 	[BaseType(typeof(AVPlayer), Delegates = new string [] { "Delegate" }, Events = new Type [] { typeof(SCPlayerDelegate) })]
 	interface SCPlayer {
 
-		[Export("dispose")]
-		void Close();
-
 		[Export("delegate")]
 		NSObject WeakDelegate { get; set; }
 
@@ -387,8 +385,14 @@ namespace SCorsin {
 		[Export("shouldLoop")]
 		bool ShouldLoop { get; set; }
 
-		[Export("cleanUp")]
-		void CleanUp();
+		[Export("beginSendingPlayMessages")]
+		void BeginSendingPlayMessages();
+
+		[Export("endSendingPlayMessages")]
+		void EndSendingPlayMessages();
+
+		[Export("isSendingPlayMessages")]
+		bool IsSendingPlayMessages { get; }
 	
 	}
 

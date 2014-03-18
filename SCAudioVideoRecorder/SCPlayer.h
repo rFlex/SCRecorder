@@ -27,7 +27,12 @@
 + (void) pauseCurrentPlayer;
 + (SCPlayer*) currentPlayer;
 
-- (void) cleanUp;
+// Ask the SCPlayer to send didPlay messages during the playback
+// endSendingPlayMessages must be called, otherwise the SCPlayer will never
+// be deallocated
+- (void)beginSendingPlayMessages;
+// Ask the SCPlayer to stop sending didPlay messages during the playback
+- (void)endSendingPlayMessages;
 
 - (void) setItemByStringPath:(NSString*)stringPath;
 - (void) setItemByUrl:(NSURL*)url;
@@ -50,5 +55,6 @@
 @property (weak, nonatomic, readwrite) id<SCVideoPlayerDelegate> delegate;
 @property (assign, nonatomic, readwrite) CMTime minimumBufferedTimeBeforePlaying;
 @property (assign, nonatomic, readwrite) BOOL shouldLoop;
+@property (nonatomic, readonly) BOOL isSendingPlayMessages;
 
 @end

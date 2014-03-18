@@ -30,7 +30,7 @@
 }
 
 - (void)dealloc {
-    [self.player cleanUp];
+    [self.player endSendingPlayMessages];
 }
 
 - (void)viewDidLoad
@@ -39,6 +39,7 @@
     
     self.player = [SCPlayer player];
     self.player.delegate = self;
+    [self.player beginSendingPlayMessages];
     
     self.camera = [SCCamera camera];
     self.camera.delegate = self;
