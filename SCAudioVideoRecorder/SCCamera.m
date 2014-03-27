@@ -165,8 +165,8 @@ typedef UIView View;
             [captureSession addOutput:self.audioOutput];
             [captureSession addOutput:self.videoOutput];
             // KVO is only used to monitor focus and capture events
-            [self.stillImageOutput addObserver:self forKeyPath:@"capturingStillImage" options:NSKeyValueObservingOptionNew context:(__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext)];
-            [captureSession addOutput:self.stillImageOutput];
+//            [self.stillImageOutput addObserver:self forKeyPath:@"capturingStillImage" options:NSKeyValueObservingOptionNew context:(__bridge void *)(SCCameraCaptureStillImageIsCapturingStillImageObserverContext)];
+//            [captureSession addOutput:self.stillImageOutput];
 			
             self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
             self.previewLayer.videoGravity = [self previewVideoGravityToString];

@@ -14,8 +14,10 @@
 #import "NSArray+SCAdditions.h"
 #import "SCAudioTools.h"
 #import "SCPlayer.h"
+#include <sys/sysctl.h>
 
 #import <ImageIO/ImageIO.h>
+
 // photo dictionary key definitions
 
 NSString * const SCAudioVideoRecorderPhotoMetadataKey = @"SCAudioVideoRecorderPhotoMetadataKey";
@@ -23,7 +25,16 @@ NSString * const SCAudioVideoRecorderPhotoJPEGKey = @"SCAudioVideoRecorderPhotoJ
 NSString * const SCAudioVideoRecorderPhotoImageKey = @"SCAudioVideoRecorderPhotoImageKey";
 NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderPhotoThumbnailKey";
 
-//static CGFloat const SCAudioVideoRecorderThumbnailWidth = 160.0f;
+unsigned int SCGetCoreCount()
+{
+    size_t len;
+    unsigned int ncpu;
+    
+    len = sizeof(ncpu);
+    sysctlbyname ("hw.ncpu",&ncpu,&len,NULL,0);
+    
+    return ncpu;
+}
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -34,6 +45,7 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 	BOOL shouldWriteToCameraRoll;
 	BOOL audioEncoderReady;
 	BOOL videoEncoderReady;
+    BOOL _usingMainQueue;
     float _recordingRate;
 	CMTime _playbackStartTime;
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
@@ -78,7 +90,15 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 		self.outputFileType = AVFileTypeMPEG4;
 		self.recordingDurationLimit = kCMTimePositiveInfinity;
 		
-		self.dispatch_queue = dispatch_queue_create("SCVideoRecorder", nil);
+        // No need to create a different dispatch_queue if
+        // the current running phone has only one core
+        if (SCGetCoreCount() == 1) {
+            self.dispatch_queue = dispatch_get_main_queue();
+            _usingMainQueue = YES;
+        } else {
+            self.dispatch_queue = dispatch_queue_create("SCVideoRecorder", nil);
+            _usingMainQueue = NO;
+        }
 		
 		audioEncoderReady = NO;
 		videoEncoderReady = NO;
@@ -154,19 +174,18 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 	return fileUrl;
 }
 
-
 - (BOOL) prepareRecordingAtUrl:(NSURL *)fileUrl error:(NSError **)error {
 	if (fileUrl == nil) {
 		[NSException raise:@"Invalid argument" format:@"FileUrl must be not nil"];
 	}
 	   
     __block BOOL success;
-	dispatch_sync(self.dispatch_queue, ^{
+    [self dispatchSyncOnCameraQueue: ^{
 		[self reset];
 		[self startBackgroundTask];
 		
 		shouldWriteToCameraRoll = NO;
-		self.currentTimeOffset = CMTimeMake(0, 1);
+		self.currentTimeOffset = kCMTimeZero;
 		
 		NSError * assetError;
 		
@@ -185,7 +204,7 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 			}
 		}
         success = assetError == nil;
-	});
+	}];
 	if (self.playbackAsset != nil) {
         [self.playbackPlayer setItemByAsset:self.playbackAsset];
         [self.playbackPlayer seekToTime:self.playbackStartTime];
@@ -261,9 +280,9 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 - (void) finishWriter:(NSURL*)fileUrl {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
     [self.assetWriter finishWritingWithCompletionHandler:^ {
-        dispatch_async(self.dispatch_queue, ^{
+        [self dispatchSyncOnCameraQueue: ^{
             [self stopInternal];
-        });
+        }];
     }];
 #else
     [self.assetWriter finishWriting];
@@ -380,13 +399,14 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 		[delegate audioVideoRecorder:self willFinishRecordingAtTime:self.currentRecordingTime];
 	}
     
-	dispatch_async(self.dispatch_queue, ^{
+    
+    [self dispatchSyncOnCameraQueue: ^{
 		if (self.assetWriter == nil) {
 			[self notifyRecordFinishedAtUrl:nil withError:[SCAudioVideoRecorder createError:@"Recording must be started before calling stopRecording"]];
 		} else {
 			[self stopInternal];
 		}
-    });
+    }];
 }
 
 - (void) stopInternal {
@@ -430,16 +450,16 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
         self.playbackPlayer.rate = self.recordingRate;
     }
     
-	dispatch_async(self.dispatch_queue, ^ {
+    [self dispatchSyncOnCameraQueue:^{
 		self.shouldComputeOffset = YES;
 		recording = YES;
-    });
+    }];
 }
 
 - (void) cancel {
-	dispatch_sync(self.dispatch_queue, ^{
+    [self dispatchSyncOnCameraQueue:^{
 		[self reset];
-    });
+    }];
 }
 
 - (void) reset {
@@ -473,7 +493,7 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 //
 
 - (void) dataEncoder:(SCDataEncoder *)dataEncoder didEncodeFrame:(CMTime)frameTime {
-    [self dispatchBlockOnAskedQueue:^ {
+    [self dispatchBlockOnAskedQueue: ^{
 		self.currentRecordingTime = frameTime;
 		
         if (dataEncoder == self.audioEncoder) {
@@ -519,6 +539,14 @@ NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderP
 	} else {
 		block();
 	}
+}
+
+- (void)dispatchSyncOnCameraQueue:(void(^)())block {
+    if (_usingMainQueue) {
+        block();
+    } else {
+        dispatch_sync(self.dispatch_queue, block);
+    }
 }
 
 + (NSError*) createError:(NSString*)name {
