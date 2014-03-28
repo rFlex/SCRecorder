@@ -57,12 +57,12 @@
     }
     
     NSInteger bitsPerSecond = [SCVideoEncoder getBitsPerSecondForOutputVideoSize:videoSize andBitsPerPixel:self.outputBitsPerPixel];
-		    
+
     AVAssetWriterInput * assetWriterVideoIn = nil;
 	
 	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 											  AVVideoCodecH264, AVVideoCodecKey,
-                                              AVVideoScalingModeResizeAspectFill, AVVideoScalingModeKey,
+//                                              AVVideoScalingModeResizeAspectFill, AVVideoScalingModeKey,
 											  [NSNumber numberWithInteger:videoSize.width], AVVideoWidthKey,
 											  [NSNumber numberWithInteger:videoSize.height], AVVideoHeightKey,
                                               [NSDictionary dictionaryWithObjectsAndKeys:

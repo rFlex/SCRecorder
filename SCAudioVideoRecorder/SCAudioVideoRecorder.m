@@ -25,17 +25,6 @@ NSString * const SCAudioVideoRecorderPhotoJPEGKey = @"SCAudioVideoRecorderPhotoJ
 NSString * const SCAudioVideoRecorderPhotoImageKey = @"SCAudioVideoRecorderPhotoImageKey";
 NSString * const SCAudioVideoRecorderPhotoThumbnailKey = @"SCAudioVideoRecorderPhotoThumbnailKey";
 
-unsigned int SCGetCoreCount()
-{
-    size_t len;
-    unsigned int ncpu;
-    
-    len = sizeof(ncpu);
-    sysctlbyname ("hw.ncpu",&ncpu,&len,NULL,0);
-    
-    return ncpu;
-}
-
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
 /////////////////////
@@ -90,15 +79,8 @@ unsigned int SCGetCoreCount()
 		self.outputFileType = AVFileTypeMPEG4;
 		self.recordingDurationLimit = kCMTimePositiveInfinity;
 		
-        // No need to create a different dispatch_queue if
-        // the current running phone has only one core
-        if (SCGetCoreCount() == 1) {
-            self.dispatch_queue = dispatch_get_main_queue();
-            _usingMainQueue = YES;
-        } else {
             self.dispatch_queue = dispatch_queue_create("SCVideoRecorder", nil);
             _usingMainQueue = NO;
-        }
 		
 		audioEncoderReady = NO;
 		videoEncoderReady = NO;
@@ -321,8 +303,7 @@ unsigned int SCGetCoreCount()
 // Photo
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-- (UIImage *)_uiimageFromJPEGData:(NSData *)jpegData
-{
+- (UIImage *)_uiimageFromJPEGData:(NSData *)jpegData {
 	return [UIImage imageWithData:jpegData];
 }
 

@@ -28,6 +28,7 @@
 @implementation SCDataEncoder {
     CMTime lastTakenFrame;
     BOOL initialized;
+    NSMutableArray* _buffers;
 }
 
 @synthesize writerInput;
@@ -127,12 +128,9 @@
 }
 
 - (void) captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-    
     if (!self.enabled) {
         return;
     }
-    
-    CFTimeInterval timeStart = CACurrentMediaTime();
 	   
     CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     CMTime realDuration = CMSampleBufferGetDuration(sampleBuffer);
@@ -151,45 +149,34 @@
 		
 		if ([audioVideoRecorder isRecording]) {
 			if ([self.writerInput isReadyForMoreMediaData]) {
-                CFTimeInterval timeBeforeComputeoffset = CACurrentMediaTime();
                 
-				if (audioVideoRecorder.shouldComputeOffset) {
-					[self computeOffset:frameTime];
-                    lastTakenFrame = kCMTimeInvalid;
-				}
+//				if (audioVideoRecorder.shouldComputeOffset) {
+//					[self computeOffset:frameTime];
+//                    lastTakenFrame = kCMTimeInvalid;
+//				}
+//                
+//                CMTime duration = kCMTimeZero;
+//                if (CMTIME_IS_VALID(lastTakenFrame)) {
+//                    duration = CMTimeSubtract(frameTime, lastTakenFrame);
+//                }
+//  
+//                CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, audioVideoRecorder.recordingRate);
+//                CMTime timeOffset = CMTimeSubtract(duration, computedFrameDuration);
+//                self.audioVideoRecorder.currentTimeOffset = CMTimeAdd(audioVideoRecorder.currentTimeOffset, timeOffset);
+//				
+//				CMSampleBufferRef adjustedBuffer = [self adjustBuffer:sampleBuffer withTimeOffset:audioVideoRecorder.currentTimeOffset andDuration:realDuration];
+                CMSampleBufferRef adjustedBuffer = sampleBuffer;
                 
-                CFTimeInterval timeAfterComputeOffset = CACurrentMediaTime();
-                
-                CMTime duration = kCMTimeZero;
-                if (CMTIME_IS_VALID(lastTakenFrame)) {
-                    duration = CMTimeSubtract(frameTime, lastTakenFrame);
-                }
-  
-                CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, audioVideoRecorder.recordingRate);
-                CMTime timeOffset = CMTimeSubtract(duration, computedFrameDuration);
-                self.audioVideoRecorder.currentTimeOffset = CMTimeAdd(audioVideoRecorder.currentTimeOffset, timeOffset);
-                
-                CFTimeInterval timeAfterComputeOffset2 = CACurrentMediaTime();
-				
-				CMSampleBufferRef adjustedBuffer = [self adjustBuffer:sampleBuffer withTimeOffset:audioVideoRecorder.currentTimeOffset andDuration:realDuration];
-                
-				CMTime currentTime = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer), audioVideoRecorder.startedTime);
-                
-                CFTimeInterval timeAfterAdjustedBuffer = CACurrentMediaTime();
+//				CMTime currentTime = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer), audioVideoRecorder.startedTime);
                 
 				[self.writerInput appendSampleBuffer:adjustedBuffer];
-				CFRelease(adjustedBuffer);
+//				CFRelease(adjustedBuffer);
                 
-                CFTimeInterval timeAfterWrite = CACurrentMediaTime();
-				
                 id<SCDataEncoderDelegate> delegate = self.delegate;
-				if ([delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
-					[delegate dataEncoder:self didEncodeFrame:currentTime];
-				}
+//				if ([delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
+//					[delegate dataEncoder:self didEncodeFrame:currentTime];
+//				}
                 
-                CFTimeInterval timeAtEnd = CACurrentMediaTime();
-                
-//                NSLog(@"%f %f %f %f %f %f", timeBeforeComputeoffset - timeStart, timeAfterComputeOffset - timeStart,timeAfterComputeOffset2 - timeStart,timeAfterAdjustedBuffer - timeStart,timeAfterWrite - timeStart,timeAtEnd - timeStart);
 			}
             lastTakenFrame = frameTime;
             

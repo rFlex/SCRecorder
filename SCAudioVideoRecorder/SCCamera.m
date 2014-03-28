@@ -171,7 +171,7 @@ typedef UIView View;
             self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
             self.previewLayer.videoGravity = [self previewVideoGravityToString];
             
-            [self addObserverForSession:captureSession];
+//            [self addObserverForSession:captureSession];
             
             self.session = captureSession;
 			
@@ -579,7 +579,7 @@ typedef UIView View;
     AVCaptureDeviceInput *currentVideoDeviceInput = self.currentVideoDeviceInput;
 	if (currentVideoDeviceInput != nil) {
         [currentVideoDeviceInput.device removeObserver:self forKeyPath:@"adjustingFocus"];
-        [self removeObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode"];
+        [currentVideoDeviceInput.device removeObserver:self forKeyPath:@"focusMode"];
 		[captureSession removeInput:currentVideoDeviceInput];
 		self.currentVideoDeviceInput = nil;
 	}
@@ -590,8 +590,8 @@ typedef UIView View;
 	if (device != nil) {
         currentVideoDeviceInput = [self addInputToSession:captureSession device:device withMediaType:@"Video" error:error];
 		self.currentVideoDeviceInput = currentVideoDeviceInput;
-        [currentVideoDeviceInput.device addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)SCCameraFocusObserverContext];
-        [self addObserver:self forKeyPath:@"currentVideoDeviceInput.device.focusMode" options:NSKeyValueObservingOptionNew context:SCCameraFocusModeObserverContext];
+//        [currentVideoDeviceInput.device addObserver:self forKeyPath:@"focusMode" options:NSKeyValueObservingOptionNew context:(__bridge void *)SCCameraFocusObserverContext];
+//        [currentVideoDeviceInput.device addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)SCCameraFocusObserverContext];
         id<SCCameraDelegate> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(cameraUpdateFocusMode:)]) {
             AVCaptureFocusMode initialFocusMode = [device focusMode];
@@ -653,18 +653,18 @@ typedef UIView View;
     // remove notification observers (we don't want to just 'remove all' because we're also observing background notifications
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     
-    // session notifications
-    [notificationCenter removeObserver:self name:AVCaptureSessionRuntimeErrorNotification object:session];
-    [notificationCenter removeObserver:self name:AVCaptureSessionDidStartRunningNotification object:session];
-    [notificationCenter removeObserver:self name:AVCaptureSessionDidStopRunningNotification object:session];
-    [notificationCenter removeObserver:self name:AVCaptureSessionWasInterruptedNotification object:session];
-    [notificationCenter removeObserver:self name:AVCaptureSessionInterruptionEndedNotification object:session];
-    
-    // capture input notifications
-    [notificationCenter removeObserver:self name:AVCaptureInputPortFormatDescriptionDidChangeNotification object:nil];
-    
-    // capture device notifications
-    [notificationCenter removeObserver:self name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+//    // session notifications
+//    [notificationCenter removeObserver:self name:AVCaptureSessionRuntimeErrorNotification object:session];
+//    [notificationCenter removeObserver:self name:AVCaptureSessionDidStartRunningNotification object:session];
+//    [notificationCenter removeObserver:self name:AVCaptureSessionDidStopRunningNotification object:session];
+//    [notificationCenter removeObserver:self name:AVCaptureSessionWasInterruptedNotification object:session];
+//    [notificationCenter removeObserver:self name:AVCaptureSessionInterruptionEndedNotification object:session];
+//    
+//    // capture input notifications
+//    [notificationCenter removeObserver:self name:AVCaptureInputPortFormatDescriptionDidChangeNotification object:nil];
+//    
+//    // capture device notifications
+//    [notificationCenter removeObserver:self name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
     
     // Applicaton
     [notificationCenter removeObserver:self];
