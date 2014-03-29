@@ -56,6 +56,7 @@
     
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = AVCaptureSessionPresetHigh;
+    _recorder.audioEnabled = NO;
     _recorder.delegate = self;
     
     UIView *previewView = self.previewView;
@@ -98,7 +99,7 @@
     [super viewDidAppear:animated];
     
     if (_recorder.isCaptureSessionOpened) {
-        [_recorder startRunningSession];
+        [_recorder startRunningSession:nil];
     }
 }
 
@@ -189,9 +190,10 @@
     [alertView show];
 }
 
-- (void) showVideo:(NSURL*)videoUrl {
+- (void) showVideo:(NSURL*)url {
 	SCVideoPlayerViewController * videoPlayerViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SCVideoPlayerViewController"];
-	videoPlayerViewController.videoUrl = videoUrl;
+	videoPlayerViewController.videoUrl = url;
+    
 	
 	[self.navigationController pushViewController:videoPlayerViewController animated:YES];
 }
@@ -208,7 +210,17 @@
 }
 
 - (void) handleStopButtonTapped:(id)sender {
-//    [self.camera stop];
+    SCRecordSession *recordSession = _recorder.recordSession;
+    
+//    _recorder.recordSession = nil;
+    
+    [recordSession endSession:^(NSError *error) {
+        if (error == nil) {
+            [self showVideo:[recordSession.recordSegments objectAtIndex:0]];
+        } else {
+            NSLog(@"%@", error);
+        }
+    }];
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
@@ -290,8 +302,17 @@
 - (void) prepareCamera {
     SCRecordSession *session = [SCRecordSession recordSession];
     [session setOutputUrlWithTempUrl];
+    session.shouldTrackRecordSegments = YES;
     
     _recorder.recordSession = session;
+}
+
+- (void)recorder:(SCRecorder *)recorder didBeginRecordSegment:(SCRecordSession *)recordSession error:(NSError *)error {
+    NSLog(@"Recorder began record segment, error: %@", error);
+}
+
+- (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error {
+    NSLog(@"Recorder ended record segment at index %d, error: %@", (int)segmentIndex, error);
 }
 
 - (void)recorder:(SCRecorder *)recorder didInitializeAudioInRecordSession:(SCRecordSession *)recordSession error:(NSError *)error {

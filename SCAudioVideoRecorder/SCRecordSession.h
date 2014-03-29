@@ -19,7 +19,6 @@
 @protocol SCRecordSessionDelegate <NSObject>
 
 @optional
-- (void)recordSession:(SCRecordSession*)recordSession;
 
 @end
 
@@ -29,12 +28,25 @@
 // GENERAL SETTINGS
 ////
 
-// The outputUrl which will be the file
+// The outputUrl which will be the output file
+// when endSession has been called
 @property (strong, nonatomic) NSURL *outputUrl;
 
 // The output file type used for the AVAssetWriter
 // If null, AVFileTypeMPEG4 will be used for a video file, AVFileTypeAppleM4A for an audio file
 @property (copy, nonatomic) NSString *fileType;
+
+// If true, every record segments will be tracked an added into a separate
+// NSURL inside the recordSegments
+// You can easily remove each segment in the recordSegments property
+// Default is NO
+@property (assign, nonatomic) BOOL shouldTrackRecordSegments;
+
+// Contains every recordSegments as NSURL
+// If trackRecordSegments is true, every pause/record actions
+// will result in a new entry in this array
+// If trackRecordSegments is false, it will contains only one segment
+@property (readonly, nonatomic) NSArray* recordSegments;
 
 // Set the dictionaries used for configuring the AVAssetWriter
 // If you set a non-null value here, the other settings will be ignored
@@ -91,7 +103,51 @@
 
 
 //////////////////
-// PRIVATE PROPERTIES
+// PUBLIC METHODS
+////
+
+// Create a SCRecordSession
++ (id)recordSession;
+
+// Clear the record session, making it reusable
+// If the recordSession is recording, the file will be deleted
+- (void)clear;
+
+// Set the outputUrl property by a generated url in the temp directory
+- (void)setOutputUrlWithTempUrl;
+
+- (void)saveToCameraRoll;
+
+// Start a new record segment
+// This method is automatically called when the record resumes
+- (void)beginRecordSegment:(NSError**)error;
+
+// End the current record segment
+// This method is automatically called by the SCRecorder
+// when calling [SCRecorder pause] if necessary
+// segmentIndex contains the index of the segment recorded accessible
+// in the recordSegments array. If error is not null, if will be -1
+- (void)endRecordSegment:(void(^)(NSInteger segmentIndex, NSError* error))completionHandler;
+
+// Remove the record segment at the given index and delete the associated file
+- (void)removeSegmentAtIndex:(NSInteger)segmentIndex;
+
+// Remove all the record segments and their associated files
+- (void)removeAllSegments;
+
+// End the session
+// No record segments can be added after calling this method,
+// unless "clear" is called
+- (void)endSession:(void(^)(NSError*error))completionHandler;
+
+// Returns an asset representing all the record segments
+// from this record session. This can be called anytime.
+- (AVAsset*)assetRepresentingRecordSegments;
+
+@property (readonly, nonatomic) BOOL recordSegmentBegan;
+
+//////////////////
+// PRIVATE API
 ////
 
 @property (readonly, nonatomic) BOOL videoInitialized;
@@ -99,21 +155,11 @@
 @property (readonly, nonatomic) BOOL videoInitializationFailed;
 @property (readonly, nonatomic) BOOL audioInitializationFailed;
 
-
-//////////////////
-// METHODS
-////
-
-+ (id)recordSession;
-
-- (void)clear;
-- (void)setOutputUrlWithTempUrl;
-- (void)saveToCameraRoll;
-
 - (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString*)fileType error:(NSError**)error;
 - (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError **)error;
 
 - (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer;
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
+- (void)makeTimeOffsetDirty;
 
 @end

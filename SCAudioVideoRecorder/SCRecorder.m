@@ -99,14 +99,14 @@ unsigned int SCGetCoreCount()
         sessionError = [SCRecorder createError:@"Cannot set session preset"];
     }
     
-    if (_audioEnabled) {
+    if (_videoEnabled) {
         if ([session canAddOutput:_videoOutput]) {
             [session addOutput:_videoOutput];
         } else {
             videoError = [SCRecorder createError:@"Cannot add videoOutput inside the session"];
         }
     }
-    if (_videoEnabled) {
+    if (_audioEnabled) {
         if ([session canAddOutput:_audioOutput]) {
             [session addOutput:_audioOutput];
         } else {
@@ -134,12 +134,24 @@ unsigned int SCGetCoreCount()
     }
 }
 
-- (void)startRunningSession {
+- (void)startRunningSession:(void (^)())completionHandler {
     if (_captureSession == nil) {
         [NSException raise:@"SCCamera" format:@"Session was not opened before"];
     }
     
-    [_captureSession startRunning];
+    if (!_captureSession.isRunning) {
+        dispatch_async(_dispatchQueue, ^{
+            [_captureSession startRunning];
+            
+            if (completionHandler != nil) {
+                completionHandler();
+            }
+        });
+    } else {
+        if (completionHandler != nil) {
+            completionHandler();
+        }
+    }
 }
 
 - (void)endRunningSession {
@@ -166,6 +178,16 @@ unsigned int SCGetCoreCount()
 
 - (void)pause {
     _isRecording = NO;
+    if (_recordSession.shouldTrackRecordSegments) {
+        [_recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+            id<SCRecorderDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {
+                [delegate recorder:self didEndRecordSegment:_recordSession segmentIndex:segmentIndex error:error];
+            }
+        }];
+    } else {
+        [_recordSession makeTimeOffsetDirty];
+    }
 }
 
 + (NSError*)createError:(NSString*)errorDescription {
@@ -179,6 +201,28 @@ unsigned int SCGetCoreCount()
         return AVFileTypeAppleM4A;
     }
     return nil;
+}
+
+- (void)appendSampleBuffer:(CMSampleBufferRef)sampleBuffer recordSession:(SCRecordSession *)recordSession toVideo:(BOOL)toVideo {
+    BOOL shouldAppend = YES;
+    if (!recordSession.recordSegmentBegan) {
+        NSError *error = nil;
+        [recordSession beginRecordSegment:&error];
+        shouldAppend = error == nil;
+        
+        id<SCRecorderDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(recorder:didBeginRecordSegment:error:)]) {
+            [delegate recorder:self didBeginRecordSegment:recordSession error:error];
+        }
+    }
+    
+    if (shouldAppend) {
+        if (toVideo) {
+            [recordSession appendVideoSampleBuffer:sampleBuffer];
+        } else {
+            [recordSession appendAudioSampleBuffer:sampleBuffer];
+        }
+    }
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -197,7 +241,7 @@ unsigned int SCGetCoreCount()
                 
                 if (_isRecording) {
                     if (!_audioEnabled || _recordSession.audioInitialized) {
-                        [_recordSession appendVideoSampleBuffer:sampleBuffer];
+                        [self appendSampleBuffer:sampleBuffer recordSession:_recordSession toVideo:YES];
                     }
                 }
             }
@@ -215,7 +259,7 @@ unsigned int SCGetCoreCount()
                 
                 if (_isRecording) {
                     if (!_videoEnabled || _recordSession.videoInitialized) {
-                        [_recordSession appendAudioSampleBuffer:sampleBuffer];
+                        [self appendSampleBuffer:sampleBuffer recordSession:_recordSession toVideo:NO];
                     }
                 }
             }

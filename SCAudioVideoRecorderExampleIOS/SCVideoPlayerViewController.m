@@ -33,7 +33,10 @@
     [super viewDidLoad];
 	
     SCPlayer *player = self.videoPlayerView.player;
-	[player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
+    
+    if (self.videoUrl != nil) {
+        [player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
+    }
     
 	player.shouldLoop = YES;
 	[player play];

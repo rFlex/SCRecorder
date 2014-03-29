@@ -34,12 +34,17 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
 
 @optional
 
+// Camera stuffs
 - (void)recorder:(SCRecorder*)recorder didReconfigureInputs:(NSError*)videoInputError audioInputError:(NSError*)audioInputError;
 - (void)recorder:(SCRecorder*)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError*)error;
 - (void)recorder:(SCRecorder*)recorder didChangeSessionPreset:(NSString*)sessionPreset error:(NSError*)error;
-- (void)recorder:(SCRecorder *)recorder didInitializeAudioInRecordSession:(SCRecordSession*)recordSession error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didInitializeVideoInRecordSession:(SCRecordSession*)recordSession error:(NSError *)error;
-                                                                
+
+// RecordSession stuffs
+- (void)recorder:(SCRecorder*)recorder didInitializeAudioInRecordSession:(SCRecordSession*)recordSession error:(NSError *)error;
+- (void)recorder:(SCRecorder*)recorder didInitializeVideoInRecordSession:(SCRecordSession*)recordSession error:(NSError *)error;
+- (void)recorder:(SCRecorder*)recorder didBeginRecordSegment:(SCRecordSession*)recordSession error:(NSError*)error;
+- (void)recorder:(SCRecorder*)recorder didEndRecordSegment:(SCRecordSession*)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError*)error;
+
 @end
 
 
@@ -95,9 +100,13 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
 // Close the session set in the captureSession
 - (void)closeSession;
 
+//- (void)addRecordSession:(SCRecordSession *)recordSession;
+//- (BOOL)removeRecordSession:(SCRecordSession *)recordSession;
+
 // Start the flow of inputs in the captureSession
 // openSession must has been called before
-- (void)startRunningSession;
+// This will be done on a different thread to avoid GUI hiccup
+- (void)startRunningSession:(void(^)())completionHandler;
 
 // End the flows of inputs
 // This wont close the session
