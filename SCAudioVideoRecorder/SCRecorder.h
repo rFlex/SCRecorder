@@ -17,17 +17,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeLight
 };
 
-typedef NS_ENUM(NSInteger, SCCameraDevice) {
-    SCCameraDeviceBack = AVCaptureDevicePositionBack,
-    SCCameraDeviceFront = AVCaptureDevicePositionFront
-};
-
-typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
-    SCCameraFocusModeLocked = AVCaptureFocusModeLocked,
-    SCCameraFocusModeAutoFocus = AVCaptureFocusModeAutoFocus,
-    SCCameraFocusModeContinuousAutoFocus = AVCaptureFocusModeContinuousAutoFocus
-};
-
 @class SCRecorder;
 
 @protocol SCRecorderDelegate <NSObject>
@@ -64,8 +53,8 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
 @property (readonly, nonatomic) BOOL isRecording;
 
 @property (assign, nonatomic) SCFlashMode flashMode;
-@property (assign, nonatomic) SCCameraDevice device;
-@property (assign, nonatomic) SCCameraFocusMode focusMode;
+@property (assign, nonatomic) AVCaptureDevicePosition device;
+@property (assign, nonatomic) AVCaptureFocusMode focusMode;
 
 // The outputSettings used in the AVCaptureStillImageOutput
 @property (copy, nonatomic) NSDictionary *photoOutputSettings;

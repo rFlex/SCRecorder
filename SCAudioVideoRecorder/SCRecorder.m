@@ -65,7 +65,7 @@ unsigned int SCGetCoreCount()
         _recordSessions = [NSMutableArray array];
         _videoOrientation = AVCaptureVideoOrientationPortrait;
         
-        self.device = SCCameraDeviceBack;
+        self.device = AVCaptureDevicePositionBack;
         self.videoEnabled = YES;
         self.audioEnabled = YES;
         self.photoEnabled = YES;
@@ -473,7 +473,7 @@ unsigned int SCGetCoreCount()
     _photoOutput.outputSettings = photoOutputSettings;
 }
 
-- (void)setDevice:(SCCameraDevice)device {
+- (void)setDevice:(AVCaptureDevicePosition)device {
     _device = device;
     if (_captureSession != nil) {
         [self reconfigureInputs];

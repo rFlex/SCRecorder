@@ -16,17 +16,17 @@
 //    SCFlashModeAuto = AVCaptureFlashModeAuto,
 //    SCFlashModeLight
 //};
-//
-//typedef NS_ENUM(NSInteger, SCCameraDevice) {
-//    SCCameraDeviceBack = AVCaptureDevicePositionBack,
-//    SCCameraDeviceFront = AVCaptureDevicePositionFront
-//};
-//
-//typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
-//    SCCameraFocusModeLocked = AVCaptureFocusModeLocked,
-//    SCCameraFocusModeAutoFocus = AVCaptureFocusModeAutoFocus,
-//    SCCameraFocusModeContinuousAutoFocus = AVCaptureFocusModeContinuousAutoFocus
-//};
+
+typedef NS_ENUM(NSInteger, SCCameraDevice) {
+    SCCameraDeviceBack = AVCaptureDevicePositionBack,
+    SCCameraDeviceFront = AVCaptureDevicePositionFront
+};
+
+typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
+    SCCameraFocusModeLocked = AVCaptureFocusModeLocked,
+    SCCameraFocusModeAutoFocus = AVCaptureFocusModeAutoFocus,
+    SCCameraFocusModeContinuousAutoFocus = AVCaptureFocusModeContinuousAutoFocus
+};
 
 @class SCCamera;
 @protocol SCCameraDelegate <SCAudioVideoRecorderDelegate>
