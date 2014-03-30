@@ -375,11 +375,17 @@
     
     if (CMTIME_IS_VALID(duration)) {
         _lastTime = CMTimeAdd(_lastTime, duration);
+    } else {
+        // Prevent to have two sampleBuffer at the same time
+        _lastTime = CMTimeAdd(_lastTime, CMTimeMake(1, 100));
     }
     
     if ([input isReadyForMoreMediaData]) {
         [input appendSampleBuffer:adjustedBuffer];
-        NSLog(@"%f", CMTimeGetSeconds(_lastTime));
+    }
+    
+    if (_assetWriter.error != nil) {
+        NSLog(@"ERROR = %@", _assetWriter.error);
     }
     
     CFRelease(adjustedBuffer);

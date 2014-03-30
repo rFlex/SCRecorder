@@ -192,23 +192,27 @@ unsigned int SCGetCoreCount()
 }
 
 - (void)record {
-    _isRecording = YES;
+    dispatch_async(_dispatchQueue, ^{
+        _isRecording = YES;
+    });
 }
 
 - (void)pause {
-    _isRecording = NO;
-    for (SCRecordSession *recordSession in _recordSessions) {
-        if (recordSession.shouldTrackRecordSegments) {
-            [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
-                id<SCRecorderDelegate> delegate = self.delegate;
-                if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {
-                    [delegate recorder:self didEndRecordSegment:recordSession segmentIndex:segmentIndex error:error];
-                }
-            }];
-        } else {
-            [recordSession makeTimeOffsetDirty];
+    dispatch_async(_dispatchQueue, ^{
+        _isRecording = NO;
+        for (SCRecordSession *recordSession in _recordSessions) {
+            if (recordSession.shouldTrackRecordSegments) {
+                [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+                    id<SCRecorderDelegate> delegate = self.delegate;
+                    if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {
+                        [delegate recorder:self didEndRecordSegment:recordSession segmentIndex:segmentIndex error:error];
+                    }
+                }];
+            } else {
+                [recordSession makeTimeOffsetDirty];
+            }
         }
-    }
+    });
 }
 
 + (NSError*)createError:(NSString*)errorDescription {
@@ -400,7 +404,7 @@ unsigned int SCGetCoreCount()
     return _captureSession;
 }
 
-- (void) setPreviewView:(UIView *)previewView {
+- (void)setPreviewView:(UIView *)previewView {
     [_previewLayer removeFromSuperlayer];
     
     _previewView = previewView;
@@ -412,7 +416,7 @@ unsigned int SCGetCoreCount()
     }
 }
 
-- (UIView*) previewView {
+- (UIView*)previewView {
     return _previewView;
 }
 

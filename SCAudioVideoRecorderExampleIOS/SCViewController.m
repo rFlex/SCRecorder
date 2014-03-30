@@ -56,7 +56,7 @@
     
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = AVCaptureSessionPresetHigh;
-//    _recorder.audioEnabled = NO;
+    _recorder.audioEnabled = NO;
     _recorder.delegate = self;
     
     UIView *previewView = self.previewView;
@@ -209,11 +209,13 @@
 }
 
 - (void) handleStopButtonTapped:(id)sender {
-    SCRecordSession *recordSession = [_recorder.recordSessions objectAtIndex:0];
-    
-    [_recorder removeRecordSession:recordSession];
-    
-    [self finishSession:recordSession];
+    if (_recorder.recordSessions.count > 0) {
+        SCRecordSession *recordSession = [_recorder.recordSessions objectAtIndex:0];
+        
+        [_recorder removeRecordSession:recordSession];
+        
+        [self finishSession:recordSession];
+    }
 }
 
 - (void)finishSession:(SCRecordSession *)recordSession {
