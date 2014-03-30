@@ -310,7 +310,7 @@
     if (_recorder.recordSessions.count == 0) {
         SCRecordSession *session = [SCRecordSession recordSession];
         session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
-//        session.shouldTrackRecordSegments = YES;
+        session.shouldTrackRecordSegments = YES;
         
         [_recorder addRecordSession:session];
     }
@@ -346,10 +346,10 @@
 
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
     if (touchDetector.state == UIGestureRecognizerStateBegan) {
-        NSLog(@"==== STARTING RECORDING ====");
+//        NSLog(@"==== STARTING RECORDING ====");
         [_recorder record];
     } else if (touchDetector.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"==== PAUSING RECORDING ====");
+//        NSLog(@"==== PAUSING RECORDING ====");
         [_recorder pause];
     }
 }

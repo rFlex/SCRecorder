@@ -94,6 +94,11 @@
 // Default is NO
 @property (assign, nonatomic) BOOL shouldIgnoreVideo;
 
+// The maximum framerate that this SCRecordSession should handle
+// If the camera appends too much frames, they will be dropped.
+// If this property's value is 0, it will use the current video
+// framerate from the camera.
+@property (assign, nonatomic) CMTimeScale videoMaxFrameRate;
 
 //////////////////
 // AUDIO SETTINGS
@@ -130,13 +135,13 @@
 
 - (void)saveToCameraRoll;
 
-// Start a new record segment
+// Start a new record segment.
 // This method is automatically called when the record resumes
 - (void)beginRecordSegment:(NSError**)error;
 
-// End the current record segment
+// End the current record segment.
 // This method is automatically called by the SCRecorder
-// when calling [SCRecorder pause] if necessary
+// when calling [SCRecorder pause] if necessary.
 // segmentIndex contains the index of the segment recorded accessible
 // in the recordSegments array. If error is not null, if will be -1
 - (void)endRecordSegment:(void(^)(NSInteger segmentIndex, NSError* error))completionHandler;
@@ -150,9 +155,11 @@
 // Merge all recordSegments into the outputUrl
 - (void)mergeRecordSegments:(void(^)(NSError *))completionHandler;
 
-// End the session
+// End the session.
 // End the current recordSegment (if any), call mergeRecordSegments and
-// if the merge succeed, delete every recordSegments
+// if the merge succeed, delete every recordSegments.
+// If you don't want a segment to be automatically added when calling this method,
+// you should remove the SCRecordSession from the SCRecorder
 - (void)endSession:(void(^)(NSError *error))completionHandler;
 
 // Returns an asset representing all the record segments
@@ -173,7 +180,7 @@
 - (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError **)error;
 - (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError **)error;
 
-- (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer;
+- (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration;
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
 - (void)makeTimeOffsetDirty;
 

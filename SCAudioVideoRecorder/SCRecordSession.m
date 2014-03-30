@@ -34,6 +34,7 @@
         self.videoScalingMode = kRecordSessionDefaultVideoScalingMode;
         self.videoBitsPerPixel = kRecordSessionDefaultOutputBitPerPixel;
         self.videoAffineTransform = CGAffineTransformIdentity;
+        self.videoMaxFrameRate = 0;
         
         self.audioSampleRate = 0;
         self.audioChannels = 0;
@@ -123,6 +124,7 @@
             
             if ([writer startWriting]) {
                 [writer startSessionAtSourceTime:_lastTime];
+                NSLog(@"Started session on segment %d at %f", _currentSegmentCount, CMTimeGetSeconds(_lastTime));
             }
             
             _currentSegmentCount++;
@@ -360,7 +362,7 @@
     }
 }
 
-- (void)appendBuffer:(CMSampleBufferRef)buffer to:(AVAssetWriterInput*)input {
+- (void)appendBuffer:(CMSampleBufferRef)buffer to:(AVAssetWriterInput*)input frameDuration:(CMTime)frameDuration {
     CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(buffer);
     
     if (_shouldRecomputeTimeOffset) {
@@ -376,14 +378,18 @@
     if (CMTIME_IS_VALID(duration)) {
         _lastTime = CMTimeAdd(_lastTime, duration);
     } else {
-        // Prevent to have two sampleBuffer at the same time
-        _lastTime = CMTimeAdd(_lastTime, CMTimeMake(1, 100));
+        if (_videoMaxFrameRate == 0) {
+            _lastTime = CMTimeAdd(_lastTime, frameDuration);
+        } else {
+            _lastTime = CMTimeAdd(_lastTime, CMTimeMake(1, _videoMaxFrameRate));
+        }
     }
     
     if ([input isReadyForMoreMediaData]) {
         [input appendSampleBuffer:adjustedBuffer];
     }
     
+    NSLog(@"%f - %d", CMTimeGetSeconds(_lastTime), _currentSegmentCount - 1);
     if (_assetWriter.error != nil) {
         NSLog(@"ERROR = %@", _assetWriter.error);
     }
@@ -392,11 +398,11 @@
 }
 
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
-    [self appendBuffer:audioSampleBuffer to:_audioInput];
+    [self appendBuffer:audioSampleBuffer to:_audioInput frameDuration:kCMTimeZero];
 }
 
-- (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer {
-    [self appendBuffer:videoSampleBuffer to:_videoInput];
+- (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration {
+    [self appendBuffer:videoSampleBuffer to:_videoInput frameDuration:frameDuration];
 }
 
 - (AVAsset *)assetRepresentingRecordSegments {

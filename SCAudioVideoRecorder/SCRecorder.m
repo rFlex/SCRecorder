@@ -236,7 +236,9 @@ unsigned int SCGetCoreCount()
         
         id<SCRecorderDelegate> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(recorder:didBeginRecordSegment:error:)]) {
-            [delegate recorder:self didBeginRecordSegment:recordSession error:error];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [delegate recorder:self didBeginRecordSegment:recordSession error:error];
+            });
         }
     }
 }
@@ -263,6 +265,33 @@ unsigned int SCGetCoreCount()
     }
 }
 
+//- (CMTimeScale)frameRate {
+//    AVCaptureDeviceInput * deviceInput = self.currentVideoDeviceInput;
+//    
+//    CMTimeScale framerate = 0;
+//    
+//    if (deviceInput != nil) {
+//        if ([deviceInput.device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
+//            framerate = deviceInput.device.activeVideoMaxFrameDuration.timescale;
+//        } else {
+//            AVCaptureConnection * videoConnection = [self getVideoConnection];
+//            framerate = videoConnection.videoMaxFrameDuration.timescale;
+//        }
+//    }
+//    
+//    return framerate;
+//}
+
+- (CMTime)frameDurationFromConnection:(AVCaptureConnection *)connection {
+    AVCaptureDevice *device = [self currentVideoDeviceInput].device;
+    
+    if ([device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
+        return device.activeVideoMaxFrameDuration;
+    }
+    
+    return connection.videoMaxFrameDuration;
+}
+
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     for (SCRecordSession *recordSession in _recordSessions) {
         if (captureOutput == _videoOutput) {
@@ -284,7 +313,7 @@ unsigned int SCGetCoreCount()
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording) {
-                        [recordSession appendVideoSampleBuffer:sampleBuffer];
+                        [recordSession appendVideoSampleBuffer:sampleBuffer frameDuration:[self frameDurationFromConnection:connection]];
                         
                         id<SCRecorderDelegate> delegate = self.delegate;
                         if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
