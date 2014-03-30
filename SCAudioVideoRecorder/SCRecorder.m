@@ -63,6 +63,7 @@ unsigned int SCGetCoreCount()
         _photoOutput.outputSettings = @{AVVideoCodecKey : AVVideoCodecJPEG};
         
         _recordSessions = [NSMutableArray array];
+        _videoOrientation = AVCaptureVideoOrientationPortrait;
         
         self.device = SCCameraDeviceBack;
         self.videoEnabled = YES;
@@ -92,7 +93,8 @@ unsigned int SCGetCoreCount()
     NSError *photoError = nil;
     
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
-    
+    _captureSession = session;
+
     [session beginConfiguration];
     
     if ([session canSetSessionPreset:self.sessionPreset]) {
@@ -125,7 +127,6 @@ unsigned int SCGetCoreCount()
 
     
     _previewLayer.session = session;
-    _captureSession = session;
     
     [self reconfigureInputs];
     
@@ -366,17 +367,23 @@ unsigned int SCGetCoreCount()
     AVCaptureDevice *currentUsedDevice = currentInput.device;
     
     if (currentUsedDevice != newDevice) {
-        AVCaptureDeviceInput *newInput = [[AVCaptureDeviceInput alloc] initWithDevice:newDevice error:error];
+        AVCaptureDeviceInput *newInput = nil;
+        
+        if (newDevice != nil) {
+            newInput = [[AVCaptureDeviceInput alloc] initWithDevice:newDevice error:error];
+        }
         
         if (*error == nil) {
             if (currentInput != nil) {
                 [_captureSession removeInput:currentInput];
             }
             
-            if ([_captureSession canAddInput:newInput]) {
-                [_captureSession addInput:newInput];
-            } else {
-                *error = [SCRecorder createError:@"Failed to add input to capture session"];
+            if (newInput != nil) {
+                if ([_captureSession canAddInput:newInput]) {
+                    [_captureSession addInput:newInput];
+                } else {
+                    *error = [SCRecorder createError:@"Failed to add input to capture session"];
+                }
             }
         }
     }
@@ -385,6 +392,7 @@ unsigned int SCGetCoreCount()
 - (void)reconfigureInputs {
     NSError *videoError = nil;
     [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
+    self.videoOrientation = _videoOrientation;
     
     NSError *audioError = nil;
     [self configureDevice:[self audioDevice] mediaType:AVMediaTypeAudio error:&audioError];
@@ -414,10 +422,18 @@ unsigned int SCGetCoreCount()
 }
 
 - (AVCaptureDevice*)audioDevice {
+    if (!self.audioEnabled) {
+        return nil;
+    }
+    
     return [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
 }
 
 - (AVCaptureDevice*)videoDevice {
+    if (!self.videoEnabled) {
+        return nil;
+    }
+    
 	NSArray * videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 	
 	for (AVCaptureDevice * device in videoDevices) {
@@ -532,6 +548,11 @@ unsigned int SCGetCoreCount()
     } else {
         _sessionPreset = [sessionPreset copy];
     }
+}
+
+- (void)setVideoOrientation:(AVCaptureVideoOrientation)videoOrientation {
+    _videoOrientation = videoOrientation;
+    [[_videoOutput connectionWithMediaType:AVMediaTypeVideo] setVideoOrientation:videoOrientation];
 }
 
 - (NSArray*)recordSessions {

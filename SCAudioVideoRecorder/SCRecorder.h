@@ -91,6 +91,9 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
 // Contains every SCRecordSession added
 @property (readonly, nonatomic) NSArray *recordSessions;
 
+// Change the video orientation for the video
+@property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
+
 // Convenient way to create a recorder
 + (SCRecorder*)recorder;
 
