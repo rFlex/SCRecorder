@@ -35,15 +35,18 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
 @optional
 
 // Camera stuffs
-- (void)recorder:(SCRecorder*)recorder didReconfigureInputs:(NSError*)videoInputError audioInputError:(NSError*)audioInputError;
-- (void)recorder:(SCRecorder*)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError*)error;
-- (void)recorder:(SCRecorder*)recorder didChangeSessionPreset:(NSString*)sessionPreset error:(NSError*)error;
+- (void)recorder:(SCRecorder *)recorder didReconfigureInputs:(NSError *)videoInputError audioInputError:(NSError *)audioInputError;
+- (void)recorder:(SCRecorder *)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError *)error;
+- (void)recorder:(SCRecorder *)recorder didChangeSessionPreset:(NSString *)sessionPreset error:(NSError *)error;
 
 // RecordSession stuffs
-- (void)recorder:(SCRecorder*)recorder didInitializeAudioInRecordSession:(SCRecordSession*)recordSession error:(NSError *)error;
-- (void)recorder:(SCRecorder*)recorder didInitializeVideoInRecordSession:(SCRecordSession*)recordSession error:(NSError *)error;
-- (void)recorder:(SCRecorder*)recorder didBeginRecordSegment:(SCRecordSession*)recordSession error:(NSError*)error;
-- (void)recorder:(SCRecorder*)recorder didEndRecordSegment:(SCRecordSession*)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError*)error;
+- (void)recorder:(SCRecorder *)recorder didInitializeAudioInRecordSession:(SCRecordSession *)recordSession error:(NSError *)error;
+- (void)recorder:(SCRecorder *)recorder didInitializeVideoInRecordSession:(SCRecordSession *)recordSession error:(NSError *)error;
+- (void)recorder:(SCRecorder *)recorder didBeginRecordSegment:(SCRecordSession *)recordSession error:(NSError *)error;
+- (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error;
+- (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBuffer:(SCRecordSession *)recordSession;
+- (void)recorder:(SCRecorder *)recorder didAppendAudioSampleBuffer:(SCRecordSession *)recordSession;
+- (void)recorder:(SCRecorder *)recorder didCompleteRecordSession:(SCRecordSession *)recordSession;
 
 @end
 
@@ -82,13 +85,11 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
 // Convenient way to set a view inside the previewLayer
 @property (strong, nonatomic) UIView *previewView;
 
-// Set the recordSession used while recording
-// This can be removed and set at anytime
-@property (strong, nonatomic) SCRecordSession *recordSession;
-
 // Set the delegate used to receive information messages from the recorder
 @property (weak, nonatomic) id<SCRecorderDelegate> delegate;
 
+// Contains every SCRecordSession added
+@property (readonly, nonatomic) NSArray *recordSessions;
 
 // Convenient way to create a recorder
 + (SCRecorder*)recorder;
@@ -100,8 +101,12 @@ typedef NS_ENUM(NSInteger, SCCameraFocusMode) {
 // Close the session set in the captureSession
 - (void)closeSession;
 
-//- (void)addRecordSession:(SCRecordSession *)recordSession;
-//- (BOOL)removeRecordSession:(SCRecordSession *)recordSession;
+// Add a recordSession, if the recorder is recording, the sample buffer
+// will be appended to this recordSession
+- (void)addRecordSession:(SCRecordSession *)recordSession;
+
+// Remove a recordSession, this will stop the recording on this recordSession
+- (void)removeRecordSession:(SCRecordSession *)recordSession;
 
 // Start the flow of inputs in the captureSession
 // openSession must has been called before

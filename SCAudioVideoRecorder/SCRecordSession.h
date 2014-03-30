@@ -24,12 +24,13 @@
 
 @interface SCRecordSession : NSObject
 
+
 //////////////////
 // GENERAL SETTINGS
 ////
 
-// The outputUrl which will be the output file
-// when endSession has been called
+// The outputUrl which will be the output file when endSession
+// has been called. The default url is a generated url to the temp directory
 @property (strong, nonatomic) NSURL *outputUrl;
 
 // The output file type used for the AVAssetWriter
@@ -47,6 +48,14 @@
 // will result in a new entry in this array
 // If trackRecordSegments is false, it will contains only one segment
 @property (readonly, nonatomic) NSArray* recordSegments;
+
+// The suggested maximum record duration that this session should handle
+// If currentRecordDuration becomes more or equal than this value, the
+// SCRecordSession will be removed from the SCRecorder
+@property (assign, nonatomic) CMTime suggestedMaxRecordDuration;
+
+// The current record duration
+@property (readonly, nonatomic) CMTime currentRecordDuration;
 
 // Set the dictionaries used for configuring the AVAssetWriter
 // If you set a non-null value here, the other settings will be ignored
@@ -80,6 +89,11 @@
 // Set the video scaling mode
 @property (copy, nonatomic) NSString *videoScalingMode;
 
+// If the recorder provides video and this property is set to no, the
+// recorder won't send video buffer to this session
+// Default is NO
+@property (assign, nonatomic) BOOL shouldIgnoreVideo;
+
 
 //////////////////
 // AUDIO SETTINGS
@@ -101,6 +115,11 @@
 // If audioOutputSettings is not nil, this property will be ignored
 @property (assign, nonatomic) int audioEncodeType;
 
+// If the recorder provides audio and this property is set to no, the
+// recorder won't send audio buffer to this session
+// Default is NO
+@property (assign, nonatomic) BOOL shouldIgnoreAudio;
+
 
 //////////////////
 // PUBLIC METHODS
@@ -108,13 +127,6 @@
 
 // Create a SCRecordSession
 + (id)recordSession;
-
-// Clear the record session, making it reusable
-// If the recordSession is recording, the file will be deleted
-- (void)clear;
-
-// Set the outputUrl property by a generated url in the temp directory
-- (void)setOutputUrlWithTempUrl;
 
 - (void)saveToCameraRoll;
 
@@ -135,14 +147,17 @@
 // Remove all the record segments and their associated files
 - (void)removeAllSegments;
 
+// Merge all recordSegments into the outputUrl
+- (void)mergeRecordSegments:(void(^)(NSError *))completionHandler;
+
 // End the session
-// No record segments can be added after calling this method,
-// unless "clear" is called
-- (void)endSession:(void(^)(NSError*error))completionHandler;
+// End the current recordSegment (if any), call mergeRecordSegments and
+// if the merge succeed, delete every recordSegments
+- (void)endSession:(void(^)(NSError *error))completionHandler;
 
 // Returns an asset representing all the record segments
 // from this record session. This can be called anytime.
-- (AVAsset*)assetRepresentingRecordSegments;
+- (AVAsset *)assetRepresentingRecordSegments;
 
 @property (readonly, nonatomic) BOOL recordSegmentBegan;
 
@@ -155,7 +170,7 @@
 @property (readonly, nonatomic) BOOL videoInitializationFailed;
 @property (readonly, nonatomic) BOOL audioInitializationFailed;
 
-- (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString*)fileType error:(NSError**)error;
+- (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError **)error;
 - (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError **)error;
 
 - (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer;

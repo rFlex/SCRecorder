@@ -56,7 +56,7 @@
     
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = AVCaptureSessionPresetHigh;
-    _recorder.audioEnabled = NO;
+//    _recorder.audioEnabled = NO;
     _recorder.delegate = self;
     
     UIView *previewView = self.previewView;
@@ -76,7 +76,7 @@
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
-        NSLog(@"=== Opened session ====");
+        NSLog(@"==== Opened session ====");
         NSLog(@"Session error: %@", sessionError.description);
         NSLog(@"Audio error : %@", audioError.description);
         NSLog(@"Video error: %@", videoError.description);
@@ -143,7 +143,7 @@
     if (error != nil) {
         [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedDescription]];
     } else {
-		[self showVideo:recordedFile];
+//		[self showVideo:recordedFile];
     }
 }
 
@@ -185,16 +185,15 @@
 
 #pragma mark - Handle
 
-- (void) showAlertViewWithTitle:(NSString*)title message:(NSString*) message {
+- (void)showAlertViewWithTitle:(NSString*)title message:(NSString*) message {
     UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
     [alertView show];
 }
 
-- (void) showVideo:(NSURL*)url {
+- (void)showVideo:(AVAsset*)asset {
 	SCVideoPlayerViewController * videoPlayerViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SCVideoPlayerViewController"];
-	videoPlayerViewController.videoUrl = url;
+	videoPlayerViewController.asset = asset;
     
-	
 	[self.navigationController pushViewController:videoPlayerViewController animated:YES];
 }
 
@@ -210,24 +209,30 @@
 }
 
 - (void) handleStopButtonTapped:(id)sender {
-    SCRecordSession *recordSession = _recorder.recordSession;
+    SCRecordSession *recordSession = [_recorder.recordSessions objectAtIndex:0];
     
-//    _recorder.recordSession = nil;
+    [_recorder removeRecordSession:recordSession];
+    
+    [self finishSession:recordSession];
+}
+
+- (void)finishSession:(SCRecordSession *)recordSession {
+    NSLog(@"Completed record session at %f", CMTimeGetSeconds(recordSession.currentRecordDuration));
     
     [recordSession endSession:^(NSError *error) {
         if (error == nil) {
-            [self showVideo:[recordSession.recordSegments objectAtIndex:0]];
+            NSLog(@"Ended section with no error");
+            [self showVideo:[AVURLAsset URLAssetWithURL:recordSession.outputUrl options:nil]];
         } else {
             NSLog(@"%@", error);
         }
+        [self prepareCamera];
     }];
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
-//    [self.camera cancel];
 	[self prepareCamera];
     [self updateLabelForSecond:0];
-    
 }
 
 - (IBAction)switchCameraMode:(id)sender {
@@ -300,11 +305,17 @@
 }
 
 - (void) prepareCamera {
-    SCRecordSession *session = [SCRecordSession recordSession];
-    [session setOutputUrlWithTempUrl];
-    session.shouldTrackRecordSegments = YES;
-    
-    _recorder.recordSession = session;
+    if (_recorder.recordSessions.count == 0) {
+        SCRecordSession *session = [SCRecordSession recordSession];
+        session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
+//        session.shouldTrackRecordSegments = YES;
+        
+        [_recorder addRecordSession:session];
+    }
+}
+
+- (void)recorder:(SCRecorder *)recorder didCompleteRecordSession:(SCRecordSession *)recordSession {
+    [self finishSession:recordSession];
 }
 
 - (void)recorder:(SCRecorder *)recorder didBeginRecordSegment:(SCRecordSession *)recordSession error:(NSError *)error {
