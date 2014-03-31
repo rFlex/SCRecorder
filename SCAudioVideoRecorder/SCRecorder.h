@@ -82,6 +82,9 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Change the video orientation for the video
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 
+// Focus
+@property (readonly, nonatomic) BOOL focusSupported;
+
 // Convenient way to create a recorder
 + (SCRecorder*)recorder;
 
@@ -110,6 +113,13 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 // Switch between back and front device
 - (void)switchCaptureDevices;
+
+- (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates;
+
+- (void)autoFocusAtPoint:(CGPoint)point;
+
+// Switch to continuous auto focus mode at the specified point
+- (void)continuousFocusAtPoint:(CGPoint)point;
 
 // Calling this method will make the recorder to append sample buffers inside the current setted recordSession
 - (void)record;

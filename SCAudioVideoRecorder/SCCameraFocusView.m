@@ -99,12 +99,12 @@
 // Auto focus at a particular point. The focus mode will change to locked once the auto focus happens.
 - (void)tapToAutoFocus:(UIGestureRecognizer *)gestureRecognizer
 {
-    SCCamera *camera = self.camera;
-    if (camera.isFocusSupported) {
+    SCRecorder *recorder = self.recorder;
+    if (recorder.focusSupported) {
         CGPoint tapPoint = [gestureRecognizer locationInView:self];
-        CGPoint convertedFocusPoint = [camera convertToPointOfInterestFromViewCoordinates:tapPoint];
+        CGPoint convertedFocusPoint = [recorder convertToPointOfInterestFromViewCoordinates:tapPoint];
         self.cameraFocusTargetView.center = tapPoint;
-        [camera autoFocusAtPoint:convertedFocusPoint];
+        [recorder autoFocusAtPoint:convertedFocusPoint];
         _currentFocusPoint = convertedFocusPoint;
     }
 }
@@ -112,10 +112,10 @@
 // Change to continuous auto focus. The camera will constantly focus at the point choosen.
 - (void)tapToContinouslyAutoFocus:(UIGestureRecognizer *)gestureRecognizer
 {
-    SCCamera *camera = self.camera;
-    if (camera.isFocusSupported) {
+    SCRecorder *recorder = self.recorder;
+    if (recorder.focusSupported) {
         self.cameraFocusTargetView.center = self.center;
-        [camera continuousFocusAtPoint:CGPointMake(.5f, .5f)];
+        [recorder continuousFocusAtPoint:CGPointMake(.5f, .5f)];
     }
 }
 

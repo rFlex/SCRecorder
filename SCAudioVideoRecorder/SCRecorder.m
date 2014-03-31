@@ -401,6 +401,113 @@ unsigned int SCGetCoreCount()
     }
 }
 
+
+#pragma mark - FOCUS
+
+// Convert from view coordinates to camera coordinates, where {0,0} represents the top left of the picture area, and {1,1} represents
+// the bottom right in landscape mode with the home button on the right.
+- (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates
+{
+    CGPoint pointOfInterest = CGPointMake(.5f, .5f);
+    CGSize frameSize = self.previewView.frame.size;
+    
+    if ([self.previewLayer.connection isVideoMirrored]) {
+        viewCoordinates.x = frameSize.width - viewCoordinates.x;
+    }
+    
+    if ( [[self.previewLayer videoGravity] isEqualToString:AVLayerVideoGravityResize] ) {
+		// Scale, switch x and y, and reverse x
+        pointOfInterest = CGPointMake(viewCoordinates.y / frameSize.height, 1.f - (viewCoordinates.x / frameSize.width));
+    } else {
+        CGRect cleanAperture;
+        for (AVCaptureInputPort *port in [self.currentVideoDeviceInput ports]) {
+            if ([port mediaType] == AVMediaTypeVideo) {
+                cleanAperture = CMVideoFormatDescriptionGetCleanAperture([port formatDescription], YES);
+                CGSize apertureSize = cleanAperture.size;
+                CGPoint point = viewCoordinates;
+                
+                CGFloat apertureRatio = apertureSize.height / apertureSize.width;
+                CGFloat viewRatio = frameSize.width / frameSize.height;
+                CGFloat xc = .5f;
+                CGFloat yc = .5f;
+                
+                if ( [[self.previewLayer videoGravity] isEqualToString:AVLayerVideoGravityResizeAspect] ) {
+                    if (viewRatio > apertureRatio) {
+                        CGFloat y2 = frameSize.height;
+                        CGFloat x2 = frameSize.height * apertureRatio;
+                        CGFloat x1 = frameSize.width;
+                        CGFloat blackBar = (x1 - x2) / 2;
+						// If point is inside letterboxed area, do coordinate conversion; otherwise, don't change the default value returned (.5,.5)
+                        if (point.x >= blackBar && point.x <= blackBar + x2) {
+							// Scale (accounting for the letterboxing on the left and right of the video preview), switch x and y, and reverse x
+                            xc = point.y / y2;
+                            yc = 1.f - ((point.x - blackBar) / x2);
+                        }
+                    } else {
+                        CGFloat y2 = frameSize.width / apertureRatio;
+                        CGFloat y1 = frameSize.height;
+                        CGFloat x2 = frameSize.width;
+                        CGFloat blackBar = (y1 - y2) / 2;
+						// If point is inside letterboxed area, do coordinate conversion. Otherwise, don't change the default value returned (.5,.5)
+                        if (point.y >= blackBar && point.y <= blackBar + y2) {
+							// Scale (accounting for the letterboxing on the top and bottom of the video preview), switch x and y, and reverse x
+                            xc = ((point.y - blackBar) / y2);
+                            yc = 1.f - (point.x / x2);
+                        }
+                    }
+                } else if ([[self.previewLayer videoGravity] isEqualToString:AVLayerVideoGravityResizeAspectFill]) {
+					// Scale, switch x and y, and reverse x
+                    if (viewRatio > apertureRatio) {
+                        CGFloat y2 = apertureSize.width * (frameSize.width / apertureSize.height);
+                        xc = (point.y + ((y2 - frameSize.height) / 2.f)) / y2; // Account for cropped height
+                        yc = (frameSize.width - point.x) / frameSize.width;
+                    } else {
+                        CGFloat x2 = apertureSize.height * (frameSize.height / apertureSize.width);
+                        yc = 1.f - ((point.x + ((x2 - frameSize.width) / 2)) / x2); // Account for cropped width
+                        xc = point.y / frameSize.height;
+                    }
+                }
+                
+                pointOfInterest = CGPointMake(xc, yc);
+                break;
+            }
+        }
+    }
+    
+    return pointOfInterest;
+}
+
+// Perform an auto focus at the specified point. The focus mode will automatically change to locked once the auto focus is complete.
+- (void)autoFocusAtPoint:(CGPoint)point {
+    AVCaptureDevice *device = [self.currentVideoDeviceInput device];
+    if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
+        NSError *error;
+        if ([device lockForConfiguration:&error]) {
+            [device setFocusPointOfInterest:point];
+            [device setFocusMode:AVCaptureFocusModeAutoFocus];
+            [device unlockForConfiguration];
+        }
+    }
+}
+
+// Switch to continuous auto focus mode at the specified point
+- (void)continuousFocusAtPoint:(CGPoint)point {
+    AVCaptureDevice *device = [self.currentVideoDeviceInput device];
+	
+    if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
+		NSError *error;
+		if ([device lockForConfiguration:&error]) {
+			[device setFocusPointOfInterest:point];
+			[device setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
+			[device unlockForConfiguration];
+		}
+	}
+}
+
+- (BOOL)focusSupported {
+    return [self currentVideoDeviceInput].device.isFocusPointOfInterestSupported;
+}
+
 - (AVCaptureDeviceInput*)currentAudioDeviceInput {
     return [self currentDeviceInputForMediaType:AVMediaTypeAudio];
 }

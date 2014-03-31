@@ -16,6 +16,7 @@
 #import "SCImageViewDisPlayViewController.h"
 #import "SCRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import "SCCamera.h"
 
 #import "SCCameraFocusTargetView.h"
 
@@ -68,9 +69,9 @@
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
     
-//    self.focusView = [[SCCameraFocusView alloc] initWithFrame:previewView.bounds];
-//    self.focusView.camera = self.camera;
-//    [previewView addSubview:self.focusView];
+    self.focusView = [[SCCameraFocusView alloc] initWithFrame:previewView.bounds];
+    self.focusView.recorder = _recorder;
+    [previewView addSubview:self.focusView];
     self.focusView.outsideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     
@@ -114,37 +115,7 @@
 
 #pragma mark - SCAudioVideoRecorder delegate
 
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordVideoFrame:(CMTime)frameTime {
-    [self updateLabelForSecond:CMTimeGetSeconds(frameTime)];
-}
-
-// error
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeVideoEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize VideoEncoder: %@", error);
-}
-
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFailToInitializeAudioEncoder:(NSError *)error {
-    NSLog(@"Failed to initialize AudioEncoder: %@", error);
-}
-
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder willFinishRecordingAtTime:(CMTime)frameTime {
-	self.loadingView.hidden = NO;
-    self.downBar.userInteractionEnabled = NO;
-}
-
 // Video
-
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
-	[self prepareCamera];
-	
-    self.loadingView.hidden = YES;
-    self.downBar.userInteractionEnabled = YES;
-    if (error != nil) {
-        [self showAlertViewWithTitle:@"Failed to save video" message:[error localizedDescription]];
-    } else {
-//		[self showVideo:recordedFile];
-    }
-}
 
 #pragma mark - Camera Delegate
 
