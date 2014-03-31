@@ -7,6 +7,11 @@
 //
 
 #import "SCRecordSession.h"
+// These are sets in defines to avoid repeated method calls
+#define CAN_HANDLE_AUDIO (_recorderHasAudio && !_shouldIgnoreAudio)
+#define CAN_HANDLE_VIDEO (_recorderHasVideo && !_shouldIgnoreVideo)
+#define IS_WAITING_AUDIO (CAN_HANDLE_AUDIO && !_currentSegmentHasAudio)
+#define IS_WAITING_VIDEO (CAN_HANDLE_VIDEO && !_currentSegmentHasVideo)
 
 @interface SCRecordSession() {
     AVAssetWriter *_assetWriter;
@@ -24,6 +29,9 @@
     int _currentSegmentCount;
     CMTime _timeOffset;
     CMTime _lastTime;
+    CMTime _lastTimeVideo;
+    CMTime _lastTimeAudio;
+    CMTime _sessionStartedTime;
 }
 @end
 
@@ -142,6 +150,7 @@
             
             if ([writer startWriting]) {
                 [writer startSessionAtSourceTime:_lastTime];
+                _sessionStartedTime = _lastTime;
                 _recordSegmentReady = YES;
             }
             
@@ -235,10 +244,28 @@
     
 }
 
+- (CMSampleBufferRef)adjustBuffer:(CMSampleBufferRef)sample withTimeStamp:(CMTime)timeStamp andDuration:(CMTime)duration {
+    CMItemCount count;
+    CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
+    CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
+    CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
+    
+    for (CMItemCount i = 0; i < count; i++) {
+        pInfo[i].decodeTimeStamp = timeStamp;
+        pInfo[i].presentationTimeStamp = timeStamp;
+        pInfo[i].duration = duration;
+    }
+    
+    CMSampleBufferRef sout;
+    CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
+    free(pInfo);
+    return sout;
+}
+
 //
 // The following function is from http://www.gdcl.co.uk/2013/02/20/iPhone-Pause.html
 //
-- (CMSampleBufferRef) adjustBuffer:(CMSampleBufferRef)sample withTimeOffset:(CMTime)offset andDuration:(CMTime)duration {
+- (CMSampleBufferRef)adjustBuffer:(CMSampleBufferRef)sample withTimeOffset:(CMTime)offset andDuration:(CMTime)duration {
     CMItemCount count;
     CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
     CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
@@ -268,22 +295,18 @@
     }
 }
 
-- (void)makeTimeOffsetDirty {
-    _shouldRecomputeTimeOffset = YES;
-}
-
 - (void)endRecordSegment:(void(^)(NSInteger segmentNumber, NSError* error))completionHandler {
     _recordSegmentReady = NO;
     
     [self makeTimeOffsetDirty];
     AVAssetWriter *writer = _assetWriter;
     
-    BOOL currentSegmentNotEmpty = (_shouldIgnoreAudio || (_recorderHasAudio && _currentSegmentHasAudio)) && (_shouldIgnoreVideo || (_recorderHasVideo && _currentSegmentHasVideo));
+    BOOL currentSegmentEmpty = IS_WAITING_AUDIO && IS_WAITING_VIDEO;
     
-    if (!currentSegmentNotEmpty) {
+    if (currentSegmentEmpty) {
         [writer cancelWriting];
-        [self removeFile:writer.outputURL];
         _assetWriter = nil;
+        [self removeFile:writer.outputURL];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (completionHandler != nil) {
@@ -291,6 +314,7 @@
             }
         });
     } else {
+        [writer endSessionAtSourceTime:_lastTime];
         [writer finishWritingWithCompletionHandler: ^{
             _assetWriter = nil;
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -306,6 +330,10 @@
             });
         }];
     }
+}
+
+- (void)makeTimeOffsetDirty {
+    _shouldRecomputeTimeOffset = YES;
 }
 
 - (void)mergeRecordSegments:(void(^)(NSError *error))completionHandler {
@@ -415,17 +443,14 @@
     }
 }
 
-- (void)appendBuffer:(CMSampleBufferRef)buffer to:(AVAssetWriterInput*)input frameDuration:(CMTime)frameDuration {
-    CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(buffer);
-    
+- (void)computeTimeOffset:(CMTime)actualBufferTime {
     if (_shouldRecomputeTimeOffset) {
         _shouldRecomputeTimeOffset = NO;
         _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
     }
-    
-    CMTime duration = CMSampleBufferGetDuration(buffer);
-    CMSampleBufferRef adjustedBuffer = [self adjustBuffer:buffer withTimeOffset:_timeOffset andDuration:duration];
-    
+}
+
+- (void)updateLastTime:(CMSampleBufferRef)adjustedBuffer duration:(CMTime)duration frameDuration:(CMTime)frameDuration {
     _lastTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
     
     if (CMTIME_IS_VALID(duration)) {
@@ -437,6 +462,17 @@
             _lastTime = CMTimeAdd(_lastTime, CMTimeMake(1, _videoMaxFrameRate));
         }
     }
+}
+
+- (void)appendBuffer:(CMSampleBufferRef)buffer to:(AVAssetWriterInput*)input frameDuration:(CMTime)frameDuration {
+    CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(buffer);
+    
+    [self computeTimeOffset:actualBufferTime];
+    
+    CMTime duration = CMSampleBufferGetDuration(buffer);
+    CMSampleBufferRef adjustedBuffer = [self adjustBuffer:buffer withTimeOffset:_timeOffset andDuration:duration];
+ 
+    [self updateLastTime:adjustedBuffer duration:duration frameDuration:frameDuration];
     
     if ([input isReadyForMoreMediaData]) {
         [input appendSampleBuffer:adjustedBuffer];
@@ -446,13 +482,57 @@
 }
 
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
-    _currentSegmentHasAudio = YES;
-    [self appendBuffer:audioSampleBuffer to:_audioInput frameDuration:kCMTimeZero];
+    if (!IS_WAITING_VIDEO && [_audioInput isReadyForMoreMediaData]) {
+        CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer);
+        
+        [self computeTimeOffset:actualBufferTime];
+        
+        CMTime duration = CMSampleBufferGetDuration(audioSampleBuffer);
+        CMSampleBufferRef adjustedBuffer = [self adjustBuffer:audioSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
+        
+        _lastTimeAudio = CMTimeAdd(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer), duration);
+        
+        if (!CAN_HANDLE_VIDEO) {
+            _lastTime = _lastTimeVideo;
+        }
+
+        [_audioInput appendSampleBuffer:adjustedBuffer];
+        _currentSegmentHasAudio = YES;
+        
+        CFRelease(adjustedBuffer);
+    }
 }
 
 - (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration {
-    _currentSegmentHasVideo = YES;
-    [self appendBuffer:videoSampleBuffer to:_videoInput frameDuration:frameDuration];
+    if ([_videoInput isReadyForMoreMediaData]) {
+        CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
+        
+        [self computeTimeOffset:actualBufferTime];
+        
+        CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
+        
+        CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
+        
+        CMTime lastTimeVideo = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
+        
+        if (CMTIME_IS_VALID(duration)) {
+            lastTimeVideo = CMTimeAdd(lastTimeVideo, duration);
+        } else {
+            if (_videoMaxFrameRate == 0) {
+                lastTimeVideo = CMTimeAdd(lastTimeVideo, frameDuration);
+            } else {
+                lastTimeVideo = CMTimeAdd(lastTimeVideo, CMTimeMake(1, _videoMaxFrameRate));
+            }
+        }
+        
+        _lastTimeVideo = lastTimeVideo;
+        _lastTime = lastTimeVideo;
+        
+        [_videoInput appendSampleBuffer:adjustedBuffer];
+        _currentSegmentHasVideo = YES;
+        
+        CFRelease(adjustedBuffer);
+    }
 }
 
 - (AVAsset *)assetRepresentingRecordSegments {

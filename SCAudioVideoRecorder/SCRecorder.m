@@ -330,8 +330,7 @@ unsigned int SCGetCoreCount()
                 if (!_hasVideo || recordSession.videoInitialized || recordSession.shouldIgnoreVideo) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
-                    // If needed, we always wait that the recordSession received a video buffer before sending audio buffers
-                    if (_isRecording && recordSession.recordSegmentReady && (!_hasVideo || recordSession.currentSegmentHasVideo)) {
+                    if (_isRecording && recordSession.recordSegmentReady) {
                         [recordSession appendAudioSampleBuffer:sampleBuffer];
                         
                         id<SCRecorderDelegate> delegate = self.delegate;
