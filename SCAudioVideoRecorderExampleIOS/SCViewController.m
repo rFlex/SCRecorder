@@ -56,7 +56,6 @@
     
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = AVCaptureSessionPresetHigh;
-    _recorder.audioEnabled = NO;
     _recorder.delegate = self;
     
     UIView *previewView = self.previewView;
@@ -209,24 +208,21 @@
 }
 
 - (void) handleStopButtonTapped:(id)sender {
-    if (_recorder.recordSessions.count > 0) {
-        SCRecordSession *recordSession = [_recorder.recordSessions objectAtIndex:0];
-        
-        [_recorder removeRecordSession:recordSession];
+    SCRecordSession *recordSession = _recorder.recordSession;
+    
+    if (recordSession != nil) {
+        _recorder.recordSession = nil;
         
         [self finishSession:recordSession];
     }
 }
 
 - (void)finishSession:(SCRecordSession *)recordSession {
-    NSLog(@"Completed record session at %f", CMTimeGetSeconds(recordSession.currentRecordDuration));
-    
     [recordSession endSession:^(NSError *error) {
         if (error == nil) {
-            NSLog(@"Ended section with no error");
             [self showVideo:[AVURLAsset URLAssetWithURL:recordSession.outputUrl options:nil]];
         } else {
-            NSLog(@"%@", error);
+            NSLog(@"Failed to end session: %@", error);
         }
         [self prepareCamera];
     }];
@@ -307,25 +303,18 @@
 }
 
 - (void) prepareCamera {
-    if (_recorder.recordSessions.count == 0) {
+    if (_recorder.recordSession == nil) {
+        
         SCRecordSession *session = [SCRecordSession recordSession];
         session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
         session.shouldTrackRecordSegments = YES;
         
-        [_recorder addRecordSession:session];
+        _recorder.recordSession = session;
     }
 }
 
 - (void)recorder:(SCRecorder *)recorder didCompleteRecordSession:(SCRecordSession *)recordSession {
     [self finishSession:recordSession];
-}
-
-- (void)recorder:(SCRecorder *)recorder didBeginRecordSegment:(SCRecordSession *)recordSession error:(NSError *)error {
-    NSLog(@"Recorder began record segment, error: %@", error);
-}
-
-- (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error {
-    NSLog(@"Recorder ended record segment at index %d, error: %@", (int)segmentIndex, error);
 }
 
 - (void)recorder:(SCRecorder *)recorder didInitializeAudioInRecordSession:(SCRecordSession *)recordSession error:(NSError *)error {
@@ -342,6 +331,11 @@
     } else {
         NSLog(@"Failed to initialize video in record session: %@", error.localizedDescription);
     }
+}
+
+- (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBuffer:(SCRecordSession *)recordSession {
+    self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", CMTimeGetSeconds(recordSession.currentRecordDuration)];
+    NSLog(@"Recorded ratio: %f", recordSession.ratioRecorded);
 }
 
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {

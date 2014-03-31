@@ -151,6 +151,7 @@
 - (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError *__autoreleasing *)error {
     _suggestedFileType = fileType;
     
+    NSLog(@"Initialize %@ with suggestedFileType: %@", self, fileType);
     NSDictionary *videoSettings = self.videoOutputSettings;
         
     if (videoSettings == nil) {
@@ -186,6 +187,8 @@
 - (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError *__autoreleasing *)error {
     _suggestedFileType = fileType;
     
+    NSLog(@"Initialize %@ with suggestedFileType: %@", self, fileType);
+
     NSDictionary *audioSettings = self.audioOutputSettings;
     
     if (audioSettings == nil) {
@@ -325,19 +328,40 @@
         }
     } else {
         AVAsset *asset = [self assetRepresentingRecordSegments];
-        AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:asset presetName:AVAssetExportPresetPassthrough];
-        exportSession.outputURL = outputUrl;
-        exportSession.outputFileType = fileType;
-        exportSession.shouldOptimizeForNetworkUse = YES;
-        [exportSession exportAsynchronouslyWithCompletionHandler:^{
-            NSError *error = exportSession.error;
-            
+        
+        NSString *exportPreset = self.recordSegmentsMergePreset;
+        
+        if (exportPreset == nil) {
+            if ([fileType isEqualToString:AVFileTypeAppleM4A]) {
+                exportPreset = AVAssetExportPresetAppleM4A;
+            } else if ([fileType isEqualToString:AVFileTypeMPEG4] || [fileType isEqualToString:AVFileTypeQuickTimeMovie] || [fileType isEqualToString:AVFileTypeAppleM4V]) {
+                // Maybe some others fileTypes support this preset. If you find one that does, please add it in this condition.
+                exportPreset = AVAssetExportPresetPassthrough;
+            }
+        }
+        
+        if (exportPreset != nil) {
+            AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:asset presetName:exportPreset];
+            exportSession.outputURL = outputUrl;
+            exportSession.outputFileType = fileType;
+            exportSession.shouldOptimizeForNetworkUse = YES;
+            [exportSession exportAsynchronouslyWithCompletionHandler:^{
+                NSError *error = exportSession.error;
+                
+                if (completionHandler != nil) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completionHandler(error);
+                    });
+                }
+            }];
+        } else {
             if (completionHandler != nil) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(error);
+                    NSString *errorString = [NSString stringWithFormat:@"Cannot find out which preset to use for the AVAssetExportSession using fileType %@. Please set one manually", fileType];
+                    completionHandler([SCRecordSession createError:errorString]);
                 });
             }
-        }];
+        }
     }
 }
 
@@ -454,6 +478,19 @@
 
 - (BOOL)recordSegmentReady {
     return _recordSegmentReady;
+}
+
+- (CGFloat)ratioRecorded {
+    CGFloat ratio = 0;
+    
+    if (CMTIME_IS_VALID(_suggestedMaxRecordDuration)) {
+        Float64 maxRecordDuration = CMTimeGetSeconds(_suggestedMaxRecordDuration);
+        Float64 recordedTime = CMTimeGetSeconds(_lastTime);
+        
+        ratio = (CGFloat)(recordedTime / maxRecordDuration);
+    }
+    
+    return ratio;
 }
 
 @end

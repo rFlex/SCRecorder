@@ -27,7 +27,6 @@ unsigned int SCGetCoreCount()
     AVCaptureVideoDataOutput *_videoOutput;
     AVCaptureAudioDataOutput *_audioOutput;
     AVCaptureStillImageOutput *_photoOutput;
-    NSMutableArray *_recordSessions;
     dispatch_queue_t _dispatchQueue;
     BOOL _usingMainQueue;
 }
@@ -46,7 +45,7 @@ unsigned int SCGetCoreCount()
             _dispatchQueue = dispatch_get_main_queue();
             _usingMainQueue = YES;
         } else {
-            _dispatchQueue = dispatch_queue_create("SCVideoRecorder", nil);
+            _dispatchQueue = dispatch_queue_create("me.corsin.SCRecorder", nil);
             _usingMainQueue = NO;
         }
         
@@ -62,7 +61,6 @@ unsigned int SCGetCoreCount()
         _photoOutput = [[AVCaptureStillImageOutput alloc] init];
         _photoOutput.outputSettings = @{AVVideoCodecKey : AVVideoCodecJPEG};
         
-        _recordSessions = [NSMutableArray array];
         _videoOrientation = AVCaptureVideoOrientationPortrait;
         
         self.device = AVCaptureDevicePositionBack;
@@ -175,23 +173,6 @@ unsigned int SCGetCoreCount()
     }
 }
 
-- (void)addRecordSession:(SCRecordSession *)recordSession {
-    if (recordSession == nil) {
-        [NSException raise:@"SCRecorder" format:@"recordSession cannot be nil"];
-    }
-    
-    [recordSession makeTimeOffsetDirty];
-    dispatch_async(_dispatchQueue, ^{
-        [_recordSessions addObject:recordSession];
-    });
-}
-
-- (void)removeRecordSession:(SCRecordSession *)recordSession {
-    dispatch_async(_dispatchQueue, ^{
-        [_recordSessions removeObject:recordSession];
-    });
-}
-
 - (void)record {
     dispatch_async(_dispatchQueue, ^{
         _isRecording = YES;
@@ -201,7 +182,9 @@ unsigned int SCGetCoreCount()
 - (void)pause {
     dispatch_async(_dispatchQueue, ^{
         _isRecording = NO;
-        for (SCRecordSession *recordSession in _recordSessions) {
+        SCRecordSession *recordSession = _recordSession;
+        
+        if (recordSession != nil) {
             if (recordSession.shouldTrackRecordSegments) {
                 if (recordSession.recordSegmentReady) {
                     [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
@@ -252,7 +235,7 @@ unsigned int SCGetCoreCount()
     
     if (CMTIME_IS_VALID(suggestedMaxRecordDuration)) {
         if (CMTIME_COMPARE_INLINE(currentRecordDuration, >=, suggestedMaxRecordDuration)) {
-            [self removeRecordSession:recordSession];
+            _recordSession = nil;
             
             [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
                 id<SCRecorderDelegate> delegate = self.delegate;
@@ -268,23 +251,6 @@ unsigned int SCGetCoreCount()
     }
 }
 
-//- (CMTimeScale)frameRate {
-//    AVCaptureDeviceInput * deviceInput = self.currentVideoDeviceInput;
-//    
-//    CMTimeScale framerate = 0;
-//    
-//    if (deviceInput != nil) {
-//        if ([deviceInput.device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
-//            framerate = deviceInput.device.activeVideoMaxFrameDuration.timescale;
-//        } else {
-//            AVCaptureConnection * videoConnection = [self getVideoConnection];
-//            framerate = videoConnection.videoMaxFrameDuration.timescale;
-//        }
-//    }
-//    
-//    return framerate;
-//}
-
 - (CMTime)frameDurationFromConnection:(AVCaptureConnection *)connection {
     AVCaptureDevice *device = [self currentVideoDeviceInput].device;
     
@@ -296,7 +262,9 @@ unsigned int SCGetCoreCount()
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-    for (SCRecordSession *recordSession in _recordSessions) {
+    SCRecordSession *recordSession = _recordSession;
+    
+    if (recordSession != nil) {
         if (captureOutput == _videoOutput) {
             if (!recordSession.videoInitializationFailed && !recordSession.shouldIgnoreVideo) {
                 if (!recordSession.videoInitialized) {
@@ -312,7 +280,7 @@ unsigned int SCGetCoreCount()
                 }
                 
                 
-                if (!_audioEnabled || recordSession.audioInitialized) {
+                if (!_audioEnabled || recordSession.audioInitialized || recordSession.shouldIgnoreAudio) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording && recordSession.recordSegmentReady) {
@@ -343,7 +311,7 @@ unsigned int SCGetCoreCount()
                     }
                 }
                 
-                if (!_videoEnabled || recordSession.videoInitialized) {
+                if (!_videoEnabled || recordSession.videoInitialized || recordSession.shouldIgnoreVideo) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording && recordSession.recordSegmentReady) {
@@ -557,8 +525,12 @@ unsigned int SCGetCoreCount()
     [[_videoOutput connectionWithMediaType:AVMediaTypeVideo] setVideoOrientation:videoOrientation];
 }
 
-- (NSArray*)recordSessions {
-    return _recordSessions;
+- (void)setRecordSession:(SCRecordSession *)recordSession {
+    if (_recordSession != recordSession) {
+        [recordSession makeTimeOffsetDirty];
+        
+        _recordSession = recordSession;
+    }
 }
 
 @end

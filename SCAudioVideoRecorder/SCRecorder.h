@@ -77,8 +77,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Set the delegate used to receive information messages from the recorder
 @property (weak, nonatomic) id<SCRecorderDelegate> delegate;
 
-// Contains every SCRecordSession added
-@property (readonly, nonatomic) NSArray *recordSessions;
+@property (strong, nonatomic) SCRecordSession *recordSession;
 
 // Change the video orientation for the video
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
@@ -92,13 +91,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 // Close the session set in the captureSession
 - (void)closeSession;
-
-// Add a recordSession, if the recorder is recording, the sample buffer
-// will be appended to this recordSession
-- (void)addRecordSession:(SCRecordSession *)recordSession;
-
-// Remove a recordSession, this will stop the recording on this recordSession
-- (void)removeRecordSession:(SCRecordSession *)recordSession;
 
 // Start the flow of inputs in the captureSession
 // openSession must has been called before

@@ -49,18 +49,32 @@
 // If trackRecordSegments is false, it will contains only one segment
 @property (readonly, nonatomic) NSArray* recordSegments;
 
+// The current record duration
+@property (readonly, nonatomic) CMTime currentRecordDuration;
+
 // The suggested maximum record duration that this session should handle
 // If currentRecordDuration becomes more or equal than this value, the
 // SCRecordSession will be removed from the SCRecorder
 @property (assign, nonatomic) CMTime suggestedMaxRecordDuration;
 
-// The current record duration
-@property (readonly, nonatomic) CMTime currentRecordDuration;
+// If suggestedMaxRecordDuration is a valid value,
+// this will contains a float between 0 and 1 representing the
+// recorded ratio, 1 being fully recorded.
+@property (readonly, nonatomic) CGFloat ratioRecorded;
 
 // Set the dictionaries used for configuring the AVAssetWriter
 // If you set a non-null value here, the other settings will be ignored
 @property (strong, nonatomic) NSDictionary *videoOutputSettings;
 @property (strong, nonatomic) NSDictionary *audioOutputSettings;
+
+// If null, the SCRecordSession will try to figure out which preset
+// to use for the AVAssetExportSession when merging the recordSegments
+// (this only happens when shouldTrackRecordSegments is true)
+// If this value is not null, it will use this property.
+@property (copy, nonatomic) NSString *recordSegmentsMergePreset;
+
+// True if a recordSegment has began
+@property (readonly, nonatomic) BOOL recordSegmentBegan;
 
 
 //////////////////
@@ -100,6 +114,7 @@
 // framerate from the camera.
 @property (assign, nonatomic) CMTimeScale videoMaxFrameRate;
 
+
 //////////////////
 // AUDIO SETTINGS
 ////
@@ -136,7 +151,7 @@
 - (void)saveToCameraRoll;
 
 // Start a new record segment.
-// This method is automatically called when the record resumes
+// This method is automatically called by the SCRecorder
 - (void)beginRecordSegment:(NSError**)error;
 
 // End the current record segment.
@@ -144,6 +159,8 @@
 // when calling [SCRecorder pause] if necessary.
 // segmentIndex contains the index of the segment recorded accessible
 // in the recordSegments array. If error is not null, if will be -1
+// If you don't remove the SCRecordSession from the SCRecorder while calling this method,
+// The SCRecorder might create a new recordSegment right after automatically.
 - (void)endRecordSegment:(void(^)(NSInteger segmentIndex, NSError* error))completionHandler;
 
 // Remove the record segment at the given index and delete the associated file
@@ -166,7 +183,6 @@
 // from this record session. This can be called anytime.
 - (AVAsset *)assetRepresentingRecordSegments;
 
-@property (readonly, nonatomic) BOOL recordSegmentBegan;
 
 //////////////////
 // PRIVATE API
