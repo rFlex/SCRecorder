@@ -133,7 +133,7 @@
     }
 	   
     CMTime frameTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-    CMTime realDuration = CMSampleBufferGetDuration(sampleBuffer);
+//    CMTime realDuration = CMSampleBufferGetDuration(sampleBuffer);
     
     SCAudioVideoRecorder *audioVideoRecorder = _audioVideoRecorder;
 	if ([audioVideoRecorder isPrepared]) {
@@ -172,7 +172,7 @@
 				[self.writerInput appendSampleBuffer:adjustedBuffer];
 //				CFRelease(adjustedBuffer);
                 
-                id<SCDataEncoderDelegate> delegate = self.delegate;
+//                id<SCDataEncoderDelegate> delegate = self.delegate;
 //				if ([delegate respondsToSelector:@selector(dataEncoder:didEncodeFrame:)]) {
 //					[delegate dataEncoder:self didEncodeFrame:currentTime];
 //				}

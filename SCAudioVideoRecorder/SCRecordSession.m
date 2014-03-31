@@ -16,6 +16,8 @@
     BOOL _audioInitializationFailed;
     BOOL _videoInitializationFailed;
     BOOL _shouldRecomputeTimeOffset;
+    BOOL _recordSegmentReady;
+    BOOL _currentSegmentEmpty;
     int _currentSegmentCount;
     CMTime _timeOffset;
     CMTime _lastTime;
@@ -124,7 +126,7 @@
             
             if ([writer startWriting]) {
                 [writer startSessionAtSourceTime:_lastTime];
-                NSLog(@"Started session on segment %d at %f", _currentSegmentCount, CMTimeGetSeconds(_lastTime));
+                _recordSegmentReady = YES;
             }
             
             _currentSegmentCount++;
@@ -241,6 +243,7 @@
 - (void)beginRecordSegment:(NSError**)error {
     if (_assetWriter == nil) {
         _assetWriter = [self createWriter:error];
+        _currentSegmentEmpty = YES;
     } else {
         if (error != nil) {
             *error = [SCRecordSession createError:@"A record segment has already began."];
@@ -253,23 +256,37 @@
 }
 
 - (void)endRecordSegment:(void(^)(NSInteger segmentNumber, NSError* error))completionHandler {
-    [self makeTimeOffsetDirty];
+    _recordSegmentReady = NO;
     
+    [self makeTimeOffsetDirty];
     AVAssetWriter *writer = _assetWriter;
-    _assetWriter = nil;
-    [writer finishWritingWithCompletionHandler: ^{
+    
+    if (_currentSegmentEmpty) {
+        [writer cancelWriting];
+        [self removeFile:writer.outputURL];
+        _assetWriter = nil;
+        
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSInteger segmentNumber = -1;
-            if (writer.error == nil) {
-                segmentNumber = _recordSegments.count;
-                [_recordSegments addObject:writer.outputURL];
-            }
-
             if (completionHandler != nil) {
-                completionHandler(segmentNumber, writer.error);
+                completionHandler(-1, nil);
             }
         });
-    }];    
+    } else {
+        [writer finishWritingWithCompletionHandler: ^{
+            _assetWriter = nil;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSInteger segmentNumber = -1;
+                if (writer.error == nil) {
+                    segmentNumber = _recordSegments.count;
+                    [_recordSegments addObject:writer.outputURL];
+                }
+                
+                if (completionHandler != nil) {
+                    completionHandler(segmentNumber, writer.error);
+                }
+            });
+        }];
+    }
 }
 
 - (void)mergeRecordSegments:(void(^)(NSError *error))completionHandler {
@@ -363,6 +380,8 @@
 }
 
 - (void)appendBuffer:(CMSampleBufferRef)buffer to:(AVAssetWriterInput*)input frameDuration:(CMTime)frameDuration {
+    _currentSegmentEmpty = NO;
+    
     CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(buffer);
     
     if (_shouldRecomputeTimeOffset) {
@@ -389,11 +408,6 @@
         [input appendSampleBuffer:adjustedBuffer];
     }
     
-    NSLog(@"%f - %d", CMTimeGetSeconds(_lastTime), _currentSegmentCount - 1);
-    if (_assetWriter.error != nil) {
-        NSLog(@"ERROR = %@", _assetWriter.error);
-    }
-    
     CFRelease(adjustedBuffer);
 }
 
@@ -408,12 +422,15 @@
 - (AVAsset *)assetRepresentingRecordSegments {
     AVMutableComposition * composition = [AVMutableComposition composition];
 	
+    int currentSegment = 0;
     for (NSURL *recordSegment in _recordSegments) {
         AVURLAsset *asset = [AVURLAsset assetWithURL:recordSegment];
         CMTimeRange timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
         
         NSError *error = nil;
         [composition insertTimeRange:timeRange ofAsset:asset atTime:composition.duration error:&error];
+        
+        currentSegment++;
     }
 
     return composition;
@@ -433,6 +450,10 @@
 
 - (CMTime)currentRecordDuration {
     return _lastTime;
+}
+
+- (BOOL)recordSegmentReady {
+    return _recordSegmentReady;
 }
 
 @end

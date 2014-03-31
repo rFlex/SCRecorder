@@ -203,12 +203,14 @@ unsigned int SCGetCoreCount()
         _isRecording = NO;
         for (SCRecordSession *recordSession in _recordSessions) {
             if (recordSession.shouldTrackRecordSegments) {
-                [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
-                    id<SCRecorderDelegate> delegate = self.delegate;
-                    if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {
-                        [delegate recorder:self didEndRecordSegment:recordSession segmentIndex:segmentIndex error:error];
-                    }
-                }];
+                if (recordSession.recordSegmentReady) {
+                    [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+                        id<SCRecorderDelegate> delegate = self.delegate;
+                        if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {
+                            [delegate recorder:self didEndRecordSegment:recordSession segmentIndex:segmentIndex error:error];
+                        }
+                    }];
+                }
             } else {
                 [recordSession makeTimeOffsetDirty];
             }
@@ -313,7 +315,7 @@ unsigned int SCGetCoreCount()
                 if (!_audioEnabled || recordSession.audioInitialized) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
-                    if (_isRecording) {
+                    if (_isRecording && recordSession.recordSegmentReady) {
                         [recordSession appendVideoSampleBuffer:sampleBuffer frameDuration:[self frameDurationFromConnection:connection]];
                         
                         id<SCRecorderDelegate> delegate = self.delegate;
@@ -344,7 +346,7 @@ unsigned int SCGetCoreCount()
                 if (!_videoEnabled || recordSession.videoInitialized) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
-                    if (_isRecording) {
+                    if (_isRecording && recordSession.recordSegmentReady) {
                         [recordSession appendAudioSampleBuffer:sampleBuffer];
                         
                         id<SCRecorderDelegate> delegate = self.delegate;
