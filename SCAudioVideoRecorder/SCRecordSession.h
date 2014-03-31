@@ -193,9 +193,11 @@
 @property (readonly, nonatomic) BOOL videoInitializationFailed;
 @property (readonly, nonatomic) BOOL audioInitializationFailed;
 @property (readonly, nonatomic) BOOL recordSegmentReady;
+@property (readonly, nonatomic) BOOL currentSegmentHasAudio;
+@property (readonly, nonatomic) BOOL currentSegmentHasVideo;
 
-- (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError **)error;
-- (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError **)error;
+- (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasAudio:(BOOL)hasAudio error:(NSError **)error;
+- (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasVideo:(BOOL)hasVideo error:(NSError **)error;
 
 - (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration;
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;

@@ -17,11 +17,13 @@
     BOOL _videoInitializationFailed;
     BOOL _shouldRecomputeTimeOffset;
     BOOL _recordSegmentReady;
-    BOOL _currentSegmentEmpty;
+    BOOL _currentSegmentHasVideo;
+    BOOL _currentSegmentHasAudio;
+    BOOL _recorderHasAudio;
+    BOOL _recorderHasVideo;
     int _currentSegmentCount;
     CMTime _timeOffset;
     CMTime _lastTime;
-    NSString *_suggestedFileType;
 }
 @end
 
@@ -88,6 +90,20 @@
     }
 }
 
+- (NSString*)suggestFileType {
+    NSString *fileType = self.fileType;
+    
+    if (fileType == nil) {
+        if (_recorderHasVideo && !_shouldIgnoreVideo) {
+            fileType = AVFileTypeMPEG4;
+        } else if (_recorderHasAudio && !_shouldIgnoreAudio) {
+            fileType = AVFileTypeAppleM4A;
+        }
+    }
+    
+    return fileType;
+}
+
 - (AVAssetWriter*)createWriter:(NSError**)error {
     NSError *theError = nil;
     AVAssetWriter *writer = nil;
@@ -99,13 +115,13 @@
         
         [self removeFile:file];
         
-        NSString *fileType = self.fileType;
+        NSString *fileType = [self suggestFileType];
         
-        if (fileType == nil) {
-            fileType = _suggestedFileType;
+        if (fileType != nil) {
+            writer = [[AVAssetWriter alloc] initWithURL:file fileType:fileType error:&theError];
+        } else {
+            theError = [SCRecordSession createError:@"No fileType has been set in the SCRecordSession"];
         }
-        
-        writer = [[AVAssetWriter alloc] initWithURL:file fileType:fileType error:&theError];
         
         if (theError == nil) {
             if (_videoInput != nil) {
@@ -148,10 +164,9 @@
     return (NSInteger)((Float32)numPixels * bitsPerPixel);
 }
 
-- (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError *__autoreleasing *)error {
-    _suggestedFileType = fileType;
-    
-    NSLog(@"Initialize %@ with suggestedFileType: %@", self, fileType);
+- (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasAudio:(BOOL)hasAudio error:(NSError *__autoreleasing *)error {
+    _recorderHasVideo = YES;
+    _recorderHasAudio = hasAudio;
     NSDictionary *videoSettings = self.videoOutputSettings;
         
     if (videoSettings == nil) {
@@ -184,11 +199,9 @@
     *error = nil;
 }
 
-- (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer suggestedFileType:(NSString *)fileType error:(NSError *__autoreleasing *)error {
-    _suggestedFileType = fileType;
-    
-    NSLog(@"Initialize %@ with suggestedFileType: %@", self, fileType);
-
+- (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasVideo:(BOOL)hasVideo error:(NSError *__autoreleasing *)error {
+    _recorderHasAudio = YES;
+    _recorderHasVideo = hasVideo;
     NSDictionary *audioSettings = self.audioOutputSettings;
     
     if (audioSettings == nil) {
@@ -246,7 +259,8 @@
 - (void)beginRecordSegment:(NSError**)error {
     if (_assetWriter == nil) {
         _assetWriter = [self createWriter:error];
-        _currentSegmentEmpty = YES;
+        _currentSegmentHasAudio = NO;
+        _currentSegmentHasVideo = NO;
     } else {
         if (error != nil) {
             *error = [SCRecordSession createError:@"A record segment has already began."];
@@ -264,7 +278,9 @@
     [self makeTimeOffsetDirty];
     AVAssetWriter *writer = _assetWriter;
     
-    if (_currentSegmentEmpty) {
+    BOOL currentSegmentNotEmpty = (_shouldIgnoreAudio || (_recorderHasAudio && _currentSegmentHasAudio)) && (_shouldIgnoreVideo || (_recorderHasVideo && _currentSegmentHasVideo));
+    
+    if (!currentSegmentNotEmpty) {
         [writer cancelWriting];
         [self removeFile:writer.outputURL];
         _assetWriter = nil;
@@ -294,11 +310,7 @@
 
 - (void)mergeRecordSegments:(void(^)(NSError *error))completionHandler {
     NSURL *outputUrl = self.outputUrl;
-    NSString *fileType = self.fileType;
-
-    if (fileType == nil) {
-        fileType = _suggestedFileType;
-    }
+    NSString *fileType = [self suggestFileType];
     
     
     if (fileType == nil) {
@@ -404,8 +416,6 @@
 }
 
 - (void)appendBuffer:(CMSampleBufferRef)buffer to:(AVAssetWriterInput*)input frameDuration:(CMTime)frameDuration {
-    _currentSegmentEmpty = NO;
-    
     CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(buffer);
     
     if (_shouldRecomputeTimeOffset) {
@@ -436,10 +446,12 @@
 }
 
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
+    _currentSegmentHasAudio = YES;
     [self appendBuffer:audioSampleBuffer to:_audioInput frameDuration:kCMTimeZero];
 }
 
 - (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration {
+    _currentSegmentHasVideo = YES;
     [self appendBuffer:videoSampleBuffer to:_videoInput frameDuration:frameDuration];
 }
 
@@ -491,6 +503,14 @@
     }
     
     return ratio;
+}
+
+- (BOOL)currentSegmentHasVideo {
+    return _currentSegmentHasVideo;
+}
+
+- (BOOL)currentSegmentHasAudio {
+    return _currentSegmentHasAudio;
 }
 
 @end

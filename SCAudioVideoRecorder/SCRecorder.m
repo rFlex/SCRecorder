@@ -28,7 +28,10 @@ unsigned int SCGetCoreCount()
     AVCaptureAudioDataOutput *_audioOutput;
     AVCaptureStillImageOutput *_photoOutput;
     dispatch_queue_t _dispatchQueue;
+    BOOL _hasVideo;
+    BOOL _hasAudio;
     BOOL _usingMainQueue;
+    int _beginSessionConfigurationCount;
 }
 
 @end
@@ -80,6 +83,24 @@ unsigned int SCGetCoreCount()
     return [[SCRecorder alloc] init];
 }
 
+- (void)beginSessionConfiguration {
+    if (_captureSession != nil) {
+        _beginSessionConfigurationCount++;
+        if (_beginSessionConfigurationCount == 1) {
+            [_captureSession beginConfiguration];
+        }
+    }
+}
+
+- (void)commitSessionConfiguration {
+    if (_captureSession != nil) {
+        _beginSessionConfigurationCount--;
+        if (_beginSessionConfigurationCount == 0) {
+            [_captureSession commitConfiguration];
+        }
+    }
+}
+
 - (void)openSession:(void(^)(NSError *sessionError, NSError * audioError, NSError * videoError, NSError *photoError))completionHandler {
     if (_captureSession != nil) {
         [NSException raise:@"SCCameraException" format:@"The session is already opened"];
@@ -91,9 +112,10 @@ unsigned int SCGetCoreCount()
     NSError *photoError = nil;
     
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
+    _beginSessionConfigurationCount = 0;
     _captureSession = session;
 
-    [session beginConfiguration];
+    [self beginSessionConfiguration];
     
     if ([session canSetSessionPreset:self.sessionPreset]) {
         session.sessionPreset = self.sessionPreset;
@@ -101,16 +123,21 @@ unsigned int SCGetCoreCount()
         sessionError = [SCRecorder createError:@"Cannot set session preset"];
     }
     
+    _hasVideo = NO;
     if (_videoEnabled) {
         if ([session canAddOutput:_videoOutput]) {
             [session addOutput:_videoOutput];
+            _hasVideo = YES;
         } else {
             videoError = [SCRecorder createError:@"Cannot add videoOutput inside the session"];
         }
     }
+    
+    _hasAudio = NO;
     if (_audioEnabled) {
         if ([session canAddOutput:_audioOutput]) {
             [session addOutput:_audioOutput];
+            _hasAudio = YES;
         } else {
             audioError = [SCRecorder createError:@"Cannot add audioOutput inside the sesssion"];
         }
@@ -122,13 +149,12 @@ unsigned int SCGetCoreCount()
             photoError = [SCRecorder createError:@"Cannot add photoOutput inside the session"];
         }
     }
-
     
     _previewLayer.session = session;
     
     [self reconfigureInputs];
     
-    [session commitConfiguration];
+    [self commitSessionConfiguration];
     
     if (completionHandler != nil) {
         completionHandler(nil, audioError, videoError, photoError);
@@ -205,16 +231,6 @@ unsigned int SCGetCoreCount()
     return [NSError errorWithDomain:@"SCRecorder" code:200 userInfo:@{NSLocalizedDescriptionKey : errorDescription}];
 }
 
-- (NSString*)suggestedFileType:(SCRecordSession *)recordSession {
-    if (self.videoEnabled && !recordSession.shouldIgnoreVideo) {
-        return AVFileTypeMPEG4;
-    } else if (self.audioEnabled && !recordSession.shouldIgnoreAudio) {
-        return AVFileTypeAppleM4A;
-    }
-    
-    return nil;
-}
-
 - (void)beginRecordSegmentIfNeeded:(SCRecordSession *)recordSession {
     if (!recordSession.recordSegmentBegan) {
         NSError *error = nil;
@@ -269,7 +285,7 @@ unsigned int SCGetCoreCount()
             if (!recordSession.videoInitializationFailed && !recordSession.shouldIgnoreVideo) {
                 if (!recordSession.videoInitialized) {
                     NSError *error = nil;
-                    [recordSession initializeVideoUsingSampleBuffer:sampleBuffer suggestedFileType:[self suggestedFileType:recordSession] error:&error];
+                    [recordSession initializeVideoUsingSampleBuffer:sampleBuffer hasAudio:_hasAudio error:&error];
                     
                     id<SCRecorderDelegate> delegate = self.delegate;
                     if ([delegate respondsToSelector:@selector(recorder:didInitializeVideoInRecordSession:error:)]) {
@@ -280,7 +296,7 @@ unsigned int SCGetCoreCount()
                 }
                 
                 
-                if (!_audioEnabled || recordSession.audioInitialized || recordSession.shouldIgnoreAudio) {
+                if (!_hasAudio || recordSession.audioInitialized || recordSession.shouldIgnoreAudio) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording && recordSession.recordSegmentReady) {
@@ -301,7 +317,7 @@ unsigned int SCGetCoreCount()
             if (!recordSession.audioInitializationFailed && !recordSession.shouldIgnoreAudio) {
                 if (!recordSession.audioInitialized) {
                     NSError * error = nil;
-                    [recordSession initializeAudioUsingSampleBuffer:sampleBuffer suggestedFileType:[self suggestedFileType:recordSession] error:&error];
+                    [recordSession initializeAudioUsingSampleBuffer:sampleBuffer hasVideo:_hasVideo error:&error];
                     
                     id<SCRecorderDelegate> delegate = self.delegate;
                     if ([delegate respondsToSelector:@selector(recorder:didInitializeAudioInRecordSession:error:)]) {
@@ -311,10 +327,11 @@ unsigned int SCGetCoreCount()
                     }
                 }
                 
-                if (!_videoEnabled || recordSession.videoInitialized || recordSession.shouldIgnoreVideo) {
+                if (!_hasVideo || recordSession.videoInitialized || recordSession.shouldIgnoreVideo) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
-                    if (_isRecording && recordSession.recordSegmentReady) {
+                    // If needed, we always wait that the recordSession received a video buffer before sending audio buffers
+                    if (_isRecording && recordSession.recordSegmentReady && (!_hasVideo || recordSession.currentSegmentHasVideo)) {
                         [recordSession appendAudioSampleBuffer:sampleBuffer];
                         
                         id<SCRecorderDelegate> delegate = self.delegate;
@@ -360,6 +377,8 @@ unsigned int SCGetCoreCount()
 }
 
 - (void)reconfigureInputs {
+    [self beginSessionConfiguration];
+    
     NSError *videoError = nil;
     [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
     self.videoOrientation = _videoOrientation;
@@ -367,9 +386,19 @@ unsigned int SCGetCoreCount()
     NSError *audioError = nil;
     [self configureDevice:[self audioDevice] mediaType:AVMediaTypeAudio error:&audioError];
     
+    [self commitSessionConfiguration];
+    
     id<SCRecorderDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(recorder:didReconfigureInputs:audioInputError:)]) {
         [delegate recorder:self didReconfigureInputs:videoError audioInputError:audioError];
+    }
+}
+
+- (void)switchCaptureDevices {
+    if (self.device == AVCaptureDevicePositionBack) {
+        self.device = AVCaptureDevicePositionFront;
+    } else {
+        self.device = AVCaptureDevicePositionBack;
     }
 }
 

@@ -204,7 +204,7 @@
 }
 
 - (void) handleReverseCameraTapped:(id)sender {
-//	[self.camera switchCamera];
+	[_recorder switchCaptureDevices];
 }
 
 - (void) handleStopButtonTapped:(id)sender {
@@ -308,6 +308,7 @@
         SCRecordSession *session = [SCRecordSession recordSession];
         session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
         session.shouldTrackRecordSegments = YES;
+//        session.shouldIgnoreAudio = YES;
         
         _recorder.recordSession = session;
     }
@@ -333,9 +334,16 @@
     }
 }
 
+- (void)recorder:(SCRecorder *)recorder didBeginRecordSegment:(SCRecordSession *)recordSession error:(NSError *)error {
+    NSLog(@"Began record segment: %@", error);
+}
+
+- (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error {
+    NSLog(@"End record segment %d", (int)segmentIndex);
+}
+
 - (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBuffer:(SCRecordSession *)recordSession {
     self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", CMTimeGetSeconds(recordSession.currentRecordDuration)];
-    NSLog(@"Recorded ratio: %f", recordSession.ratioRecorded);
 }
 
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {

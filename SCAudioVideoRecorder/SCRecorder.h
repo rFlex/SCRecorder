@@ -101,6 +101,16 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // This wont close the session
 - (void)endRunningSession;
 
+// Offer a way to configure multiple things at once
+// You can call multiple beginSessionConfiguration recursively
+// Each call of beginSessionConfiguration must be followed by a commitSessionConfiguration at some point
+// Only the latest commitSessionConfiguration will in fact actually commit the configuration
+- (void)beginSessionConfiguration;
+- (void)commitSessionConfiguration;
+
+// Switch between back and front device
+- (void)switchCaptureDevices;
+
 // Calling this method will make the recorder to append sample buffers inside the current setted recordSession
 - (void)record;
 
