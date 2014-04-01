@@ -8,6 +8,7 @@
 
 #include <sys/sysctl.h>
 #import "SCRecorder.h"
+#define SCRecorderFocusContext ((void*)0x1)
 
 unsigned int SCGetCoreCount()
 {
@@ -189,6 +190,10 @@ unsigned int SCGetCoreCount()
     if (_captureSession != nil) {
         for (AVCaptureDeviceInput *input in _captureSession.inputs) {
             [_captureSession removeInput:input];
+            if ([input.device hasMediaType:AVMediaTypeVideo]) {
+                [self removeVideoObservers:input.device];
+            }
+
         }
         for (AVCaptureOutput *output in _captureSession.outputs) {
             [_captureSession removeOutput:output];
@@ -348,6 +353,33 @@ unsigned int SCGetCoreCount()
     }
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    id<SCRecorderDelegate> delegate = self.delegate;
+    
+    if (context == SCRecorderFocusContext) {
+        BOOL isFocusing = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+        if (isFocusing) {
+            if ([delegate respondsToSelector:@selector(recorderDidStartFocus:)]) {
+                [delegate recorderDidStartFocus:self];
+            }
+        } else {
+            if ([delegate respondsToSelector:@selector(recorderDidEndFocus:)]) {
+                [delegate recorderDidEndFocus:self];
+            }
+        }
+    }
+}
+
+- (void)addVideoObservers:(AVCaptureDevice*)videoDevice {
+    [videoDevice addObserver:self forKeyPath:@"focusMode" options:NSKeyValueObservingOptionNew context:SCRecorderFocusContext];
+    [videoDevice addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:SCRecorderFocusContext];
+}
+
+- (void)removeVideoObservers:(AVCaptureDevice*)videoDevice {
+    [videoDevice removeObserver:self forKeyPath:@"focusMode"];
+    [videoDevice removeObserver:self forKeyPath:@"adjustingFocus"];
+}
+
 - (void)configureDevice:(AVCaptureDevice*)newDevice mediaType:(NSString*)mediaType error:(NSError**)error {
     AVCaptureDeviceInput *currentInput = [self currentDeviceInputForMediaType:mediaType];
     AVCaptureDevice *currentUsedDevice = currentInput.device;
@@ -360,13 +392,20 @@ unsigned int SCGetCoreCount()
         }
         
         if (*error == nil) {
+
             if (currentInput != nil) {
                 [_captureSession removeInput:currentInput];
+                if ([currentInput.device hasMediaType:AVMediaTypeVideo]) {
+                    [self removeVideoObservers:currentInput.device];
+                }
             }
             
             if (newInput != nil) {
                 if ([_captureSession canAddInput:newInput]) {
                     [_captureSession addInput:newInput];
+                    if ([newInput.device hasMediaType:AVMediaTypeVideo]) {
+                        [self addVideoObservers:newInput.device];
+                    }
                 } else {
                     *error = [SCRecorder createError:@"Failed to add input to capture session"];
                 }

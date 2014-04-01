@@ -244,24 +244,6 @@
     
 }
 
-- (CMSampleBufferRef)adjustBuffer:(CMSampleBufferRef)sample withTimeStamp:(CMTime)timeStamp andDuration:(CMTime)duration {
-    CMItemCount count;
-    CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
-    CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
-    CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
-    
-    for (CMItemCount i = 0; i < count; i++) {
-        pInfo[i].decodeTimeStamp = timeStamp;
-        pInfo[i].presentationTimeStamp = timeStamp;
-        pInfo[i].duration = duration;
-    }
-    
-    CMSampleBufferRef sout;
-    CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
-    free(pInfo);
-    return sout;
-}
-
 //
 // The following function is from http://www.gdcl.co.uk/2013/02/20/iPhone-Pause.html
 //
@@ -443,13 +425,6 @@
     }
 }
 
-- (void)computeTimeOffset:(CMTime)actualBufferTime {
-    if (_shouldRecomputeTimeOffset) {
-        _shouldRecomputeTimeOffset = NO;
-        _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
-    }
-}
-
 - (void)updateLastTime:(CMSampleBufferRef)adjustedBuffer duration:(CMTime)duration frameDuration:(CMTime)frameDuration {
     _lastTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
     
@@ -464,28 +439,14 @@
     }
 }
 
-- (void)appendBuffer:(CMSampleBufferRef)buffer to:(AVAssetWriterInput*)input frameDuration:(CMTime)frameDuration {
-    CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(buffer);
-    
-    [self computeTimeOffset:actualBufferTime];
-    
-    CMTime duration = CMSampleBufferGetDuration(buffer);
-    CMSampleBufferRef adjustedBuffer = [self adjustBuffer:buffer withTimeOffset:_timeOffset andDuration:duration];
- 
-    [self updateLastTime:adjustedBuffer duration:duration frameDuration:frameDuration];
-    
-    if ([input isReadyForMoreMediaData]) {
-        [input appendSampleBuffer:adjustedBuffer];
-    }
-    
-    CFRelease(adjustedBuffer);
-}
-
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
     if (!IS_WAITING_VIDEO && [_audioInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer);
         
-        [self computeTimeOffset:actualBufferTime];
+        if (_shouldRecomputeTimeOffset) {
+            _shouldRecomputeTimeOffset = NO;
+            _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
+        }
         
         CMTime duration = CMSampleBufferGetDuration(audioSampleBuffer);
         CMSampleBufferRef adjustedBuffer = [self adjustBuffer:audioSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
@@ -507,7 +468,10 @@
     if ([_videoInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
         
-        [self computeTimeOffset:actualBufferTime];
+        if (_shouldRecomputeTimeOffset) {
+            _shouldRecomputeTimeOffset = NO;
+            _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
+        }
         
         CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
         

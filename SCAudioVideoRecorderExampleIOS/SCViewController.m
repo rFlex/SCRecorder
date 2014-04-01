@@ -109,7 +109,7 @@
     [_recorder endRunningSession];
 }
 
-- (void) updateLabelForSecond:(Float64)totalRecorded {
+- (void)updateLabelForSecond:(Float64)totalRecorded {
     self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", totalRecorded];
 }
 
@@ -145,11 +145,11 @@
 }
 
 // Focus
-- (void)cameraDidStartFocus:(SCCamera *)camera {
+- (void)recorderDidStartFocus:(SCRecorder *)recorder {
     [self.focusView showFocusAnimation];
 }
 
-- (void)cameraDidStopFocus:(SCCamera *)camera {
+- (void)recorderDidEndFocus:(SCRecorder *)recorder {
     [self.focusView hideFocusAnimation];
 }
 
