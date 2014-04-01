@@ -54,9 +54,14 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Will be YES if the SCRecorder is currently recording
 @property (readonly, nonatomic) BOOL isRecording;
 
+// Change the flash mode on the camera
 @property (assign, nonatomic) SCFlashMode flashMode;
+
+// Change the current used device
 @property (assign, nonatomic) AVCaptureDevicePosition device;
-@property (assign, nonatomic) AVCaptureFocusMode focusMode;
+
+// Get the mode used for the focus
+@property (readonly, nonatomic) AVCaptureFocusMode focusMode;
 
 // The outputSettings used in the AVCaptureStillImageOutput
 @property (copy, nonatomic) NSDictionary *photoOutputSettings;
@@ -83,6 +88,9 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 // Change the video orientation for the video
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
+
+// Change the frame rate for the video
+@property (assign, nonatomic) CMTimeScale frameRate;
 
 // Focus
 @property (readonly, nonatomic) BOOL focusSupported;
@@ -122,6 +130,10 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 // Switch to continuous auto focus mode at the specified point
 - (void)continuousFocusAtPoint:(CGPoint)point;
+
+// Set an activeFormat that supports the requested framerate
+// This does not change the framerate
+- (BOOL)setActiveFormatThatSupportsFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError**)error;
 
 // Calling this method will make the recorder to append sample buffers inside the current setted recordSession
 - (void)record;

@@ -371,12 +371,10 @@ unsigned int SCGetCoreCount()
 }
 
 - (void)addVideoObservers:(AVCaptureDevice*)videoDevice {
-    [videoDevice addObserver:self forKeyPath:@"focusMode" options:NSKeyValueObservingOptionNew context:SCRecorderFocusContext];
     [videoDevice addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:SCRecorderFocusContext];
 }
 
 - (void)removeVideoObservers:(AVCaptureDevice*)videoDevice {
-    [videoDevice removeObserver:self forKeyPath:@"focusMode"];
     [videoDevice removeObserver:self forKeyPath:@"adjustingFocus"];
 }
 
@@ -392,7 +390,6 @@ unsigned int SCGetCoreCount()
         }
         
         if (*error == nil) {
-
             if (currentInput != nil) {
                 [_captureSession removeInput:currentInput];
                 if ([currentInput.device hasMediaType:AVMediaTypeVideo]) {
@@ -706,5 +703,141 @@ unsigned int SCGetCoreCount()
         _recordSession = recordSession;
     }
 }
+
+- (AVCaptureFocusMode)focusMode {
+    return [self currentVideoDeviceInput].device.focusMode;
+}
+
+- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate dimensions:(CMVideoDimensions)dimensions {
+    CMVideoDimensions size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
+    
+    if (size.width >= dimensions.width && size.height >= dimensions.height) {
+        for (AVFrameRateRange * range in format.videoSupportedFrameRateRanges) {
+            if ((CMTimeScale)range.minFrameRate <= frameRate && (CMTimeScale)range.maxFrameRate >= frameRate) {
+                return YES;
+            }
+        }
+    }
+    
+    return NO;
+}
+
+- (AVCaptureConnection*) getVideoConnection {
+	for (AVCaptureConnection * connection in _videoOutput.connections) {
+		for (AVCaptureInputPort * port in connection.inputPorts) {
+			if ([port.mediaType isEqual:AVMediaTypeVideo]) {
+				return connection;
+			}
+		}
+	}
+	
+	return nil;
+}
+
+- (CMTimeScale)frameRate {
+    AVCaptureDeviceInput * deviceInput = [self currentVideoDeviceInput];
+    
+    CMTimeScale framerate = 0;
+    
+    if (deviceInput != nil) {
+        if ([deviceInput.device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
+            framerate = deviceInput.device.activeVideoMaxFrameDuration.timescale;
+        } else {
+            AVCaptureConnection * videoConnection = [self getVideoConnection];
+            framerate = videoConnection.videoMaxFrameDuration.timescale;
+        }
+    }
+    
+    return framerate;
+}
+
+- (void)setFrameRate:(CMTimeScale)framePerSeconds {
+    CMTime fps = CMTimeMake(1, framePerSeconds);
+    
+    AVCaptureDevice * device = [self videoDevice];
+    
+    if (device != nil) {
+        NSError * error = nil;
+        BOOL formatSupported = NO;
+        for (AVFrameRateRange * frameRateRange in device.activeFormat.videoSupportedFrameRateRanges) {
+            if (((NSInteger)frameRateRange.minFrameRate <= framePerSeconds) && (framePerSeconds <= (NSInteger)frameRateRange.maxFrameRate)) {
+                formatSupported = YES;
+                break;
+            }
+        }
+        
+        if (formatSupported) {
+            if ([device respondsToSelector:@selector(activeVideoMinFrameDuration)]) {
+                if ([device lockForConfiguration:&error]) {
+                    device.activeVideoMaxFrameDuration = fps;
+                    device.activeVideoMinFrameDuration = fps;
+                    [device unlockForConfiguration];
+                } else {
+                    NSLog(@"Failed to set FramePerSeconds into camera device: %@", error.description);
+                }
+            } else {
+                AVCaptureConnection * connection = [self getVideoConnection];
+                if (connection.isVideoMaxFrameDurationSupported) {
+                    connection.videoMaxFrameDuration = fps;
+                } else {
+                    NSLog(@"Failed to set FrameRate into camera device");
+                }
+                if (connection.isVideoMinFrameDurationSupported) {
+                    connection.videoMinFrameDuration = fps;
+                } else {
+                    NSLog(@"Failed to set FrameRate into camera device");
+                }
+                
+            }
+        } else {
+            NSLog(@"Unsupported frame rate %ld on current device format.", (long)framePerSeconds);
+        }
+    }
+}
+
+- (BOOL)setActiveFormatThatSupportsFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError *__autoreleasing *)error {
+    AVCaptureDevice * device = [self videoDevice];
+    CMVideoDimensions dimensions;
+    dimensions.width = width;
+    dimensions.height = height;
+    
+    BOOL foundSupported = NO;
+    
+    if (device != nil) {
+        if (device.activeFormat != nil) {
+            foundSupported = [self formatInRange:device.activeFormat frameRate:frameRate dimensions:dimensions];
+        }
+        
+        if (!foundSupported) {
+            for (AVCaptureDeviceFormat * format in device.formats) {
+                if ([self formatInRange:format frameRate:frameRate dimensions:dimensions]) {
+                    CMTimeScale oldFrameRate = self.frameRate;
+                    if ([device lockForConfiguration:error]) {
+                        device.activeFormat = format;
+                        [device unlockForConfiguration];
+                        foundSupported = YES;
+                        self.frameRate = oldFrameRate;
+                        break;
+                    }
+                }
+            }
+            
+            if (!foundSupported && error != nil) {
+                *error = [SCRecorder createError:[NSString stringWithFormat:@"No format that supports framerate %d and dimensions %d/%d was found", (int)frameRate, dimensions.width, dimensions.height]];
+            }
+        }
+    } else {
+        if (error != nil) {
+            *error = [SCRecorder createError:@"The camera must be initialized before setting active format"];
+        }
+    }
+    
+    if (foundSupported && error != nil) {
+        *error = nil;
+    }
+    
+    return foundSupported;
+}
+
 
 @end

@@ -56,7 +56,8 @@
     self.capturePhotoButton.alpha = 0.0;
     
     _recorder = [SCRecorder recorder];
-    _recorder.sessionPreset = AVCaptureSessionPresetHigh;
+    _recorder.sessionPreset = AVCaptureSessionPresetMedium;
+//    _recorder.audioEnabled = NO;
     _recorder.delegate = self;
     
     UIView *previewView = self.previewView;
@@ -76,6 +77,10 @@
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
+        if ([_recorder setActiveFormatThatSupportsFrameRate:120 width:1280 andHeight:720 error:nil]) {
+            _recorder.frameRate = 120;
+        }
+        
         NSLog(@"==== Opened session ====");
         NSLog(@"Session error: %@", sessionError.description);
         NSLog(@"Audio error : %@", audioError.description);
@@ -85,6 +90,43 @@
         [self prepareCamera];
     }];
     
+//    SCRecordSession *recordSession = [SCRecordSession recordSession];
+//    recordSession.fileType = AVFileTypeMPEG4;
+//    NSString* format = @"/Users/simoncorsin/1396378999SCVideo.%d.mp4";
+//    for (int i = 0; i < 4; i++) {
+//        if (i != 3)
+//        [recordSession addSegment:[NSURL fileURLWithPath:[NSString stringWithFormat:format, i]]];
+//    }
+//    AVAsset *asset = [recordSession assetRepresentingRecordSegments];
+//    NSError *error = nil;
+//    AVAssetReader *reader = [[AVAssetReader alloc] initWithAsset:asset error:&error];
+//    
+//    if (error == nil) {
+//        AVAssetTrack *videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+////        AVAssetTrack *audioTrack = [[asset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
+//        
+//        AVAssetReaderTrackOutput *videoTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:nil];
+////        AVAssetReaderTrackOutput *audioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:nil];
+//        
+//        [reader addOutput:videoTrackOutput];
+////        [reader addOutput:audioTrackOutput];
+//        
+//        [reader startReading];
+//        while (reader.status == AVAssetReaderStatusReading) {
+//            CMSampleBufferRef videoBuf = [videoTrackOutput copyNextSampleBuffer];
+//            
+//            
+//            NSLog(@"%f/%f", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(videoBuf)), CMTimeGetSeconds(CMSampleBufferGetDuration(videoBuf)));
+//            
+////            CFRelease(videoBuf);
+//        }
+//        
+//    } else {
+//        NSLog(@"Failed to initialize reader: %@", error);
+//    }
+//    [recordSession mergeRecordSegments:^(NSError *error) {
+//        NSLog(@"Error :%@", error);
+//    }];
 }
 
 - (void)recorder:(SCRecorder *)recorder didReconfigureInputs:(NSError *)videoInputError audioInputError:(NSError *)audioInputError {
@@ -125,7 +167,7 @@
         [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
         ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
         [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
-            DLog(@"Saved to the camera roll.");
+//            DLog(@"Saved to the camera roll.");
         }];
     }
 }
@@ -188,14 +230,38 @@
     }
 }
 
+- (void)checkDaSegment:(int)segmentNumber recordSession:(SCRecordSession *)recordSession {
+    if (segmentNumber < recordSession.recordSegments.count) {
+        NSURL *segment = [recordSession.recordSegments objectAtIndex:segmentNumber];
+        
+        [recordSession removeSegmentAtIndex:segmentNumber deleteFile:NO];
+        [recordSession mergeRecordSegments:^(NSError *error) {
+            if (error == nil) {
+                NSLog(@"MADE IT WORK REMOVING THE SEGMENT %d", segmentNumber);
+                [self showVideo:[AVURLAsset URLAssetWithURL:segment options:nil]];
+                
+//                [self showVideo:[AVURLAsset URLAssetWithURL:recordSession.outputUrl options:nil]];
+            } else {
+                [recordSession insertSegment:segment atIndex:segmentNumber];
+                [self checkDaSegment:segmentNumber + 1 recordSession:recordSession];
+            }
+        }];
+    } else {
+        NSLog(@"Didnt find a solution after trying %d segments :(", segmentNumber);
+    }
+}
+
 - (void)finishSession:(SCRecordSession *)recordSession {
     [recordSession endSession:^(NSError *error) {
         if (error == nil) {
             [self showVideo:[AVURLAsset URLAssetWithURL:recordSession.outputUrl options:nil]];
+            [self prepareCamera];
         } else {
             NSLog(@"Failed to end session: %@", error);
+            NSLog(@"Output url: %@", recordSession.outputUrl);
+//            [self showVideo:[recordSession assetRepresentingRecordSegments]];
+            [self checkDaSegment:0 recordSession:recordSession];
         }
-        [self prepareCamera];
     }];
 }
 
@@ -310,7 +376,7 @@
 }
 
 - (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error {
-    NSLog(@"End record segment %d", (int)segmentIndex);
+    NSLog(@"End record segment %d: %@", (int)segmentIndex, error);
 }
 
 - (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBuffer:(SCRecordSession *)recordSession {

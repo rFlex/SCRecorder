@@ -161,16 +161,22 @@
 // in the recordSegments array. If error is not null, if will be -1
 // If you don't remove the SCRecordSession from the SCRecorder while calling this method,
 // The SCRecorder might create a new recordSegment right after automatically.
-- (void)endRecordSegment:(void(^)(NSInteger segmentIndex, NSError* error))completionHandler;
+- (void)endRecordSegment:(void(^)(NSInteger segmentIndex, NSError *error))completionHandler;
 
-// Remove the record segment at the given index and delete the associated file
-- (void)removeSegmentAtIndex:(NSInteger)segmentIndex;
+// Remove the record segment at the given index and delete the associated file if asked
+- (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile;
+
+// Manually add a record segment
+- (void)addSegment:(NSURL *)fileUrl;
+
+// Manually insert a record segment
+- (void)insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex;
 
 // Remove all the record segments and their associated files
 - (void)removeAllSegments;
 
 // Merge all recordSegments into the outputUrl
-- (void)mergeRecordSegments:(void(^)(NSError *))completionHandler;
+- (void)mergeRecordSegments:(void(^)(NSError *error))completionHandler;
 
 // End the session.
 // End the current recordSegment (if any), call mergeRecordSegments and
