@@ -523,7 +523,7 @@
         
         if (CMTIME_COMPARE_INLINE(lastTimeVideo, >=, _lastTimeVideo)) {
             if (CMTIME_IS_INVALID(duration)) {
-                if (_videoMaxFrameRate == 0) {
+                if (_videoMaxFrameRate == 0 || frameDuration.timescale < _videoMaxFrameRate) {
                     duration = frameDuration;
                 } else {
                     duration = CMTimeMake(1, _videoMaxFrameRate);

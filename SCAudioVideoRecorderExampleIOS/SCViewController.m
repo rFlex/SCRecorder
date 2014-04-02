@@ -78,7 +78,7 @@
     
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
         if ([_recorder setActiveFormatThatSupportsFrameRate:120 width:1280 andHeight:720 error:nil]) {
-            _recorder.frameRate = 120;
+            _recorder.frameRate = 10;
         }
         
         NSLog(@"==== Opened session ====");
@@ -308,7 +308,7 @@
         session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
         session.shouldTrackRecordSegments = YES;
         session.videoMaxFrameRate = 30;
-        session.videoTimeScale = 0.25;
+//        session.videoTimeScale = 0.25;
         
 //        session.videoMaxFrameRate = 30;
 //        session.shouldIgnoreAudio = YES;
