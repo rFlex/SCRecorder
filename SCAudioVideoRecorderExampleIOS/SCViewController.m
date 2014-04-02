@@ -89,44 +89,6 @@
         NSLog(@"=======================");
         [self prepareCamera];
     }];
-    
-//    SCRecordSession *recordSession = [SCRecordSession recordSession];
-//    recordSession.fileType = AVFileTypeMPEG4;
-//    NSString* format = @"/Users/simoncorsin/1396378999SCVideo.%d.mp4";
-//    for (int i = 0; i < 4; i++) {
-//        if (i != 3)
-//        [recordSession addSegment:[NSURL fileURLWithPath:[NSString stringWithFormat:format, i]]];
-//    }
-//    AVAsset *asset = [recordSession assetRepresentingRecordSegments];
-//    NSError *error = nil;
-//    AVAssetReader *reader = [[AVAssetReader alloc] initWithAsset:asset error:&error];
-//    
-//    if (error == nil) {
-//        AVAssetTrack *videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
-////        AVAssetTrack *audioTrack = [[asset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0];
-//        
-//        AVAssetReaderTrackOutput *videoTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:nil];
-////        AVAssetReaderTrackOutput *audioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:nil];
-//        
-//        [reader addOutput:videoTrackOutput];
-////        [reader addOutput:audioTrackOutput];
-//        
-//        [reader startReading];
-//        while (reader.status == AVAssetReaderStatusReading) {
-//            CMSampleBufferRef videoBuf = [videoTrackOutput copyNextSampleBuffer];
-//            
-//            
-//            NSLog(@"%f/%f", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(videoBuf)), CMTimeGetSeconds(CMSampleBufferGetDuration(videoBuf)));
-//            
-////            CFRelease(videoBuf);
-//        }
-//        
-//    } else {
-//        NSLog(@"Failed to initialize reader: %@", error);
-//    }
-//    [recordSession mergeRecordSegments:^(NSError *error) {
-//        NSLog(@"Error :%@", error);
-//    }];
 }
 
 - (void)recorder:(SCRecorder *)recorder didReconfigureInputs:(NSError *)videoInputError audioInputError:(NSError *)audioInputError {

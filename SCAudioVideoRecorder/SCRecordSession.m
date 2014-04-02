@@ -204,7 +204,10 @@
                           AVVideoScalingModeKey : self.videoScalingMode,
                           AVVideoWidthKey : [NSNumber numberWithInteger:videoSize.width],
                           AVVideoHeightKey : [NSNumber numberWithInteger:videoSize.height],
-                          AVVideoCompressionPropertiesKey : @{AVVideoAverageBitRateKey: [NSNumber numberWithInteger:bitsPerSecond]}
+                          AVVideoCompressionPropertiesKey : @{
+                                  AVVideoAverageBitRateKey: [NSNumber numberWithInteger:bitsPerSecond],
+                                  AVVideoMaxKeyFrameIntervalKey : @1
+                                  }
                           };
     }
     
@@ -395,6 +398,7 @@
             exportSession.outputURL = outputUrl;
             exportSession.outputFileType = fileType;
             exportSession.shouldOptimizeForNetworkUse = YES;
+            exportSession.timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
             [exportSession exportAsynchronouslyWithCompletionHandler:^{
                 NSError *error = exportSession.error;
                 NSLog(@"Finished merge error with error: %d", error != nil);
@@ -547,18 +551,16 @@
 }
 
 - (AVAsset *)assetRepresentingRecordSegments {
-    AVMutableComposition * composition = [AVMutableComposition composition];
-	
+    AVMutableComposition *composition = [AVMutableComposition composition];
+    
+    NSDictionary *options = @{AVURLAssetPreferPreciseDurationAndTimingKey : @YES};
     int currentSegment = 0;
     for (NSURL *recordSegment in _recordSegments) {
-        AVURLAsset *asset = [AVURLAsset assetWithURL:recordSegment];
-        CMTimeRange timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
-        
-        NSError *error = nil;
-        
-        NSLog(@"%d - %f/%f", currentSegment, CMTimeGetSeconds(asset.duration), CMTimeGetSeconds(composition.duration));
+        AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:recordSegment options:options];
+        CMTime currentTime = composition.duration;
 
-        [composition insertTimeRange:timeRange ofAsset:asset atTime:composition.duration error:&error];
+        NSError *error = nil;
+        [composition insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofAsset:asset atTime:currentTime error:&error];
         
         currentSegment++;
     }

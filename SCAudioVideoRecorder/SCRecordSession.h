@@ -47,7 +47,7 @@
 // If trackRecordSegments is true, every pause/record actions
 // will result in a new entry in this array
 // If trackRecordSegments is false, it will contains only one segment
-@property (readonly, nonatomic) NSArray* recordSegments;
+@property (readonly, nonatomic) NSArray *recordSegments;
 
 // The current record duration
 @property (readonly, nonatomic) CMTime currentRecordDuration;
