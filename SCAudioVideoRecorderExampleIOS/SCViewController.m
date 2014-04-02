@@ -57,7 +57,7 @@
     
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = AVCaptureSessionPresetMedium;
-//    _recorder.audioEnabled = NO;
+    _recorder.audioEnabled = NO;
     _recorder.delegate = self;
     
     UIView *previewView = self.previewView;
@@ -307,6 +307,10 @@
         SCRecordSession *session = [SCRecordSession recordSession];
         session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
         session.shouldTrackRecordSegments = YES;
+        session.videoMaxFrameRate = 30;
+        session.videoTimeScale = 0.25;
+        
+//        session.videoMaxFrameRate = 30;
 //        session.shouldIgnoreAudio = YES;
         
         _recorder.recordSession = session;

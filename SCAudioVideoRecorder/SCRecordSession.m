@@ -13,6 +13,8 @@
 #define IS_WAITING_AUDIO (CAN_HANDLE_AUDIO && !_currentSegmentHasAudio)
 #define IS_WAITING_VIDEO (CAN_HANDLE_VIDEO && !_currentSegmentHasVideo)
 
+#pragma mark - Private definition
+
 @interface SCRecordSession() {
     AVAssetWriter *_assetWriter;
     AVAssetWriterInput *_videoInput;
@@ -67,6 +69,7 @@
         _lastTime = kCMTimeZero;
         _lastTimeVideo = kCMTimeZero;
         _lastTimeAudio = kCMTimeZero;
+        _videoTimeScale = 1;
         
         long timeInterval =  (long)[[NSDate date] timeIntervalSince1970];
         self.outputUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%ld%@", NSTemporaryDirectory(), timeInterval, @"SCVideo.mp4"]];
@@ -98,11 +101,9 @@
 }
 
 - (void)removeAllSegments {
-    NSLog(@"Removing all segments");
     while (_recordSegments.count > 0) {
         [self removeSegmentAtIndex:0 deleteFile:YES];
     }
-    NSLog(@"Removed all segments");
 }
 
 - (NSString*)suggestFileType {
@@ -175,7 +176,7 @@
     return writer;
 }
 
-+ (NSInteger) getBitsPerSecondForOutputVideoSize:(CGSize)size andBitsPerPixel:(Float32)bitsPerPixel {
++ (NSInteger)getBitsPerSecondForOutputVideoSize:(CGSize)size andBitsPerPixel:(Float32)bitsPerPixel {
     int numPixels = size.width * size.height;
     
     return (NSInteger)((Float32)numPixels * bitsPerPixel);
@@ -496,7 +497,7 @@
                 _lastTime = lastTimeAudio;
             }
             
-            NSLog(@"Appended audio at %f/%f", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(duration));
+//            NSLog(@"Appended audio at %f/%f", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(duration));
             
             [_audioInput appendSampleBuffer:adjustedBuffer];
             _currentSegmentHasAudio = YES;
@@ -516,34 +517,35 @@
         }
         
         CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
-        duration = frameDuration;
-        
         CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
         
         CMTime lastTimeVideo = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
         
         if (CMTIME_COMPARE_INLINE(lastTimeVideo, >=, _lastTimeVideo)) {
-            if (CMTIME_IS_VALID(duration)) {
-                lastTimeVideo = CMTimeAdd(lastTimeVideo, duration);
-            } else {
+            if (CMTIME_IS_INVALID(duration)) {
                 if (_videoMaxFrameRate == 0) {
-                    lastTimeVideo = CMTimeAdd(lastTimeVideo, frameDuration);
+                    duration = frameDuration;
                 } else {
-                    lastTimeVideo = CMTimeAdd(lastTimeVideo, CMTimeMake(1, _videoMaxFrameRate));
+                    duration = CMTimeMake(1, _videoMaxFrameRate);
                 }
             }
+            
+            CMTime computedFrameDuration = duration;
+            if (_videoTimeScale != 1.0) {
+                computedFrameDuration = CMTimeMultiplyByFloat64(computedFrameDuration, _videoTimeScale);
+                _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
+            }
+            
+            lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
             
             _lastTimeVideo = lastTimeVideo;
             _lastTime = lastTimeVideo;
 
-            NSLog(@"Appended video at %f/%f", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(duration));
+//            NSLog(@"Appended video at %f/%f", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(duration));
             
             [_videoInput appendSampleBuffer:adjustedBuffer];
-            
+         
             _currentSegmentHasVideo = YES;
-        } else {
-            [self makeTimeOffsetDirty];
-            NSLog(@"DROPPPPPED THE BASS!!!");
         }
         
         CFRelease(adjustedBuffer);

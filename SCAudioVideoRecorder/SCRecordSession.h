@@ -114,6 +114,10 @@
 // framerate from the camera.
 @property (assign, nonatomic) CMTimeScale videoMaxFrameRate;
 
+// The time scale of the video
+// A value different than 1 with the sound enabled will fail
+@property (assign, nonatomic) CGFloat videoTimeScale;
+
 
 //////////////////
 // AUDIO SETTINGS
