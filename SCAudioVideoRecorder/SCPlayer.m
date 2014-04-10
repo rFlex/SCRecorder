@@ -123,7 +123,6 @@ SCPlayer * currentSCVideoPlayer = nil;
 - (void) initObserver {
 	if (self.oldItem != nil) {
 		[self.oldItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
-		[self.oldItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
 		[self.oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
 		
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.oldItem];
@@ -131,7 +130,6 @@ SCPlayer * currentSCVideoPlayer = nil;
 	
 	if (self.currentItem != nil) {
 		[self.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:NSKeyValueObservingOptionNew context:nil];
-		[self.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:NSKeyValueObservingOptionNew context:nil];
 		[self.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:
 		 NSKeyValueObservingOptionNew context:nil];
 		
