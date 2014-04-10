@@ -171,7 +171,7 @@ namespace SCorsin {
 		[Export("playPlaybackAssetWhenRecording")]
 		bool PlayPlaybackAssetWhenRecording { get; set; }
 
-        [Export("playbackAsset")]
+		[Export("playbackAsset"), NullAllowed]
         AVAsset PlaybackAsset { get; set; }
 
 		[Export("videoOutput")]
