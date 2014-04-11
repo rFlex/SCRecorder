@@ -52,11 +52,10 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-//	self.view.backgroundColor = [UIColor grayColor];
     self.capturePhotoButton.alpha = 0.0;
     
     _recorder = [SCRecorder recorder];
-    _recorder.sessionPreset = AVCaptureSessionPresetMedium;
+    _recorder.sessionPreset = AVCaptureSessionPresetHigh;
     _recorder.audioEnabled = NO;
     _recorder.delegate = self;
     
@@ -75,11 +74,11 @@
     [previewView addSubview:self.focusView];
     self.focusView.outsideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
-    
+     
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
-        if ([_recorder setActiveFormatThatSupportsFrameRate:120 width:1280 andHeight:720 error:nil]) {
-            _recorder.frameRate = 10;
-        }
+//        if ([_recorder setActiveFormatThatSupportsFrameRate:120 width:1280 andHeight:720 error:nil]) {
+//            _recorder.frameRate = 30;
+//        }
         
         NSLog(@"==== Opened session ====");
         NSLog(@"Session error: %@", sessionError.description);
@@ -307,10 +306,9 @@
         SCRecordSession *session = [SCRecordSession recordSession];
         session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
         session.shouldTrackRecordSegments = YES;
-        session.videoMaxFrameRate = 30;
-//        session.videoTimeScale = 0.25;
-        
 //        session.videoMaxFrameRate = 30;
+//        session.videoTimeScale = 4;
+        
 //        session.shouldIgnoreAudio = YES;
         
         _recorder.recordSession = session;
@@ -351,10 +349,8 @@
 
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
     if (touchDetector.state == UIGestureRecognizerStateBegan) {
-//        NSLog(@"==== STARTING RECORDING ====");
         [_recorder record];
     } else if (touchDetector.state == UIGestureRecognizerStateEnded) {
-//        NSLog(@"==== PAUSING RECORDING ====");
         [_recorder pause];
     }
 }

@@ -276,10 +276,10 @@ unsigned int SCGetCoreCount()
     AVCaptureDevice *device = [self currentVideoDeviceInput].device;
     
     if ([device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
-        return device.activeVideoMaxFrameDuration;
+        return device.activeVideoMinFrameDuration;
     }
     
-    return connection.videoMaxFrameDuration;
+    return connection.videoMinFrameDuration;
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
