@@ -208,7 +208,10 @@ unsigned int SCGetCoreCount()
 	if (self.playbackAsset != nil) {
         [self.playbackPlayer setItemByAsset:self.playbackAsset];
         [self.playbackPlayer seekToTime:self.playbackStartTime];
-	}
+	} else {
+        [self.playbackPlayer setItem:nil];
+    }
+    
     return success;
 }
 
