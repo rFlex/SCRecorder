@@ -9,17 +9,12 @@
 /* Begin PBXBuildFile section */
 		5B439A9C183006F000F83EFA /* SCTouchDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B439A9B183006F000F83EFA /* SCTouchDetector.m */; };
 		AB2BA3FE18338DAE00B7CFA2 /* capture_flip@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB2BA3FD18338DAE00B7CFA2 /* capture_flip@2x.png */; };
-		AB2BA4031833B4A700B7CFA2 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */; };
 		AB32FD50183D0735007869C1 /* SCBlurOverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = AB32FD4F183D0735007869C1 /* SCBlurOverlayView.m */; };
-		ABCB9421184BAC2C00BB5927 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */; };
-		ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABCC89F51829AAB6000D3886 /* ImageIO.framework */; };
 		ABCC89F91829AD8B000D3886 /* SCImageViewDisPlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ABCC89F81829AD8B000D3886 /* SCImageViewDisPlayViewController.m */; };
 		DC23FE1217B4200800389EDA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4917ADD66000E37F8F /* Foundation.framework */; };
 		DC23FE2117B4519100389EDA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */; };
 		DC23FE2217B4519A00389EDA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */; };
 		DC23FE2317B451A100389EDA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4717ADD66000E37F8F /* UIKit.framework */; };
-		DC23FE2417B451AA00389EDA /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC36981F17AF132600F5012B /* AssetsLibrary.framework */; };
-		DC36982017AF132600F5012B /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC36981F17AF132600F5012B /* AssetsLibrary.framework */; };
 		DC4CBA401863118E00532F1F /* SCCameraFocusTargetView.h in Headers */ = {isa = PBXBuildFile; fileRef = AB2BA3FF1833B34A00B7CFA2 /* SCCameraFocusTargetView.h */; };
 		DC4CBA411863118E00532F1F /* SCCameraFocusTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = AB2BA4001833B34A00B7CFA2 /* SCCameraFocusTargetView.m */; };
 		DC4CBA4D1863118E00532F1F /* SCAudioTools.h in Headers */ = {isa = PBXBuildFile; fileRef = DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */; };
@@ -47,8 +42,6 @@
 		DC551C6417ADD66000E37F8F /* SCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC551C6317ADD66000E37F8F /* SCViewController.m */; };
 		DC551C6B17ADDA4400E37F8F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */; };
 		DC551C7017ADF12200E37F8F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6F17ADF12200E37F8F /* CoreMedia.framework */; };
-		DC551C7217ADF12800E37F8F /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C7117ADF12800E37F8F /* CoreVideo.framework */; };
-		DC599B6617B481BB00500F05 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC599B6517B481BB00500F05 /* AudioToolbox.framework */; };
 		DC6722ED1861B3CE0001A15E /* SCAudioRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC6722EC1861B3CE0001A15E /* SCAudioRecordViewController.m */; };
 		DC6722EF1861B4930001A15E /* Record-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722EE1861B4930001A15E /* Record-Normal-icon.png */; };
 		DC6722F11861B4F00001A15E /* Record-Pressed-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F01861B4F00001A15E /* Record-Pressed-icon.png */; };
@@ -56,6 +49,9 @@
 		DC6722F61861B6260001A15E /* Play-Pressed-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F41861B6260001A15E /* Play-Pressed-icon.png */; };
 		DC6722F71861B6260001A15E /* Play-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F51861B6260001A15E /* Play-Normal-icon.png */; };
 		DC6722F91861B6F00001A15E /* Pause-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC6722F81861B6F00001A15E /* Pause-Normal-icon.png */; };
+		DC7F36FC18FC1A7300D54901 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */; };
+		DC7F36FD18FC1A8700D54901 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C7117ADF12800E37F8F /* CoreVideo.framework */; };
+		DC7F36FE18FC1A9400D54901 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC599B6517B481BB00500F05 /* AudioToolbox.framework */; };
 		DCF6143317D157A400341EC2 /* SCVideoPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DCF6143217D157A400341EC2 /* SCVideoPlayerViewController.m */; };
 /* End PBXBuildFile section */
 
@@ -135,7 +131,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC23FE2417B451AA00389EDA /* AssetsLibrary.framework in Frameworks */,
 				DC23FE2317B451A100389EDA /* UIKit.framework in Frameworks */,
 				DC23FE2217B4519A00389EDA /* CoreGraphics.framework in Frameworks */,
 				DC23FE2117B4519100389EDA /* AVFoundation.framework in Frameworks */,
@@ -147,14 +142,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC7F36FE18FC1A9400D54901 /* AudioToolbox.framework in Frameworks */,
+				DC7F36FD18FC1A8700D54901 /* CoreVideo.framework in Frameworks */,
+				DC7F36FC18FC1A7300D54901 /* QuartzCore.framework in Frameworks */,
 				DC4CBA77186314E100532F1F /* libSCAudioVideoRecorderIOS.a in Frameworks */,
-				ABCB9421184BAC2C00BB5927 /* OpenGLES.framework in Frameworks */,
-				AB2BA4031833B4A700B7CFA2 /* QuartzCore.framework in Frameworks */,
-				ABCC89F61829AAB6000D3886 /* ImageIO.framework in Frameworks */,
-				DC599B6617B481BB00500F05 /* AudioToolbox.framework in Frameworks */,
 				DC551C6B17ADDA4400E37F8F /* AVFoundation.framework in Frameworks */,
-				DC36982017AF132600F5012B /* AssetsLibrary.framework in Frameworks */,
-				DC551C7217ADF12800E37F8F /* CoreVideo.framework in Frameworks */,
 				DC551C7017ADF12200E37F8F /* CoreMedia.framework in Frameworks */,
 				DC551C4817ADD66000E37F8F /* UIKit.framework in Frameworks */,
 				DC551C4A17ADD66000E37F8F /* Foundation.framework in Frameworks */,
