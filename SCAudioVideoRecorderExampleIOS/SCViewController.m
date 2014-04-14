@@ -56,7 +56,7 @@
     
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = kVideoPreset;
-    _recorder.audioEnabled = NO;
+    _recorder.audioEnabled = YES;
     _recorder.delegate = self;
     
     UIView *previewView = self.previewView;

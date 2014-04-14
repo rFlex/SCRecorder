@@ -40,7 +40,7 @@
 // If true, every record segments will be tracked an added into a separate
 // NSURL inside the recordSegments
 // You can easily remove each segment in the recordSegments property
-// Default is NO
+// Default is YES
 @property (assign, nonatomic) BOOL shouldTrackRecordSegments;
 
 // Contains every recordSegments as NSURL

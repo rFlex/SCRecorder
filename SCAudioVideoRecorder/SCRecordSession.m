@@ -70,6 +70,7 @@
         _lastTimeVideo = kCMTimeZero;
         _lastTimeAudio = kCMTimeZero;
         _videoTimeScale = 1;
+        _shouldTrackRecordSegments = YES;
         
         long timeInterval =  (long)[[NSDate date] timeIntervalSince1970];
         self.outputUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%ld%@", NSTemporaryDirectory(), timeInterval, @"SCVideo.mp4"]];
