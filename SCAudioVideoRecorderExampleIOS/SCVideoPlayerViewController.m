@@ -25,7 +25,7 @@
     return self;
 }
 
-- (void) dealloc {
+- (void)dealloc {
 }
 
 - (void)viewDidLoad
@@ -33,7 +33,11 @@
     [super viewDidLoad];
 	
     SCPlayer *player = self.videoPlayerView.player;
-	[player setSmoothLoopItemByUrl:self.videoUrl smoothLoopCount:10];
+    
+    if (self.asset != nil) {
+        [player setItemByAsset:self.asset];
+//        [player setSmoothLoopItemByAsset:self.asset smoothLoopCount:10];
+    }
     
 	player.shouldLoop = YES;
 	[player play];

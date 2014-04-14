@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SCCamera.h"
+#import "SCRecorder.h"
 
 @interface SCCameraFocusView : UIView
 
-@property (weak, nonatomic) SCCamera *camera;
+@property (weak, nonatomic) SCRecorder *recorder;
 @property (strong, nonatomic) UIImage *outsideFocusTargetImage;
 @property (strong, nonatomic) UIImage *insideFocusTargetImage;
 @property (assign, nonatomic) CGSize focusTargetSize;

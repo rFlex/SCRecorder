@@ -43,7 +43,7 @@
 }
 
 - (void) dealloc {
-//	[self.player cleanUp];
+    [self.player pause];
 	self.playerLayer.player = nil;
 }
 
