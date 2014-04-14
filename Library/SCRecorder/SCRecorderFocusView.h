@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "SCRecorder.h"
 
-@interface SCCameraFocusView : UIView
+@interface SCRecorderFocusView : UIView
 
 @property (weak, nonatomic) SCRecorder *recorder;
 @property (strong, nonatomic) UIImage *outsideFocusTargetImage;

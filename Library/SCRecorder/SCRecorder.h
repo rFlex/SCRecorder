@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 rFlex. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 #import "SCRecordSession.h"

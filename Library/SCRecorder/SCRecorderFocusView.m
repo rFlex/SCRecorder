@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 rFlex. All rights reserved.
 //
 
-#import "SCCameraFocusView.h"
-#import "SCCameraFocusTargetView.h"
+#import "SCRecorderFocusView.h"
+#import "SCRecorderFocusTargetView.h"
 
 #define BASE_FOCUS_TARGET_WIDTH 60
 #define BASE_FOCUS_TARGET_HEIGHT 60
@@ -16,12 +16,12 @@
 // PRIVATE DEFINITION
 /////////////////////
 
-@interface SCCameraFocusView()
+@interface SCRecorderFocusView()
 {
     CGPoint _currentFocusPoint;
 }
 
-@property (strong, nonatomic) SCCameraFocusTargetView *cameraFocusTargetView;
+@property (strong, nonatomic) SCRecorderFocusTargetView *cameraFocusTargetView;
 
 @end
 
@@ -29,7 +29,7 @@
 // IMPLEMENTATION
 /////////////////////
 
-@implementation SCCameraFocusView
+@implementation SCRecorderFocusView
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -54,7 +54,7 @@
 - (void)commonInit
 {
     _currentFocusPoint = CGPointMake(0.5, 0.5);
-    self.cameraFocusTargetView = [[SCCameraFocusTargetView alloc] init];
+    self.cameraFocusTargetView = [[SCRecorderFocusTargetView alloc] init];
     self.cameraFocusTargetView.hidden = YES;
     [self addSubview:self.cameraFocusTargetView];
     
