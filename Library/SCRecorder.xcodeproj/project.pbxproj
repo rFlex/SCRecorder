@@ -94,7 +94,7 @@
 			children = (
 				DC264DF017BACA7400A5EF98 /* CoreVideo.framework */,
 				DC264DEE17BACA5A00A5EF98 /* CoreMedia.framework */,
-				DC551C4D17ADD66000E37F8F /* SCRecorder */,
+				DC551C4D17ADD66000E37F8F /* Sources */,
 				DC551C4617ADD66000E37F8F /* Frameworks */,
 				DC551C4517ADD66000E37F8F /* Products */,
 			);
@@ -131,7 +131,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DC551C4D17ADD66000E37F8F /* SCRecorder */ = {
+		DC551C4D17ADD66000E37F8F /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */,
@@ -149,8 +149,7 @@
 				DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */,
 				DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */,
 			);
-			name = SCRecorder;
-			path = SCRecorder;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
