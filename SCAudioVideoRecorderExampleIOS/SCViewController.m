@@ -16,9 +16,10 @@
 #import "SCImageViewDisPlayViewController.h"
 #import "SCRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
-#import "SCCamera.h"
 
 #import "SCCameraFocusTargetView.h"
+
+#define kVideoPreset AVCaptureSessionPresetHigh
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -49,13 +50,12 @@
 
 #pragma mark - Left cycle
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     self.capturePhotoButton.alpha = 0.0;
     
     _recorder = [SCRecorder recorder];
-    _recorder.sessionPreset = AVCaptureSessionPresetHigh;
+    _recorder.sessionPreset = kVideoPreset;
     _recorder.audioEnabled = NO;
     _recorder.delegate = self;
     
@@ -72,9 +72,10 @@
     self.focusView = [[SCCameraFocusView alloc] initWithFrame:previewView.bounds];
     self.focusView.recorder = _recorder;
     [previewView addSubview:self.focusView];
+    
     self.focusView.outsideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
-     
+    
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
 //        if ([_recorder setActiveFormatThatSupportsFrameRate:120 width:1280 andHeight:720 error:nil]) {
 //            _recorder.frameRate = 30;
@@ -94,7 +95,7 @@
     NSLog(@"Reconfigured inputs, videoError: %@, audioError: %@", videoInputError, audioInputError);
 }
 
-- (void) viewWillAppear:(BOOL)animated {
+- (void)viewWillAppear:(BOOL)animated {
 	self.navigationController.navigationBarHidden = YES;
 }
 
@@ -114,37 +115,6 @@
 
 - (void)updateLabelForSecond:(Float64)totalRecorded {
     self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", totalRecorded];
-}
-
-#pragma mark - SCAudioVideoRecorder delegate
-
-// Video
-
-#pragma mark - Camera Delegate
-
-// Photo
-- (void) audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder capturedPhoto:(NSDictionary *)photoDict error:(NSError *)error {
-    if (!error) {
-        [self showPhoto:[photoDict valueForKey:SCAudioVideoRecorderPhotoImageKey]];
-        ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
-        [assetLibrary writeImageDataToSavedPhotosAlbum:[photoDict objectForKey:SCAudioVideoRecorderPhotoJPEGKey] metadata:[photoDict objectForKey:SCAudioVideoRecorderPhotoMetadataKey] completionBlock:^(NSURL *assetURL, NSError *blockError) {
-//            DLog(@"Saved to the camera roll.");
-        }];
-    }
-}
-
-// Camera
-
-- (void)camera:(SCCamera *)camera didFailWithError:(NSError *)error {
-    DLog(@"error : %@", error.description);
-}
-
-// Photo
-- (void)cameraWillCapturePhoto:(SCCamera *)camera {
-}
-
-- (void)cameraDidCapturePhoto:(SCCamera *)camera {
-
 }
 
 // Focus
@@ -174,7 +144,6 @@
     SCImageViewDisPlayViewController *sc_imageViewDisPlayViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SCImageViewDisPlayViewController"];
     sc_imageViewDisPlayViewController.photo = photo;
     [self.navigationController pushViewController:sc_imageViewDisPlayViewController animated:YES];
-    sc_imageViewDisPlayViewController = nil;
 }
 
 - (void) handleReverseCameraTapped:(id)sender {
@@ -191,27 +160,6 @@
     }
 }
 
-- (void)checkDaSegment:(int)segmentNumber recordSession:(SCRecordSession *)recordSession {
-    if (segmentNumber < recordSession.recordSegments.count) {
-        NSURL *segment = [recordSession.recordSegments objectAtIndex:segmentNumber];
-        
-        [recordSession removeSegmentAtIndex:segmentNumber deleteFile:NO];
-        [recordSession mergeRecordSegments:^(NSError *error) {
-            if (error == nil) {
-                NSLog(@"MADE IT WORK REMOVING THE SEGMENT %d", segmentNumber);
-                [self showVideo:[AVURLAsset URLAssetWithURL:segment options:nil]];
-                
-//                [self showVideo:[AVURLAsset URLAssetWithURL:recordSession.outputUrl options:nil]];
-            } else {
-                [recordSession insertSegment:segment atIndex:segmentNumber];
-                [self checkDaSegment:segmentNumber + 1 recordSession:recordSession];
-            }
-        }];
-    } else {
-        NSLog(@"Didnt find a solution after trying %d segments :(", segmentNumber);
-    }
-}
-
 - (void)finishSession:(SCRecordSession *)recordSession {
     [recordSession endSession:^(NSError *error) {
         if (error == nil) {
@@ -219,9 +167,6 @@
             [self prepareCamera];
         } else {
             NSLog(@"Failed to end session: %@", error);
-            NSLog(@"Output url: %@", recordSession.outputUrl);
-//            [self showVideo:[recordSession assetRepresentingRecordSegments]];
-            [self checkDaSegment:0 recordSession:recordSession];
         }
     }];
 }
@@ -232,72 +177,72 @@
 }
 
 - (IBAction)switchCameraMode:(id)sender {
-//    if (self.camera.sessionPreset == AVCaptureSessionPresetPhoto) {
-//        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-//            self.capturePhotoButton.alpha = 0.0;
-//            self.recordView.alpha = 1.0;
-//            self.retakeButton.alpha = 1.0;
-//            self.stopButton.alpha = 1.0;
-//        } completion:^(BOOL finished) {
-//			self.camera.sessionPreset = AVCaptureSessionPresetHigh;
-//            [self.switchCameraModeButton setTitle:@"Switch Photo" forState:UIControlStateNormal];
-//            [self.flashModeButton setTitle:@"Flash : Off" forState:UIControlStateNormal];
-//            self.camera.flashMode = SCFlashModeOff;
-//        }];
-//    } else if (self.camera.sessionPreset == AVCaptureSessionPresetHigh) {
-//        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-//            self.recordView.alpha = 0.0;
-//            self.retakeButton.alpha = 0.0;
-//            self.stopButton.alpha = 0.0;
-//            self.capturePhotoButton.alpha = 1.0;
-//        } completion:^(BOOL finished) {
-//			self.camera.sessionPreset = AVCaptureSessionPresetPhoto;
-//            [self.switchCameraModeButton setTitle:@"Switch Video" forState:UIControlStateNormal];
-//            [self.flashModeButton setTitle:@"Flash : Auto" forState:UIControlStateNormal];
-//            self.camera.flashMode = SCFlashModeAuto;
-//        }];
-//    }
+    if ([_recorder.sessionPreset isEqualToString:AVCaptureSessionPresetPhoto]) {
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            self.capturePhotoButton.alpha = 0.0;
+            self.recordView.alpha = 1.0;
+            self.retakeButton.alpha = 1.0;
+            self.stopButton.alpha = 1.0;
+        } completion:^(BOOL finished) {
+			_recorder.sessionPreset = kVideoPreset;
+            [self.switchCameraModeButton setTitle:@"Switch Photo" forState:UIControlStateNormal];
+            [self.flashModeButton setTitle:@"Flash : Off" forState:UIControlStateNormal];
+            _recorder.flashMode = SCFlashModeOff;
+        }];
+    } else {
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            self.recordView.alpha = 0.0;
+            self.retakeButton.alpha = 0.0;
+            self.stopButton.alpha = 0.0;
+            self.capturePhotoButton.alpha = 1.0;
+        } completion:^(BOOL finished) {
+			_recorder.sessionPreset = AVCaptureSessionPresetPhoto;
+            [self.switchCameraModeButton setTitle:@"Switch Video" forState:UIControlStateNormal];
+            [self.flashModeButton setTitle:@"Flash : Auto" forState:UIControlStateNormal];
+            _recorder.flashMode = SCFlashModeAuto;
+        }];
+    }
 }
 
 - (IBAction)switchFlash:(id)sender {
-//    NSString *flashModeString = nil;
-//    if (self.camera.sessionPreset == AVCaptureSessionPresetPhoto) {
-//        switch (self.camera.flashMode) {
-//            case SCFlashModeAuto:
-//                flashModeString = @"Flash : Off";
-//                self.camera.flashMode = SCFlashModeOff;
-//                break;
-//            case SCFlashModeOff:
-//                flashModeString = @"Flash : On";
-//                self.camera.flashMode = SCFlashModeOn;
-//                break;
-//            case SCFlashModeOn:
-//                flashModeString = @"Flash : Light";
-//                self.camera.flashMode = SCFlashModeLight;
-//                break;
-//            case SCFlashModeLight:
-//                flashModeString = @"Flash : Auto";
-//                self.camera.flashMode = SCFlashModeAuto;
-//                break;
-//            default:
-//                break;
-//        }
-//    } else {
-//        switch (self.camera.flashMode) {
-//            case SCFlashModeOff:
-//                flashModeString = @"Flash : On";
-//                self.camera.flashMode = SCFlashModeLight;
-//                break;
-//            case SCFlashModeLight:
-//                flashModeString = @"Flash : Off";
-//                self.camera.flashMode = SCFlashModeOff;
-//                break;
-//            default:
-//                break;
-//        }
-//    }
-//    
-//    [self.flashModeButton setTitle:flashModeString forState:UIControlStateNormal];
+    NSString *flashModeString = nil;
+    if ([_recorder.sessionPreset isEqualToString:AVCaptureSessionPresetPhoto]) {
+        switch (_recorder.flashMode) {
+            case SCFlashModeAuto:
+                flashModeString = @"Flash : Off";
+                _recorder.flashMode = SCFlashModeOff;
+                break;
+            case SCFlashModeOff:
+                flashModeString = @"Flash : On";
+                _recorder.flashMode = SCFlashModeOn;
+                break;
+            case SCFlashModeOn:
+                flashModeString = @"Flash : Light";
+                _recorder.flashMode = SCFlashModeLight;
+                break;
+            case SCFlashModeLight:
+                flashModeString = @"Flash : Auto";
+                _recorder.flashMode = SCFlashModeAuto;
+                break;
+            default:
+                break;
+        }
+    } else {
+        switch (_recorder.flashMode) {
+            case SCFlashModeOff:
+                flashModeString = @"Flash : On";
+                _recorder.flashMode = SCFlashModeLight;
+                break;
+            case SCFlashModeLight:
+                flashModeString = @"Flash : Off";
+                _recorder.flashMode = SCFlashModeOff;
+                break;
+            default:
+                break;
+        }
+    }
+    
+    [self.flashModeButton setTitle:flashModeString forState:UIControlStateNormal];
 }
 
 - (void) prepareCamera {
@@ -305,7 +250,7 @@
         
         SCRecordSession *session = [SCRecordSession recordSession];
         session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
-        session.shouldTrackRecordSegments = YES;
+//        session.shouldTrackRecordSegments = YES;
 //        session.videoMaxFrameRate = 30;
 //        session.videoTimeScale = 4;
         
@@ -356,7 +301,13 @@
 }
 
 - (IBAction)capturePhoto:(id)sender {
-//    [self.camera capturePhoto];
+    [_recorder capturePhoto:^(NSError *error, UIImage *image) {
+        if (image != nil) {
+            [self showPhoto:image];
+        } else {
+            [self showAlertViewWithTitle:@"Failed to capture photo" message:error.localizedDescription];
+        }
+    }];
 }
 
 @end

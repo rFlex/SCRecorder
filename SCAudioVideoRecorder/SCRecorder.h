@@ -141,4 +141,8 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Ask the recorder to stop appending sample buffers inside the recordSession
 - (void)pause;
 
+// Capture a photo from the camera
+- (void)capturePhoto:(void(^)(NSError *error, UIImage *image))completionHandler;
+
+
 @end

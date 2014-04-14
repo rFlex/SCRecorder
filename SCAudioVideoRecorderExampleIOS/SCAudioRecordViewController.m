@@ -7,13 +7,13 @@
 //
 
 #import "SCAudioRecordViewController.h"
-#import "SCCamera.h"
 #import "SCPlayer.h"
 
-@interface SCAudioRecordViewController ()
+@interface SCAudioRecordViewController () {
+    SCRecorder *_recorder;
+}
 
 @property (strong, nonatomic) SCPlayer * player;
-@property (strong, nonatomic) SCCamera * camera;
 @property (copy, nonatomic) NSURL * fileUrl;
 
 @end
@@ -41,16 +41,16 @@
     self.player.delegate = self;
     [self.player beginSendingPlayMessages];
     
-    self.camera = [SCCamera camera];
-    self.camera.delegate = self;
-    self.camera.outputFileType = AVFileTypeAppleM4A;
-    self.camera.enableVideo = NO;
+    _recorder = [SCRecorder recorder];
+    _recorder.delegate = self;
+    _recorder.videoEnabled = NO;
+    _recorder.photoEnabled = NO;
     
-    [self.camera openSession:^(NSError *audioError, NSError *videoError) {
+    [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
         if (audioError != nil) {
             [self showError:audioError];
         } else {
-            [self.camera startRunningSession];
+            [_recorder startRunningSession:nil];
         }
     }];
     [self hidePlayControl:NO];
@@ -67,24 +67,22 @@
 }
 
 - (IBAction)recordPressed:(id)sender {
-    if (![self.camera isPrepared]) {
-        NSError * error = nil;
-        [self.camera prepareRecordingOnTempDir:&error];
+    SCRecordSession *session = _recorder.recordSession;
+    
+    if (session == nil) {
+        session = [SCRecordSession recordSession];
+        session.fileType = AVFileTypeAppleM4A;
         
-        if (error == nil) {
-            [self.camera record];
-        } else {
-            [self showError:error];
-        }
-    } else {
-        if ([self.camera isRecording]) {
-            [self.camera pause];
-        } else {
-            [self.camera record];
-        }
+        _recorder.recordSession = session;
     }
     
-    self.recordButton.selected = [self.camera isRecording];
+    if (_recorder.isRecording) {
+        [_recorder pause];
+    } else {
+        [_recorder record];
+    }
+    
+    self.recordButton.selected = _recorder.isRecording;
 }
 
 - (void)hidePlayControl:(BOOL)animated {
@@ -105,23 +103,26 @@
     }];
 }
 
-- (void)audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didRecordAudioSample:(CMTime)sampleTime {
-    self.recordTimeLabel.text = [NSString stringWithFormat:@"%.2fs", CMTimeGetSeconds(sampleTime)];
+- (void)recorder:(SCRecorder *)recorder didAppendAudioSampleBuffer:(SCRecordSession *)recordSession {
+    self.recordTimeLabel.text = [NSString stringWithFormat:@"%.2fs", CMTimeGetSeconds(recordSession.currentRecordDuration)];
 }
-
-- (void)audioVideoRecorder:(SCAudioVideoRecorder *)audioVideoRecorder didFinishRecordingAtUrl:(NSURL *)recordedFile error:(NSError *)error {
-    if (error == nil) {
-        self.fileUrl = recordedFile;
-        [self showPlayControl:YES];
-        [self.player setItemByUrl:self.fileUrl];
-    } else {
-        [self showError:error];
-    }
-}
-
 
 - (IBAction)stopRecordPressed:(id)sender {
-    [self.camera stop];
+    SCRecordSession *session = _recorder.recordSession;
+    
+    if (session != nil) {
+        _recorder.recordSession = nil;
+        [session endSession:^(NSError *error) {
+            if (error == nil) {
+                self.fileUrl = session.outputUrl;
+                [self showPlayControl:YES];
+                [self.player setItemByUrl:self.fileUrl];
+            } else {
+                [self showError:error];
+            }
+        }];
+    }
+    [_recorder pause];
 }
 
 - (IBAction)playButtonPressed:(id)sender {

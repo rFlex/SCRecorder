@@ -157,7 +157,6 @@
             }
             
             if ([writer startWriting]) {
-                NSLog(@"Started session at %f", CMTimeGetSeconds(_lastTime));
                 [writer startSessionAtSourceTime:_lastTime];
                 _sessionStartedTime = _lastTime;
                 _recordSegmentReady = YES;
@@ -299,7 +298,6 @@
 }
 
 - (void)endRecordSegment:(void(^)(NSInteger segmentNumber, NSError* error))completionHandler {
-    NSLog(@"ENDING RECORD SEGMENT");
     if (_recordSegmentReady) {
         _recordSegmentReady = NO;
         
@@ -319,7 +317,6 @@
                 }
             });
         } else {
-            NSLog(@"Ended session at %f", CMTimeGetSeconds(_lastTime));
             [writer endSessionAtSourceTime:_lastTime];
             [writer finishWritingWithCompletionHandler: ^{
                 _assetWriter = nil;
@@ -350,7 +347,6 @@
 }
 
 - (void)mergeRecordSegments:(void(^)(NSError *error))completionHandler {
-    NSLog(@"MERGING RECORD SEGMENTS");
     NSURL *outputUrl = self.outputUrl;
     NSString *fileType = [self suggestFileType];
     
@@ -402,7 +398,6 @@
             exportSession.timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
             [exportSession exportAsynchronouslyWithCompletionHandler:^{
                 NSError *error = exportSession.error;
-                NSLog(@"Finished merge error with error: %d", error != nil);
                 
                 if (completionHandler != nil) {
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -435,8 +430,6 @@
 }
 
 - (void)endSession:(void (^)(NSError *))completionHandler {
-    NSLog(@"ENDING SESSION");
-    
     if (_assetWriter == nil) {
         [self mergeRecordSegments:^(NSError *error) {
             [self finishEndSession:error completionHandler:completionHandler];

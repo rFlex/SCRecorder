@@ -10,17 +10,6 @@
 #import "SCRecorder.h"
 #define SCRecorderFocusContext ((void*)0x1)
 
-unsigned int SCGetCoreCount()
-{
-    size_t len;
-    unsigned int ncpu;
-    
-    len = sizeof(ncpu);
-    sysctlbyname ("hw.ncpu",&ncpu,&len,NULL,0);
-    
-    return ncpu;
-}
-
 @interface SCRecorder() {
     AVCaptureVideoPreviewLayer *_previewLayer;
     AVCaptureSession *_captureSession;
@@ -43,15 +32,7 @@ unsigned int SCGetCoreCount()
     self = [super init];
     
     if (self) {
-        // No need to create a different dispatch_queue if
-        // the current running phone has only one core
-        if (SCGetCoreCount() == 1) {
-            _dispatchQueue = dispatch_get_main_queue();
-            _usingMainQueue = YES;
-        } else {
-            _dispatchQueue = dispatch_queue_create("me.corsin.SCRecorder", nil);
-            _usingMainQueue = NO;
-        }
+        _dispatchQueue = dispatch_queue_create("me.corsin.SCRecorder", nil);
         
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
         _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
@@ -184,6 +165,37 @@ unsigned int SCGetCoreCount()
 
 - (void)endRunningSession {
     [_captureSession stopRunning];
+}
+
+- (void)capturePhoto:(void(^)(NSError*, UIImage*))completionHandler {
+    AVCaptureConnection *connection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
+    if (connection != nil) {
+        [_photoOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:
+         ^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
+             
+             if (imageDataSampleBuffer != nil && error == nil) {
+                 NSData *jpegData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
+                 if (jpegData) {
+                     UIImage *image = [UIImage imageWithData:jpegData];
+                     if (completionHandler != nil) {
+                         completionHandler(nil, image);
+                     }
+                 } else {
+                     if (completionHandler != nil) {
+                         completionHandler([SCRecorder createError:@"Failed to create jpeg data"], nil);
+                     }
+                 }
+             } else {
+                 if (completionHandler != nil) {
+                     completionHandler(error, nil);
+                 }
+             }
+         }];
+    } else {
+        if (completionHandler != nil) {
+            completionHandler([SCRecorder createError:@"Camera session not started or Photo disabled"], nil);
+        }
+    }
 }
 
 - (void)closeSession {
@@ -698,9 +710,10 @@ unsigned int SCGetCoreCount()
 
 - (void)setRecordSession:(SCRecordSession *)recordSession {
     if (_recordSession != recordSession) {
-        [recordSession makeTimeOffsetDirty];
-        
-        _recordSession = recordSession;
+        dispatch_sync(_dispatchQueue, ^{
+            [recordSession makeTimeOffsetDirty];
+            _recordSession = recordSession;
+        });
     }
 }
 
@@ -838,6 +851,5 @@ unsigned int SCGetCoreCount()
     
     return foundSupported;
 }
-
 
 @end
