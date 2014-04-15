@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC1C8E9C18FD2410005A342D /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC1C8E9B18FD23E4005A342D /* libSCRecorder.a */; };
+		DC1C8E9F18FD24C9005A342D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC1C8E9E18FD24C9005A342D /* Main.storyboard */; };
 		DC7F370C18FC2A0D00D54901 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7F370B18FC2A0D00D54901 /* Foundation.framework */; };
 		DC7F370E18FC2A0D00D54901 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7F370D18FC2A0D00D54901 /* CoreGraphics.framework */; };
 		DC7F371018FC2A0D00D54901 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7F370F18FC2A0D00D54901 /* UIKit.framework */; };
@@ -35,7 +37,19 @@
 		DC7F376F18FC2B0300D54901 /* Stop-Normal-Red-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		DC1C8E9A18FD23E4005A342D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC1C8E9618FD23E4005A342D /* SCRecorder.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = DC23FE1117B4200700389EDA;
+			remoteInfo = SCRecorder;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		DC1C8E9618FD23E4005A342D /* SCRecorder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SCRecorder.xcodeproj; path = ../Library/SCRecorder.xcodeproj; sourceTree = "<group>"; };
+		DC1C8E9E18FD24C9005A342D /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		DC7F370818FC2A0D00D54901 /* SCRecorderExamples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SCRecorderExamples.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC7F370B18FC2A0D00D54901 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DC7F370D18FC2A0D00D54901 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -81,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC1C8E9C18FD2410005A342D /* libSCRecorder.a in Frameworks */,
 				DC7F370E18FC2A0D00D54901 /* CoreGraphics.framework in Frameworks */,
 				DC7F371018FC2A0D00D54901 /* UIKit.framework in Frameworks */,
 				DC7F370C18FC2A0D00D54901 /* Foundation.framework in Frameworks */,
@@ -90,12 +105,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DC1C8E9718FD23E4005A342D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC1C8E9B18FD23E4005A342D /* libSCRecorder.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		DC7F36FF18FC2A0D00D54901 = {
 			isa = PBXGroup;
 			children = (
-				DC7F371118FC2A0D00D54901 /* SCRecorderExamples */,
+				DC7F371118FC2A0D00D54901 /* Sources */,
 				DC7F370A18FC2A0D00D54901 /* Frameworks */,
 				DC7F370918FC2A0D00D54901 /* Products */,
+				DC1C8E9618FD23E4005A342D /* SCRecorder.xcodeproj */,
 			);
 			sourceTree = "<group>";
 		};
@@ -118,7 +142,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DC7F371118FC2A0D00D54901 /* SCRecorderExamples */ = {
+		DC7F371118FC2A0D00D54901 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				DC7F374818FC2AF700D54901 /* SCAppDelegate.m */,
@@ -140,12 +164,13 @@
 				DC7F372318FC2A0D00D54901 /* Images.xcassets */,
 				DC7F371218FC2A0D00D54901 /* Supporting Files */,
 			);
-			path = SCRecorderExamples;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		DC7F371218FC2A0D00D54901 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				DC1C8E9E18FD24C9005A342D /* Main.storyboard */,
 				DC7F375818FC2B0300D54901 /* capture_flip@2x.png */,
 				DC7F375918FC2B0300D54901 /* capture_onion_selected@2x.png */,
 				DC7F375A18FC2B0300D54901 /* capture_onion@2x.png */,
@@ -206,12 +231,28 @@
 			mainGroup = DC7F36FF18FC2A0D00D54901;
 			productRefGroup = DC7F370918FC2A0D00D54901 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = DC1C8E9718FD23E4005A342D /* Products */;
+					ProjectRef = DC1C8E9618FD23E4005A342D /* SCRecorder.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				DC7F370718FC2A0D00D54901 /* SCRecorderExamples */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		DC1C8E9B18FD23E4005A342D /* libSCRecorder.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSCRecorder.a;
+			remoteRef = DC1C8E9A18FD23E4005A342D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		DC7F370618FC2A0D00D54901 /* Resources */ = {
@@ -224,6 +265,7 @@
 				DC7F376618FC2B0300D54901 /* capture_onion@2x.png in Resources */,
 				DC7F376E18FC2B0300D54901 /* Record-Pressed-icon.png in Resources */,
 				DC7F376518FC2B0300D54901 /* capture_onion_selected@2x.png in Resources */,
+				DC1C8E9F18FD24C9005A342D /* Main.storyboard in Resources */,
 				DC7F376418FC2B0300D54901 /* capture_flip@2x.png in Resources */,
 				DC7F372418FC2A0D00D54901 /* Images.xcassets in Resources */,
 				DC7F376818FC2B0300D54901 /* Default.png in Resources */,
@@ -344,8 +386,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "SCRecorderExamples/SCRecorderExamples-Prefix.pch";
-				INFOPLIST_FILE = "SCRecorderExamples/SCRecorderExamples-Info.plist";
+				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					../Library/Sources/,
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+				);
+				INFOPLIST_FILE = "Sources/SCRecorderExamples-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -357,8 +404,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "SCRecorderExamples/SCRecorderExamples-Prefix.pch";
-				INFOPLIST_FILE = "SCRecorderExamples/SCRecorderExamples-Info.plist";
+				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					../Library/Sources/,
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+				);
+				INFOPLIST_FILE = "Sources/SCRecorderExamples-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
