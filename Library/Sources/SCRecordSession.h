@@ -189,6 +189,12 @@
 // you should remove the SCRecordSession from the SCRecorder
 - (void)endSession:(void(^)(NSError *error))completionHandler;
 
+// Cancel the session.
+// End the current recordSegment (if any) and call removeAllSegments
+// If you don't want a segment to be automatically added when calling this method,
+// you should remove the SCRecordSession from the SCRecorder
+- (void)cancelSession:(void(^)())completionHandler;
+
 // Returns an asset representing all the record segments
 // from this record session. This can be called anytime.
 - (AVAsset *)assetRepresentingRecordSegments;

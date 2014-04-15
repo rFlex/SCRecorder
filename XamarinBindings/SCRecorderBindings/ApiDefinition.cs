@@ -124,6 +124,9 @@ namespace SCorsin {
 		[Export("endSession:")]
 		void EndSession(GenericErrorDelegate completionHandler);
 
+		[Export("cancelSession:")]
+		void CancelSession(Action completionHandler);
+
 		[Export("assetRepresentingRecordSegments")]
 		AVAsset AssetRepresentingRecordSegments { get; }
 

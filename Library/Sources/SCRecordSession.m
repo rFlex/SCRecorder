@@ -430,6 +430,22 @@
     }
 }
 
+- (void)cancelSession:(void (^)())completionHandler {
+    if (_assetWriter == nil) {
+        [self removeAllSegments];
+        if (completionHandler != nil) {
+            completionHandler();
+        }
+    } else {
+        [self endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+            [self removeAllSegments];
+            if (completionHandler != nil) {
+                completionHandler();
+            }
+        }];
+    }
+}
+
 - (void)endSession:(void (^)(NSError *))completionHandler {
     if (_assetWriter == nil) {
         [self mergeRecordSegments:^(NSError *error) {
