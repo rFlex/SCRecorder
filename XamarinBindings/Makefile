@@ -1,8 +1,8 @@
 # Directories
-NAME=SCAudioVideoRecorder
-TARGET=$(NAME)IOS
+NAME=SCRecorder
+TARGET=$(NAME)
 BINDDIR=$(NAME)Bindings
-PROJECT_ROOT=..
+PROJECT_ROOT=../Library
 PROJECT=$(PROJECT_ROOT)/$(NAME).xcodeproj
 
 # Binaries
