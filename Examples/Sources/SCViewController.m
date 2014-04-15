@@ -12,7 +12,7 @@
 #import "SCViewController.h"
 #import "SCAudioTools.h"
 #import "SCVideoPlayerViewController.h"
-#import "SCCameraFocusView.h"
+#import "SCRecorderFocusView.h"
 #import "SCImageViewDisPlayViewController.h"
 #import "SCRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
@@ -29,7 +29,7 @@
     SCRecorder *_recorder;
 }
 
-@property (strong, nonatomic) SCCameraFocusView *focusView;
+@property (strong, nonatomic) SCRecorderFocusView *focusView;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
     
-    self.focusView = [[SCCameraFocusView alloc] initWithFrame:previewView.bounds];
+    self.focusView = [[SCRecorderFocusView alloc] initWithFrame:previewView.bounds];
     self.focusView.recorder = _recorder;
     [previewView addSubview:self.focusView];
     
