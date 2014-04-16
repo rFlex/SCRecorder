@@ -152,6 +152,8 @@
 // Create a SCRecordSession
 + (id)recordSession;
 
+// If the video was already merged, this save
+// the merged video to the camera roll
 - (void)saveToCameraRoll;
 
 // Start a new record segment.

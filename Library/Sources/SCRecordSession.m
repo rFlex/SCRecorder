@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 rFlex. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import "SCRecordSession.h"
 // These are sets in defines to avoid repeated method calls
 #define CAN_HANDLE_AUDIO (_recorderHasAudio && !_shouldIgnoreAudio)
@@ -253,7 +254,7 @@
 }
 
 - (void)saveToCameraRoll {
-    
+    UISaveVideoAtPathToSavedPhotosAlbum(self.outputUrl.path, nil, nil, nil);
 }
 
 - (void)addSegment:(NSURL *)fileUrl {

@@ -25,10 +25,10 @@ namespace SCorsin {
 
 	[BaseType(typeof(NSObject))]
 	interface SCRecordSession {
-		[Export("outputUrl")]
+		[Export("outputUrl"), NullAllowed]
 		NSUrl OutputUrl { get; set; }
 
-		[Export("fileType")]
+		[Export("fileType"), NullAllowed]
 		NSString FileType { get; set; }
 
 		[Export("shouldTrackRecordSegments")]
@@ -46,13 +46,13 @@ namespace SCorsin {
 		[Export("ratioRecorded")]
 		float RatioRecorded { get; }
 
-		[Export("videoOutputSettings")]
+		[Export("videoOutputSettings"), NullAllowed]
 		NSDictionary VideoOutputSettings { get; set; }
 
-		[Export("audioOutputSettings")]
+		[Export("audioOutputSettings"), NullAllowed]
 		NSDictionary AudioOutputSettings { get; set; }
 
-		[Export("recordSegmentsMergePreset")]
+		[Export("recordSegmentsMergePreset"), NullAllowed]
 		NSString RecordSegmentsMergePreset { get; set; }
 
 		[Export("recordSegmentBegan")]
@@ -67,10 +67,10 @@ namespace SCorsin {
 		[Export("videoBitsPerPixel")]
 		float VideoBitsPerPixel { get; set; }
 
-		[Export("videoCodec")]
+		[Export("videoCodec"), NullAllowed]
 		NSString VideoCodec { get; set; }
 
-		[Export("videoScalingMode")]
+		[Export("videoScalingMode"), NullAllowed]
 		NSString VideoScalingMode { get; set; }
 
 		[Export("shouldIgnoreVideo")]
@@ -104,7 +104,7 @@ namespace SCorsin {
 		void beginRecordSegment(out NSError error);
 
 		[Export("endRecordSegment:")]
-		void EndRecordSegment(EndRecordSegmentDelegate completionHandler);
+		void EndRecordSegment([NullAllowed] EndRecordSegmentDelegate completionHandler);
 
 		[Export("removeSegmentAtIndex:deleteFile:")]
 		void RemoveSegmentAtIndex(int segmentIndex, bool deleteFile);
@@ -119,13 +119,13 @@ namespace SCorsin {
 		void RemoveAllSegments();
 
 		[Export("mergeRecordSegments:")]
-		void MergeRecordSegments(GenericErrorDelegate completionHandler);
+		void MergeRecordSegments([NullAllowed] GenericErrorDelegate completionHandler);
 
 		[Export("endSession:")]
-		void EndSession(GenericErrorDelegate completionHandler);
+		void EndSession([NullAllowed] GenericErrorDelegate completionHandler);
 
 		[Export("cancelSession:")]
-		void CancelSession(Action completionHandler);
+		void CancelSession([NullAllowed] Action completionHandler);
 
 		[Export("assetRepresentingRecordSegments")]
 		AVAsset AssetRepresentingRecordSegments { get; }
@@ -206,7 +206,7 @@ namespace SCorsin {
 		[Export("focusMode")]
 		AVCaptureFocusMode FocusMode { get; }
 
-		[Export("photoOutputSettings")]
+		[Export("photoOutputSettings"), NullAllowed]
 		NSDictionary PhotoOutputSettings { get; set; }
 
 		[Export("sessionPreset")]
@@ -221,10 +221,10 @@ namespace SCorsin {
 		[Export("previewLayer")]
 		AVCaptureVideoPreviewLayer PreviewLayer { get; }
 
-		[Export("previewView")]
+		[Export("previewView"), NullAllowed]
 		UIView PreviewView { get; set; }
 
-		[Export("recordSession")]
+		[Export("recordSession"), NullAllowed]
 		SCRecordSession RecordSession { get; set; }
 
 		[Export("videoOrientation")]
@@ -237,13 +237,13 @@ namespace SCorsin {
 		bool FocusSupported { get; }
 
 		[Export("openSession:")]
-		void OpenSession(OpenSessionDelegate completionHandler);
+		void OpenSession([NullAllowed] OpenSessionDelegate completionHandler);
 
 		[Export("closeSession")]
 		void CloseSession();
 
 		[Export("startRunningSession:")]
-		void StartRunningSession(Action completionHandler);
+		void StartRunningSession([NullAllowed] Action completionHandler);
 
 		[Export("endRunningSession")]
 		void EndRunningSession();
@@ -276,7 +276,7 @@ namespace SCorsin {
 		void Pause();
 
 		[Export("capturePhoto:")]
-		void CapturePhoto(CapturePhotoDelegate completionHandler);
+		void CapturePhoto([NullAllowed] CapturePhotoDelegate completionHandler);
 	}
 
 	delegate void CompletionHandler(NSError error);

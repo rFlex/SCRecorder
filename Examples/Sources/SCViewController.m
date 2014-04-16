@@ -163,6 +163,7 @@
 - (void)finishSession:(SCRecordSession *)recordSession {
     [recordSession endSession:^(NSError *error) {
         if (error == nil) {
+            [recordSession saveToCameraRoll];
             [self showVideo:[AVURLAsset URLAssetWithURL:recordSession.outputUrl options:nil]];
             [self prepareCamera];
         } else {
