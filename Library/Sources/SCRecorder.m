@@ -38,6 +38,7 @@
         _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
         
         _videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+        _videoOutput.alwaysDiscardsLateVideoFrames = NO;
         [_videoOutput setSampleBufferDelegate:self queue:_dispatchQueue];
         
         _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
@@ -217,13 +218,13 @@
 }
 
 - (void)record {
-    dispatch_async(_dispatchQueue, ^{
+    dispatch_sync(_dispatchQueue, ^{
         _isRecording = YES;
     });
 }
 
 - (void)pause {
-    dispatch_async(_dispatchQueue, ^{
+    dispatch_sync(_dispatchQueue, ^{
         _isRecording = NO;
         SCRecordSession *recordSession = _recordSession;
         
@@ -268,7 +269,7 @@
     
     if (CMTIME_IS_VALID(suggestedMaxRecordDuration)) {
         if (CMTIME_COMPARE_INLINE(currentRecordDuration, >=, suggestedMaxRecordDuration)) {
-            _recordSession = nil;
+            _isRecording = NO;
             
             [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
                 id<SCRecorderDelegate> delegate = self.delegate;

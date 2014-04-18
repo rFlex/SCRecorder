@@ -154,13 +154,13 @@
     SCRecordSession *recordSession = _recorder.recordSession;
     
     if (recordSession != nil) {
-        _recorder.recordSession = nil;
-        
         [self finishSession:recordSession];
     }
 }
 
 - (void)finishSession:(SCRecordSession *)recordSession {
+    _recorder.recordSession = nil;
+    
     [recordSession endSession:^(NSError *error) {
         if (error == nil) {
             [recordSession saveToCameraRoll];

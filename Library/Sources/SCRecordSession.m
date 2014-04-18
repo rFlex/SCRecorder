@@ -213,7 +213,6 @@
                           };
     }
     
-    
     _videoInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
     _videoInput.expectsMediaDataInRealTime = YES;
     _videoInput.transform = self.videoAffineTransform;
@@ -277,9 +276,8 @@
     for (CMItemCount i = 0; i < count; i++) {
         pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
         pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
-        pInfo[i].duration = duration;
+//        pInfo[i].duration = duration;
     }
-    
     
     CMSampleBufferRef sout;
     CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
@@ -434,12 +432,14 @@
 - (void)cancelSession:(void (^)())completionHandler {
     if (_assetWriter == nil) {
         [self removeAllSegments];
+        [self removeFile:self.outputUrl];
         if (completionHandler != nil) {
             completionHandler();
         }
     } else {
         [self endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
             [self removeAllSegments];
+            [self removeFile:self.outputUrl];
             if (completionHandler != nil) {
                 completionHandler();
             }
@@ -527,12 +527,15 @@
             _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
         }
         
-        CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
-        CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
+        CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
         
         CMTime lastTimeVideo = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
+        CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
+//        duration = CMTimeSubtract(lastTimeVideo, _lastTimeVideo);
+
+//        NSLog(@"%f", CMTimeGetSeconds(CMTimeSubtract(lastTimeVideo, _lastTimeVideo)));
         
-        if (CMTIME_COMPARE_INLINE(lastTimeVideo, >=, _lastTimeVideo)) {
+//        if (CMTIME_COMPARE_INLINE(lastTimeVideo, >=, _lastTimeVideo)) {
             if (CMTIME_IS_INVALID(duration)) {
                 if (_videoMaxFrameRate == 0) {
                     duration = frameDuration;
@@ -548,19 +551,19 @@
                 _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
             }
             
-//            NSLog(@"%f - Appended video %f", CMTimeGetSeconds(lastTimeVideo), CMTimeGetSeconds(computedFrameDuration));
-            
+//            NSLog(@"%f - Appended video %f (%f)", CMTimeGetSeconds(lastTimeVideo), CMTimeGetSeconds(computedFrameDuration), CMTimeGetSeconds(CMTimeSubtract(lastTimeVideo, _lastTimeVideo)));
+        
             lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
-            
+        
             _lastTimeVideo = lastTimeVideo;
             _lastTime = lastTimeVideo;
             
             [_videoInput appendSampleBuffer:adjustedBuffer];
-            
+        
             _currentSegmentHasVideo = YES;
-        } else {
+//        } else {
 //            NSLog(@"%f - Skipped video", CMTimeGetSeconds(lastTimeVideo));
-        }
+//        }
         
         CFRelease(adjustedBuffer);
     }
