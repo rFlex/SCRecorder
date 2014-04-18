@@ -57,7 +57,7 @@
         self.audioEncodeType = kRecordSessionDefaultAudioFormat;
         
         self.suggestedMaxRecordDuration = kCMTimeInvalid;
-        self.videoShouldKeepOnlyKeepKeyFrames = YES;
+        self.videoShouldKeepOnlyKeyFrames = YES;
         
         _recordSegments = [[NSMutableArray alloc] init];
         
@@ -204,7 +204,7 @@
         
         NSMutableDictionary *compressionSettings = [NSMutableDictionary dictionaryWithObject:[NSNumber numberWithInteger:bitsPerSecond] forKey:AVVideoAverageBitRateKey];
         
-        if (self.videoShouldKeepOnlyKeepKeyFrames) {
+        if (self.videoShouldKeepOnlyKeyFrames) {
             [compressionSettings setObject:@1 forKey:AVVideoMaxKeyFrameIntervalKey];
         }
         
