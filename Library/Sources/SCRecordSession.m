@@ -57,6 +57,7 @@
         self.audioEncodeType = kRecordSessionDefaultAudioFormat;
         
         self.suggestedMaxRecordDuration = kCMTimeInvalid;
+        self.videoShouldKeepOnlyKeepKeyFrames = YES;
         
         _recordSegments = [[NSMutableArray alloc] init];
         
@@ -201,15 +202,18 @@
         
         NSInteger bitsPerSecond = [SCRecordSession getBitsPerSecondForOutputVideoSize:videoSize andBitsPerPixel:self.videoBitsPerPixel];
         
+        NSMutableDictionary *compressionSettings = [NSMutableDictionary dictionaryWithObject:[NSNumber numberWithInteger:bitsPerSecond] forKey:AVVideoAverageBitRateKey];
+        
+        if (self.videoShouldKeepOnlyKeepKeyFrames) {
+            [compressionSettings setObject:@1 forKey:AVVideoMaxKeyFrameIntervalKey];
+        }
+        
         videoSettings = @{
                           AVVideoCodecKey : self.videoCodec,
                           AVVideoScalingModeKey : self.videoScalingMode,
                           AVVideoWidthKey : [NSNumber numberWithInteger:videoSize.width],
                           AVVideoHeightKey : [NSNumber numberWithInteger:videoSize.height],
-                          AVVideoCompressionPropertiesKey : @{
-                                  AVVideoAverageBitRateKey: [NSNumber numberWithInteger:bitsPerSecond],
-                                  AVVideoMaxKeyFrameIntervalKey : @1
-                                  }
+                          AVVideoCompressionPropertiesKey : compressionSettings
                           };
     }
     
@@ -531,9 +535,6 @@
         
         CMTime lastTimeVideo = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
         CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
-//        duration = CMTimeSubtract(lastTimeVideo, _lastTimeVideo);
-
-//        NSLog(@"%f", CMTimeGetSeconds(CMTimeSubtract(lastTimeVideo, _lastTimeVideo)));
         
 //        if (CMTIME_COMPARE_INLINE(lastTimeVideo, >=, _lastTimeVideo)) {
             if (CMTIME_IS_INVALID(duration)) {

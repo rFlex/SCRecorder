@@ -130,6 +130,8 @@ namespace SCorsin {
 		[Export("assetRepresentingRecordSegments")]
 		AVAsset AssetRepresentingRecordSegments { get; }
 
+		[Export("videoShouldKeepOnlyKeepKeyFrames")]
+		bool VideoShouldKeepOnlyKeepKeyFrames { get; set; }
 	}
 
 	[Model, BaseType(typeof(NSObject))]

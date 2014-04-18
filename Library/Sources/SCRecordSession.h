@@ -118,6 +118,14 @@
 // A value different than 1 with the sound enabled will fail
 @property (assign, nonatomic) CGFloat videoTimeScale;
 
+// If true, each frame will be encoded as a keyframe
+// This is needed if you want to merge the recordSegments using
+// the passthrough preset (default behavior). This will seriously impact the video
+// size. You can set this to NO and change the recordSegmentsMergePreset if you want
+// a better quality/size ratio, but the merge will be slower.
+// Default is YES
+@property (assign, nonatomic) BOOL videoShouldKeepOnlyKeepKeyFrames;
+
 
 //////////////////
 // AUDIO SETTINGS
