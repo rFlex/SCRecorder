@@ -132,6 +132,9 @@ namespace SCorsin {
 
 		[Export("videoShouldKeepOnlyKeyFrames")]
 		bool VideoShouldKeepOnlyKeyFrames { get; set; }
+
+		[Export("videoSizeAsSquare")]
+		bool VideoSizeAsSquare { get; set; }
 	}
 
 	[Model, BaseType(typeof(NSObject))]

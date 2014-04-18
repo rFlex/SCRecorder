@@ -118,7 +118,10 @@
 // A value different than 1 with the sound enabled will fail
 @property (assign, nonatomic) CGFloat videoTimeScale;
 
-@property (assign, nonatomic) BOOL videoShouldBeSquared;
+// If true and videoSize is CGSizeZero, the videoSize
+// used will equal to the minimum width or height found,
+// thus making the video square.
+@property (assign, nonatomic) BOOL videoSizeAsSquare;
 
 // If true, each frame will be encoded as a keyframe
 // This is needed if you want to merge the recordSegments using

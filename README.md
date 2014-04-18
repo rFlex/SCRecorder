@@ -92,6 +92,9 @@ And start doing the cool stuffs!
 	// You can remove a record segment at anytime
 	// Setting deleteFile to YES will delete the underlying file
 	[recordSession removeSegmentAtIndex:1 deleteFile:YES];
+
+	// Record a square video like Vine/Instagram
+	recordSession.videoSizeAsSquare = YES;
 	
 	// Or add a random record segment that you made before
 	[recordSession insertSegment:fileUrl atIndex:0];

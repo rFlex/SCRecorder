@@ -251,11 +251,6 @@
         
         SCRecordSession *session = [SCRecordSession recordSession];
         session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
-//        session.shouldTrackRecordSegments = YES;
-//        session.videoMaxFrameRate = 30;
-//        session.videoTimeScale = 4;
-        
-//        session.shouldIgnoreAudio = YES;
         
         _recorder.recordSession = session;
     }

@@ -198,6 +198,14 @@
             size_t height = CVPixelBufferGetHeight(imageBuffer);
             videoSize.width = width;
             videoSize.height = height;
+            
+            if (self.videoSizeAsSquare) {
+                if (width > height) {
+                    videoSize.width = height;
+                } else {
+                    videoSize.height = width;
+                }
+            }
         }
         
         NSInteger bitsPerSecond = [SCRecordSession getBitsPerSecondForOutputVideoSize:videoSize andBitsPerPixel:self.videoBitsPerPixel];
