@@ -14,6 +14,13 @@ Framework needed:
 - CoreVideo
 - AudioToolbox
 
+Podfile
+----------------
+
+If you are using cocoapods, you can use this project with the following Podfile
+
+	platform :ios, '7.0'
+	pod "SCRecorder", "2.0.1"
 
 Getting started
 ----------------
