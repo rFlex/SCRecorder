@@ -6,7 +6,6 @@
 //  Copyright (c) 2014 rFlex. All rights reserved.
 //
 
-#include <sys/sysctl.h>
 #import "SCRecorder.h"
 #define SCRecorderFocusContext ((void*)0x1)
 
@@ -318,16 +317,24 @@
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording && recordSession.recordSegmentReady) {
-                        [recordSession appendVideoSampleBuffer:sampleBuffer frameDuration:[self frameDurationFromConnection:connection]];
-                        
                         id<SCRecorderDelegate> delegate = self.delegate;
-                        if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [delegate recorder:self didAppendVideoSampleBuffer:recordSession];
-                            });
+                        if ([recordSession appendVideoSampleBuffer:sampleBuffer frameDuration:[self frameDurationFromConnection:connection]]) {
+                            if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
+                            
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [delegate recorder:self didAppendVideoSampleBuffer:recordSession];
+                                });
+                            }
+                            
+                            [self checkRecordSessionDuration:recordSession];
+                        } else {
+                            if ([delegate respondsToSelector:@selector(recorder:didSkipVideoSampleBuffer:)]) {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [delegate recorder:self didSkipVideoSampleBuffer:recordSession];
+                                });
+                            }
                         }
                         
-                        [self checkRecordSessionDuration:recordSession];
                     }
                 }
             }
@@ -349,16 +356,22 @@
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording && recordSession.recordSegmentReady) {
-                        [recordSession appendAudioSampleBuffer:sampleBuffer];
-                        
                         id<SCRecorderDelegate> delegate = self.delegate;
-                        if ([delegate respondsToSelector:@selector(recorder:didAppendAudioSampleBuffer:)]) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [delegate recorder:self didAppendAudioSampleBuffer:recordSession];
-                            });
+                        if ([recordSession appendAudioSampleBuffer:sampleBuffer]) {
+                            if ([delegate respondsToSelector:@selector(recorder:didAppendAudioSampleBuffer:)]) {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [delegate recorder:self didAppendAudioSampleBuffer:recordSession];
+                                });
+                            }
+                            
+                            [self checkRecordSessionDuration:recordSession];
+                        } else {
+                            if ([delegate respondsToSelector:@selector(recorder:didSkipAudioSampleBuffer:)]) {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [delegate recorder:self didSkipAudioSampleBuffer:recordSession];
+                                });
+                            }
                         }
-                        
-                        [self checkRecordSessionDuration:recordSession];
                     }
                 }
             }

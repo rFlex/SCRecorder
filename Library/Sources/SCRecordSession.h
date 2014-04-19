@@ -230,8 +230,8 @@
 - (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasAudio:(BOOL)hasAudio error:(NSError **)error;
 - (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasVideo:(BOOL)hasVideo error:(NSError **)error;
 
-- (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration;
-- (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
+- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration;
+- (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
 - (void)makeTimeOffsetDirty;
 
 @end

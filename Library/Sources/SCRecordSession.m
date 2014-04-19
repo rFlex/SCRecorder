@@ -498,7 +498,7 @@
     }
 }
 
-- (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
+- (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
     if (!IS_WAITING_VIDEO && [_audioInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer);
         
@@ -527,10 +527,13 @@
         }
         
         CFRelease(adjustedBuffer);
+        return YES;
+    } else {
+        return NO;
     }
 }
 
-- (void)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration {
+- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration {
     if ([_videoInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
         
@@ -575,6 +578,9 @@
 //        }
         
         CFRelease(adjustedBuffer);
+        return YES;
+    } else {
+        return NO;
     }
 }
 

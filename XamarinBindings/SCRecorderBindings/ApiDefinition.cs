@@ -173,6 +173,12 @@ namespace SCorsin {
 		[Export("recorder:didAppendAudioSampleBuffer:"), Abstract, EventArgs("RecorderDidAppendAudioSampleBufferDelegate")]
 		void DidAppendAudioSampleBuffer(SCRecorder recorder, SCRecordSession recordSession);
 
+		[Export("recorder:didSkipAudioSampleBuffer:"), Abstract, EventArgs("RecorderDidSkip")]
+		void DidSkipAudioSampleBuffer(SCRecorder recorder, SCRecordSession recordSession);
+
+		[Export("recorder:didSkipVideoSampleBuffer:"), Abstract, EventArgs("RecorderDidSkip")]
+		void DidSkipVideoSampleBuffer(SCRecorder recorder, SCRecordSession recordSession);
+
 		[Export("recorder:didCompleteRecordSession:"), Abstract, EventArgs("RecorderDidCompleteRecordSessionDelegate")]
 		void DidCompleteRecordSession(SCRecorder recorder, SCRecordSession recordSession);
 
