@@ -561,6 +561,11 @@
             [device setFocusPointOfInterest:point];
             [device setFocusMode:AVCaptureFocusModeAutoFocus];
             [device unlockForConfiguration];
+            
+            id<SCRecorderDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(recorderWillStartFocus:)]) {
+                [delegate recorderWillStartFocus:self];
+            }
         }
     }
 }
@@ -575,6 +580,11 @@
 			[device setFocusPointOfInterest:point];
 			[device setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
 			[device unlockForConfiguration];
+            
+            id<SCRecorderDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(recorderWillStartFocus:)]) {
+                [delegate recorderWillStartFocus:self];
+            }
 		}
 	}
 }

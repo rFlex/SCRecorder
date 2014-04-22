@@ -126,6 +126,10 @@
     [self.focusView hideFocusAnimation];
 }
 
+- (void)recorderWillStartFocus:(SCRecorder *)recorder {
+    [self.focusView showFocusAnimation];
+}
+
 #pragma mark - Handle
 
 - (void)showAlertViewWithTitle:(NSString*)title message:(NSString*) message {

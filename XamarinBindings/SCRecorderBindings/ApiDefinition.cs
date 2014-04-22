@@ -156,6 +156,9 @@ namespace SCorsin {
 		[Export("recorder:didChangeSessionPreset:error:"), Abstract, EventArgs("RecorderDidChangeSessionPresetDelegate")]
 		void DidChangeSessionPreset(SCRecorder recorder, string sessionPreset, NSError error);
 
+		[Export("recorderWillStartFocus:"), Abstract, EventArgs("RecorderWillStartFocusDelegate")]
+		void WillStartFocus(SCRecorder recorder);
+
 		[Export("recorderDidStartFocus:"), Abstract, EventArgs("RecorderDidStartFocusDelegate")]
 		void DidStartFocus(SCRecorder recorder);
 
