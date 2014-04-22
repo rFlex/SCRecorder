@@ -16,6 +16,9 @@
 
 #pragma mark - Private definition
 
+const NSString *SCRecordSessionSegmentsKey = @"RecordSegments";
+const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
+
 @interface SCRecordSession() {
     AVAssetWriter *_assetWriter;
     AVAssetWriterInput *_videoInput;
@@ -39,6 +42,32 @@
 @end
 
 @implementation SCRecordSession
+
+- (id)initWithDictionaryRepresentation:(NSDictionary *)dictionaryRepresentation {
+    self = [self init];
+    
+    if (self) {
+        NSArray *recordSegments = [dictionaryRepresentation objectForKey:SCRecordSessionSegmentsKey];
+        
+        int i = 0;
+        for (NSString *recordSegment in recordSegments) {
+            if ([[NSFileManager defaultManager] fileExistsAtPath:recordSegment]) {
+                NSURL *url = [NSURL fileURLWithPath:recordSegment];
+                [_recordSegments addObject:url];
+            } else {
+                NSLog(@"Skipping record segment %d: File does not exist", i);
+            }
+            i++;
+        }
+        NSString *outputUrl = [dictionaryRepresentation objectForKey:SCRecordSessionOutputUrlKey];
+        if (outputUrl != nil) {
+            self.outputUrl = [NSURL fileURLWithPath:outputUrl];
+        }
+        [self recomputeRecordDuration];
+    }
+    
+    return self;
+}
 
 - (id)init {
     self = [super init];
@@ -85,6 +114,10 @@
     return [[SCRecordSession alloc] init];
 }
 
++ (id)recordSession:(NSDictionary *)dictionaryRepresentation {
+    return [[SCRecordSession alloc] initWithDictionaryRepresentation:dictionaryRepresentation];
+}
+
 + (NSError*)createError:(NSString*)errorDescription {
     return [NSError errorWithDomain:@"SCRecordSession" code:200 userInfo:@{NSLocalizedDescriptionKey : errorDescription}];
 }
@@ -94,19 +127,23 @@
 }
 
 - (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile {
-    NSURL *fileUrl = [_recordSegments objectAtIndex:segmentIndex];
-    
     if (deleteFile) {
+        NSURL *fileUrl = [_recordSegments objectAtIndex:segmentIndex];
         [self removeFile:fileUrl];
     }
     
     [_recordSegments removeObjectAtIndex:segmentIndex];
+    [self recomputeRecordDuration];
 }
 
 - (void)removeAllSegments {
     while (_recordSegments.count > 0) {
-        [self removeSegmentAtIndex:0 deleteFile:YES];
+        NSURL *fileUrl = [_recordSegments objectAtIndex:0];
+        [self removeFile:fileUrl];
+        [_recordSegments removeObjectAtIndex:0];
     }
+    
+    [self recomputeRecordDuration];
 }
 
 - (NSString*)suggestFileType {
@@ -268,12 +305,20 @@
     UISaveVideoAtPathToSavedPhotosAlbum(self.outputUrl.path, nil, nil, nil);
 }
 
+- (void)recomputeRecordDuration {
+    _lastTime = self.assetRepresentingRecordSegments.duration;
+    _lastTimeAudio = _lastTime;
+    _lastTimeVideo = _lastTime;
+}
+
 - (void)addSegment:(NSURL *)fileUrl {
     [_recordSegments addObject:fileUrl];
+    [self recomputeRecordDuration];
 }
 
 - (void)insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex {
     [_recordSegments insertObject:fileUrl atIndex:segmentIndex];
+    [self recomputeRecordDuration];
 }
 
 //
@@ -316,7 +361,7 @@
         [self makeTimeOffsetDirty];
         AVAssetWriter *writer = _assetWriter;
         
-        BOOL currentSegmentEmpty = IS_WAITING_AUDIO && IS_WAITING_VIDEO;
+        BOOL currentSegmentEmpty = IS_WAITING_AUDIO || IS_WAITING_VIDEO;
         
         if (currentSegmentEmpty) {
             [writer cancelWriting];
@@ -641,6 +686,19 @@
 
 - (BOOL)currentSegmentHasAudio {
     return _currentSegmentHasAudio;
+}
+
+- (NSDictionary *)dictionaryRepresentation {
+    NSMutableArray *recordSegments = [NSMutableArray array];
+    
+    for (NSURL *recordSegment in self.recordSegments) {
+        [recordSegments addObject:recordSegment.path];
+    }
+    
+    return @{
+             SCRecordSessionSegmentsKey: recordSegments,
+             SCRecordSessionOutputUrlKey : self.outputUrl.path
+             };
 }
 
 @end

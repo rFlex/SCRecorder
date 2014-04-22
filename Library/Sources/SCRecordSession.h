@@ -15,6 +15,9 @@
 #define kRecordSessionDefaultAudioBitrate 128000
 #define kRecordSessionDefaultAudioFormat kAudioFormatMPEG4AAC
 
+extern const NSString *SCRecordSessionSegmentsKey;
+extern const NSString *SCRecordSessionOutputUrlKey;
+
 @class SCRecordSession;
 @protocol SCRecordSessionDelegate <NSObject>
 
@@ -162,8 +165,15 @@
 // PUBLIC METHODS
 ////
 
+- (id)init;
+
+- (id)initWithDictionaryRepresentation:(NSDictionary *)dictionaryRepresentation;
+
 // Create a SCRecordSession
 + (id)recordSession;
+
+// Create a SCRecordSession based on dictionary representation
++ (id)recordSession:(NSDictionary *)dictionaryRepresentation;
 
 // If the video was already merged, this save
 // the merged video to the camera roll
@@ -179,19 +189,27 @@
 // segmentIndex contains the index of the segment recorded accessible
 // in the recordSegments array. If error is not null, if will be -1
 // If you don't remove the SCRecordSession from the SCRecorder while calling this method,
-// The SCRecorder might create a new recordSegment right after automatically.
+// The SCRecorder might create a new recordSegment right after automatically if it is not paused.
 - (void)endRecordSegment:(void(^)(NSInteger segmentIndex, NSError *error))completionHandler;
 
 // Remove the record segment at the given index and delete the associated file if asked
+// Unexpected behavior can occur if you call this method if
+// recordSegmentBegan is true
 - (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile;
 
 // Manually add a record segment
+// Unexpected behavior can occur if you call this method if
+// recordSegmentBegan is true
 - (void)addSegment:(NSURL *)fileUrl;
 
 // Manually insert a record segment
+// Unexpected behavior can occur if you call this method if
+// recordSegmentBegan is true
 - (void)insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex;
 
 // Remove all the record segments and their associated files
+// Unexpected behavior can occur if you call this method if
+// recordSegmentBegan is true
 - (void)removeAllSegments;
 
 // Merge all recordSegments into the outputUrl
@@ -213,6 +231,11 @@
 // Returns an asset representing all the record segments
 // from this record session. This can be called anytime.
 - (AVAsset *)assetRepresentingRecordSegments;
+
+// Returns a dictionary that represents this SCRecordSession
+// This will only contains strings and can be therefore safely serialized
+// in any text format
+- (NSDictionary *)dictionaryRepresentation;
 
 
 //////////////////

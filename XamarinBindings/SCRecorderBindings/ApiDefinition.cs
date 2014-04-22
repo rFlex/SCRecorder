@@ -25,6 +25,10 @@ namespace SCorsin {
 
 	[BaseType(typeof(NSObject))]
 	interface SCRecordSession {
+
+		[Export("initWithDictionaryRepresentation:")]
+		IntPtr Constructor(NSDictionary dictionaryRepresentation);
+
 		[Export("outputUrl"), NullAllowed]
 		NSUrl OutputUrl { get; set; }
 
@@ -135,6 +139,9 @@ namespace SCorsin {
 
 		[Export("videoSizeAsSquare")]
 		bool VideoSizeAsSquare { get; set; }
+
+		[Export("dictionaryRepresentation")]
+		NSDictionary DictionaryRepresentation { get; }
 	}
 
 	[Model, BaseType(typeof(NSObject))]
@@ -285,6 +292,9 @@ namespace SCorsin {
 
 		[Export("pause")]
 		void Pause();
+
+		[Export("pause:")]
+		void Pause(Action completionHandler);
 
 		[Export("capturePhoto:")]
 		void CapturePhoto([NullAllowed] CapturePhotoDelegate completionHandler);

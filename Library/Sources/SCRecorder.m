@@ -7,6 +7,7 @@
 //
 
 #import "SCRecorder.h"
+#define dispatch_handler(x) if (x != nil) dispatch_async(dispatch_get_main_queue(), x)
 #define SCRecorderFocusContext ((void*)0x1)
 
 @interface SCRecorder() {
@@ -223,6 +224,10 @@
 }
 
 - (void)pause {
+    [self pause:nil];
+}
+
+- (void)pause:(void(^)())completionHandler {
     dispatch_sync(_dispatchQueue, ^{
         _isRecording = NO;
         SCRecordSession *recordSession = _recordSession;
@@ -235,11 +240,19 @@
                         if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {
                             [delegate recorder:self didEndRecordSegment:recordSession segmentIndex:segmentIndex error:error];
                         }
+                        if (completionHandler != nil) {
+                            completionHandler();
+                        }
                     }];
+                } else {
+                    dispatch_handler(completionHandler);
                 }
             } else {
                 [recordSession makeTimeOffsetDirty];
+                dispatch_handler(completionHandler);
             }
+        } else {
+            dispatch_handler(completionHandler);
         }
     });
 }
