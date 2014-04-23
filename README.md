@@ -105,6 +105,15 @@ And start doing the cool stuffs!
 	// Record in slow motion!
 	recordSession.videoTimeScale = 4;
 	
+	// Get a dictionary representation of the record session
+	// And save it somewhere, so you can use it later!
+	NSDictionary *dictionaryRepresentation = [recordSession dictionaryRepresentation];
+	[[NSUserDefaults standardUserDefaults] setObject:dictionaryRepresentation forKey:@"RecordSession"];
+	
+	// Restore a record session from a saved dictionary representation
+	NSDictionary *dictionaryRepresentation = [[NSUserDefaults standardUserDefaults] objectForKey:@"RecordSession"];
+	SCRecordSession *recordSession = [SCRecordSession recordSession:dictionaryRepresentation];
+	
 	// Limiting the record duration
 	// When the record reaches this value, the recorder will remove the recordSession and call
 	// recorder:didCompleteRecordSession: on the SCRecorder delegate. It's up to you
