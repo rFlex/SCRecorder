@@ -99,6 +99,11 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Focus
 @property (readonly, nonatomic) BOOL focusSupported;
 
+// If for whatever reasons you need to access the underlying AVCaptureOutputs
+@property (readonly, nonatomic) AVCaptureVideoDataOutput *videoOutput;
+@property (readonly, nonatomic) AVCaptureAudioDataOutput *audioOutput;
+@property (readonly, nonatomic) AVCaptureStillImageOutput *photoOutput;
+
 // Convenient way to create a recorder
 + (SCRecorder*)recorder;
 

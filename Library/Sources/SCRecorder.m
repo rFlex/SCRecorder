@@ -889,4 +889,16 @@
     return foundSupported;
 }
 
+- (AVCaptureVideoDataOutput *)videoOutput {
+    return _videoOutput;
+}
+
+- (AVCaptureAudioDataOutput *)audioOutput {
+    return _audioOutput;
+}
+
+- (AVCaptureStillImageOutput *)photoOutput {
+    return _photoOutput;
+}
+
 @end

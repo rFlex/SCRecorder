@@ -86,6 +86,10 @@ SCPlayer * currentSCVideoPlayer = nil;
 				[self play];
 			}
 		}
+        id<SCVideoPlayerDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(player:didReachEndForItem:)]) {
+            [delegate player:self didReachEndForItem:self.currentItem];
+        }
 	}
 }
 
