@@ -50,8 +50,10 @@ SCPlayer * currentSCVideoPlayer = nil;
 	return self;
 }
 
-- (void) dealloc {
+- (void)dealloc {
     [self removeObserver:self forKeyPath:@"currentItem"];
+    [self removeOldObservers];
+    [self endSendingPlayMessages];
 }
 
 - (void)beginSendingPlayMessages {
@@ -124,13 +126,18 @@ SCPlayer * currentSCVideoPlayer = nil;
 	}
 }
 
-- (void) initObserver {
-	if (self.oldItem != nil) {
+- (void)removeOldObservers {
+    if (self.oldItem != nil) {
 		[self.oldItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
 		[self.oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
 		
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.oldItem];
+        self.oldItem = nil;
 	}
+}
+
+- (void) initObserver {
+	[self removeOldObservers];
 	
 	if (self.currentItem != nil) {
 		[self.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:NSKeyValueObservingOptionNew context:nil];
@@ -138,9 +145,9 @@ SCPlayer * currentSCVideoPlayer = nil;
 		 NSKeyValueObservingOptionNew context:nil];
 		
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
+        self.oldItem = self.currentItem;
 	}
 		
-	self.oldItem = self.currentItem;
     id<SCVideoPlayerDelegate> delegate = self.delegate;
 	if ([delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
 		[delegate videoPlayer:self didChangeItem:self.currentItem];

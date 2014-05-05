@@ -144,7 +144,7 @@ namespace SCorsin {
 		NSDictionary DictionaryRepresentation { get; }
 	}
 
-	[Model, BaseType(typeof(NSObject))]
+	[Model, BaseType(typeof(NSObject)), Protocol]
 	interface SCRecorderDelegate {
 
 		[Abstract, Export("recorder:didReconfigureInputs:audioInputError:"), EventArgs("RecorderDidReconfigureInputsDelegate")]
@@ -319,7 +319,7 @@ namespace SCorsin {
     }
 
 	[BaseType(typeof(NSObject))]
-	[Model]
+	[Model, Protocol]
 	interface SCPlayerDelegate {
 		[Abstract]	
 		[Export("videoPlayer:didPlay:loopsCount:"), EventArgs("PlayerDidPlay")]
