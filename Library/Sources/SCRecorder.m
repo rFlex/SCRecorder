@@ -326,7 +326,7 @@
                 }
                 
                 
-                if (!_hasAudio || recordSession.audioInitialized || recordSession.shouldIgnoreAudio) {
+                if (!_hasAudio || recordSession.audioInitialized || recordSession.shouldIgnoreAudio || recordSession.audioInitializationFailed) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording && recordSession.recordSegmentReady) {
@@ -365,7 +365,7 @@
                     }
                 }
                 
-                if (!_hasVideo || recordSession.videoInitialized || recordSession.shouldIgnoreVideo) {
+                if (!_hasVideo || recordSession.videoInitialized || recordSession.shouldIgnoreVideo || recordSession.videoInitializationFailed) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording && recordSession.recordSegmentReady) {

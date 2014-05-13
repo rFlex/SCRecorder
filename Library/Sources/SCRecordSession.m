@@ -9,8 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "SCRecordSession.h"
 // These are sets in defines to avoid repeated method calls
-#define CAN_HANDLE_AUDIO (_recorderHasAudio && !_shouldIgnoreAudio)
-#define CAN_HANDLE_VIDEO (_recorderHasVideo && !_shouldIgnoreVideo)
+#define CAN_HANDLE_AUDIO (_recorderHasAudio && !_shouldIgnoreAudio && !_audioInitializationFailed)
+#define CAN_HANDLE_VIDEO (_recorderHasVideo && !_shouldIgnoreVideo && !_videoInitializationFailed)
 #define IS_WAITING_AUDIO (CAN_HANDLE_AUDIO && !_currentSegmentHasAudio)
 #define IS_WAITING_VIDEO (CAN_HANDLE_VIDEO && !_currentSegmentHasVideo)
 
@@ -262,11 +262,21 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
                           };
     }
     
-    _videoInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
-    _videoInput.expectsMediaDataInRealTime = YES;
-    _videoInput.transform = self.videoAffineTransform;
+    NSError *theError = nil;
+    @try {
+        _videoInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
+        _videoInput.expectsMediaDataInRealTime = YES;
+        _videoInput.transform = self.videoAffineTransform;
+    }
+    @catch (NSException *exception) {
+        theError = [SCRecordSession createError:exception.reason];
+    }
     
-    *error = nil;
+    _videoInitializationFailed = theError != nil;
+    
+    if (error != nil) {
+        *error = theError;
+    }
 }
 
 - (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasVideo:(BOOL)hasVideo error:(NSError *__autoreleasing *)error {
@@ -295,10 +305,19 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
                           };
     }
     
-    _audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioSettings];
-    _audioInput.expectsMediaDataInRealTime = YES;
+    NSError *theError = nil;
+    @try {
+        _audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioSettings];
+        _audioInput.expectsMediaDataInRealTime = YES;
+    } @catch (NSException *exception) {
+        theError = [SCRecordSession createError:exception.reason];
+    }
     
-    *error = nil;
+    _audioInitializationFailed = theError != nil;
+    
+    if (error != nil) {
+        *error = theError;
+    }
 }
 
 - (void)saveToCameraRoll {

@@ -53,7 +53,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.capturePhotoButton.alpha = 0.0;
-    
+
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = kVideoPreset;
     _recorder.audioEnabled = YES;
