@@ -499,6 +499,9 @@ namespace SCorsin {
 		[Export("filterGroup"), NullAllowed]
 		SCFilterGroup FilterGroup { get; set; }
 
+		[Export("useGPUForRenderingFilters")]
+		bool UseGPUForRenderingFilters { get; set; }
+
 	}
 
 	[BaseType(typeof(GLKView))]

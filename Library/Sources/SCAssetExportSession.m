@@ -93,7 +93,13 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
 - (void)processSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     if (_ciContext != nil) {
         CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-        CIImage *result = [_filterGroup imageByProcessingImage:[CIImage imageWithCVPixelBuffer:pixelBuffer]];
+        
+        if (_eaglContext == nil) {
+            CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+        }
+        
+        CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+        CIImage *result = [_filterGroup imageByProcessingImage:image];
         
         if (_pixelBuffer == nil) {
             CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &_pixelBuffer);
@@ -108,6 +114,10 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         }
         
         CVPixelBufferUnlockBaseAddress(_pixelBuffer, 0);
+        
+        if (_eaglContext == nil) {
+            CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+        }
     } else {
         [_videoInput appendSampleBuffer:sampleBuffer];
     }
@@ -156,14 +166,19 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
 
 - (void)setupCoreImage:(AVAssetTrack *)videoTrack {
     if (_filterGroup.filters.count > 0 && _videoInput != nil) {
-        _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-        
-        NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
+        if (self.useGPUForRenderingFilters) {
+            _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+        }
         
         if (_eaglContext == nil) {
+            NSDictionary *options = @{
+//                                      kCIContextWorkingColorSpace : [NSNull null],
+                                      kCIContextUseSoftwareRenderer : [NSNumber numberWithBool:YES]
+                                       };
             _ciContext = [CIContext contextWithOptions:options];
         } else {
-            _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:options];
+//            NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
+            _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:nil];
         }
         
         CGSize videoSize = videoTrack.naturalSize;
