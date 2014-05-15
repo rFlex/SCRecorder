@@ -17,7 +17,7 @@ using MonoTouch.AVFoundation;
 using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
 using MonoTouch.CoreImage;
-using System.Runtime.InteropServices;
+using MonoTouch.GLKit;
 
 namespace SCorsin {
 
@@ -334,6 +334,9 @@ namespace SCorsin {
 		[Export("imageByProcessingImage:")]
 		CIImage ImageByProcessingImage(CIImage image);
 
+		[Export("filters")]
+		CIFilter[] Filters { get; }
+
 	}
 
 	[BaseType(typeof(NSObject))]
@@ -422,6 +425,8 @@ namespace SCorsin {
 		[Export("isSendingPlayMessages")]
 		bool IsSendingPlayMessages { get; }
 	
+		[Export("imageView")]
+		SCImageView ImageView { get; }
 	}
 
 	[BaseType(typeof(UIView))]
@@ -491,8 +496,16 @@ namespace SCorsin {
 		[Export("exportAsynchronouslyWithCompletionHandler:")]
 		void ExportAsynchronously(Action completionHandler);
 
-		[Export("filterGroup")]
+		[Export("filterGroup"), NullAllowed]
 		SCFilterGroup FilterGroup { get; set; }
+
+	}
+
+	[BaseType(typeof(GLKView))]
+	interface SCImageView {
+
+		[Export("image")]
+		CIImage Image { get; set; }
 
 	}
 }

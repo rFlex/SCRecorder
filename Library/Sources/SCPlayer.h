@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import "SCFilterGroup.h"
+#import "SCImageView.h"
 
 @class SCPlayer;
 
@@ -32,6 +33,8 @@
 @property (strong, nonatomic) SCFilterGroup *filterGroup;
 @property (weak, nonatomic) UIView *outputView;
 @property (readonly, nonatomic) BOOL isSendingPlayMessages;
+// If a SCImageView is needed to display this SCPlayer, this property will contains it
+@property (readonly, nonatomic) SCImageView *imageView;
 
 + (SCPlayer *)player;
 + (void)pauseCurrentPlayer;

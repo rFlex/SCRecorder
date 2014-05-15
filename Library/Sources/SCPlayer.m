@@ -7,7 +7,6 @@
 //
 
 #import "SCPlayer.h"
-#import "SCImageView.h"
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -186,6 +185,7 @@ SCPlayer * currentSCVideoPlayer = nil;
             CVPixelBufferLockBaseAddress(pixelBuffer, 0);
             CIImage *image = [_filterGroup imageByProcessingImage:[CIImage imageWithCVPixelBuffer:pixelBuffer]];
             _imageView.image = image;
+            _imageView.hidden = NO;
             
             CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
             CFRelease(pixelBuffer);
@@ -221,6 +221,7 @@ SCPlayer * currentSCVideoPlayer = nil;
     
     if (![self.currentItem.outputs containsObject:_videoOutput]) {
         [self.currentItem addOutput:_videoOutput];
+        _imageView.hidden = YES;
     }
 }
 
@@ -401,6 +402,10 @@ SCPlayer * currentSCVideoPlayer = nil;
         [outputView.layer addSublayer:_playerLayer];
         [self setupImageView];
     }
+}
+
+- (SCImageView *)imageView {
+    return _imageView;
 }
 
 + (SCPlayer*) player {
