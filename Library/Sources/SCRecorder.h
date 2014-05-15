@@ -25,7 +25,8 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @optional
 
 // Camera stuffs
-- (void)recorder:(SCRecorder *)recorder didReconfigureInputs:(NSError *)videoInputError audioInputError:(NSError *)audioInputError;
+- (void)recorder:(SCRecorder *)recorder didReconfigureVideoInput:(NSError *)videoInputError;
+- (void)recorder:(SCRecorder *)recorder didReconfigureAudioInput:(NSError *)audioInputError;
 - (void)recorder:(SCRecorder *)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError *)error;
 - (void)recorder:(SCRecorder *)recorder didChangeSessionPreset:(NSString *)sessionPreset error:(NSError *)error;
 - (void)recorderWillStartFocus:(SCRecorder *)recorder;

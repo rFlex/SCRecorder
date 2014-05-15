@@ -49,6 +49,8 @@
         
         _videoOrientation = AVCaptureVideoOrientationPortrait;
         
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionInterrupted:) name:AVAudioSessionInterruptionNotification object:nil];
+        
         self.device = AVCaptureDevicePositionBack;
         self.videoEnabled = YES;
         self.audioEnabled = YES;
@@ -59,6 +61,7 @@
 }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [self closeSession];
 }
 
@@ -135,7 +138,7 @@
     
     _previewLayer.session = session;
     
-    [self reconfigureInputs];
+    [self reconfigureVideoInput:YES audioInput:YES];
     
     [self commitSessionConfiguration];
     
@@ -450,21 +453,33 @@
     }
 }
 
-- (void)reconfigureInputs {
+- (void)reconfigureVideoInput:(BOOL)shouldConfigureVideo audioInput:(BOOL)shouldConfigureAudio {
     [self beginSessionConfiguration];
     
     NSError *videoError = nil;
-    [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
-    self.videoOrientation = _videoOrientation;
+    if (shouldConfigureVideo) {
+        [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
+        self.videoOrientation = _videoOrientation;
+    }
     
     NSError *audioError = nil;
-    [self configureDevice:[self audioDevice] mediaType:AVMediaTypeAudio error:&audioError];
+    
+    if (shouldConfigureAudio) {
+        [self configureDevice:[self audioDevice] mediaType:AVMediaTypeAudio error:&audioError];
+    }
     
     [self commitSessionConfiguration];
     
     id<SCRecorderDelegate> delegate = self.delegate;
-    if ([delegate respondsToSelector:@selector(recorder:didReconfigureInputs:audioInputError:)]) {
-        [delegate recorder:self didReconfigureInputs:videoError audioInputError:audioError];
+    if (shouldConfigureAudio) {
+        if ([delegate respondsToSelector:@selector(recorder:didReconfigureAudioInput:)]) {
+            [delegate recorder:self didReconfigureAudioInput:audioError];
+        }
+    }
+    if (shouldConfigureVideo) {
+        if ([delegate respondsToSelector:@selector(recorder:didReconfigureVideoInput:)]) {
+            [delegate recorder:self didReconfigureVideoInput:videoError];
+        }
     }
 }
 
@@ -550,6 +565,17 @@
     }
     
     return pointOfInterest;
+}
+
+- (void)sessionInterrupted:(NSNotification *)notification {
+    NSNumber *interruption = [notification.userInfo objectForKey:AVAudioSessionInterruptionOptionKey];
+    
+    if (interruption != nil) {
+        AVAudioSessionInterruptionOptions options = interruption.unsignedIntValue;
+        if (options == AVAudioSessionInterruptionOptionShouldResume) {
+            [self reconfigureVideoInput:NO audioInput:YES];
+        }
+    }
 }
 
 // Perform an auto focus at the specified point. The focus mode will automatically change to locked once the auto focus is complete.
@@ -666,7 +692,7 @@
 - (void)setDevice:(AVCaptureDevicePosition)device {
     _device = device;
     if (_captureSession != nil) {
-        [self reconfigureInputs];
+        [self reconfigureVideoInput:YES audioInput:NO];
     }
 }
 

@@ -91,8 +91,12 @@
     }];
 }
 
-- (void)recorder:(SCRecorder *)recorder didReconfigureInputs:(NSError *)videoInputError audioInputError:(NSError *)audioInputError {
-    NSLog(@"Reconfigured inputs, videoError: %@, audioError: %@", videoInputError, audioInputError);
+- (void)recorder:(SCRecorder *)recorder didReconfigureAudioInput:(NSError *)audioInputError {
+    NSLog(@"Reconfigured audio input: %@", audioInputError);
+}
+
+- (void)recorder:(SCRecorder *)recorder didReconfigureVideoInput:(NSError *)videoInputError {
+    NSLog(@"Reconfigured video input: %@", videoInputError);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
