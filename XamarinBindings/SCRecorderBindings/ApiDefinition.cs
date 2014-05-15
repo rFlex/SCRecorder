@@ -16,6 +16,7 @@ using MonoTouch.UIKit;
 using MonoTouch.AVFoundation;
 using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
+using MonoTouch.CoreImage;
 using System.Runtime.InteropServices;
 
 namespace SCorsin {
@@ -319,6 +320,23 @@ namespace SCorsin {
     }
 
 	[BaseType(typeof(NSObject))]
+	interface SCFilterGroup {
+
+		[Export("initWithFilter:")]
+		IntPtr Constructor(CIFilter filter);
+
+		[Export("addFilter:")]
+		void AddFilter(CIFilter filter);
+
+		[Export("removeFilter:")]
+		void RemoveFilter(CIFilter filter);
+
+		[Export("imageByProcessingImage:")]
+		CIImage ImageByProcessingImage(CIImage image);
+
+	}
+
+	[BaseType(typeof(NSObject))]
 	[Model, Protocol]
 	interface SCPlayerDelegate {
 		[Abstract]	
@@ -355,6 +373,9 @@ namespace SCorsin {
 		[Static]
 		[Export("currentPlayer")]
 		SCPlayer CurrentPlayer { get; }
+
+		[Export("filterGroup")]
+		SCFilterGroup FilterGroup { get; set; }
 
 		[Export("setItemByStringPath:")]
         void SetItem([NullAllowed] string stringPath);
@@ -437,6 +458,41 @@ namespace SCorsin {
 
 		[Export("hideFocusAnimation")]
 		void HideFocusAnimation();
+
+	}
+
+	[BaseType(typeof(NSObject))]
+	interface SCAssetExportSession {
+
+		[Export("inputAsset")]
+		AVAsset InputAsset { get; set; }
+
+		[Export("outputUrl")]
+		NSUrl OutputUrl { get; set; }
+
+		[Export("outputFileType")]
+		NSString OutputFileType { get; set; }
+
+		[Export("videoSettings")]
+		NSDictionary VideoSettings { get; set; }
+
+		[Export("audioSettings")]
+		NSDictionary AudioSettings { get; set; }
+
+		[Export("error")]
+		NSError Error { get; }
+
+		[Export("reverseVideo")]
+		bool ReverseVideo { get; set; }
+
+		[Export("initWithAsset:")]
+		IntPtr Constructor(AVAsset inputAsset);
+
+		[Export("exportAsynchronouslyWithCompletionHandler:")]
+		void ExportAsynchronously(Action completionHandler);
+
+		[Export("filterGroup")]
+		SCFilterGroup FilterGroup { get; set; }
 
 	}
 }

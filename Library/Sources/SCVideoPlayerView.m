@@ -15,10 +15,8 @@
 
 @interface SCVideoPlayerView() {
 	UIView * _loadingView;
+    SCPlayer *_player;
 }
-
-@property (strong, nonatomic, readwrite) SCPlayer * player;
-@property (strong, nonatomic, readwrite) AVPlayerLayer * playerLayer;
 
 @end
 
@@ -46,7 +44,7 @@
     self = [super init];
     
     if (self) {
-        self.player = thePlayer;
+        _player = thePlayer;
         [self commonInit];
     }
     
@@ -70,8 +68,8 @@
 }
 
 - (void) commonInit {
-    if (self.player == nil) {
-        self.player = [SCPlayer player];
+    if (_player == nil) {
+        _player = [SCPlayer player];
     }
     
     self.player.outputView = self;
@@ -125,6 +123,10 @@
 	if (_loadingView != nil) {
 		[self addSubview:_loadingView];
 	}
+}
+
+- (SCPlayer *)player {
+    return _player;
 }
 
 @end

@@ -33,9 +33,9 @@
 @property (weak, nonatomic) UIView *outputView;
 @property (readonly, nonatomic) BOOL isSendingPlayMessages;
 
-+ (SCPlayer*) player;
-+ (void) pauseCurrentPlayer;
-+ (SCPlayer*) currentPlayer;
++ (SCPlayer *)player;
++ (void)pauseCurrentPlayer;
++ (SCPlayer *)currentPlayer;
 
 // Ask the SCPlayer to send didPlay messages during the playback
 // endSendingPlayMessages must be called, otherwise the SCPlayer will never
