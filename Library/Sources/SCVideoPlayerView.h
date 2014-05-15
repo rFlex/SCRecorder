@@ -11,10 +11,12 @@
 
 @class SCVideoPlayerView;
 
-@interface SCVideoPlayerView : UIView<SCVideoPlayerDelegate>
+@interface SCVideoPlayerView : UIView<SCPlayerDelegate>
 
 @property (strong, nonatomic, readonly) SCPlayer * player;
 @property (strong, nonatomic, readonly) AVPlayerLayer * playerLayer;
 @property (strong, nonatomic, readwrite) UIView * loadingView;
+
+- (id)initWithPlayer:(SCPlayer *)player;
 
 @end

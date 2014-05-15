@@ -42,9 +42,21 @@
 	return self;
 }
 
+- (id)initWithPlayer:(SCPlayer *)thePlayer {
+    self = [super init];
+    
+    if (self) {
+        self.player = thePlayer;
+        [self commonInit];
+    }
+    
+    return self;
+}
+
 - (void) dealloc {
     [self.player pause];
 	self.playerLayer.player = nil;
+    self.player.outputView = nil;
 }
 
 - (id) initWithCoder:(NSCoder *)aDecoder {
@@ -58,11 +70,12 @@
 }
 
 - (void) commonInit {
-	self.player = [SCPlayer player];
+    if (self.player == nil) {
+        self.player = [SCPlayer player];
+    }
+    
+    self.player.outputView = self;
 	self.player.delegate = self;
-	self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
-	self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-	[self.layer addSublayer:self.playerLayer];
 	
 	UIView * theLoadingView = [[UIView alloc] init];
 	theLoadingView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
@@ -97,6 +110,7 @@
 - (void) layoutSubviews {
 	[super layoutSubviews];
 	
+    [self.player resizePlayerLayerToFitOutputView];
 	self.playerLayer.frame = self.bounds;
 	self.loadingView.frame = self.bounds;
 }

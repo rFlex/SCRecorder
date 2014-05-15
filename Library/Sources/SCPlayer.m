@@ -7,14 +7,19 @@
 //
 
 #import "SCPlayer.h"
+#import "SCImageView.h"
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
 /////////////////////
 
-@interface SCPlayer() {
+@interface SCPlayer() <AVPlayerItemOutputPullDelegate, AVPlayerItemOutputPushDelegate> {
 	BOOL _loading;
     BOOL _shouldLoop;
+    CADisplayLink *_displayLink;
+    AVPlayerItemVideoOutput *_videoOutput;
+    AVPlayerLayer *_playerLayer;
+    SCImageView *_imageView;
 }
 
 @property (strong, nonatomic, readwrite) AVPlayerItem * oldItem;
@@ -51,6 +56,8 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void)dealloc {
+    self.outputView = nil;
+    [self unsetupVideoOutput];
     [self removeObserver:self forKeyPath:@"currentItem"];
     [self removeOldObservers];
     [self endSendingPlayMessages];
@@ -61,7 +68,7 @@ SCPlayer * currentSCVideoPlayer = nil;
     __block SCPlayer * mySelf = self;
     
     self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:nil usingBlock:^(CMTime time) {
-        id<SCVideoPlayerDelegate> delegate = mySelf.delegate;
+        id<SCPlayerDelegate> delegate = mySelf.delegate;
         if ([delegate respondsToSelector:@selector(videoPlayer:didPlay:loopsCount:)]) {
             Float64 ratio = 1.0 / mySelf.itemsLoopLength;
             Float64 seconds = CMTimeGetSeconds(CMTimeMultiplyByFloat64(time, ratio));
@@ -88,7 +95,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 				[self play];
 			}
 		}
-        id<SCVideoPlayerDelegate> delegate = self.delegate;
+        id<SCPlayerDelegate> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(player:didReachEndForItem:)]) {
             [delegate player:self didReachEndForItem:self.currentItem];
         }
@@ -132,8 +139,98 @@ SCPlayer * currentSCVideoPlayer = nil;
 		[self.oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
 		
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.oldItem];
+        if (_videoOutput != nil) {
+            [self.oldItem removeOutput:_videoOutput];
+        }
+        
+        if ([self.oldItem.outputs containsObject:_videoOutput]) {
+            [self.oldItem removeOutput:_videoOutput];
+        }
+        
         self.oldItem = nil;
+        
 	}
+}
+
+- (void)unsetupVideoOutput {
+    if (_videoOutput != nil) {
+        if ([self.currentItem.outputs containsObject:_videoOutput]) {
+            [self.currentItem removeOutput:_videoOutput];
+        }
+        _videoOutput = nil;
+    }
+    _displayLink = nil;
+    [_imageView removeFromSuperview];
+    _imageView = nil;
+}
+
+- (void)outputMediaDataWillChange:(AVPlayerItemOutput *)sender {
+	_displayLink.paused = NO;
+}
+
+- (void)displayLinkCallback:(CADisplayLink *)sender {
+	/*
+	 The callback gets called once every Vsync.
+	 Using the display link's timestamp and duration we can compute the next time the screen will be refreshed, and copy the pixel buffer for that time
+	 This pixel buffer can then be processed and later rendered on screen.
+	 */
+	// Calculate the nextVsync time which is when the screen will be refreshed next.
+	CFTimeInterval nextVSync = ([sender timestamp] + [sender duration]);
+    
+	CMTime outputItemTime = [_videoOutput itemTimeForHostTime:nextVSync];
+    
+	if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
+		CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:nil];
+        
+        if (pixelBuffer) {
+            CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+            CIImage *image = [_filterGroup imageByProcessingImage:[CIImage imageWithCVPixelBuffer:pixelBuffer]];
+            _imageView.image = image;
+            
+            CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+            CFRelease(pixelBuffer);
+        }
+	}
+}
+
+- (void)setupImageView {
+    UIView *outputView = _outputView;
+    if (outputView != nil) {
+        [outputView addSubview:_imageView];
+        [self resizePlayerLayerToFitOutputView];
+    }
+}
+
+- (void)setupVideoOutput {
+    if (_displayLink == nil) {
+        _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkCallback:)];
+        [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [_displayLink setPaused:YES];
+        
+        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
+        _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
+        [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
+        _videoOutput.suppressesPlayerRendering = YES;
+        
+        [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+        
+        _imageView = [[SCImageView alloc] init];
+        
+        [self setupImageView];
+    }
+    
+    if (![self.currentItem.outputs containsObject:_videoOutput]) {
+        [self.currentItem addOutput:_videoOutput];
+    }
+}
+
+- (void)resizePlayerLayerToFitOutputView {
+    [self resizePlayerLayer:_outputView.frame.size];
+}
+
+- (void)resizePlayerLayer:(CGSize)size {
+    _playerLayer.frame = CGRectMake(0, 0, size.width, size.height);
+    _imageView.frame = _playerLayer.frame;
 }
 
 - (void) initObserver {
@@ -146,9 +243,13 @@ SCPlayer * currentSCVideoPlayer = nil;
 		
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
         self.oldItem = self.currentItem;
+        
+        if (self.needsVideoOutputSetup) {
+            [self setupVideoOutput];
+        }
 	}
-		
-    id<SCVideoPlayerDelegate> delegate = self.delegate;
+
+    id<SCPlayerDelegate> delegate = self.delegate;
 	if ([delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
 		[delegate videoPlayer:self didChangeItem:self.currentItem];
 	}
@@ -237,7 +338,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 - (void) setLoading:(BOOL)loading {
 	_loading = loading;
 	
-    id<SCVideoPlayerDelegate> delegate = self.delegate;
+    id<SCPlayerDelegate> delegate = self.delegate;
 	if (loading) {
 		if ([delegate respondsToSelector:@selector(videoPlayer:didStartLoadingAtItemTime:)]) {
 			[delegate videoPlayer:self didStartLoadingAtItemTime:self.currentItem.currentTime];
@@ -267,6 +368,39 @@ SCPlayer * currentSCVideoPlayer = nil;
 
 - (BOOL)isSendingPlayMessages {
     return self.timeObserver != nil;
+}
+
+- (BOOL)needsVideoOutputSetup {
+    return _filterGroup != nil;
+}
+
+- (void)setFilterGroup:(SCFilterGroup *)filterGroup {
+    _filterGroup = filterGroup;
+    
+    if (filterGroup != nil) {
+        [self setupVideoOutput];
+    } else {
+        [self unsetupVideoOutput];
+    }
+}
+
+- (void)setOutputView:(UIView *)outputView {
+    _outputView = outputView;
+    
+    if (outputView == nil) {
+        if (_playerLayer != nil) {
+            [_playerLayer removeFromSuperlayer];
+            _playerLayer = nil;
+        }
+    } else {
+        if (_playerLayer == nil) {
+            _playerLayer = [AVPlayerLayer playerLayerWithPlayer:self];
+            _playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        }
+        [_playerLayer removeFromSuperlayer];
+        [outputView.layer addSublayer:_playerLayer];
+        [self setupImageView];
+    }
 }
 
 + (SCPlayer*) player {
