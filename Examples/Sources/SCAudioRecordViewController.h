@@ -10,7 +10,7 @@
 #import "SCRecorder.h"
 #import "SCPlayer.h"
 
-@interface SCAudioRecordViewController : UIViewController<SCRecorderDelegate, SCVideoPlayerDelegate>
+@interface SCAudioRecordViewController : UIViewController<SCRecorderDelegate, SCPlayerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIButton *stopRecordingButton;
 @property (weak, nonatomic) IBOutlet UIButton *recordButton;

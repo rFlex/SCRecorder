@@ -177,6 +177,13 @@
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
+    SCRecordSession *recordSession = _recorder.recordSession;
+    
+    if (recordSession != nil) {
+        _recorder.recordSession = nil;
+        [recordSession cancelSession:nil];
+    }
+    
 	[self prepareCamera];
     [self updateLabelForSecond:0];
 }

@@ -157,5 +157,4 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Capture a photo from the camera
 - (void)capturePhoto:(void(^)(NSError *error, UIImage *image))completionHandler;
 
-
 @end
