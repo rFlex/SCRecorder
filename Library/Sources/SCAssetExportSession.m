@@ -10,11 +10,10 @@
 #import "SCAssetExportSession.h"
 
 #define EnsureSuccess(error, x) if (error != nil) { _error = error; if (x != nil) x(); return; }
-#define kVideoPixelFormatType kCVPixelFormatType_32BGRA
-
+#define kVideoPixelFormatTypeForCI kCVPixelFormatType_32BGRA
+#define kVideoPixelFormatTypeDefault kCVPixelFormatType_422YpCbCr8
 #define kAudioFormatType kAudioFormatLinearPCM
 #define k *1000.0
-// kCVPixelFormatType_422YpCbCr8
 
 @interface SCAssetExportSession() {
     AVAssetWriter *_writer;
@@ -169,18 +168,16 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         
         if (_eaglContext == nil) {
             NSDictionary *options = @{
-//                                      kCIContextWorkingColorSpace : [NSNull null],
                                       kCIContextUseSoftwareRenderer : [NSNumber numberWithBool:YES]
                                        };
             _ciContext = [CIContext contextWithOptions:options];
         } else {
-//            NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
             _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:nil];
         }
         
         CGSize videoSize = videoTrack.naturalSize;
         NSDictionary *pixelBufferAttributes = @{
-                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kVideoPixelFormatType],
+                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kVideoPixelFormatTypeForCI],
                                                 (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
                                                 (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:videoSize.height]
                                                 };
@@ -292,8 +289,12 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     AVAssetTrack *videoTrack = nil;
     if (videoTracks.count > 0) {
         videoTrack = [videoTracks objectAtIndex:0];
+        
+        [self setupCoreImage:videoTrack];
+        
+        uint32_t pixelFormat = _ciContext != nil ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
         _videoOutput = [self addReader:videoTrack withSettings:@{
-                                                                 (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:kVideoPixelFormatType],
+                                                                 (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:pixelFormat],
                                                                  (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
                                                                  }];
     } else {
@@ -315,8 +316,6 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     } else {
         _videoInput = nil;
     }
-    
-    [self setupCoreImage:videoTrack];
     
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);
