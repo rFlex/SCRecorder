@@ -47,8 +47,6 @@ extern NSString *SCAssetExportSessionPresetLowQuality;
 @property (assign, nonatomic) BOOL keepVideoSize;
 
 // If true, the export session will use the GPU for rendering the filters.
-// Note that no animation must be running during the export if this property
-// is set to true, some frames might be dropped
 @property (assign, nonatomic) BOOL useGPUForRenderingFilters;
 
 // If an error occured during the export, this will contain that error
@@ -58,7 +56,6 @@ extern NSString *SCAssetExportSessionPresetLowQuality;
 
 // Init with the inputAsset
 - (id)initWithAsset:(AVAsset*)inputAsset;
-
 
 // Starts the asynchronous execution of the export session
 - (void)exportAsynchronouslyWithCompletionHandler:(void(^)())completionHandler;

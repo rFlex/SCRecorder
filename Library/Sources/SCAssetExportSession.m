@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 rFlex. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import "SCAssetExportSession.h"
 
 #define EnsureSuccess(error, x) if (error != nil) { _error = error; if (x != nil) x(); return; }
@@ -28,7 +29,7 @@
     dispatch_group_t _dispatchGroup;
     EAGLContext *_eaglContext;
     CIContext *_ciContext;
-    CVPixelBufferRef _pixelBuffer;
+    BOOL _animationsWereEnabled;
 }
 
 @end
@@ -45,6 +46,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     if (self) {
         _dispatchQueue = dispatch_queue_create("me.corsin.EvAssetExportSession", nil);
         _dispatchGroup = dispatch_group_create();
+        _useGPUForRenderingFilters = YES;
     }
     
     return self;
@@ -58,13 +60,6 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     }
     
     return self;
-}
-
-- (void)dealloc {
-    if (_pixelBuffer != nil) {
-        CVPixelBufferRelease(_pixelBuffer);
-        _pixelBuffer = nil;
-    }
 }
 
 - (AVAssetReaderOutput *)addReader:(AVAssetTrack *)track  withSettings:(NSDictionary*)outputSettings {
@@ -101,23 +96,25 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
         CIImage *result = [_filterGroup imageByProcessingImage:image];
         
-        if (_pixelBuffer == nil) {
-            CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &_pixelBuffer);
-        }
+        CVPixelBufferRef outputPixelBuffer = nil;
+        CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
         
-        CVPixelBufferLockBaseAddress(_pixelBuffer, 0);
+        CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
         
-        [_ciContext render:result toCVPixelBuffer:_pixelBuffer];
+        [_ciContext render:result toCVPixelBuffer:outputPixelBuffer];
         
-        if (![_videoPixelAdaptor appendPixelBuffer:_pixelBuffer withPresentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)]) {
+        if (![_videoPixelAdaptor appendPixelBuffer:outputPixelBuffer withPresentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)]) {
             NSLog(@"Failed to append to pixel buffer");
         }
         
-        CVPixelBufferUnlockBaseAddress(_pixelBuffer, 0);
+        CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
         
         if (_eaglContext == nil) {
             CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
         }
+        
+        CVPixelBufferRelease(outputPixelBuffer);
+        outputPixelBuffer = nil;
     } else {
         [_videoInput appendSampleBuffer:sampleBuffer];
     }
