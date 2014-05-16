@@ -3,6 +3,13 @@ SCRecorder
 
 A Vine/Instagram like audio/video recorder in Objective-C.
 
+In short, here is a short list of the cool things you can do:
+- Record multiple video segments
+- Remove any record segment that you don't want
+- Display the result into a convenient video player
+- Add a video filter using Core Image
+- Merge and export the video using fine tunings that you choose
+
 These classes allow the recording of a video with pause/resume function. Although the project was initially made
 for the sake of taking videos only, you can now take pictures as well with some very useful utility functions
 that make the project totally suitable for a standalone camera engine.
@@ -13,6 +20,7 @@ Examples for iOS are provided.
 Framework needed:
 - CoreVideo
 - AudioToolbox
+- GLKit
 
 Podfile
 ----------------
@@ -100,7 +108,7 @@ And start doing the cool stuffs!
 	[recordSession insertSegment:fileUrl atIndex:0];
 	
 	// You can read the recordSegments easily without having to merge them
-	AVAsset *asset = [recordSession assetRepresentingRecordSegments];
+	AVAsset *recordSessionAsset = [recordSession assetRepresentingRecordSegments];
 
 	// Record in slow motion!
 	recordSession.videoTimeScale = 4;
@@ -128,3 +136,28 @@ And start doing the cool stuffs!
 		}
 	}];
 	
+	// Display your recordSession
+	SCVideoPlayerView *videoPlayer = [[SCVideoPlayerView alloc] init];
+	[videoPlayer.player setItemByAsset:recordSessionAsset];
+	
+	videoPlayer.frame = self.view.bounds;
+	[self.view addSubView:videoPlayer];
+	[videoPlayer.player play];
+	
+	// Add a filter, in real time
+	CIFilter *blackAndWhite = [CIFilter filterWithName:@"CIColorControls" keysAndValues:@"inputBrightness", @0.0, @"inputContrast", @1.1, @"inputSaturation", @0.0, nil];
+	videoPlayer.player.filterGroup = [SCFilterGroup filterGroupWithFilter:blackAndWhite];
+
+	// Export your final video with the filter
+	SCAssetExportSession exportSession = [[SCAssetExportSession alloc] initWithAsset:recordSessionAsset];
+	exportSession.keepVideoSize = YES;
+	exportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
+	exportSession.fileType = AVFileTypeMPEG4;
+	exportSession.outputUrl = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingString:@"_output.mp4"]];
+	exportSession.filterGroup = [SCFilterGroup filterGroupWithFilter:[blackAndWhite copy]];
+	
+	[exportSession exportAsynchronouslyWithCompletionHandler:^ {
+		NSError *error = exportSession.error;
+		
+		// Etc...
+	}]
