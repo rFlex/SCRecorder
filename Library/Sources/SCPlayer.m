@@ -89,7 +89,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 - (void) playReachedEnd:(NSNotification*)notification {
 	if (notification.object == self.currentItem) {
 		if (self.shouldLoop) {
-			[self seekToTime:CMTimeMake(0, 1)];
+			[self seekToTime:kCMTimeZero];
 			if ([self isPlaying]) {
 				[self play];
 			}
