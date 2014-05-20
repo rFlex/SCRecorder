@@ -146,7 +146,12 @@ And start doing the cool stuffs!
 	
 	// Add a filter, in real time
 	CIFilter *blackAndWhite = [CIFilter filterWithName:@"CIColorControls" keysAndValues:@"inputBrightness", @0.0, @"inputContrast", @1.1, @"inputSaturation", @0.0, nil];
-	videoPlayer.player.filterGroup = [SCFilterGroup filterGroupWithFilter:blackAndWhite];
+	SCFilter *filter = [[SCFilter alloc] initWithCIFilter:blackAndWhite];
+	videoPlayer.player.filterGroup = [SCFilterGroup filterGroupWithFilter:filter];
+	
+	// Import a filter made using CoreImageShop
+	NSURL *savedFilterGroupUrl = ...;
+	videoPlayer.player.filterGroup = [SCFilterGroup filterGroupWithContentsOfUrl:savedFilterGroupUrl];
 
 	// Export your final video with the filter
 	SCAssetExportSession exportSession = [[SCAssetExportSession alloc] initWithAsset:recordSessionAsset];
@@ -154,7 +159,7 @@ And start doing the cool stuffs!
 	exportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
 	exportSession.fileType = AVFileTypeMPEG4;
 	exportSession.outputUrl = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingString:@"_output.mp4"]];
-	exportSession.filterGroup = [SCFilterGroup filterGroupWithFilter:[blackAndWhite copy]];
+	exportSession.filterGroup = [SCFilterGroup filterGroupWithFilter:filter];
 	
 	[exportSession exportAsynchronouslyWithCompletionHandler:^ {
 		NSError *error = exportSession.error;
