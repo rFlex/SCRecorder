@@ -536,6 +536,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = "SCRecorderMac/SCRecorderMac-Info.plist";
+				LD_DYLIB_INSTALL_NAME = "@rpath/${EXECUTABLE_PATH}";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx10.9;
@@ -569,6 +570,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = "SCRecorderMac/SCRecorderMac-Info.plist";
+				LD_DYLIB_INSTALL_NAME = "@rpath/${EXECUTABLE_PATH}";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx10.9;
@@ -604,6 +606,7 @@
 				DCA8EF70192BD1C300839BE2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

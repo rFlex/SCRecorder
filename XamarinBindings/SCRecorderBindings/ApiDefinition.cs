@@ -320,23 +320,42 @@ namespace SCorsin {
     }
 
 	[BaseType(typeof(NSObject))]
+	interface SCFilter {
+
+		[Export("initWithCIFilter:")]
+		IntPtr Constructor(CIFilter filter);
+
+	}
+
+	[BaseType(typeof(NSObject))]
 	interface SCFilterGroup {
 
 		[Export("initWithFilter:")]
-		IntPtr Constructor(CIFilter filter);
+		IntPtr Constructor(SCFilter filter);
 
 		[Export("addFilter:")]
-		void AddFilter(CIFilter filter);
+		void AddFilter(SCFilter filter);
 
 		[Export("removeFilter:")]
-		void RemoveFilter(CIFilter filter);
+		void RemoveFilter(SCFilter filter);
 
 		[Export("imageByProcessingImage:")]
 		CIImage ImageByProcessingImage(CIImage image);
 
 		[Export("filters")]
-		CIFilter[] Filters { get; }
+		SCFilter[] Filters { get; }
 
+		[Export("name")]
+		string Name { get; set; }
+
+		[Export("filterGroupWithData:"), Static]
+		SCFilterGroup FromData(NSData data);
+
+		[Export("filterGroupWithData:error:"), Static]
+		SCFilterGroup FromData(NSData data, out NSError error);
+
+		[Export("filterGroupWithContentsOfUrl:"), Static]
+		SCFilterGroup FromUrl(NSUrl url);
 	}
 
 	[BaseType(typeof(NSObject))]

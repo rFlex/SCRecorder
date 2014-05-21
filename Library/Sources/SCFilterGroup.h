@@ -58,6 +58,8 @@
 
 + (SCFilterGroup *)filterGroupWithData:(NSData *)data;
 
++ (SCFilterGroup *)filterGroupWithData:(NSData *)data error:(NSError **)error;
+
 + (SCFilterGroup *)filterGroupWithContentsOfURL:(NSURL *)url;
 
 @end

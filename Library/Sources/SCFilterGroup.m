@@ -121,14 +121,38 @@
     return [[SCFilterGroup alloc] initWithFilters:filters];
 }
 
-+ (SCFilterGroup *)filterGroupWithData:(NSData *)data {
-    id obj = [NSKeyedUnarchiver unarchiveObjectWithData:data];
++ (SCFilterGroup *)filterGroupWithData:(NSData *)data error:(NSError *__autoreleasing *)error {
+    id obj = nil;
+    @try {
+        obj = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    } @catch (NSException *exception) {
+        if (error != nil) {
+            *error = [NSError errorWithDomain:@"SCFilterGroup" code:200 userInfo:@{
+                                                                                   NSLocalizedDescriptionKey : exception.reason
+                                                                                   }];
+            return nil;
+        }
+    }
     
     if (![obj isKindOfClass:[SCFilterGroup class]]) {
-        obj = nil;
+        // Let support for old impl
+        if ([obj isKindOfClass:[NSArray class]]) {
+            obj = [SCFilterGroup filterGroupWithFilters:obj];
+        } else {
+            obj = nil;
+            if (error != nil) {
+                *error = [NSError errorWithDomain:@"" code:200 userInfo:@{
+                                                                          NSLocalizedDescriptionKey : @"Invalid serialized class type"
+                                                                          }];
+            }
+        }
     }
     
     return obj;
+}
+
++ (SCFilterGroup *)filterGroupWithData:(NSData *)data {
+    return [SCFilterGroup filterGroupWithData:data error:nil];
 }
 
 + (SCFilterGroup *)filterGroupWithContentsOfURL:(NSURL *)url {
