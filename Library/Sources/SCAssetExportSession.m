@@ -94,7 +94,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         
         CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
         CIImage *result = [_filterGroup imageByProcessingImage:image];
-        
+
         CVPixelBufferRef outputPixelBuffer = nil;
         CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
         
@@ -161,7 +161,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
 }
 
 - (void)setupCoreImage:(AVAssetTrack *)videoTrack {
-    if (_filterGroup.filters.count > 0 && _videoInput != nil) {
+    if ([self needsCIContext] && _videoInput != nil) {
         if (self.useGPUForRenderingFilters) {
             _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
         }
@@ -267,6 +267,10 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     }
 }
 
+- (BOOL)needsCIContext {
+    return _filterGroup.filters.count > 0;
+}
+
 - (void)exportAsynchronouslyWithCompletionHandler:(void (^)())completionHandler {
     NSError *error = nil;
     
@@ -290,9 +294,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     if (videoTracks.count > 0) {
         videoTrack = [videoTracks objectAtIndex:0];
         
-        [self setupCoreImage:videoTrack];
-        
-        uint32_t pixelFormat = _ciContext != nil ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
+        uint32_t pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
         _videoOutput = [self addReader:videoTrack withSettings:@{
                                                                  (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:pixelFormat],
                                                                  (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
@@ -316,6 +318,8 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     } else {
         _videoInput = nil;
     }
+    
+    [self setupCoreImage:videoTrack];
     
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);
