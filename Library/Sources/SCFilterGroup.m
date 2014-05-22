@@ -61,6 +61,15 @@
     return self;
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    SCFilterGroup *filterGroup = [[SCFilterGroup alloc] init];
+    for (SCFilter *filter in self.filters) {
+        [filterGroup addFilter:[filter copy]];
+    }
+    
+    return filterGroup;
+}
+
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeObject:_filters forKey:@"filters"];
     [aCoder encodeObject:_name forKey:@"name"];

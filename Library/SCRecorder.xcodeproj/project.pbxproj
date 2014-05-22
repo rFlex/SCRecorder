@@ -24,27 +24,18 @@
 		DC50285A18E52023004E833F /* SCRecordSession.m in Sources */ = {isa = PBXBuildFile; fileRef = DC50285318E4F23F004E833F /* SCRecordSession.m */; };
 		DC633E27192BCE0D00050796 /* SCFilterGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E1D192BCE0D00050796 /* SCFilterGroup.h */; };
 		DC633E28192BCE0D00050796 /* SCFilterGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E1E192BCE0D00050796 /* SCFilterGroup.m */; };
-		DC633E29192BCE0D00050796 /* SCFilterDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E1F192BCE0D00050796 /* SCFilterDescription.h */; };
-		DC633E2A192BCE0D00050796 /* SCFilterDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E20192BCE0D00050796 /* SCFilterDescription.m */; };
-		DC633E2B192BCE0D00050796 /* SCFilterParameterDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E21192BCE0D00050796 /* SCFilterParameterDescription.h */; };
-		DC633E2C192BCE0D00050796 /* SCFilterParameterDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E22192BCE0D00050796 /* SCFilterParameterDescription.m */; };
-		DC633E2D192BCE0D00050796 /* SCFilterDescriptionList.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E23192BCE0D00050796 /* SCFilterDescriptionList.h */; };
-		DC633E2E192BCE0D00050796 /* SCFilterDescriptionList.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E24192BCE0D00050796 /* SCFilterDescriptionList.m */; };
 		DC633E2F192BCE0D00050796 /* SCFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E25192BCE0D00050796 /* SCFilter.h */; };
 		DC633E30192BCE0D00050796 /* SCFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E26192BCE0D00050796 /* SCFilter.m */; };
+		DC891800192D59F9006FAE71 /* SCArchivedVector.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8917FE192D59F9006FAE71 /* SCArchivedVector.h */; };
+		DC891801192D59F9006FAE71 /* SCArchivedVector.m in Sources */ = {isa = PBXBuildFile; fileRef = DC8917FF192D59F9006FAE71 /* SCArchivedVector.m */; };
+		DC891802192D5FCE006FAE71 /* SCArchivedVector.m in Sources */ = {isa = PBXBuildFile; fileRef = DC8917FF192D59F9006FAE71 /* SCArchivedVector.m */; };
 		DCA836EC18FC2C910058FE13 /* SCRecorderFocusTargetView.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */; };
 		DCA836ED18FC2C910058FE13 /* SCRecorderFocusTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */; };
 		DCA8EF51192BD1C200839BE2 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC3528A817B963830077F039 /* Cocoa.framework */; };
 		DCA8EF57192BD1C200839BE2 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DCA8EF55192BD1C200839BE2 /* InfoPlist.strings */; };
 		DCA8EF74192BD20300839BE2 /* SCFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E26192BCE0D00050796 /* SCFilter.m */; };
-		DCA8EF75192BD20400839BE2 /* SCFilterDescriptionList.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E24192BCE0D00050796 /* SCFilterDescriptionList.m */; };
-		DCA8EF76192BD20500839BE2 /* SCFilterParameterDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E22192BCE0D00050796 /* SCFilterParameterDescription.m */; };
-		DCA8EF77192BD20600839BE2 /* SCFilterDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E20192BCE0D00050796 /* SCFilterDescription.m */; };
 		DCA8EF78192BD20800839BE2 /* SCFilterGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E1E192BCE0D00050796 /* SCFilterGroup.m */; };
 		DCA8EF79192BD21000839BE2 /* SCFilterGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E1D192BCE0D00050796 /* SCFilterGroup.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DCA8EF7A192BD21500839BE2 /* SCFilterDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E1F192BCE0D00050796 /* SCFilterDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DCA8EF7B192BD21700839BE2 /* SCFilterParameterDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E21192BCE0D00050796 /* SCFilterParameterDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DCA8EF7C192BD21900839BE2 /* SCFilterDescriptionList.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E23192BCE0D00050796 /* SCFilterDescriptionList.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCA8EF7D192BD21B00839BE2 /* SCFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E25192BCE0D00050796 /* SCFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCA8EF88192BD55100839BE2 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCA8EF87192BD55100839BE2 /* QuartzCore.framework */; };
 		DCA8EF8E192BD73A00839BE2 /* SCRecorderMac.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA8EF8D192BD71100839BE2 /* SCRecorderMac.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -84,14 +75,10 @@
 		DC599B6517B481BB00500F05 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		DC633E1D192BCE0D00050796 /* SCFilterGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterGroup.h; sourceTree = "<group>"; };
 		DC633E1E192BCE0D00050796 /* SCFilterGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterGroup.m; sourceTree = "<group>"; };
-		DC633E1F192BCE0D00050796 /* SCFilterDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterDescription.h; sourceTree = "<group>"; };
-		DC633E20192BCE0D00050796 /* SCFilterDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterDescription.m; sourceTree = "<group>"; };
-		DC633E21192BCE0D00050796 /* SCFilterParameterDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterParameterDescription.h; sourceTree = "<group>"; };
-		DC633E22192BCE0D00050796 /* SCFilterParameterDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterParameterDescription.m; sourceTree = "<group>"; };
-		DC633E23192BCE0D00050796 /* SCFilterDescriptionList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterDescriptionList.h; sourceTree = "<group>"; };
-		DC633E24192BCE0D00050796 /* SCFilterDescriptionList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterDescriptionList.m; sourceTree = "<group>"; };
 		DC633E25192BCE0D00050796 /* SCFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilter.h; sourceTree = "<group>"; };
 		DC633E26192BCE0D00050796 /* SCFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilter.m; sourceTree = "<group>"; };
+		DC8917FE192D59F9006FAE71 /* SCArchivedVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCArchivedVector.h; sourceTree = "<group>"; };
+		DC8917FF192D59F9006FAE71 /* SCArchivedVector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCArchivedVector.m; sourceTree = "<group>"; };
 		DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRecorderFocusTargetView.h; sourceTree = "<group>"; };
 		DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRecorderFocusTargetView.m; sourceTree = "<group>"; };
 		DCA8EF50192BD1C200839BE2 /* SCRecorderMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SCRecorderMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -224,14 +211,10 @@
 			children = (
 				DC633E1D192BCE0D00050796 /* SCFilterGroup.h */,
 				DC633E1E192BCE0D00050796 /* SCFilterGroup.m */,
-				DC633E1F192BCE0D00050796 /* SCFilterDescription.h */,
-				DC633E20192BCE0D00050796 /* SCFilterDescription.m */,
-				DC633E21192BCE0D00050796 /* SCFilterParameterDescription.h */,
-				DC633E22192BCE0D00050796 /* SCFilterParameterDescription.m */,
-				DC633E23192BCE0D00050796 /* SCFilterDescriptionList.h */,
-				DC633E24192BCE0D00050796 /* SCFilterDescriptionList.m */,
 				DC633E25192BCE0D00050796 /* SCFilter.h */,
 				DC633E26192BCE0D00050796 /* SCFilter.m */,
+				DC8917FE192D59F9006FAE71 /* SCArchivedVector.h */,
+				DC8917FF192D59F9006FAE71 /* SCArchivedVector.m */,
 			);
 			name = Filters;
 			sourceTree = "<group>";
@@ -262,11 +245,10 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC633E2B192BCE0D00050796 /* SCFilterParameterDescription.h in Headers */,
 				DC50285918E51FC9004E833F /* SCRecorder.h in Headers */,
 				DC4CBA531863118E00532F1F /* SCVideoPlayerView.h in Headers */,
-				DC633E2D192BCE0D00050796 /* SCFilterDescriptionList.h in Headers */,
 				DC633E2F192BCE0D00050796 /* SCFilter.h in Headers */,
+				DC891800192D59F9006FAE71 /* SCArchivedVector.h in Headers */,
 				DCA836EC18FC2C910058FE13 /* SCRecorderFocusTargetView.h in Headers */,
 				DC4CBA511863118E00532F1F /* SCPlayer.h in Headers */,
 				DCB041671924663700D945D2 /* SCAssetExportSession.h in Headers */,
@@ -274,7 +256,6 @@
 				DC4CBA4D1863118E00532F1F /* SCAudioTools.h in Headers */,
 				DC633E27192BCE0D00050796 /* SCFilterGroup.h in Headers */,
 				DC4CBA551863118E00532F1F /* SCRecorderFocusView.h in Headers */,
-				DC633E29192BCE0D00050796 /* SCFilterDescription.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,11 +264,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCA8EF79192BD21000839BE2 /* SCFilterGroup.h in Headers */,
-				DCA8EF7A192BD21500839BE2 /* SCFilterDescription.h in Headers */,
 				DCA8EF8E192BD73A00839BE2 /* SCRecorderMac.h in Headers */,
-				DCA8EF7C192BD21900839BE2 /* SCFilterDescriptionList.h in Headers */,
 				DCA8EF7D192BD21B00839BE2 /* SCFilter.h in Headers */,
-				DCA8EF7B192BD21700839BE2 /* SCFilterParameterDescription.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,12 +354,10 @@
 				DC50285A18E52023004E833F /* SCRecordSession.m in Sources */,
 				DCB041681924663700D945D2 /* SCAssetExportSession.m in Sources */,
 				DC50285818E51FC0004E833F /* SCRecorder.m in Sources */,
-				DC633E2E192BCE0D00050796 /* SCFilterDescriptionList.m in Sources */,
 				DCB0415A192458C800D945D2 /* SCImageView.m in Sources */,
+				DC891801192D59F9006FAE71 /* SCArchivedVector.m in Sources */,
 				DC4CBA541863118E00532F1F /* SCVideoPlayerView.m in Sources */,
 				DCA836ED18FC2C910058FE13 /* SCRecorderFocusTargetView.m in Sources */,
-				DC633E2C192BCE0D00050796 /* SCFilterParameterDescription.m in Sources */,
-				DC633E2A192BCE0D00050796 /* SCFilterDescription.m in Sources */,
 				DC633E30192BCE0D00050796 /* SCFilter.m in Sources */,
 				DC4CBA521863118E00532F1F /* SCPlayer.m in Sources */,
 				DC633E28192BCE0D00050796 /* SCFilterGroup.m in Sources */,
@@ -395,10 +371,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCA8EF74192BD20300839BE2 /* SCFilter.m in Sources */,
-				DCA8EF75192BD20400839BE2 /* SCFilterDescriptionList.m in Sources */,
-				DCA8EF77192BD20600839BE2 /* SCFilterDescription.m in Sources */,
 				DCA8EF78192BD20800839BE2 /* SCFilterGroup.m in Sources */,
-				DCA8EF76192BD20500839BE2 /* SCFilterParameterDescription.m in Sources */,
+				DC891802192D5FCE006FAE71 /* SCArchivedVector.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DC1C8E9C18FD2410005A342D /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC1C8E9B18FD23E4005A342D /* libSCRecorder.a */; };
 		DC1C8E9F18FD24C9005A342D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC1C8E9E18FD24C9005A342D /* Main.storyboard */; };
 		DC7F370C18FC2A0D00D54901 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7F370B18FC2A0D00D54901 /* Foundation.framework */; };
 		DC7F370E18FC2A0D00D54901 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7F370D18FC2A0D00D54901 /* CoreGraphics.framework */; };
@@ -35,21 +34,28 @@
 		DC7F376D18FC2B0300D54901 /* Record-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376118FC2B0300D54901 /* Record-Normal-icon.png */; };
 		DC7F376E18FC2B0300D54901 /* Record-Pressed-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376218FC2B0300D54901 /* Record-Pressed-icon.png */; };
 		DC7F376F18FC2B0300D54901 /* Stop-Normal-Red-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */; };
+		DC891813192EA63B006FAE71 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC891810192EA623006FAE71 /* libSCRecorder.a */; };
 		DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCB0416C19253FB800D945D2 /* GLKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		DC1C8E9A18FD23E4005A342D /* PBXContainerItemProxy */ = {
+		DC89180F192EA623006FAE71 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = DC1C8E9618FD23E4005A342D /* SCRecorder.xcodeproj */;
+			containerPortal = DC89180A192EA622006FAE71 /* SCRecorder.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = DC23FE1117B4200700389EDA;
 			remoteInfo = SCRecorder;
 		};
+		DC891811192EA623006FAE71 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC89180A192EA622006FAE71 /* SCRecorder.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = DCA8EF50192BD1C200839BE2;
+			remoteInfo = SCRecorderMac;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		DC1C8E9618FD23E4005A342D /* SCRecorder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SCRecorder.xcodeproj; path = ../Library/SCRecorder.xcodeproj; sourceTree = "<group>"; };
 		DC1C8E9E18FD24C9005A342D /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		DC7F370818FC2A0D00D54901 /* SCRecorderExamples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SCRecorderExamples.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC7F370B18FC2A0D00D54901 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -89,6 +95,7 @@
 		DC7F376118FC2B0300D54901 /* Record-Normal-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Record-Normal-icon.png"; sourceTree = "<group>"; };
 		DC7F376218FC2B0300D54901 /* Record-Pressed-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Record-Pressed-icon.png"; sourceTree = "<group>"; };
 		DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Stop-Normal-Red-icon.png"; sourceTree = "<group>"; };
+		DC89180A192EA622006FAE71 /* SCRecorder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SCRecorder.xcodeproj; path = ../Library/SCRecorder.xcodeproj; sourceTree = "<group>"; };
 		DCB0416C19253FB800D945D2 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -97,8 +104,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC891813192EA63B006FAE71 /* libSCRecorder.a in Frameworks */,
 				DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */,
-				DC1C8E9C18FD2410005A342D /* libSCRecorder.a in Frameworks */,
 				DC7F370E18FC2A0D00D54901 /* CoreGraphics.framework in Frameworks */,
 				DC7F371018FC2A0D00D54901 /* UIKit.framework in Frameworks */,
 				DC7F370C18FC2A0D00D54901 /* Foundation.framework in Frameworks */,
@@ -108,21 +115,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		DC1C8E9718FD23E4005A342D /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				DC1C8E9B18FD23E4005A342D /* libSCRecorder.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		DC7F36FF18FC2A0D00D54901 = {
 			isa = PBXGroup;
 			children = (
+				DC89180A192EA622006FAE71 /* SCRecorder.xcodeproj */,
 				DC7F371118FC2A0D00D54901 /* Sources */,
 				DC7F370A18FC2A0D00D54901 /* Frameworks */,
 				DC7F370918FC2A0D00D54901 /* Products */,
-				DC1C8E9618FD23E4005A342D /* SCRecorder.xcodeproj */,
 			);
 			sourceTree = "<group>";
 		};
@@ -195,6 +194,15 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		DC89180B192EA622006FAE71 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC891810192EA623006FAE71 /* libSCRecorder.a */,
+				DC891812192EA623006FAE71 /* SCRecorderMac.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -237,8 +245,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = DC1C8E9718FD23E4005A342D /* Products */;
-					ProjectRef = DC1C8E9618FD23E4005A342D /* SCRecorder.xcodeproj */;
+					ProductGroup = DC89180B192EA622006FAE71 /* Products */;
+					ProjectRef = DC89180A192EA622006FAE71 /* SCRecorder.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -249,11 +257,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		DC1C8E9B18FD23E4005A342D /* libSCRecorder.a */ = {
+		DC891810192EA623006FAE71 /* libSCRecorder.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libSCRecorder.a;
-			remoteRef = DC1C8E9A18FD23E4005A342D /* PBXContainerItemProxy */;
+			remoteRef = DC89180F192EA623006FAE71 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		DC891812192EA623006FAE71 /* SCRecorderMac.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SCRecorderMac.framework;
+			remoteRef = DC891811192EA623006FAE71 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

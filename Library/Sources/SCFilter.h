@@ -14,12 +14,10 @@
 #import <QuartzCore/QuartzCore.h>
 #endif
 
-#import "SCFilterDescription.h"
-
 @class SCFilter;
 @protocol SCFilterDelegate <NSObject>
 
-- (void)filter:(SCFilter *)filter didChangeParameter:(SCFilterParameterDescription *)parameterDescription;
+- (void)filter:(SCFilter *)filter didChangeParameter:(NSString *)parameterKey;
 - (void)filterDidResetToDefaults:(SCFilter *)filter;
 
 @end
@@ -28,18 +26,20 @@
 
 @property (weak, nonatomic) id<SCFilterDelegate> delegate;
 @property (readonly, nonatomic) CIFilter *coreImageFilter;
-@property (readonly, nonatomic) SCFilterDescription *filterDescription;
+
 @property (assign, nonatomic) BOOL enabled;
 
-+ (SCFilter *)filterWithFilterDescription:(SCFilterDescription *)filterDescription;
++ (SCFilter *)filterWithCIFilter:(CIFilter *)filterDescription;
 
-- (id)initWithFilterDescription:(SCFilterDescription *)filterDescription;
++ (SCFilter *)filterWithName:(NSString *)name;
 
 - (id)initWithCIFilter:(CIFilter *)filter;
 
-- (id)parameterValueForParameterDescription:(SCFilterParameterDescription *)parameterDescription;
+- (id)initWithName:(NSString *)name;
 
-- (void)setParameterValue:(id)value forParameterDescription:(SCFilterParameterDescription *)parameterDescription;
+- (id)parameterValueForKey:(NSString *)key;
+
+- (void)setParameterValue:(id)value forKey:(NSString *)key;
 
 - (void)resetToDefaults;
 

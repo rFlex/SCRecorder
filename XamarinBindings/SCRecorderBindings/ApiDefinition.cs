@@ -325,6 +325,8 @@ namespace SCorsin {
 		[Export("initWithCIFilter:")]
 		IntPtr Constructor(CIFilter filter);
 
+		[Export("coreImageFilter")]
+		CIFilter CoreImageFilter { get; }
 	}
 
 	[BaseType(typeof(NSObject))]

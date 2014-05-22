@@ -7,11 +7,16 @@
 //
 
 #import "SCAppDelegate.h"
+#import "SCFilterGroup.h"
 
 @implementation SCAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    
+    NSURL *url = [NSURL fileURLWithPath:@"/Users/simoncorsin/Documents/filter.cis"];
+    SCFilterGroup *filterGroup = [SCFilterGroup filterGroupWithContentsOfURL:url];
+    NSLog(@"%@", ((SCFilter *)[filterGroup.filters objectAtIndex:0]).coreImageFilter);
     // Override point for customization after application launch.
     return YES;
 }
