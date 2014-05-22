@@ -56,6 +56,7 @@
 @property (weak, nonatomic, readwrite) id<SCVideoPlayerDelegate> delegate;
 @property (assign, nonatomic, readwrite) CMTime minimumBufferedTimeBeforePlaying;
 @property (assign, nonatomic, readwrite) BOOL shouldLoop;
+@property (assign, nonatomic, readwrite) BOOL shouldPlayConcurrently;
 @property (nonatomic, readonly) BOOL isSendingPlayMessages;
 
 @end
