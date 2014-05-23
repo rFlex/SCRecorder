@@ -17,6 +17,8 @@ They are highly configurable, all the classes provide a lot of properties so we 
 
 Examples for iOS are provided.
 
+Want something easy to create your filters in this project? Checkout https://github.com/rFlex/CoreImageShop
+
 Framework needed:
 - CoreVideo
 - AudioToolbox
