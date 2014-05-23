@@ -119,10 +119,13 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     }
 }
 
-- (void)markInputComplete:(AVAssetWriterInput *)input {
+- (void)markInputComplete:(AVAssetWriterInput *)input error:(NSError *)error {
     if (_reader.status == AVAssetReaderStatusFailed) {
         _error = _reader.error;
+    } else if (error != nil) {
+        _error = error;
     }
+    
     [input markAsFinished];
 }
 
@@ -142,7 +145,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
                     
                     CFRelease(buffer);
                 } else {
-                    [self markInputComplete:input];
+                    [self markInputComplete:input error:nil];
                     
                     dispatch_group_leave(_dispatchGroup);
                     break;

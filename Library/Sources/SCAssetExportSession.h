@@ -73,7 +73,7 @@ extern NSString *SCAssetExportSessionPresetLowQuality;
 @property (readonly, nonatomic) AVAssetWriterInput *audioInput;
 @property (readonly, nonatomic) AVAssetWriterInput *videoInput;
 
-- (void)markInputComplete:(AVAssetWriterInput *)input;
+- (void)markInputComplete:(AVAssetWriterInput *)input error:(NSError *)error;
 - (void)processSampleBuffer:(CMSampleBufferRef)sampleBuffer;
 - (void)beginReadWriteOnInput:(AVAssetWriterInput *)input fromOutput:(AVAssetReaderOutput *)output;
 
