@@ -16,6 +16,17 @@
 
 @implementation SCFilter
 
+double *EnsureSize(double *data, int* currentSize, int size) {
+    if (size > *currentSize) {
+        free(data);
+        int newSize = size * 2;
+        data = malloc(sizeof(double) * newSize);
+        *currentSize = newSize;
+    }
+    
+    return data;
+}
+
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super init];
     
@@ -27,6 +38,24 @@
             NSArray *vectors = [aDecoder decodeObjectForKey:@"vectors"];
             for (SCArchivedVector *archivedVector in vectors) {
                 [_coreImageFilter setValue:archivedVector.vector forKey:archivedVector.name];
+            }
+        }
+        
+        if ([aDecoder containsValueForKey:@"vectors_data"]) {
+            NSArray *vectors = [aDecoder decodeObjectForKey:@"vectors_data"];
+            for (NSArray *vectorData in vectors) {
+                CGFloat *vectorValue = malloc(sizeof(CGFloat) * (vectorData.count - 1));
+                
+                if (vectorData != nil) {
+                    for (int i = 1; i < vectorData.count; i++) {
+                        NSNumber *value = [vectorData objectAtIndex:i];
+                        vectorValue[i - 1] = (CGFloat)value.doubleValue;
+                    }
+                    NSString *key = vectorData.firstObject;
+                    
+                    [_coreImageFilter setValue:[CIVector vectorWithValues:vectorValue count:vectorData.count - 1] forKey:key];
+                    free(vectorValue);
+                }
             }
         }
     }
@@ -93,12 +122,20 @@
         id value = [_coreImageFilter valueForKey:key];
         
         if ([value isKindOfClass:[CIVector class]]) {
-            SCArchivedVector *archivedVector = [[SCArchivedVector alloc] initWithVector:value name:key];
-            [vectors addObject:archivedVector];
+            CIVector *vector = value;
+            NSMutableArray *vectorData = [NSMutableArray new];
+            [vectorData addObject:key];
+
+            for (int i = 0; i < vector.count; i++) {
+                CGFloat value = [vector valueAtIndex:i];
+                [vectorData addObject:[NSNumber numberWithDouble:(double)value]];
+//                [aCoder encodeDouble:value forKey:[NSString stringWithFormat:@"vector_%d_%d", vectorIndex, i]];
+            }
+            [vectors addObject:vectorData];
         }
     }
     
-    [aCoder encodeObject:vectors forKey:@"vectors"];
+    [aCoder encodeObject:vectors forKey:@"vectors_data"];
     
 }
 

@@ -30,7 +30,12 @@
     NSUInteger length;
     
     NSString *name = [aDecoder decodeObjectForKey:@"name"];
-    const uint8_t *bytes = [aDecoder decodeBytesForKey:@"vector_data" returnedLength:&length];
+    const double *inputValues = (double *)[aDecoder decodeBytesForKey:@"vector_data" returnedLength:&length];
+    
+    if (inputValues == nil) {
+        return nil;
+    }
+    
     NSUInteger itemCount = length / sizeof(double);
     CGFloat *values = malloc(itemCount * sizeof(CGFloat));
     
@@ -39,9 +44,9 @@
     }
     
     for (int i = 0; i < itemCount; i++) {
-        double doubleValue = *((double *)(&bytes[i * sizeof(double)]));
-        values[i] = (CGFloat)doubleValue;
+        values[i] = (CGFloat)inputValues[i];
     }
+    
     CIVector *vector = [CIVector vectorWithValues:values count:itemCount];
     
     free(values);
