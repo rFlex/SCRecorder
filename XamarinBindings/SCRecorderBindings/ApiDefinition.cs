@@ -437,6 +437,9 @@ namespace SCorsin {
 		[Export("shouldLoop")]
 		bool ShouldLoop { get; set; }
 
+		[Export("shouldPlayConcurrently")]
+		bool ShouldPlayConcurrently { get; set; }
+
 		[Export("beginSendingPlayMessages")]
 		void BeginSendingPlayMessages();
 

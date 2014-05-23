@@ -258,7 +258,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void) play {
-	if (currentSCVideoPlayer != self) {
+	if (currentSCVideoPlayer != self && currentSCVideoPlayer.shouldPlayConcurrently == NO) {
 		[SCPlayer pauseCurrentPlayer];
 	}
 	

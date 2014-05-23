@@ -33,6 +33,7 @@
 @property (strong, nonatomic) SCFilterGroup *filterGroup;
 @property (weak, nonatomic) UIView *outputView;
 @property (readonly, nonatomic) BOOL isSendingPlayMessages;
+@property (assign, nonatomic, readwrite) BOOL shouldPlayConcurrently;
 // If a SCImageView is needed to display this SCPlayer, this property will contains it
 @property (readonly, nonatomic) SCImageView *imageView;
 
