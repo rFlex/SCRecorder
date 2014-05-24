@@ -14,5 +14,6 @@
 @interface SCImageView : GLKView
 
 @property (strong, nonatomic) CIImage *image;
+@property (assign, nonatomic) CGRect imageSize;
 
 @end

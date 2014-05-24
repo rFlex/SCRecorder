@@ -29,6 +29,7 @@
     EAGLContext *_eaglContext;
     CIContext *_ciContext;
     BOOL _animationsWereEnabled;
+    uint32_t _pixelFormat;
 }
 
 @end
@@ -84,6 +85,12 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     return writer;
 }
 
+- (void)processPixelBuffer:(CVPixelBufferRef)pixelBuffer presentationTime:(CMTime)presentationTime {
+    if (![_videoPixelAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:presentationTime]) {
+        NSLog(@"Failed to append to pixel buffer");
+    }
+}
+
 - (void)processSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     if (_ciContext != nil) {
         CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
@@ -102,9 +109,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         
         [_ciContext render:result toCVPixelBuffer:outputPixelBuffer];
         
-        if (![_videoPixelAdaptor appendPixelBuffer:outputPixelBuffer withPresentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)]) {
-            NSLog(@"Failed to append to pixel buffer");
-        }
+        [self processPixelBuffer:outputPixelBuffer presentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
         
         CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
         
@@ -178,19 +183,14 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
             _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:nil];
         }
         
-        CGSize videoSize = videoTrack.naturalSize;
-        NSDictionary *pixelBufferAttributes = @{
-                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kVideoPixelFormatTypeForCI],
-                                                (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
-                                                (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:videoSize.height]
-                                                };
-        
-        _videoPixelAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
-        
     } else {
         _ciContext = nil;
         _eaglContext = nil;
     }
+}
+
+- (BOOL)needsInputPixelBufferAdaptor {
+    return _ciContext != nil;
 }
 
 + (NSError*)createError:(NSString*)errorDescription {
@@ -274,6 +274,19 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     return _filterGroup.filters.count > 0;
 }
 
+- (void)setupPixelBufferAdaptor:(AVAssetTrack *)videoTrack {
+    if ([self needsInputPixelBufferAdaptor] && _videoInput != nil) {
+        CGSize videoSize = videoTrack.naturalSize;
+        NSDictionary *pixelBufferAttributes = @{
+                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:_pixelFormat],
+                                                (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
+                                                (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:videoSize.height]
+                                                };
+        
+        _videoPixelAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
+    }
+}
+
 - (void)exportAsynchronouslyWithCompletionHandler:(void (^)())completionHandler {
     NSError *error = nil;
     
@@ -297,9 +310,9 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     if (videoTracks.count > 0) {
         videoTrack = [videoTracks objectAtIndex:0];
         
-        uint32_t pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
+        _pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
         _videoOutput = [self addReader:videoTrack withSettings:@{
-                                                                 (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:pixelFormat],
+                                                                 (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
                                                                  (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
                                                                  }];
     } else {
@@ -323,6 +336,8 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     }
     
     [self setupCoreImage:videoTrack];
+    
+    [self setupPixelBufferAdaptor:videoTrack];
     
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);

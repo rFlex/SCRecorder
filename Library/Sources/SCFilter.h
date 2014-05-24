@@ -25,6 +25,8 @@
 @interface SCFilter : NSObject<NSCoding>
 
 @property (weak, nonatomic) id<SCFilterDelegate> delegate;
+@property (readonly, nonatomic) NSString *name;
+@property (readonly, nonatomic) NSString *displayName;
 @property (readonly, nonatomic) CIFilter *coreImageFilter;
 
 @property (assign, nonatomic) BOOL enabled;

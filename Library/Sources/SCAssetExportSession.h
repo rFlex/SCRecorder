@@ -75,6 +75,8 @@ extern NSString *SCAssetExportSessionPresetLowQuality;
 
 - (void)markInputComplete:(AVAssetWriterInput *)input error:(NSError *)error;
 - (void)processSampleBuffer:(CMSampleBufferRef)sampleBuffer;
+- (void)processPixelBuffer:(CVPixelBufferRef)pixelBuffer presentationTime:(CMTime)presentationTime;
 - (void)beginReadWriteOnInput:(AVAssetWriterInput *)input fromOutput:(AVAssetReaderOutput *)output;
+- (BOOL)needsInputPixelBufferAdaptor;
 
 @end

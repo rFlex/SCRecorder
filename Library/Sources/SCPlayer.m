@@ -183,7 +183,9 @@ SCPlayer * currentSCVideoPlayer = nil;
         
         if (pixelBuffer) {
             CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-            CIImage *image = [_filterGroup imageByProcessingImage:[CIImage imageWithCVPixelBuffer:pixelBuffer]];
+            CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+            CIImage *image = [_filterGroup imageByProcessingImage:inputImage];
+            _imageView.imageSize = [inputImage extent];
             _imageView.image = image;
             _imageView.hidden = NO;
             

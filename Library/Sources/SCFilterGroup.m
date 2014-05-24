@@ -89,8 +89,11 @@
     for (SCFilter *filter in _filters) {
         if (filter.enabled) {
             CIFilter *ciFilter = filter.coreImageFilter;
+//            CGRect inputExtent = [result extent];
             [ciFilter setValue:result forKey:kCIInputImageKey];
             result = [ciFilter valueForKey:kCIOutputImageKey];
+//            CGRect outputExtent = [result extent];
+//            NSLog(@"Processed %@ (input extent: %f/%f/%f/%f, output extent: %f/%f/%f/%f)", filter.name, inputExtent.origin.x, inputExtent.origin.y, inputExtent.size.width, inputExtent.size.height, outputExtent.origin.x, outputExtent.origin.y, outputExtent.size.width, outputExtent.size.height);
         }
     }
     

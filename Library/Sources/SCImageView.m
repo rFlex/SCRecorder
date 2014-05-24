@@ -42,10 +42,11 @@ CGRect CGRectMultiply(CGRect rect, CGFloat scale) {
 - (void)drawRect:(CGRect)rect {
     if (_image != nil) {
         CGFloat contentScale = self.contentScaleFactor;
+        CGRect extent = self.imageSize;
         
         rect = CGRectMultiply(rect, contentScale);
         
-        [_ciContext drawImage:_image inRect:rect fromRect:[_image extent]];
+        [_ciContext drawImage:_image inRect:rect fromRect:extent];
     }
 }
 

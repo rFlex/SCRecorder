@@ -148,4 +148,13 @@ double *EnsureSize(double *data, int* currentSize, int size) {
     }
 }
 
+- (NSString *)name {
+    return [self.coreImageFilter.attributes objectForKey:kCIAttributeFilterName];
+}
+
+- (NSString *)displayName {
+    return [self.coreImageFilter.attributes objectForKey:kCIAttributeFilterDisplayName];
+}
+
+
 @end
