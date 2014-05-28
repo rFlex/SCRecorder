@@ -398,7 +398,7 @@ namespace SCorsin {
 		[Export("currentPlayer")]
 		SCPlayer CurrentPlayer { get; }
 
-		[Export("filterGroup")]
+		[Export("filterGroup"), NullAllowed]
 		SCFilterGroup FilterGroup { get; set; }
 
 		[Export("setItemByStringPath:")]
@@ -451,6 +451,9 @@ namespace SCorsin {
 	
 		[Export("imageView")]
 		SCImageView ImageView { get; }
+
+		[Export("outputView"), NullAllowed]
+		UIView OutputView { get; set; }
 	}
 
 	[BaseType(typeof(UIView))]
@@ -462,7 +465,7 @@ namespace SCorsin {
 		[Export("playerLayer")]
 		AVPlayerLayer PlayerLayer { get; }
 
-		[Export("loadingView")]
+		[Export("loadingView"), NullAllowed]
 		UIView LoadingView { get; set; }
 
 	}
