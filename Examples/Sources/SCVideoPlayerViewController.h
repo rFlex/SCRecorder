@@ -8,10 +8,13 @@
 
 #import <UIKit/UIKit.h>
 #import "SCVideoPlayerView.h"
+#import "SCFilterImageView.h"
 
-@interface SCVideoPlayerViewController : UIViewController
+@interface SCVideoPlayerViewController : UIViewController<UITableViewDataSource, UITableViewDelegate, SCPlayerDelegate>
 
 @property (weak, nonatomic) IBOutlet SCVideoPlayerView *videoPlayerView;
+@property (weak, nonatomic) IBOutlet SCFilterImageView *filterImageView;
 @property (strong, nonatomic) AVAsset *asset;
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 
 @end

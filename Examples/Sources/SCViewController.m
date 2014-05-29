@@ -55,7 +55,7 @@
     self.capturePhotoButton.alpha = 0.0;
 
     _recorder = [SCRecorder recorder];
-    _recorder.sessionPreset = kVideoPreset;
+    _recorder.sessionPreset = AVCaptureSessionPresetMedium;
     _recorder.audioEnabled = YES;
     _recorder.delegate = self;
     
@@ -168,15 +168,10 @@
 
 - (void)finishSession:(SCRecordSession *)recordSession {
     _recorder.recordSession = nil;
-    
-    [recordSession endSession:^(NSError *error) {
-        if (error == nil) {
-            [recordSession saveToCameraRoll];
-            [self showVideo:[AVURLAsset URLAssetWithURL:recordSession.outputUrl options:nil]];
-            [self prepareCamera];
-        } else {
-            NSLog(@"Failed to end session: %@", error);
-        }
+    [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+//        [recordSession saveToCameraRoll];
+        [self showVideo:recordSession.assetRepresentingRecordSegments];
+        [self prepareCamera];
     }];
 }
 

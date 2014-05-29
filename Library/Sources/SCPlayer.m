@@ -15,6 +15,7 @@
 @interface SCPlayer() <AVPlayerItemOutputPullDelegate, AVPlayerItemOutputPushDelegate> {
 	BOOL _loading;
     BOOL _shouldLoop;
+    NSTimer *_renderTimer;
     CADisplayLink *_displayLink;
     AVPlayerItemVideoOutput *_videoOutput;
     AVPlayerLayer *_playerLayer;
@@ -158,7 +159,6 @@ SCPlayer * currentSCVideoPlayer = nil;
         }
         _videoOutput = nil;
     }
-    _displayLink = nil;
     [_imageView removeFromSuperview];
     _imageView = nil;
 }
@@ -168,12 +168,6 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void)displayLinkCallback:(CADisplayLink *)sender {
-	/*
-	 The callback gets called once every Vsync.
-	 Using the display link's timestamp and duration we can compute the next time the screen will be refreshed, and copy the pixel buffer for that time
-	 This pixel buffer can then be processed and later rendered on screen.
-	 */
-	// Calculate the nextVsync time which is when the screen will be refreshed next.
 	CFTimeInterval nextVSync = ([sender timestamp] + [sender duration]);
     
 	CMTime outputItemTime = [_videoOutput itemTimeForHostTime:nextVSync];
@@ -184,15 +178,23 @@ SCPlayer * currentSCVideoPlayer = nil;
         if (pixelBuffer) {
             CVPixelBufferLockBaseAddress(pixelBuffer, 0);
             CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
-            CIImage *image = [_filterGroup imageByProcessingImage:inputImage];
-            _imageView.imageSize = [inputImage extent];
+            
+            CIImage *image = inputImage;
+            
+            if (_filterGroup != nil) {
+                image = [_filterGroup imageByProcessingImage:inputImage];
+            }
+            
+            CGRect extent = [inputImage extent];
+   
+            _imageView.imageSize = extent;
             _imageView.image = image;
             _imageView.hidden = NO;
             
             CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
             CFRelease(pixelBuffer);
         }
-	}
+    }
 }
 
 - (void)setupImageView {
@@ -206,17 +208,26 @@ SCPlayer * currentSCVideoPlayer = nil;
 - (void)setupVideoOutput {
     if (_displayLink == nil) {
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkCallback:)];
-        [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [_displayLink setPaused:YES];
+        _displayLink.frameInterval = 2;
+        [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        _displayLink.paused = YES;
         
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
         _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
         _videoOutput.suppressesPlayerRendering = YES;
         
-        [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+        [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0];
         
-        _imageView = [[SCImageView alloc] init];
+        id<SCPlayerDelegate> delegate = self.delegate;
+        
+        if ([delegate respondsToSelector:@selector(outputImageViewForPlayer:)]) {
+            _imageView = [delegate outputImageViewForPlayer:self];
+            
+            NSAssert(_imageView != nil, @"If implemented, delegate must return a SCImageView on outputImageViewForPlayer:");
+        } else {
+            _imageView = [[SCImageView alloc] init];
+        }
         
         [self setupImageView];
     }
@@ -228,12 +239,15 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void)resizePlayerLayerToFitOutputView {
-    [self resizePlayerLayer:_outputView.frame.size];
+    UIView *outputView = _outputView;
+    if (outputView != nil) {
+        [self resizePlayerLayer:outputView.frame.size];
+    }
 }
 
 - (void)resizePlayerLayer:(CGSize)size {
     _playerLayer.frame = CGRectMake(0, 0, size.width, size.height);
-    _imageView.frame = _playerLayer.frame;
+    _imageView.frame = CGRectMake(0, 0, size.width, size.height);
 }
 
 - (void) initObserver {
@@ -374,7 +388,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (BOOL)needsVideoOutputSetup {
-    return _filterGroup != nil;
+    return _filterGroup != nil || self.useCoreImageView;
 }
 
 - (void)setFilterGroup:(SCFilterGroup *)filterGroup {
@@ -385,6 +399,19 @@ SCPlayer * currentSCVideoPlayer = nil;
     } else {
         [self unsetupVideoOutput];
     }
+}
+
+- (void)setUseCoreImageView:(BOOL)useCoreImageView {
+    if (useCoreImageView != _useCoreImageView) {
+        _useCoreImageView = useCoreImageView;
+        
+        if ([self needsVideoOutputSetup]) {
+            [self setupVideoOutput];
+        } else {
+            [self unsetupVideoOutput];
+        }
+    }
+    
 }
 
 - (void)setOutputView:(UIView *)outputView {

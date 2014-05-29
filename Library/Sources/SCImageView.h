@@ -15,5 +15,6 @@
 
 @property (strong, nonatomic) CIImage *image;
 @property (assign, nonatomic) CGRect imageSize;
+@property (readonly, nonatomic) CIContext* ciContext;
 
 @end

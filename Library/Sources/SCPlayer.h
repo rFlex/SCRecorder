@@ -23,6 +23,8 @@
 - (void)videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem*)item;
 - (void)player:(SCPlayer *)player didReachEndForItem:(AVPlayerItem *)item;
 
+- (SCImageView *)outputImageViewForPlayer:(SCPlayer *)player;
+
 @end
 
 @interface SCPlayer : AVPlayer
@@ -34,6 +36,8 @@
 @property (weak, nonatomic) UIView *outputView;
 @property (readonly, nonatomic) BOOL isSendingPlayMessages;
 @property (assign, nonatomic, readwrite) BOOL shouldPlayConcurrently;
+// If true, the player will always use a SCImageView for rendering the video (may be slower)
+@property (assign, nonatomic) BOOL useCoreImageView;
 // If a SCImageView is needed to display this SCPlayer, this property will contains it
 @property (readonly, nonatomic) SCImageView *imageView;
 

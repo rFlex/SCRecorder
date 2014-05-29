@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DC1C8E9F18FD24C9005A342D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC1C8E9E18FD24C9005A342D /* Main.storyboard */; };
+		DC2854FB1937BDB600E1984F /* SCFilterSwitcherScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = DC2854FA1937BDB600E1984F /* SCFilterSwitcherScrollView.m */; };
 		DC7F370C18FC2A0D00D54901 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7F370B18FC2A0D00D54901 /* Foundation.framework */; };
 		DC7F370E18FC2A0D00D54901 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7F370D18FC2A0D00D54901 /* CoreGraphics.framework */; };
 		DC7F371018FC2A0D00D54901 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7F370F18FC2A0D00D54901 /* UIKit.framework */; };
@@ -35,6 +36,7 @@
 		DC7F376E18FC2B0300D54901 /* Record-Pressed-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376218FC2B0300D54901 /* Record-Pressed-icon.png */; };
 		DC7F376F18FC2B0300D54901 /* Stop-Normal-Red-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */; };
 		DC891813192EA63B006FAE71 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC891810192EA623006FAE71 /* libSCRecorder.a */; };
+		DCA65E761936C47C0039FFCF /* SCFilterImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = DCA65E751936C47C0039FFCF /* SCFilterImageView.m */; };
 		DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCB0416C19253FB800D945D2 /* GLKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +59,8 @@
 
 /* Begin PBXFileReference section */
 		DC1C8E9E18FD24C9005A342D /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		DC2854F91937BDB600E1984F /* SCFilterSwitcherScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterSwitcherScrollView.h; sourceTree = "<group>"; };
+		DC2854FA1937BDB600E1984F /* SCFilterSwitcherScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterSwitcherScrollView.m; sourceTree = "<group>"; };
 		DC7F370818FC2A0D00D54901 /* SCRecorderExamples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SCRecorderExamples.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC7F370B18FC2A0D00D54901 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DC7F370D18FC2A0D00D54901 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -96,6 +100,8 @@
 		DC7F376218FC2B0300D54901 /* Record-Pressed-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Record-Pressed-icon.png"; sourceTree = "<group>"; };
 		DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Stop-Normal-Red-icon.png"; sourceTree = "<group>"; };
 		DC89180A192EA622006FAE71 /* SCRecorder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SCRecorder.xcodeproj; path = ../Library/SCRecorder.xcodeproj; sourceTree = "<group>"; };
+		DCA65E741936C47C0039FFCF /* SCFilterImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterImageView.h; sourceTree = "<group>"; };
+		DCA65E751936C47C0039FFCF /* SCFilterImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterImageView.m; sourceTree = "<group>"; };
 		DCB0416C19253FB800D945D2 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -166,6 +172,10 @@
 				DC7F374718FC2AEB00D54901 /* SCViewController.h */,
 				DC7F372318FC2A0D00D54901 /* Images.xcassets */,
 				DC7F371218FC2A0D00D54901 /* Supporting Files */,
+				DCA65E741936C47C0039FFCF /* SCFilterImageView.h */,
+				DCA65E751936C47C0039FFCF /* SCFilterImageView.m */,
+				DC2854F91937BDB600E1984F /* SCFilterSwitcherScrollView.h */,
+				DC2854FA1937BDB600E1984F /* SCFilterSwitcherScrollView.m */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -309,8 +319,10 @@
 				DC7F375518FC2AF700D54901 /* SCTouchDetector.m in Sources */,
 				DC7F375718FC2AF700D54901 /* SCViewController.m in Sources */,
 				DC7F375218FC2AF700D54901 /* SCBlurOverlayView.m in Sources */,
+				DC2854FB1937BDB600E1984F /* SCFilterSwitcherScrollView.m in Sources */,
 				DC7F375318FC2AF700D54901 /* SCCameraFocusTargetView.m in Sources */,
 				DC7F375418FC2AF700D54901 /* SCImageViewDisPlayViewController.m in Sources */,
+				DCA65E761936C47C0039FFCF /* SCFilterImageView.m in Sources */,
 				DC7F371818FC2A0D00D54901 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

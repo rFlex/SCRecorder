@@ -18,16 +18,31 @@
 @implementation SCImageView
 
 - (id)initWithFrame:(CGRect)frame {
-    EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-    
-    self = [super initWithFrame:frame context:context];
+    self = [super initWithFrame:frame];
     
     if (self) {
-        NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
-        _ciContext = [CIContext contextWithEAGLContext:context options:options];
+        [self commonInit];
     }
     
     return self;
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    
+    if (self) {
+        [self commonInit];
+    }
+    
+    return self;
+}
+
+- (void)commonInit {
+    EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
+    _ciContext = [CIContext contextWithEAGLContext:context options:options];
+    
+    self.context = context;
 }
 
 CGRect CGRectMultiply(CGRect rect, CGFloat scale) {
@@ -41,12 +56,13 @@ CGRect CGRectMultiply(CGRect rect, CGFloat scale) {
 
 - (void)drawRect:(CGRect)rect {
     if (_image != nil) {
+        CIImage *outputImage = _image;
         CGFloat contentScale = self.contentScaleFactor;
         CGRect extent = self.imageSize;
         
         rect = CGRectMultiply(rect, contentScale);
         
-        [_ciContext drawImage:_image inRect:rect fromRect:extent];
+        [_ciContext drawImage:outputImage inRect:rect fromRect:extent];
     }
 }
 
@@ -54,6 +70,10 @@ CGRect CGRectMultiply(CGRect rect, CGFloat scale) {
     _image = image;
     
     [self setNeedsDisplay];
+}
+
+- (CIContext *)ciContext {
+    return _ciContext;
 }
 
 @end
