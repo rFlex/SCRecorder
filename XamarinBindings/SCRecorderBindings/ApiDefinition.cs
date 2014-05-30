@@ -531,6 +531,25 @@ namespace SCorsin {
 
 	}
 
+	[BaseType(typeof(UIView))]
+	interface SCFilterSwitcherView {
+
+		[Export("filterGroups"), NullAllowed]
+		SCFilterGroup[] FilterGroups { get; set; }
+
+		[Export("player"), NullAllowed]
+		SCPlayer Player { get; set; }
+
+		[Export("selectedFilterGroup")]
+		SCFilterGroup SelectedFilterGroup { get; }
+
+		[Export("selectFilterScrollView")]
+		UIScrollView SelectFilterScrollView { get; }
+
+		[Export("disabled")]
+		bool Disabled { get; set; }
+	}
+
 	[BaseType(typeof(GLKView))]
 	interface SCImageView {
 
