@@ -74,18 +74,7 @@
     
     self.player.outputView = self;
 	self.player.delegate = self;
-	
-	UIView * theLoadingView = [[UIView alloc] init];
-	theLoadingView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
-	
-	UIActivityIndicatorView * theIndicatorView = [[UIActivityIndicatorView alloc] init];
-	[theIndicatorView startAnimating];
-	theIndicatorView.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-	
-	[theLoadingView addSubview:theIndicatorView];
-	
-	self.loadingView = theLoadingView;
-	self.loadingView.hidden = YES;
+		
 	self.clipsToBounds = YES;
 }
 

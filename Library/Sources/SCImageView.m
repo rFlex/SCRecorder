@@ -45,7 +45,8 @@
     self.context = context;
 }
 
-CGRect CGRectMultiply(CGRect rect, CGFloat scale) {
+- (CGRect)rectByApplyingContentScale:(CGRect)rect {
+    CGFloat scale = self.contentScaleFactor;
     rect.origin.x *= scale;
     rect.origin.y *= scale;
     rect.size.width *= scale;
@@ -54,22 +55,20 @@ CGRect CGRectMultiply(CGRect rect, CGFloat scale) {
     return rect;
 }
 
-- (void)drawRect:(CGRect)rect {
-    if (_image != nil) {
-        CIImage *outputImage = _image;
-        CGFloat contentScale = self.contentScaleFactor;
-        CGRect extent = self.imageSize;
-        
-        rect = CGRectMultiply(rect, contentScale);
-        
-        [_ciContext drawImage:outputImage inRect:rect fromRect:extent];
-    }
+- (void)makeDirty {
+    _dirty = YES;
+}
+
+- (void)setNeedsDisplay {
+    _dirty = NO;
+    
+    [super setNeedsDisplay];
 }
 
 - (void)setImage:(CIImage *)image {
     _image = image;
     
-    [self setNeedsDisplay];
+    [self makeDirty];
 }
 
 - (CIContext *)ciContext {

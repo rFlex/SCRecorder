@@ -15,7 +15,6 @@
 @interface SCPlayer() <AVPlayerItemOutputPullDelegate, AVPlayerItemOutputPushDelegate> {
 	BOOL _loading;
     BOOL _shouldLoop;
-    NSTimer *_renderTimer;
     CADisplayLink *_displayLink;
     AVPlayerItemVideoOutput *_videoOutput;
     AVPlayerLayer *_playerLayer;
@@ -159,6 +158,7 @@ SCPlayer * currentSCVideoPlayer = nil;
         }
         _videoOutput = nil;
     }
+    
     [_imageView removeFromSuperview];
     _imageView = nil;
 }
@@ -167,13 +167,12 @@ SCPlayer * currentSCVideoPlayer = nil;
 	_displayLink.paused = NO;
 }
 
-- (void)displayLinkCallback:(CADisplayLink *)sender {
-	CFTimeInterval nextVSync = ([sender timestamp] + [sender duration]);
-    
-	CMTime outputItemTime = [_videoOutput itemTimeForHostTime:nextVSync];
+- (void)renderVideo:(CFTimeInterval)hostFrameTime {
+    CMTime outputItemTime = [_videoOutput itemTimeForHostTime:hostFrameTime];
     
 	if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
-		CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:nil];
+        CMTime time;
+		CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:&time];
         
         if (pixelBuffer) {
             CVPixelBufferLockBaseAddress(pixelBuffer, 0);
@@ -186,7 +185,7 @@ SCPlayer * currentSCVideoPlayer = nil;
             }
             
             CGRect extent = [inputImage extent];
-   
+            
             _imageView.imageSize = extent;
             _imageView.image = image;
             _imageView.hidden = NO;
@@ -195,6 +194,16 @@ SCPlayer * currentSCVideoPlayer = nil;
             CFRelease(pixelBuffer);
         }
     }
+    
+    if (_imageView.dirty) {
+        [_imageView setNeedsDisplay];
+    }
+}
+
+- (void)willRenderFrame:(CADisplayLink *)sender {
+	CFTimeInterval nextFrameTime = sender.timestamp + sender.duration;
+    
+    [self renderVideo:nextFrameTime];
 }
 
 - (void)setupImageView {
@@ -205,11 +214,19 @@ SCPlayer * currentSCVideoPlayer = nil;
     }
 }
 
+- (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
+    CIImage *image = view.image;
+    if (image != nil) {
+        [view.ciContext drawImage:image inRect:[view rectByApplyingContentScale:rect] fromRect:view.imageSize];
+    }
+}
+
 - (void)setupVideoOutput {
     if (_displayLink == nil) {
-        _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkCallback:)];
-        _displayLink.frameInterval = 2;
+        _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
+        _displayLink.frameInterval = 1;
         [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        
         _displayLink.paused = YES;
         
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
@@ -227,7 +244,8 @@ SCPlayer * currentSCVideoPlayer = nil;
             NSAssert(_imageView != nil, @"If implemented, delegate must return a SCImageView on outputImageViewForPlayer:");
         } else {
             _imageView = [[SCImageView alloc] init];
-        }
+            _imageView.delegate = self;
+        };
         
         [self setupImageView];
     }
@@ -411,7 +429,6 @@ SCPlayer * currentSCVideoPlayer = nil;
             [self unsetupVideoOutput];
         }
     }
-    
 }
 
 - (void)setOutputView:(UIView *)outputView {

@@ -235,30 +235,16 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" id="s8l-fK-DiF" customClass="SCVideoPlayerView">
+                            <view contentMode="scaleToFill" id="vYn-vb-aBd" customClass="SCFilterSwitcherView">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
-                            <view contentMode="scaleToFill" id="fP8-mZ-rd8" customClass="SCFilterImageView">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </view>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" pagingEnabled="YES" id="IHh-km-Sv4">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                <connections>
-                                    <outlet property="delegate" destination="VeQ-Zi-V20" id="Rng-KL-SVs"/>
-                                </connections>
-                            </scrollView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <connections>
-                        <outlet property="filterImageView" destination="fP8-mZ-rd8" id="2zU-1J-F6S"/>
-                        <outlet property="scrollView" destination="IHh-km-Sv4" id="37V-bb-mn1"/>
-                        <outlet property="videoPlayerView" destination="s8l-fK-DiF" id="1Tz-3T-XPY"/>
+                        <outlet property="filterSwitcherView" destination="vYn-vb-aBd" id="UTW-5m-3hq"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aQF-XH-HvG" userLabel="First Responder" sceneMemberID="firstResponder"/>

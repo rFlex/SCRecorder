@@ -55,7 +55,7 @@
     self.capturePhotoButton.alpha = 0.0;
 
     _recorder = [SCRecorder recorder];
-    _recorder.sessionPreset = AVCaptureSessionPresetMedium;
+    _recorder.sessionPreset = AVCaptureSessionPreset1280x720;
     _recorder.audioEnabled = YES;
     _recorder.delegate = self;
     

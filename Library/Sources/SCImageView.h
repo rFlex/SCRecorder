@@ -16,5 +16,11 @@
 @property (strong, nonatomic) CIImage *image;
 @property (assign, nonatomic) CGRect imageSize;
 @property (readonly, nonatomic) CIContext* ciContext;
+@property (readonly, nonatomic) BOOL dirty;
+
+// Make the view dirty, this asks the SCPlayer to render the SCImageView when it can
+- (void)makeDirty;
+
+- (CGRect)rectByApplyingContentScale:(CGRect)rect;
 
 @end

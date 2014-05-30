@@ -9,7 +9,7 @@
 #import "SCVideoPlayerViewController.h"
 
 @interface SCVideoPlayerViewController () {
-    NSArray *_filterGroups;
+    SCPlayer *_player;
 }
 
 @end
@@ -34,57 +34,28 @@
 {
     [super viewDidLoad];
     
-    _filterGroups = @[
-                      [NSNull null],
-                      [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectNoir"]]
-                      ];
+    self.filterSwitcherView.filterGroups = @[
+                                             [NSNull null],
+                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectNoir"]],
+                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectChrome"]],
+                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]],
+                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectTonal"]],
+                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectFade"]]                                    
+                                             ];
     
-    NSMutableArray *outputArray = [NSMutableArray new];
-    for (int i = 0; i < 2; i++) {
-        for (id obj in _filterGroups) {
-            [outputArray addObject:obj];
-        }
-    }
     
-    self.filterImageView.filterGroups = outputArray;
+    // On iPhone 4 and below, this property should be set to YES
+    self.filterSwitcherView.disabled = NO;
     
-    self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width * self.filterImageView.filterGroups.count, self.scrollView.frame.size.height);
-	
-    SCPlayer *player = self.videoPlayerView.player;
-    player.delegate = self;
-    player.outputView = nil;
-    player.useCoreImageView = YES;
+	_player = [SCPlayer player];
+    self.filterSwitcherView.player = _player;
     
     if (self.asset != nil) {
-        [player setItemByAsset:self.asset];
-//        [player setSmoothLoopItemByAsset:self.asset smoothLoopCount:10];
+        [_player setItemByAsset:self.asset];
     }
     
-	player.shouldLoop = YES;
-	[player play];
-    
-}
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    CGFloat width = scrollView.frame.size.width;
-    CGFloat contentOffsetX = scrollView.contentOffset.x;
-    CGFloat contentSizeWidth = scrollView.contentSize.width;
-    CGFloat normalWidth = _filterGroups.count * width;
-    
-    
-    if (contentOffsetX < 0) {
-        scrollView.contentOffset = CGPointMake(contentOffsetX + normalWidth, scrollView.contentOffset.y);
-    } else if (contentOffsetX + width > contentSizeWidth) {
-        scrollView.contentOffset = CGPointMake(contentOffsetX - normalWidth, scrollView.contentOffset.y);
-    }
-    
-    CGFloat ratio = scrollView.contentOffset.x / width;
-    
-    self.filterImageView.filterGroupIndexRatio = ratio;
-}
-
-- (SCImageView *)outputImageViewForPlayer:(SCPlayer *)player {
-    return self.filterImageView;
+	_player.shouldLoop = YES;
+	[_player play];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -98,10 +69,6 @@
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 2;
 }
 
 @end

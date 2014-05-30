@@ -22,12 +22,11 @@
 - (void)videoPlayer:(SCPlayer *)videoPlayer didEndLoadingAtItemTime:(CMTime)itemTime;
 - (void)videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem*)item;
 - (void)player:(SCPlayer *)player didReachEndForItem:(AVPlayerItem *)item;
-
 - (SCImageView *)outputImageViewForPlayer:(SCPlayer *)player;
 
 @end
 
-@interface SCPlayer : AVPlayer
+@interface SCPlayer : AVPlayer<GLKViewDelegate>
 
 @property (weak, nonatomic) id<SCPlayerDelegate> delegate;
 @property (assign, nonatomic) CMTime minimumBufferedTimeBeforePlaying;

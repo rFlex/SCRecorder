@@ -29,6 +29,8 @@
 		DC891800192D59F9006FAE71 /* SCArchivedVector.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8917FE192D59F9006FAE71 /* SCArchivedVector.h */; };
 		DC891801192D59F9006FAE71 /* SCArchivedVector.m in Sources */ = {isa = PBXBuildFile; fileRef = DC8917FF192D59F9006FAE71 /* SCArchivedVector.m */; };
 		DC891802192D5FCE006FAE71 /* SCArchivedVector.m in Sources */ = {isa = PBXBuildFile; fileRef = DC8917FF192D59F9006FAE71 /* SCArchivedVector.m */; };
+		DC933E8B193814D1007E2E88 /* SCFilterSwitcherView.h in Headers */ = {isa = PBXBuildFile; fileRef = DC933E89193814D1007E2E88 /* SCFilterSwitcherView.h */; };
+		DC933E8C193814D1007E2E88 /* SCFilterSwitcherView.m in Sources */ = {isa = PBXBuildFile; fileRef = DC933E8A193814D1007E2E88 /* SCFilterSwitcherView.m */; };
 		DCA836EC18FC2C910058FE13 /* SCRecorderFocusTargetView.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */; };
 		DCA836ED18FC2C910058FE13 /* SCRecorderFocusTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */; };
 		DCA8EF51192BD1C200839BE2 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC3528A817B963830077F039 /* Cocoa.framework */; };
@@ -79,6 +81,8 @@
 		DC633E26192BCE0D00050796 /* SCFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilter.m; sourceTree = "<group>"; };
 		DC8917FE192D59F9006FAE71 /* SCArchivedVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCArchivedVector.h; sourceTree = "<group>"; };
 		DC8917FF192D59F9006FAE71 /* SCArchivedVector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCArchivedVector.m; sourceTree = "<group>"; };
+		DC933E89193814D1007E2E88 /* SCFilterSwitcherView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterSwitcherView.h; sourceTree = "<group>"; };
+		DC933E8A193814D1007E2E88 /* SCFilterSwitcherView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterSwitcherView.m; sourceTree = "<group>"; };
 		DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRecorderFocusTargetView.h; sourceTree = "<group>"; };
 		DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRecorderFocusTargetView.m; sourceTree = "<group>"; };
 		DCA8EF50192BD1C200839BE2 /* SCRecorderMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SCRecorderMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -202,6 +206,8 @@
 				DCB04158192458C800D945D2 /* SCImageView.m */,
 				DCB041651924663700D945D2 /* SCAssetExportSession.h */,
 				DCB041661924663700D945D2 /* SCAssetExportSession.m */,
+				DC933E89193814D1007E2E88 /* SCFilterSwitcherView.h */,
+				DC933E8A193814D1007E2E88 /* SCFilterSwitcherView.m */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -249,6 +255,7 @@
 				DC4CBA531863118E00532F1F /* SCVideoPlayerView.h in Headers */,
 				DC633E2F192BCE0D00050796 /* SCFilter.h in Headers */,
 				DC891800192D59F9006FAE71 /* SCArchivedVector.h in Headers */,
+				DC933E8B193814D1007E2E88 /* SCFilterSwitcherView.h in Headers */,
 				DCA836EC18FC2C910058FE13 /* SCRecorderFocusTargetView.h in Headers */,
 				DC4CBA511863118E00532F1F /* SCPlayer.h in Headers */,
 				DCB041671924663700D945D2 /* SCAssetExportSession.h in Headers */,
@@ -358,6 +365,7 @@
 				DC891801192D59F9006FAE71 /* SCArchivedVector.m in Sources */,
 				DC4CBA541863118E00532F1F /* SCVideoPlayerView.m in Sources */,
 				DCA836ED18FC2C910058FE13 /* SCRecorderFocusTargetView.m in Sources */,
+				DC933E8C193814D1007E2E88 /* SCFilterSwitcherView.m in Sources */,
 				DC633E30192BCE0D00050796 /* SCFilter.m in Sources */,
 				DC4CBA521863118E00532F1F /* SCPlayer.m in Sources */,
 				DC633E28192BCE0D00050796 /* SCFilterGroup.m in Sources */,
