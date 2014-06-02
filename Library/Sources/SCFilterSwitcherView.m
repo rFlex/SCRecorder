@@ -85,7 +85,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     if (selectedIndex >= 0 && selectedIndex < filterGroupsCount) {
         _selectedFilterGroup = [_filterGroups objectAtIndex:selectedIndex];
     } else {
-        NSLog(@"Invalid contentOffset of scrollView in SCFilterSwitcherView (%f/%f with %d)", _selectFilterScrollView.contentOffset.x, _selectFilterScrollView.contentOffset.y, _filterGroups.count);
+        NSLog(@"Invalid contentOffset of scrollView in SCFilterSwitcherView (%f/%f with %d)", _selectFilterScrollView.contentOffset.x, _selectFilterScrollView.contentOffset.y, (int)_filterGroups.count);
         _selectedFilterGroup = nil;
     }
 }

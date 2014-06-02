@@ -45,7 +45,7 @@
     
     
     // On iPhone 4 and below, this property should be set to YES
-    self.filterSwitcherView.disabled = NO;
+    self.filterSwitcherView.disabled = NO;;
     
 	_player = [SCPlayer player];
     self.filterSwitcherView.player = _player;
