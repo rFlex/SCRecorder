@@ -47,7 +47,6 @@
  
     [self addSubview:_cameraImageView];
     [self addSubview:_selectFilterScrollView];
-    
 }
 
 - (void)layoutSubviews {
@@ -125,6 +124,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     _selectFilterScrollView.hidden = _disabled;
     _player.useCoreImageView = !_disabled;
     _player.outputView = _disabled ? self : nil;
+    _player.imageView = _disabled ? nil : _cameraImageView;
 }
 
 - (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
@@ -183,13 +183,13 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     }
 }
 
-- (SCImageView *)outputImageViewForPlayer:(SCPlayer *)player {
-    return _cameraImageView;
-}
-
 - (void)setPlayer:(SCPlayer *)player {
     if (player != _player) {
-        _player.delegate = nil;
+        if (_player != nil) {
+            _player.delegate = nil;
+            _player.outputView = nil;
+            _player.imageView = nil;
+        }
         
         _player = player;
         

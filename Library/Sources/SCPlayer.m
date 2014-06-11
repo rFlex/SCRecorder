@@ -236,16 +236,10 @@ SCPlayer * currentSCVideoPlayer = nil;
         
         [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0];
         
-        id<SCPlayerDelegate> delegate = self.delegate;
-        
-        if ([delegate respondsToSelector:@selector(outputImageViewForPlayer:)]) {
-            _imageView = [delegate outputImageViewForPlayer:self];
-            
-            NSAssert(_imageView != nil, @"If implemented, delegate must return a SCImageView on outputImageViewForPlayer:");
-        } else {
-            _imageView = [[SCImageView alloc] init];
+        if (_imageView == nil) {
+            self.imageView = [[SCImageView alloc] init];
             _imageView.delegate = self;
-        };
+        }
         
         [self setupImageView];
     }
@@ -452,6 +446,11 @@ SCPlayer * currentSCVideoPlayer = nil;
 
 - (SCImageView *)imageView {
     return _imageView;
+}
+
+- (void)setImageView:(SCImageView *)imageView {
+    _imageView = imageView;
+    [self setupImageView];
 }
 
 + (SCPlayer*) player {

@@ -454,6 +454,9 @@ namespace SCorsin {
 
 		[Export("outputView"), NullAllowed]
 		UIView OutputView { get; set; }
+
+		[Export("useCoreImageView")]
+		bool UseCoreImageView { get; set; }
 	}
 
 	[BaseType(typeof(UIView))]
