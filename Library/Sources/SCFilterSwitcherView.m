@@ -41,6 +41,8 @@
     _selectFilterScrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
     _selectFilterScrollView.delegate = self;
     _selectFilterScrollView.pagingEnabled = YES;
+    _selectFilterScrollView.showsHorizontalScrollIndicator = NO;
+    _selectFilterScrollView.showsVerticalScrollIndicator = NO;
     
     _cameraImageView = [[SCImageView alloc] initWithFrame:self.bounds];
     _cameraImageView.delegate = self;
