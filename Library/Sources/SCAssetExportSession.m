@@ -252,11 +252,11 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         
         if (_audioSettings == nil) {
             _audioSettings = @{
-                                            AVFormatIDKey : [NSNumber numberWithInt:kAudioFormatMPEG4AAC],
-                                            AVSampleRateKey : [NSNumber numberWithInt:sampleRate],
-                                            AVEncoderBitRateKey : [NSNumber numberWithInt:audioBitrate],
-                                            AVNumberOfChannelsKey : [NSNumber numberWithInt:channels]
-                                            };
+                               AVFormatIDKey : [NSNumber numberWithInt:kAudioFormatMPEG4AAC],
+                               AVSampleRateKey : [NSNumber numberWithInt:sampleRate],
+                               AVEncoderBitRateKey : [NSNumber numberWithInt:audioBitrate],
+                               AVNumberOfChannelsKey : [NSNumber numberWithInt:channels]
+                               };
 
         }
         if (_videoSettings == nil) {

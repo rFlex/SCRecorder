@@ -117,6 +117,11 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 // Start the flow of inputs in the captureSession
 // openSession must has been called before
+// Calling this method will block the main thread until it's done
+- (void)startRunningSession;
+
+// Start the flow of inputs in the captureSession
+// openSession must has been called before
 // This will be done on a different thread to avoid GUI hiccup
 - (void)startRunningSession:(void(^)())completionHandler;
 

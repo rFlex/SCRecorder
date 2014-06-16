@@ -147,6 +147,16 @@
     }
 }
 
+- (void)startRunningSession {
+    if (_captureSession == nil) {
+        [NSException raise:@"SCCamera" format:@"Session was not opened before"];
+    }
+    
+    if (!_captureSession.isRunning) {
+        [_captureSession startRunning];
+    }
+}
+
 - (void)startRunningSession:(void (^)())completionHandler {
     if (_captureSession == nil) {
         [NSException raise:@"SCCamera" format:@"Session was not opened before"];

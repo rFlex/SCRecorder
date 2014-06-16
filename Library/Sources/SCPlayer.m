@@ -200,6 +200,11 @@ SCPlayer * currentSCVideoPlayer = nil;
     }
 }
 
+- (void)replaceCurrentItemWithPlayerItem:(AVPlayerItem *)item {
+    [super replaceCurrentItemWithPlayerItem:item];
+    [self suspendDisplay];
+}
+
 - (void)willRenderFrame:(CADisplayLink *)sender {
 	CFTimeInterval nextFrameTime = sender.timestamp + sender.duration;
     
@@ -221,20 +226,24 @@ SCPlayer * currentSCVideoPlayer = nil;
     }
 }
 
+- (void)suspendDisplay {
+    _displayLink.paused = YES;
+    [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+}
+
 - (void)setupVideoOutput {
     if (_displayLink == nil) {
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
         _displayLink.frameInterval = 1;
         [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         
-        _displayLink.paused = YES;
         
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
         _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
         _videoOutput.suppressesPlayerRendering = YES;
-        
-        [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0];
+
+        [self suspendDisplay];
         
         if (_imageView == nil) {
             self.imageView = [[SCImageView alloc] init];
@@ -262,7 +271,7 @@ SCPlayer * currentSCVideoPlayer = nil;
     _imageView.frame = CGRectMake(0, 0, size.width, size.height);
 }
 
-- (void) initObserver {
+- (void)initObserver {
 	[self removeOldObservers];
 	
 	if (self.currentItem != nil) {
@@ -285,7 +294,7 @@ SCPlayer * currentSCVideoPlayer = nil;
     self.loading = YES;
 }
 
-- (void) play {
+- (void)play {
 	if (currentSCVideoPlayer != self && currentSCVideoPlayer.shouldPlayConcurrently == NO) {
 		[SCPlayer pauseCurrentPlayer];
 	}
@@ -295,7 +304,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 	currentSCVideoPlayer = self;
 }
 
-- (void) pause {
+- (void)pause {
 	[super pause];
 	
 	if (currentSCVideoPlayer == self) {
@@ -320,32 +329,32 @@ SCPlayer * currentSCVideoPlayer = nil;
 	return playableDuration;
 }
 
-- (void) setItemByStringPath:(NSString *)stringPath {
+- (void)setItemByStringPath:(NSString *)stringPath {
 	[self setItemByUrl:[NSURL URLWithString:stringPath]];
 }
 
-- (void) setItemByUrl:(NSURL *)url {
+- (void)setItemByUrl:(NSURL *)url {
 	[self setItemByAsset:[AVURLAsset URLAssetWithURL:url options:nil]];
 }
 
-- (void) setItemByAsset:(AVAsset *)asset {
+- (void)setItemByAsset:(AVAsset *)asset {
 	[self setItem:[AVPlayerItem playerItemWithAsset:asset]];
 }
 
-- (void) setItem:(AVPlayerItem *)item {
+- (void)setItem:(AVPlayerItem *)item {
 	self.itemsLoopLength = 1;
 	[self replaceCurrentItemWithPlayerItem:item];
 }
 
-- (void) setSmoothLoopItemByStringPath:(NSString *)stringPath smoothLoopCount:(NSUInteger)loopCount {
+- (void)setSmoothLoopItemByStringPath:(NSString *)stringPath smoothLoopCount:(NSUInteger)loopCount {
 	[self setSmoothLoopItemByUrl:[NSURL URLWithString:stringPath] smoothLoopCount:loopCount];
 }
 
-- (void) setSmoothLoopItemByUrl:(NSURL *)url smoothLoopCount:(NSUInteger)loopCount {
+- (void)setSmoothLoopItemByUrl:(NSURL *)url smoothLoopCount:(NSUInteger)loopCount {
 	[self setSmoothLoopItemByAsset:[AVURLAsset URLAssetWithURL:url options:nil] smoothLoopCount:loopCount];
 }
 
-- (void) setSmoothLoopItemByAsset:(AVAsset *)asset smoothLoopCount:(NSUInteger)loopCount {
+- (void)setSmoothLoopItemByAsset:(AVAsset *)asset smoothLoopCount:(NSUInteger)loopCount {
 	
 	AVMutableComposition * composition = [AVMutableComposition composition];
 	
@@ -360,11 +369,11 @@ SCPlayer * currentSCVideoPlayer = nil;
 	self.itemsLoopLength = loopCount;
 }
 
-- (BOOL) isPlaying {
+- (BOOL)isPlaying {
 	return currentSCVideoPlayer == self;
 }
 
-- (void) setLoading:(BOOL)loading {
+- (void)setLoading:(BOOL)loading {
 	_loading = loading;
 	
     id<SCPlayerDelegate> delegate = self.delegate;
