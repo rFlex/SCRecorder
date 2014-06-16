@@ -21,6 +21,7 @@
     BOOL _hasVideo;
     BOOL _hasAudio;
     BOOL _usingMainQueue;
+    BOOL _shouldAutoresumeRecording;
     int _beginSessionConfigurationCount;
 }
 
@@ -50,6 +51,9 @@
         _videoOrientation = AVCaptureVideoOrientationPortrait;
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionInterrupted:) name:AVAudioSessionInterruptionNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+
         
         self.device = AVCaptureDevicePositionBack;
         self.videoEnabled = YES;
@@ -67,6 +71,18 @@
 
 + (SCRecorder*)recorder {
     return [[SCRecorder alloc] init];
+}
+
+- (void)applicationDidEnterBackground:(id)sender {
+    _shouldAutoresumeRecording = _isRecording;
+    [self pause];
+}
+
+- (void)applicationDidBecomeActive:(id)sender {
+    if (_shouldAutoresumeRecording) {
+        _shouldAutoresumeRecording = NO;
+        [self record];
+    }
 }
 
 - (void)beginSessionConfiguration {
@@ -338,12 +354,12 @@
                     }
                 }
                 
-                
                 if (!_hasAudio || recordSession.audioInitialized || recordSession.shouldIgnoreAudio || recordSession.audioInitializationFailed) {
                     [self beginRecordSegmentIfNeeded:recordSession];
                     
                     if (_isRecording && recordSession.recordSegmentReady) {
                         id<SCRecorderDelegate> delegate = self.delegate;
+//                        NSLog(@"Appending video");
                         if ([recordSession appendVideoSampleBuffer:sampleBuffer frameDuration:[self frameDurationFromConnection:connection]]) {
                             if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
                             
@@ -361,6 +377,8 @@
                             }
                         }
                         
+                    } else {
+//                        NSLog(@"Recording: %d %d", (int)_isRecording, (int)recordSession.recordSegmentReady);
                     }
                 }
             }

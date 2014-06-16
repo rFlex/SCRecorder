@@ -200,6 +200,9 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
                 [writer startSessionAtSourceTime:_lastTime];
                 _sessionStartedTime = _lastTime;
                 _recordSegmentReady = YES;
+            } else {
+                theError = writer.error;
+                writer = nil;
             }
             
             _currentSegmentCount++;
@@ -384,6 +387,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
         
         if (currentSegmentEmpty) {
             [writer cancelWriting];
+            NSLog(@"Canceled writing");
             _assetWriter = nil;
             [self removeFile:writer.outputURL];
             
@@ -394,6 +398,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
             });
         } else {
             [writer endSessionAtSourceTime:_lastTime];
+            
             [writer finishWritingWithCompletionHandler: ^{
                 _assetWriter = nil;
                 dispatch_async(dispatch_get_main_queue(), ^{
