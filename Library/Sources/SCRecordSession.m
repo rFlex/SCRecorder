@@ -387,7 +387,6 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
         
         if (currentSegmentEmpty) {
             [writer cancelWriting];
-            NSLog(@"Canceled writing");
             _assetWriter = nil;
             [self removeFile:writer.outputURL];
             

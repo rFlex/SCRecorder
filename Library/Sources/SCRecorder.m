@@ -53,6 +53,7 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionInterrupted:) name:AVAudioSessionInterruptionNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionRuntimeError:) name:AVCaptureSessionRuntimeErrorNotification object:self];
 
         
         self.device = AVCaptureDevicePositionBack;
@@ -83,6 +84,10 @@
         _shouldAutoresumeRecording = NO;
         [self record];
     }
+}
+
+- (void)sessionRuntimeError:(id)sender {
+    [self startRunningSession];
 }
 
 - (void)beginSessionConfiguration {
