@@ -264,9 +264,6 @@ namespace SCorsin {
 		[Export("closeSession")]
 		void CloseSession();
 
-		[Export("startRunningSession:")]
-		void StartRunningSession([NullAllowed] Action completionHandler);
-
 		[Export("startRunningSession")]
 		void StartRunningSession();
 

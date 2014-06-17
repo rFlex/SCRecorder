@@ -173,26 +173,6 @@
     }
 }
 
-- (void)startRunningSession:(void (^)())completionHandler {
-    if (_captureSession == nil) {
-        [NSException raise:@"SCCamera" format:@"Session was not opened before"];
-    }
-    
-    if (!_captureSession.isRunning) {
-        dispatch_async(_dispatchQueue, ^{
-            [_captureSession startRunning];
-            
-            if (completionHandler != nil) {
-                completionHandler();
-            }
-        });
-    } else {
-        if (completionHandler != nil) {
-            completionHandler();
-        }
-    }
-}
-
 - (void)endRunningSession {
     [_captureSession stopRunning];
 }
