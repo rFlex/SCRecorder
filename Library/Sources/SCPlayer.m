@@ -178,7 +178,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
             
             _imageView.imageSize = extent;
             _imageView.image = image;
-            _imageView.hidden = NO;
+//            _imageView.hidden = NO;
             
             CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
             CFRelease(pixelBuffer);
@@ -261,7 +261,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
     if (_videoOutput != nil) {
         if (![self.currentItem.outputs containsObject:_videoOutput]) {
             [self.currentItem addOutput:_videoOutput];
-            _imageView.hidden = YES;
+//            _imageView.hidden = YES;
         }
     }
 }
