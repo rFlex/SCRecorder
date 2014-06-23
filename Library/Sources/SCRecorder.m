@@ -80,6 +80,8 @@
 }
 
 - (void)applicationDidBecomeActive:(id)sender {
+    [self reconfigureVideoInput:YES audioInput:YES];
+    
     if (_shouldAutoresumeRecording) {
         _shouldAutoresumeRecording = NO;
         [self record];

@@ -28,6 +28,9 @@
 }
 
 - (void)dealloc {
+    self.filterSwitcherView = nil;
+    [_player pause];
+    _player = nil;
 }
 
 - (void)viewDidLoad
@@ -49,7 +52,7 @@
     
 	_player = [SCPlayer player];
     self.filterSwitcherView.player = _player;
-    
+
     if (self.asset != nil) {
         [_player setItemByAsset:self.asset];
     }

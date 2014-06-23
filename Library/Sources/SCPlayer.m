@@ -28,7 +28,7 @@
 
 @end
 
-SCPlayer * currentSCVideoPlayer = nil;
+__weak SCPlayer * currentSCVideoPlayer = nil;
 
 ////////////////////////////////////////////////////////////
 // IMPLEMENTATION
@@ -56,7 +56,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 
 - (void)dealloc {
     self.outputView = nil;
-    [self unsetupVideoOutput];
+    [self unsetupVideoOutput:self.currentItem];
     [self removeObserver:self forKeyPath:@"currentItem"];
     [self removeOldObservers];
     [self endSendingPlayMessages];
@@ -138,29 +138,19 @@ SCPlayer * currentSCVideoPlayer = nil;
 		[self.oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
 		
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.oldItem];
-        if (_videoOutput != nil) {
-            [self.oldItem removeOutput:_videoOutput];
-        }
         
-        if ([self.oldItem.outputs containsObject:_videoOutput]) {
-            [self.oldItem removeOutput:_videoOutput];
-        }
+        [self unsetupVideoOutput:self.oldItem];
         
         self.oldItem = nil;
-        
 	}
 }
 
-- (void)unsetupVideoOutput {
+- (void)unsetupVideoOutput:(AVPlayerItem *)playerItem {
     if (_videoOutput != nil) {
-        if ([self.currentItem.outputs containsObject:_videoOutput]) {
-            [self.currentItem removeOutput:_videoOutput];
+        if ([playerItem.outputs containsObject:_videoOutput]) {
+            [playerItem removeOutput:_videoOutput];
         }
-        _videoOutput = nil;
     }
-    
-    [_imageView removeFromSuperview];
-    _imageView = nil;
 }
 
 - (void)outputMediaDataWillChange:(AVPlayerItemOutput *)sender {
@@ -231,18 +221,17 @@ SCPlayer * currentSCVideoPlayer = nil;
     [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
 }
 
-- (void)setupVideoOutput {
+- (void)setupCoreImageView {
     if (_displayLink == nil) {
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
         _displayLink.frameInterval = 1;
         [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         
-        
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
         _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
         _videoOutput.suppressesPlayerRendering = YES;
-
+        
         [self suspendDisplay];
         
         if (_imageView == nil) {
@@ -250,12 +239,30 @@ SCPlayer * currentSCVideoPlayer = nil;
             _imageView.delegate = self;
         }
         
+        [self setupVideoOutput];
         [self setupImageView];
     }
-    
-    if (![self.currentItem.outputs containsObject:_videoOutput]) {
-        [self.currentItem addOutput:_videoOutput];
-        _imageView.hidden = YES;
+}
+
+- (void)unsetupCoreImageView {
+    if (_displayLink != nil) {
+        [_displayLink removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        _videoOutput = nil;
+        if (_imageView.delegate == self) {
+            _imageView = nil;
+        }
+        _displayLink = nil;
+        
+        [self unsetupVideoOutput:self.currentItem];
+    }
+}
+
+- (void)setupVideoOutput {
+    if (_videoOutput != nil) {
+        if (![self.currentItem.outputs containsObject:_videoOutput]) {
+            [self.currentItem addOutput:_videoOutput];
+            _imageView.hidden = YES;
+        }
     }
 }
 
@@ -282,9 +289,7 @@ SCPlayer * currentSCVideoPlayer = nil;
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
         self.oldItem = self.currentItem;
         
-        if (self.needsVideoOutputSetup) {
-            [self setupVideoOutput];
-        }
+        [self setupVideoOutput];
 	}
 
     id<SCPlayerDelegate> delegate = self.delegate;
@@ -295,8 +300,9 @@ SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void)play {
-	if (currentSCVideoPlayer != self && currentSCVideoPlayer.shouldPlayConcurrently == NO) {
-		[SCPlayer pauseCurrentPlayer];
+    SCPlayer *currentPlayer = currentSCVideoPlayer;
+	if (currentPlayer != self && currentPlayer.shouldPlayConcurrently == NO) {
+        [currentPlayer pause];
 	}
 	
 	[super play];
@@ -408,28 +414,18 @@ SCPlayer * currentSCVideoPlayer = nil;
     return self.timeObserver != nil;
 }
 
-- (BOOL)needsVideoOutputSetup {
-    return _filterGroup != nil || self.useCoreImageView;
-}
-
 - (void)setFilterGroup:(SCFilterGroup *)filterGroup {
     _filterGroup = filterGroup;
-    
-    if (filterGroup != nil) {
-        [self setupVideoOutput];
-    } else {
-        [self unsetupVideoOutput];
-    }
 }
 
 - (void)setUseCoreImageView:(BOOL)useCoreImageView {
     if (useCoreImageView != _useCoreImageView) {
         _useCoreImageView = useCoreImageView;
         
-        if ([self needsVideoOutputSetup]) {
-            [self setupVideoOutput];
+        if (useCoreImageView) {
+            [self setupCoreImageView];
         } else {
-            [self unsetupVideoOutput];
+            [self unsetupCoreImageView];
         }
     }
 }
@@ -439,6 +435,7 @@ SCPlayer * currentSCVideoPlayer = nil;
     
     if (outputView == nil) {
         if (_playerLayer != nil) {
+            _playerLayer.player = nil;
             [_playerLayer removeFromSuperlayer];
             _playerLayer = nil;
         }
@@ -462,17 +459,16 @@ SCPlayer * currentSCVideoPlayer = nil;
     [self setupImageView];
 }
 
-+ (SCPlayer*) player {
++ (SCPlayer*)player {
 	return [[SCPlayer alloc] init];
 }
 
-+ (void) pauseCurrentPlayer {
-	if (currentSCVideoPlayer != nil) {
-		[currentSCVideoPlayer pause];
-	}
++ (void)pauseCurrentPlayer {
+    SCPlayer *currentPlayer = currentSCVideoPlayer;
+    [currentPlayer pause];
 }
 
-+ (SCPlayer*) currentPlayer {
++ (SCPlayer*)currentPlayer {
 	return currentSCVideoPlayer;
 }
 

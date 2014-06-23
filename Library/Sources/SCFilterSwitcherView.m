@@ -37,6 +37,12 @@
     return self;
 }
 
+- (void)dealloc {
+    _player.outputView = nil;
+    _player.imageView = nil;
+    _player.useCoreImageView = NO;
+}
+
 - (void)_commonInit {
     _selectFilterScrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
     _selectFilterScrollView.delegate = self;
@@ -124,9 +130,11 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 - (void)updatePlayer {
     _cameraImageView.hidden = _disabled;
     _selectFilterScrollView.hidden = _disabled;
-    _player.useCoreImageView = !_disabled;
-    _player.outputView = _disabled ? self : nil;
-    _player.imageView = _disabled ? nil : _cameraImageView;
+    SCPlayer *player = _player;
+    
+    player.useCoreImageView = !_disabled;
+    player.outputView = _disabled ? self : nil;
+    player.imageView = _disabled ? nil : _cameraImageView;
 }
 
 - (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
@@ -186,11 +194,12 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 }
 
 - (void)setPlayer:(SCPlayer *)player {
-    if (player != _player) {
-        if (_player != nil) {
-            _player.delegate = nil;
-            _player.outputView = nil;
-            _player.imageView = nil;
+    SCPlayer *oldInstance = _player;
+    if (player != oldInstance) {
+        if (oldInstance != nil) {
+            oldInstance.delegate = nil;
+            oldInstance.outputView = nil;
+            oldInstance.imageView = nil;
         }
         
         _player = player;
