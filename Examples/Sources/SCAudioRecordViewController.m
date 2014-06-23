@@ -49,8 +49,6 @@
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
         if (audioError != nil) {
             [self showError:audioError];
-        } else {
-            [_recorder startRunningSession:nil];
         }
     }];
     [self hidePlayControl:NO];

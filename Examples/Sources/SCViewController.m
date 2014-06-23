@@ -107,7 +107,7 @@
     [super viewDidAppear:animated];
     
     if (_recorder.isCaptureSessionOpened) {
-        [_recorder startRunningSession:nil];
+        [_recorder startRunningSession];
     }
 }
 
