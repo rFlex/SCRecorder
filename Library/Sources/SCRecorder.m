@@ -38,16 +38,6 @@
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
         _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
         
-        _videoOutput = [[AVCaptureVideoDataOutput alloc] init];
-        _videoOutput.alwaysDiscardsLateVideoFrames = NO;
-        [_videoOutput setSampleBufferDelegate:self queue:_dispatchQueue];
-        
-        _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
-        [_audioOutput setSampleBufferDelegate:self queue:_dispatchQueue];
-     
-        _photoOutput = [[AVCaptureStillImageOutput alloc] init];
-        _photoOutput.outputSettings = @{AVVideoCodecKey : AVVideoCodecJPEG};
-        
         _videoOrientation = AVCaptureVideoOrientationPortrait;
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionInterrupted:) name:AVAudioSessionInterruptionNotification object:nil];
@@ -80,7 +70,7 @@
 }
 
 - (void)applicationDidBecomeActive:(id)sender {
-    [self reconfigureVideoInput:YES audioInput:YES];
+    [self reconfigureVideoInput:self.videoEnabled audioInput:self.audioEnabled];
     
     if (_shouldAutoresumeRecording) {
         _shouldAutoresumeRecording = NO;
@@ -134,6 +124,12 @@
     
     _hasVideo = NO;
     if (_videoEnabled) {
+        if (_videoOutput == nil) {
+            _videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+            _videoOutput.alwaysDiscardsLateVideoFrames = NO;
+            [_videoOutput setSampleBufferDelegate:self queue:_dispatchQueue];
+        }
+        
         if ([session canAddOutput:_videoOutput]) {
             [session addOutput:_videoOutput];
             _hasVideo = YES;
@@ -144,6 +140,11 @@
     
     _hasAudio = NO;
     if (_audioEnabled) {
+        if (_audioOutput == nil) {
+            _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
+            [_audioOutput setSampleBufferDelegate:self queue:_dispatchQueue];
+        }
+        
         if ([session canAddOutput:_audioOutput]) {
             [session addOutput:_audioOutput];
             _hasAudio = YES;
@@ -152,6 +153,11 @@
         }
     }
     if (_photoEnabled) {
+        if (_photoOutput == nil) {
+            _photoOutput = [[AVCaptureStillImageOutput alloc] init];
+            _photoOutput.outputSettings = @{AVVideoCodecKey : AVVideoCodecJPEG};
+        }
+        
         if ([session canAddOutput:_photoOutput]) {
             [session addOutput:_photoOutput];
         } else {
@@ -161,7 +167,7 @@
     
     _previewLayer.session = session;
     
-    [self reconfigureVideoInput:YES audioInput:YES];
+    [self reconfigureVideoInput:self.videoEnabled audioInput:self.audioEnabled];
     
     [self commitSessionConfiguration];
     
@@ -588,7 +594,7 @@
     if (interruption != nil) {
         AVAudioSessionInterruptionOptions options = interruption.unsignedIntValue;
         if (options == AVAudioSessionInterruptionOptionShouldResume) {
-            [self reconfigureVideoInput:NO audioInput:YES];
+            [self reconfigureVideoInput:NO audioInput:self.audioEnabled];
         }
     }
 }
@@ -707,7 +713,7 @@
 - (void)setDevice:(AVCaptureDevicePosition)device {
     _device = device;
     if (_captureSession != nil) {
-        [self reconfigureVideoInput:YES audioInput:NO];
+        [self reconfigureVideoInput:self.videoEnabled audioInput:NO];
     }
 }
 
