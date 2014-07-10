@@ -173,23 +173,6 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
             xImage += extent.size.width;
             index++;
         }
-        
-        for (NSInteger i = index, count = filterGroups.count; i <= upIndex && i < count; i++) {
-            id obj = [filterGroups objectAtIndex:i];
-            CIImage *imageToUse = outputImage;
-            
-            if ([obj isKindOfClass:[SCFilterGroup class]]) {
-                imageToUse = [((SCFilterGroup *)obj) imageByProcessingImage:imageToUse];
-            }
-            
-            CGRect outputRect = CGRectTranslate(rect, xOutputRect, rect.size.width);
-            CGRect fromRect = CGRectTranslate(extent, xImage, extent.size.width);
-            
-            [context drawImage:imageToUse inRect:outputRect fromRect:fromRect];
-            
-            xOutputRect += rect.size.width;
-            xImage += extent.size.width;
-        }
     }
 }
 

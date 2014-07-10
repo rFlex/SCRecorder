@@ -224,7 +224,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 - (void)setupCoreImageView {
     if (_displayLink == nil) {
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
-        _displayLink.frameInterval = 1;
+        _displayLink.frameInterval = 2;
         [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
@@ -246,7 +246,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 
 - (void)unsetupCoreImageView {
     if (_displayLink != nil) {
-        [_displayLink removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        [_displayLink invalidate];
         _videoOutput = nil;
         if (_imageView.delegate == self) {
             _imageView = nil;
