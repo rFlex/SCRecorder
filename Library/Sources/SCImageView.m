@@ -39,6 +39,7 @@
 
 - (void)commonInit {
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    
     NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
     _ciContext = [CIContext contextWithEAGLContext:context options:options];
     

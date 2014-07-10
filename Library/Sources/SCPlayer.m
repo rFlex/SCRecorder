@@ -165,7 +165,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 		CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:&time];
         
         if (pixelBuffer) {
-            CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+//            CVPixelBufferLockBaseAddress(pixelBuffer, 0);
             CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
             
             CIImage *image = inputImage;
@@ -180,7 +180,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
             _imageView.image = image;
 //            _imageView.hidden = NO;
             
-            CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+//            CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
             CFRelease(pixelBuffer);
         }
     }
@@ -224,7 +224,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 - (void)setupCoreImageView {
     if (_displayLink == nil) {
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
-        _displayLink.frameInterval = 2;
+        _displayLink.frameInterval = 1;
         [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};

@@ -124,7 +124,12 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     CGFloat ratio = scrollView.contentOffset.x / width;
     
     _filterGroupIndexRatio = ratio;
-    [_cameraImageView makeDirty];
+    
+    if (_player == nil) {
+        [_cameraImageView setNeedsDisplay];
+    } else {
+        [_cameraImageView makeDirty];
+    }
 }
 
 - (void)updatePlayer {
