@@ -224,5 +224,13 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     }
 }
 
+- (CIImage *)image {
+    return _cameraImageView.image;
+}
+
+- (void)setImage:(CIImage *)image {
+    _cameraImageView.image = image;
+    [_cameraImageView setNeedsDisplay];
+}
 
 @end

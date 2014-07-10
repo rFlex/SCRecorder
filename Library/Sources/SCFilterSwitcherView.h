@@ -22,6 +22,10 @@
 // The player to which this view should take the video frames from
 @property (strong, nonatomic) SCPlayer *player;
 
+// The image to which the filters must be applied. If a player is set, this will be automatically
+// updated according to the current displayed player image
+@property (strong, nonatomic) CIImage *image;
+
 // The currently selected filter group
 @property (readonly, nonatomic) SCFilterGroup *selectedFilterGroup;
 
