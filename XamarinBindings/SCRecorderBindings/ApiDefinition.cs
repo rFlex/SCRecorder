@@ -449,8 +449,8 @@ namespace SCorsin {
 		[Export("isSendingPlayMessages")]
 		bool IsSendingPlayMessages { get; }
 	
-		[Export("imageView")]
-		SCImageView ImageView { get; }
+		[Export("SCImageView")]
+		SCImageView SCImageView { get; }
 
 		[Export("outputView"), NullAllowed]
 		UIView OutputView { get; set; }

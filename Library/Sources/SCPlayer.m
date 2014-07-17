@@ -233,7 +233,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
         [self suspendDisplay];
         
         if (_imageView == nil) {
-            self.imageView = [[SCImageView alloc] init];
+            self.SCImageView = [[SCImageView alloc] init];
             _imageView.delegate = self;
         }
         
@@ -458,12 +458,12 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
     }
 }
 
-- (SCImageView *)imageView {
+- (SCImageView *)SCImageView {
     return _imageView;
 }
 
-- (void)setImageView:(SCImageView *)imageView {
-    _imageView = imageView;
+- (void)setSCImageView:(SCImageView *)SCImageView {
+    _imageView = SCImageView;
     [self setupCoreImageView];
 }
 

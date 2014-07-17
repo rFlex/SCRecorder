@@ -39,7 +39,7 @@
 
 - (void)dealloc {
     _player.outputView = nil;
-    _player.imageView = nil;
+    _player.SCImageView = nil;
     _player.useCoreImageView = NO;
 }
 
@@ -139,7 +139,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     
     player.useCoreImageView = !_disabled;
     player.outputView = _disabled ? self : nil;
-    player.imageView = _disabled ? nil : _cameraImageView;
+    player.SCImageView = _disabled ? nil : _cameraImageView;
 }
 
 - (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
@@ -188,7 +188,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
         if (oldInstance != nil) {
             oldInstance.delegate = nil;
             oldInstance.outputView = nil;
-            oldInstance.imageView = nil;
+            oldInstance.SCImageView = nil;
         }
         
         _player = player;
