@@ -32,6 +32,9 @@
 // The underlying scrollView used for scrolling between filterGroups
 @property (readonly, nonatomic) UIScrollView *selectFilterScrollView;
 
+// The underyling SCImageView used for rendering the video
+@property (readonly, nonatomic) SCImageView *SCImageView;
+
 @property (assign, nonatomic) BOOL disabled;
 
 @end

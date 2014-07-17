@@ -551,6 +551,9 @@ namespace SCorsin {
 
 		[Export("disabled")]
 		bool Disabled { get; set; }
+
+		[Export("SCImageView")]
+		SCImageView SCImageView { get; }
 	}
 
 	[BaseType(typeof(GLKView))]
@@ -558,6 +561,9 @@ namespace SCorsin {
 
 		[Export("image")]
 		CIImage Image { get; set; }
+
+		[Export("viewMode")]
+		int ViewMode { get; set; }
 
 	}
 }

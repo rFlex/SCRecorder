@@ -210,7 +210,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 - (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
     CIImage *image = view.image;
     if (image != nil) {
-        [view.ciContext drawImage:image inRect:[view rectByApplyingContentScale:rect] fromRect:view.imageSize];
+        [view.ciContext drawImage:image inRect:[view processRect:rect withImageSize:view.imageSize.size] fromRect:view.imageSize];
     }
 }
 
@@ -247,7 +247,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
         
         if (videoTracks.count > 0) {
             AVAssetTrack *track = videoTracks.firstObject;
-            NSLog(@"Setting transform to %@", NSStringFromCGAffineTransform(track.preferredTransform));
             _imageView.transform = track.preferredTransform;
         }
     }
