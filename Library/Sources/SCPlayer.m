@@ -165,7 +165,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 		CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:&time];
         
         if (pixelBuffer) {
-//            CVPixelBufferLockBaseAddress(pixelBuffer, 0);
             CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
             
             CIImage *image = inputImage;
@@ -180,7 +179,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
             _imageView.image = image;
 //            _imageView.hidden = NO;
             
-//            CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
             CFRelease(pixelBuffer);
         }
     }
@@ -241,6 +239,17 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
         
         [self setupVideoOutput];
         [self setupImageView];
+    }
+    
+    AVPlayerItem *item = self.currentItem;
+    if (_imageView != nil && item != nil) {
+        NSArray *videoTracks = [item.asset tracksWithMediaType:AVMediaTypeVideo];
+        
+        if (videoTracks.count > 0) {
+            AVAssetTrack *track = videoTracks.firstObject;
+            NSLog(@"Setting transform to %@", NSStringFromCGAffineTransform(track.preferredTransform));
+            _imageView.transform = track.preferredTransform;
+        }
     }
 }
 
@@ -456,7 +465,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 
 - (void)setImageView:(SCImageView *)imageView {
     _imageView = imageView;
-    [self setupImageView];
+    [self setupCoreImageView];
 }
 
 + (SCPlayer*)player {
