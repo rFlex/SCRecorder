@@ -1,6 +1,8 @@
 SCRecorder
 ===============
 
+![](screenshot_1.png)     ![](screenshot_2.png)
+
 A Vine/Instagram like audio/video recorder in Objective-C.
 
 In short, here is a short list of the cool things you can do:
