@@ -72,16 +72,7 @@
 
 static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     rect.origin.x += width;
-    
-//    if (rect.origin.x < 0) {
-//        rect.size.width += rect.origin.x;
-//        rect.origin.x = 0;
-//    }
-//    
-//    if (rect.size.width > maxWidth) {
-//        rect.size.width = maxWidth;
-//    }
-//    
+
     return rect;
 }
 
