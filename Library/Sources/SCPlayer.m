@@ -247,7 +247,22 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
         
         if (videoTracks.count > 0) {
             AVAssetTrack *track = videoTracks.firstObject;
-            _imageView.transform = track.preferredTransform;
+            
+            CGAffineTransform transform = track.preferredTransform;
+            if (self.autoRotate) {
+                CGSize videoSize = track.naturalSize;
+                CGSize viewSize = _imageView.frame.size;
+                CGRect outRect = CGRectApplyAffineTransform(CGRectMake(0, 0, videoSize.width, videoSize.height), transform);
+                
+                BOOL viewIsWide = viewSize.width / viewSize.height > 1;
+                BOOL videoIsWide = outRect.size.width / outRect.size.height > 1;
+                
+                if (viewIsWide != videoIsWide) {
+                    transform = CGAffineTransformRotate(transform, M_PI_2);
+                }
+            }
+            
+            _imageView.transform = transform;
         }
     }
 }
@@ -465,6 +480,10 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 - (void)setSCImageView:(SCImageView *)SCImageView {
     _imageView = SCImageView;
     [self setupCoreImageView];
+}
+
+- (void)setAutoRotate:(BOOL)autoRotate {
+    _autoRotate = autoRotate;
 }
 
 + (SCPlayer*)player {

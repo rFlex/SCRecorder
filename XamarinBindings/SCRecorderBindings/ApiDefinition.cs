@@ -457,6 +457,9 @@ namespace SCorsin {
 
 		[Export("useCoreImageView")]
 		bool UseCoreImageView { get; set; }
+
+		[Export("autoRotate")]
+		bool AutoRotate { get; set; }
 	}
 
 	[BaseType(typeof(UIView))]
