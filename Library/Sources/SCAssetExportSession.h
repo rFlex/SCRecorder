@@ -49,6 +49,9 @@ extern NSString *SCAssetExportSessionPresetLowQuality;
 // If true, the export session will use the GPU for rendering the filters.
 @property (assign, nonatomic) BOOL useGPUForRenderingFilters;
 
+// The transform to use for the video
+@property (assign, nonatomic) CGAffineTransform videoTransform;
+
 // If an error occured during the export, this will contain that error
 @property (readonly, nonatomic) NSError *error;
 

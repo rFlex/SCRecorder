@@ -460,6 +460,9 @@ namespace SCorsin {
 
 		[Export("autoRotate")]
 		bool AutoRotate { get; set; }
+
+		[Export("autoCreateSCImageView")]
+		bool AutoCreateSCImageView { get; set; }
 	}
 
 	[BaseType(typeof(UIView))]
@@ -534,6 +537,9 @@ namespace SCorsin {
 
 		[Export("useGPUForRenderingFilters")]
 		bool UseGPUForRenderingFilters { get; set; }
+
+		[Export("videoTransform")]
+		CGAffineTransform VideoTransform { get; set; }
 
 	}
 

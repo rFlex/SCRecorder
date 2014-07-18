@@ -47,6 +47,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         _dispatchQueue = dispatch_queue_create("me.corsin.EvAssetExportSession", nil);
         _dispatchGroup = dispatch_group_create();
         _useGPUForRenderingFilters = YES;
+        _videoTransform = CGAffineTransformIdentity;
     }
     
     return self;
@@ -293,6 +294,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     [[NSFileManager defaultManager] removeItemAtURL:self.outputUrl error:nil];
     
     _writer = [AVAssetWriter assetWriterWithURL:self.outputUrl fileType:self.outputFileType error:&error];
+
     EnsureSuccess(error, completionHandler);
     
     _reader = [AVAssetReader assetReaderWithAsset:self.inputAsset error:&error];
@@ -331,6 +333,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     
     if (_videoOutput != nil) {
         _videoInput = [self addWriter:AVMediaTypeVideo withSettings:self.videoSettings];
+        _videoInput.transform = self.videoTransform;
     } else {
         _videoInput = nil;
     }

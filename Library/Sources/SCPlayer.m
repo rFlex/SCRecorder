@@ -38,7 +38,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 
 @synthesize oldItem;
 
-- (id) init {
+- (id)init {
 	self = [super init];
 	
 	if (self) {
@@ -47,6 +47,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
 		
 		_loading = NO;
+        _autoCreateSCImageView = YES;
 		
 		self.minimumBufferedTimeBeforePlaying = CMTimeMake(2, 1);
 	}
@@ -232,7 +233,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
         
         [self suspendDisplay];
         
-        if (_imageView == nil) {
+        if (_imageView == nil && _autoCreateSCImageView) {
             self.SCImageView = [[SCImageView alloc] init];
             _imageView.delegate = self;
         }
