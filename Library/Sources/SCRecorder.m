@@ -908,12 +908,15 @@
         if (!foundSupported) {
             for (AVCaptureDeviceFormat * format in device.formats) {
                 if ([self formatInRange:format frameRate:frameRate dimensions:dimensions]) {
-                    CMTimeScale oldFrameRate = self.frameRate;
+                    CMTime oldFrameRate = CMTimeMake(1, self.frameRate);
                     if ([device lockForConfiguration:error]) {
+                        
                         device.activeFormat = format;
+                        device.activeVideoMinFrameDuration = oldFrameRate;
+                        device.activeVideoMaxFrameDuration = oldFrameRate;
+                        
                         [device unlockForConfiguration];
                         foundSupported = YES;
-                        self.frameRate = oldFrameRate;
                         break;
                     }
                 }
