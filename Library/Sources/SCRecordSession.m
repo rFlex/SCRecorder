@@ -146,7 +146,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
     [self recomputeRecordDuration];
 }
 
-- (NSString*)suggestFileType {
+- (NSString*)suggestedFileType {
     NSString *fileType = self.fileType;
     
     if (fileType == nil) {
@@ -171,7 +171,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
         
         [self removeFile:file];
         
-        NSString *fileType = [self suggestFileType];
+        NSString *fileType = [self suggestedFileType];
         
         if (fileType != nil) {
             writer = [[AVAssetWriter alloc] initWithURL:file fileType:fileType error:&theError];
@@ -428,7 +428,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
 
 - (void)mergeRecordSegments:(void(^)(NSError *error))completionHandler {
     NSURL *outputUrl = self.outputUrl;
-    NSString *fileType = [self suggestFileType];
+    NSString *fileType = [self suggestedFileType];
     
     
     if (fileType == nil) {

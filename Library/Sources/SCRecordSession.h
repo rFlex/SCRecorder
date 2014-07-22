@@ -237,6 +237,8 @@ extern const NSString *SCRecordSessionOutputUrlKey;
 // in any text format
 - (NSDictionary *)dictionaryRepresentation;
 
+// Returns the fileType that the SCRecordSession is going to use
+- (NSString *)suggestedFileType;
 
 //////////////////
 // PRIVATE API

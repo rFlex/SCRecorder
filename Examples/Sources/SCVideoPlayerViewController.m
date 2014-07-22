@@ -8,6 +8,7 @@
 
 #import "SCVideoPlayerViewController.h"
 #import "SCEditVideoViewController.h"
+#import "SCAssetExportSession.h"
 
 @interface SCVideoPlayerViewController () {
     SCPlayer *_player;
@@ -80,7 +81,9 @@
 
 - (void)saveToCameraRoll {
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-    [self.recordSession mergeRecordSegments:^(NSError *error) {
+    SCFilterGroup *currentFilter = self.filterSwitcherView.selectedFilterGroup;
+    
+    void(^completionHandler)(NSError *error) = ^(NSError *error) {
         [[UIApplication sharedApplication] endIgnoringInteractionEvents];
         if (error == nil) {
             [self.recordSession saveToCameraRoll];
@@ -88,7 +91,21 @@
         } else {
             [[[UIAlertView alloc] initWithTitle:@"Failed to save" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
-    }];
+    };
+    
+    if (currentFilter == nil) {
+        [self.recordSession mergeRecordSegments:completionHandler];
+    } else {
+        SCAssetExportSession *exportSession = [[SCAssetExportSession alloc] initWithAsset:self.recordSession.assetRepresentingRecordSegments];
+        exportSession.filterGroup = currentFilter;
+        exportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
+        exportSession.outputUrl = self.recordSession.outputUrl;
+        exportSession.outputFileType = self.recordSession.suggestedFileType;
+        exportSession.keepVideoSize = YES;
+        [exportSession exportAsynchronouslyWithCompletionHandler:^{
+            completionHandler(exportSession.error);
+        }];
+    }
 }
 
 @end
