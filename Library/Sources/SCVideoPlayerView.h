@@ -14,8 +14,7 @@
 @interface SCVideoPlayerView : UIView<SCPlayerDelegate>
 
 @property (readonly, nonatomic) SCPlayer * player;
-@property (strong, nonatomic, readonly) AVPlayerLayer * playerLayer;
-@property (strong, nonatomic, readwrite) UIView * loadingView;
+@property (strong, nonatomic, readwrite) UIView *loadingView;
 
 - (id)initWithPlayer:(SCPlayer *)player;
 

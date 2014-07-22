@@ -272,16 +272,41 @@
             </objects>
             <point key="canvasLocation" x="620" y="166"/>
         </scene>
-        <!--View Controller-->
+        <!--Edit Video View Controller-->
         <scene sceneID="kDr-ip-hbM">
             <objects>
-                <viewController id="Azy-Il-cdY" sceneMemberID="viewController">
+                <viewController automaticallyAdjustsScrollViewInsets="NO" id="Azy-Il-cdY" customClass="SCEditVideoViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="uzG-V3-BU9">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" id="ipD-EX-VrC">
+                                <rect key="frame" x="0.0" y="418" width="320" height="150"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                            </scrollView>
+                            <view contentMode="scaleToFill" id="zj9-0c-5NH" customClass="SCVideoPlayerView">
+                                <rect key="frame" x="0.0" y="65" width="320" height="354"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="0Dg-tt-Yb9">
+                                <rect key="frame" x="236" y="75" width="70" height="39"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Delete">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="deletePressed:" destination="Azy-Il-cdY" eventType="touchUpInside" id="OpZ-FK-NbG"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="bDI-4N-VIx"/>
+                    <connections>
+                        <outlet property="scrollView" destination="ipD-EX-VrC" id="49S-fo-D3A"/>
+                        <outlet property="videoPlayerView" destination="zj9-0c-5NH" id="af8-LO-Ope"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ryv-Ax-lhC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

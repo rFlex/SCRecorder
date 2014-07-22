@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 
 @interface SCBlurOverlayView : UIView
+
 @property (nonatomic, assign) CGFloat radius;
 @property (nonatomic, assign) CGPoint circleCenter;
+
 @end

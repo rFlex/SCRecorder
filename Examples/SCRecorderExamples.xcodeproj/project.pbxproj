@@ -17,7 +17,6 @@
 		DC7F375018FC2AF700D54901 /* SCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7F374818FC2AF700D54901 /* SCAppDelegate.m */; };
 		DC7F375118FC2AF700D54901 /* SCAudioRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7F374918FC2AF700D54901 /* SCAudioRecordViewController.m */; };
 		DC7F375218FC2AF700D54901 /* SCBlurOverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7F374A18FC2AF700D54901 /* SCBlurOverlayView.m */; };
-		DC7F375318FC2AF700D54901 /* SCCameraFocusTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7F374B18FC2AF700D54901 /* SCCameraFocusTargetView.m */; };
 		DC7F375418FC2AF700D54901 /* SCImageDisplayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7F374C18FC2AF700D54901 /* SCImageDisplayerViewController.m */; };
 		DC7F375518FC2AF700D54901 /* SCTouchDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7F374D18FC2AF700D54901 /* SCTouchDetector.m */; };
 		DC7F375618FC2AF700D54901 /* SCVideoPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7F374E18FC2AF700D54901 /* SCVideoPlayerViewController.m */; };
@@ -37,6 +36,8 @@
 		DC88B924196E1F86005D953E /* blitch.cisf in Resources */ = {isa = PBXBuildFile; fileRef = DC88B923196E1F86005D953E /* blitch.cisf */; };
 		DC891813192EA63B006FAE71 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC891810192EA623006FAE71 /* libSCRecorder.a */; };
 		DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCB0416C19253FB800D945D2 /* GLKit.framework */; };
+		DCB69AB5197EE31300AF667A /* SCEditVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */; };
+		DCB69AB8197EE37300AF667A /* SCVideoViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB69AB7197EE37300AF667A /* SCVideoViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,7 +72,6 @@
 		DC7F374018FC2AEB00D54901 /* SCAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCAppDelegate.h; sourceTree = "<group>"; };
 		DC7F374118FC2AEB00D54901 /* SCAudioRecordViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCAudioRecordViewController.h; sourceTree = "<group>"; };
 		DC7F374218FC2AEB00D54901 /* SCBlurOverlayView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCBlurOverlayView.h; sourceTree = "<group>"; };
-		DC7F374318FC2AEB00D54901 /* SCCameraFocusTargetView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCCameraFocusTargetView.h; sourceTree = "<group>"; };
 		DC7F374418FC2AEB00D54901 /* SCImageDisplayerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCImageDisplayerViewController.h; sourceTree = "<group>"; };
 		DC7F374518FC2AEB00D54901 /* SCTouchDetector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCTouchDetector.h; sourceTree = "<group>"; };
 		DC7F374618FC2AEB00D54901 /* SCVideoPlayerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCVideoPlayerViewController.h; sourceTree = "<group>"; };
@@ -79,7 +79,6 @@
 		DC7F374818FC2AF700D54901 /* SCAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCAppDelegate.m; sourceTree = "<group>"; };
 		DC7F374918FC2AF700D54901 /* SCAudioRecordViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCAudioRecordViewController.m; sourceTree = "<group>"; };
 		DC7F374A18FC2AF700D54901 /* SCBlurOverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCBlurOverlayView.m; sourceTree = "<group>"; };
-		DC7F374B18FC2AF700D54901 /* SCCameraFocusTargetView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCCameraFocusTargetView.m; sourceTree = "<group>"; };
 		DC7F374C18FC2AF700D54901 /* SCImageDisplayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCImageDisplayerViewController.m; sourceTree = "<group>"; };
 		DC7F374D18FC2AF700D54901 /* SCTouchDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCTouchDetector.m; sourceTree = "<group>"; };
 		DC7F374E18FC2AF700D54901 /* SCVideoPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCVideoPlayerViewController.m; sourceTree = "<group>"; };
@@ -99,6 +98,10 @@
 		DC88B923196E1F86005D953E /* blitch.cisf */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = blitch.cisf; sourceTree = "<group>"; };
 		DC89180A192EA622006FAE71 /* SCRecorder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SCRecorder.xcodeproj; path = ../Library/SCRecorder.xcodeproj; sourceTree = "<group>"; };
 		DCB0416C19253FB800D945D2 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		DCB69AB3197EE31300AF667A /* SCEditVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCEditVideoViewController.h; sourceTree = "<group>"; };
+		DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCEditVideoViewController.m; sourceTree = "<group>"; };
+		DCB69AB6197EE37300AF667A /* SCVideoViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCVideoViewCell.h; sourceTree = "<group>"; };
+		DCB69AB7197EE37300AF667A /* SCVideoViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCVideoViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,22 +153,13 @@
 		DC7F371118FC2A0D00D54901 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				DCB69ABD197EE8D900AF667A /* ImageVC */,
+				DCB69ABC197EE89E00AF667A /* VideoPlayerVC */,
+				DCB69ABB197EE89A00AF667A /* EditVideoVC */,
+				DCB69ABA197EE89100AF667A /* AudioVC */,
+				DCB69AB9197EE88300AF667A /* CameraVC */,
 				DC7F374818FC2AF700D54901 /* SCAppDelegate.m */,
-				DC7F374918FC2AF700D54901 /* SCAudioRecordViewController.m */,
-				DC7F374A18FC2AF700D54901 /* SCBlurOverlayView.m */,
-				DC7F374B18FC2AF700D54901 /* SCCameraFocusTargetView.m */,
-				DC7F374C18FC2AF700D54901 /* SCImageDisplayerViewController.m */,
-				DC7F374D18FC2AF700D54901 /* SCTouchDetector.m */,
-				DC7F374E18FC2AF700D54901 /* SCVideoPlayerViewController.m */,
-				DC7F374F18FC2AF700D54901 /* SCRecorderViewController.m */,
 				DC7F374018FC2AEB00D54901 /* SCAppDelegate.h */,
-				DC7F374118FC2AEB00D54901 /* SCAudioRecordViewController.h */,
-				DC7F374218FC2AEB00D54901 /* SCBlurOverlayView.h */,
-				DC7F374318FC2AEB00D54901 /* SCCameraFocusTargetView.h */,
-				DC7F374418FC2AEB00D54901 /* SCImageDisplayerViewController.h */,
-				DC7F374518FC2AEB00D54901 /* SCTouchDetector.h */,
-				DC7F374618FC2AEB00D54901 /* SCVideoPlayerViewController.h */,
-				DC7F374718FC2AEB00D54901 /* SCRecorderViewController.h */,
 				DC7F372318FC2A0D00D54901 /* Images.xcassets */,
 				DC7F371218FC2A0D00D54901 /* Supporting Files */,
 			);
@@ -204,6 +198,57 @@
 				DC891812192EA623006FAE71 /* SCRecorderMac.framework */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DCB69AB9197EE88300AF667A /* CameraVC */ = {
+			isa = PBXGroup;
+			children = (
+				DC7F374D18FC2AF700D54901 /* SCTouchDetector.m */,
+				DC7F374518FC2AEB00D54901 /* SCTouchDetector.h */,
+				DC7F374F18FC2AF700D54901 /* SCRecorderViewController.m */,
+				DC7F374718FC2AEB00D54901 /* SCRecorderViewController.h */,
+			);
+			name = CameraVC;
+			sourceTree = "<group>";
+		};
+		DCB69ABA197EE89100AF667A /* AudioVC */ = {
+			isa = PBXGroup;
+			children = (
+				DC7F374918FC2AF700D54901 /* SCAudioRecordViewController.m */,
+				DC7F374118FC2AEB00D54901 /* SCAudioRecordViewController.h */,
+			);
+			name = AudioVC;
+			sourceTree = "<group>";
+		};
+		DCB69ABB197EE89A00AF667A /* EditVideoVC */ = {
+			isa = PBXGroup;
+			children = (
+				DCB69AB6197EE37300AF667A /* SCVideoViewCell.h */,
+				DCB69AB7197EE37300AF667A /* SCVideoViewCell.m */,
+				DCB69AB3197EE31300AF667A /* SCEditVideoViewController.h */,
+				DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */,
+			);
+			name = EditVideoVC;
+			sourceTree = "<group>";
+		};
+		DCB69ABC197EE89E00AF667A /* VideoPlayerVC */ = {
+			isa = PBXGroup;
+			children = (
+				DC7F374E18FC2AF700D54901 /* SCVideoPlayerViewController.m */,
+				DC7F374618FC2AEB00D54901 /* SCVideoPlayerViewController.h */,
+			);
+			name = VideoPlayerVC;
+			sourceTree = "<group>";
+		};
+		DCB69ABD197EE8D900AF667A /* ImageVC */ = {
+			isa = PBXGroup;
+			children = (
+				DC7F374A18FC2AF700D54901 /* SCBlurOverlayView.m */,
+				DC7F374218FC2AEB00D54901 /* SCBlurOverlayView.h */,
+				DC7F374C18FC2AF700D54901 /* SCImageDisplayerViewController.m */,
+				DC7F374418FC2AEB00D54901 /* SCImageDisplayerViewController.h */,
+			);
+			name = ImageVC;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -310,10 +355,11 @@
 				DC7F375018FC2AF700D54901 /* SCAppDelegate.m in Sources */,
 				DC7F375618FC2AF700D54901 /* SCVideoPlayerViewController.m in Sources */,
 				DC7F375118FC2AF700D54901 /* SCAudioRecordViewController.m in Sources */,
+				DCB69AB8197EE37300AF667A /* SCVideoViewCell.m in Sources */,
 				DC7F375518FC2AF700D54901 /* SCTouchDetector.m in Sources */,
 				DC7F375718FC2AF700D54901 /* SCRecorderViewController.m in Sources */,
 				DC7F375218FC2AF700D54901 /* SCBlurOverlayView.m in Sources */,
-				DC7F375318FC2AF700D54901 /* SCCameraFocusTargetView.m in Sources */,
+				DCB69AB5197EE31300AF667A /* SCEditVideoViewController.m in Sources */,
 				DC7F375418FC2AF700D54901 /* SCImageDisplayerViewController.m in Sources */,
 				DC7F371818FC2A0D00D54901 /* main.m in Sources */,
 			);

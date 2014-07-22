@@ -7,6 +7,7 @@
 //
 
 #import "SCVideoPlayerViewController.h"
+#import "SCEditVideoViewController.h"
 
 @interface SCVideoPlayerViewController () {
     SCPlayer *_player;
@@ -55,13 +56,26 @@
     self.filterSwitcherView.player = _player;
     
 	_player.shouldLoop = YES;
-	[_player play];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
     [_player setItemByAsset:_recordSession.assetRepresentingRecordSegments];
+	[_player play];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    
+    [_player pause];
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.destinationViewController isKindOfClass:[SCEditVideoViewController class]]) {
+        SCEditVideoViewController *editVideo = segue.destinationViewController;
+        editVideo.recordSession = self.recordSession;
+    }
 }
 
 - (void)saveToCameraRoll {

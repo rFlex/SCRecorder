@@ -27,7 +27,6 @@
 @implementation SCVideoPlayerView
 
 @synthesize player;
-@synthesize playerLayer;
 
 - (id) init {
 	self = [super init];
@@ -51,13 +50,12 @@
     return self;
 }
 
-- (void) dealloc {
+- (void)dealloc {
     [self.player pause];
-	self.playerLayer.player = nil;
     self.player.outputView = nil;
 }
 
-- (id) initWithCoder:(NSCoder *)aDecoder {
+- (id)initWithCoder:(NSCoder *)aDecoder {
 	self = [super initWithCoder:aDecoder];
 	
 	if (self) {
@@ -67,7 +65,7 @@
 	return self;
 }
 
-- (void) commonInit {
+- (void)commonInit {
     if (_player == nil) {
         _player = [SCPlayer player];
     }
@@ -86,19 +84,18 @@
 	self.loadingView.hidden = YES;
 }
 
-- (void) videoPlayer:(SCPlayer *)videoPlayer didPlay:(Float64)secondsElapsed loopsCount:(NSInteger)loopsCount {
+- (void)videoPlayer:(SCPlayer *)videoPlayer didPlay:(Float64)secondsElapsed loopsCount:(NSInteger)loopsCount {
     
 }
 
-- (void) videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem *)item {
-//	self.loadingView.hidden = item == nil;
+- (void)videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem *)item {
+    
 }
 
 - (void) layoutSubviews {
 	[super layoutSubviews];
 	
     [self.player resizePlayerLayerToFitOutputView];
-	self.playerLayer.frame = self.bounds;
 	self.loadingView.frame = self.bounds;
 }
 

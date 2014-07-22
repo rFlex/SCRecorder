@@ -20,15 +20,6 @@
 
 @implementation SCAudioRecordViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
-
 - (void)dealloc {
     [self.player endSendingPlayMessages];
 }
@@ -56,12 +47,6 @@
 
 - (void)showError:(NSError*)error {
       [[[UIAlertView alloc] initWithTitle:@"Something went wrong" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 - (IBAction)recordPressed:(id)sender {
@@ -153,4 +138,5 @@
     self.fileUrl = nil;
     [self hidePlayControl:YES];
 }
+
 @end

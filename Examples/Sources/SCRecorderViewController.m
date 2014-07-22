@@ -17,8 +17,6 @@
 #import "SCRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 
-#import "SCCameraFocusTargetView.h"
-
 #define kVideoPreset AVCaptureSessionPresetHigh
 
 ////////////////////////////////////////////////////////////
