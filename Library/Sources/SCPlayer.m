@@ -42,6 +42,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 	self = [super init];
 	
 	if (self) {
+        NSLog(@"Allocated SCPlayer");
         self.shouldLoop = NO;
 
 		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
@@ -56,6 +57,9 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void)dealloc {
+    NSLog(@"Deallocated SCPlayer");
+    [self endSendingPlayMessages];
+
     self.outputView = nil;
     [self unsetupVideoOutput:self.currentItem];
     [self removeObserver:self forKeyPath:@"currentItem"];
@@ -65,9 +69,11 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 
 - (void)beginSendingPlayMessages {
     [self endSendingPlayMessages];
-    __block SCPlayer * mySelf = self;
+    __weak SCPlayer *myWeakSelf = self;
     
     self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:nil usingBlock:^(CMTime time) {
+        NSLog(@"Tcho tcho");
+        SCPlayer *mySelf = myWeakSelf;
         id<SCPlayerDelegate> delegate = mySelf.delegate;
         if ([delegate respondsToSelector:@selector(videoPlayer:didPlay:loopsCount:)]) {
             Float64 ratio = 1.0 / mySelf.itemsLoopLength;

@@ -16,6 +16,7 @@
 @interface SCVideoPlayerView() {
 	UIView * _loadingView;
     SCPlayer *_player;
+    BOOL _holdPlayer;
 }
 
 @end
@@ -25,8 +26,6 @@
 /////////////////////
 
 @implementation SCVideoPlayerView
-
-@synthesize player;
 
 - (id) init {
 	self = [super init];
@@ -51,8 +50,12 @@
 }
 
 - (void)dealloc {
-    [self.player pause];
     self.player.outputView = nil;
+    
+    if (_holdPlayer) {
+        [self.player pause];
+        [self.player endSendingPlayMessages];
+    }
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
@@ -68,6 +71,7 @@
 - (void)commonInit {
     if (_player == nil) {
         _player = [SCPlayer player];
+        _holdPlayer = YES;
     }
     
     self.player.outputView = self;
