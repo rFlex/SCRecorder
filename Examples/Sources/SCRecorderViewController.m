@@ -9,11 +9,11 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import "SCTouchDetector.h"
-#import "SCViewController.h"
+#import "SCRecorderViewController.h"
 #import "SCAudioTools.h"
 #import "SCVideoPlayerViewController.h"
 #import "SCRecorderFocusView.h"
-#import "SCImageViewDisPlayViewController.h"
+#import "SCImageDisplayerViewController.h"
 #import "SCRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 
@@ -25,8 +25,10 @@
 // PRIVATE DEFINITION
 /////////////////////
 
-@interface SCViewController () {
+@interface SCRecorderViewController () {
     SCRecorder *_recorder;
+    UIImage *_photo;
+    SCRecordSession *_recordSession;
 }
 
 @property (strong, nonatomic) SCRecorderFocusView *focusView;
@@ -36,7 +38,7 @@
 // IMPLEMENTATION
 /////////////////////
 
-@implementation SCViewController
+@implementation SCRecorderViewController
 
 #pragma mark - UIViewController 
 
@@ -77,10 +79,6 @@
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
-//        if ([_recorder setActiveFormatThatSupportsFrameRate:120 width:1280 andHeight:720 error:nil]) {
-//            _recorder.frameRate = 30;
-//        }
-        
         NSLog(@"==== Opened session ====");
         NSLog(@"Session error: %@", sessionError.description);
         NSLog(@"Audio error : %@", audioError.description);
@@ -100,21 +98,27 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
 	self.navigationController.navigationBarHidden = YES;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
-    if (_recorder.isCaptureSessionOpened) {
-        [_recorder startRunningSession];
-    }
+    [_recorder startRunningSession];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [_recorder endRunningSession];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-	[super viewDidDisappear:animated];
+    [super viewDidDisappear:animated];
     
-    [_recorder endRunningSession];
+    self.navigationController.navigationBarHidden = NO;
 }
 
 - (void)updateLabelForSecond:(Float64)totalRecorded {
@@ -141,17 +145,24 @@
     [alertView show];
 }
 
-- (void)showVideo:(AVAsset*)asset {
-	SCVideoPlayerViewController * videoPlayerViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SCVideoPlayerViewController"];
-	videoPlayerViewController.asset = asset;
-    
-	[self.navigationController pushViewController:videoPlayerViewController animated:YES];
+- (void)showVideo {
+    [self performSegueWithIdentifier:@"Video" sender:self];
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.destinationViewController isKindOfClass:[SCVideoPlayerViewController class]]) {
+        SCVideoPlayerViewController *videoPlayer = segue.destinationViewController;
+        videoPlayer.recordSession = _recordSession;
+    } else if ([segue.destinationViewController isKindOfClass:[SCImageDisplayerViewController class]]) {
+        SCImageDisplayerViewController *imageDisplayer = segue.destinationViewController;
+        imageDisplayer.photo = _photo;
+        _photo = nil;
+    }
 }
 
 - (void)showPhoto:(UIImage *)photo {
-    SCImageViewDisPlayViewController *sc_imageViewDisPlayViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SCImageViewDisPlayViewController"];
-    sc_imageViewDisPlayViewController.photo = photo;
-    [self.navigationController pushViewController:sc_imageViewDisPlayViewController animated:YES];
+    _photo = photo;
+    [self performSegueWithIdentifier:@"Photo" sender:self];
 }
 
 - (void) handleReverseCameraTapped:(id)sender {
@@ -169,8 +180,8 @@
 - (void)finishSession:(SCRecordSession *)recordSession {
     _recorder.recordSession = nil;
     [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
-//        [recordSession saveToCameraRoll];
-        [self showVideo:recordSession.assetRepresentingRecordSegments];
+        _recordSession = recordSession;
+        [self showVideo];
         [self prepareCamera];
     }];
 }

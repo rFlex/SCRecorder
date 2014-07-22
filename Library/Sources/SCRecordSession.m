@@ -86,7 +86,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
         self.audioEncodeType = kRecordSessionDefaultAudioFormat;
         
         self.suggestedMaxRecordDuration = kCMTimeInvalid;
-        self.videoShouldKeepOnlyKeyFrames = YES;
+        self.videoShouldKeepOnlyKeyFrames = NO;
         
         _recordSegments = [[NSMutableArray alloc] init];
         
@@ -466,7 +466,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
                 exportPreset = AVAssetExportPresetAppleM4A;
             } else if ([fileType isEqualToString:AVFileTypeMPEG4] || [fileType isEqualToString:AVFileTypeQuickTimeMovie] || [fileType isEqualToString:AVFileTypeAppleM4V]) {
                 // Maybe some others fileTypes support this preset. If you find one that does, please add it in this condition.
-                exportPreset = AVAssetExportPresetPassthrough;
+                exportPreset = AVAssetExportPresetHighestQuality;
             }
         }
         

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5053" systemVersion="13D65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="go9-3b-6zS">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="13D65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="go9-3b-6zS">
     <dependencies>
         <deployment defaultVersion="1792" identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
@@ -61,10 +61,10 @@
             </objects>
             <point key="canvasLocation" x="-417" y="316"/>
         </scene>
-        <!--View Controller-->
+        <!--Recorder View Controller-->
         <scene sceneID="5">
             <objects>
-                <viewController id="2" customClass="SCViewController" sceneMemberID="viewController">
+                <viewController id="2" customClass="SCRecorderViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -221,6 +221,8 @@
                         <outlet property="stopButton" destination="5gb-yz-quo" id="ckH-jh-xcs"/>
                         <outlet property="switchCameraModeButton" destination="Ugv-l0-Q37" id="WNC-Z2-vod"/>
                         <outlet property="timeRecordedLabel" destination="cCO-VC-azk" id="8mA-ME-xof"/>
+                        <segue destination="VeQ-Zi-V20" kind="push" identifier="Video" id="VWL-Hy-oc2"/>
+                        <segue destination="n4i-ZU-lEg" kind="push" identifier="Photo" id="Z4i-n8-Da2"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4" sceneMemberID="firstResponder"/>
@@ -240,6 +242,16 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="4Gb-KL-h8b">
+                                <rect key="frame" x="212" y="80" width="88" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Edit video">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <segue destination="Azy-Il-cdY" kind="push" id="GPx-tQ-z5r"/>
+                                </connections>
+                            </button>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Swipe to change the filter" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="J9p-bW-bhk">
                                 <rect key="frame" x="30" y="503" width="270" height="39"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
@@ -250,6 +262,8 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
+                    <navigationItem key="navigationItem" id="n7L-mL-T48"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
                         <outlet property="filterSwitcherView" destination="vYn-vb-aBd" id="UTW-5m-3hq"/>
                     </connections>
@@ -257,6 +271,21 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aQF-XH-HvG" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="620" y="166"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="kDr-ip-hbM">
+            <objects>
+                <viewController id="Azy-Il-cdY" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="uzG-V3-BU9">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="bDI-4N-VIx"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ryv-Ax-lhC" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1100" y="166"/>
         </scene>
         <!--Audio Record View Controller-->
         <scene sceneID="4ds-US-klh">
@@ -364,10 +393,10 @@
             </objects>
             <point key="canvasLocation" x="130" y="792"/>
         </scene>
-        <!--Image View Dis Play View Controller-->
+        <!--Image Displayer View Controller-->
         <scene sceneID="Tj9-NG-6ch">
             <objects>
-                <viewController storyboardIdentifier="SCImageViewDisPlayViewController" id="n4i-ZU-lEg" customClass="SCImageViewDisPlayViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SCImageViewDisPlayViewController" id="n4i-ZU-lEg" customClass="SCImageDisplayerViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="6sY-Dg-LS2">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -379,13 +408,14 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
+                    <navigationItem key="navigationItem" id="hOj-oO-IGn"/>
                     <connections>
                         <outlet property="disPlayImageView" destination="iXT-X6-7PH" id="jnS-Zm-i4i"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4oW-9Q-aD6" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="620" y="792"/>
+            <point key="canvasLocation" x="620" y="831"/>
         </scene>
     </scenes>
     <resources>

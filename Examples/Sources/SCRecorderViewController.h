@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "SCRecorder.h"
 
-@interface SCViewController : UIViewController<SCRecorderDelegate>
+@interface SCRecorderViewController : UIViewController<SCRecorderDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *recordView;
 @property (weak, nonatomic) IBOutlet UIButton *stopButton;
@@ -20,10 +20,11 @@
 @property (weak, nonatomic) IBOutlet UIView *downBar;
 @property (weak, nonatomic) IBOutlet UIButton *switchCameraModeButton;
 @property (weak, nonatomic) IBOutlet UIButton *reverseCamera;
+@property (weak, nonatomic) IBOutlet UIButton *flashModeButton;
+@property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;
+
 - (IBAction)switchCameraMode:(id)sender;
 - (IBAction)switchFlash:(id)sender;
-@property (weak, nonatomic) IBOutlet UIButton *flashModeButton;
-
 - (IBAction)capturePhoto:(id)sender;
-@property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;
+
 @end

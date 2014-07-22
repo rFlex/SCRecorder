@@ -108,11 +108,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Convenient way to create a recorder
 + (SCRecorder*)recorder;
 
-// Start the camera session
+// Create the camera session
 // Calling this method will set the captureSession and configure it properly
+// This takes a completionHandler as a convenience for all those errors that can happen, but the method is actually called synchronously
 - (void)openSession:(void(^)(NSError *sessionError, NSError * audioError, NSError * videoError, NSError *photoError))completionHandler;
 
-// Close the session set in the captureSession
+// Close the camera session
 - (void)closeSession;
 
 // Start the flow of inputs in the captureSession
@@ -127,7 +128,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Offer a way to configure multiple things at once
 // You can call multiple beginSessionConfiguration recursively
 // Each call of beginSessionConfiguration must be followed by a commitSessionConfiguration at some point
-// Only the latest commitSessionConfiguration will in fact actually commit the configuration
+// Only the latest commitSessionConfiguration will effectively commit the configuration
 - (void)beginSessionConfiguration;
 - (void)commitSessionConfiguration;
 

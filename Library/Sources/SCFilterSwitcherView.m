@@ -128,9 +128,9 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     _selectFilterScrollView.hidden = _disabled;
     SCPlayer *player = _player;
     
-    player.useCoreImageView = !_disabled;
-    player.outputView = _disabled ? self : nil;
     player.SCImageView = _disabled ? nil : _cameraImageView;
+    player.outputView = _disabled ? self : nil;
+    player.useCoreImageView = !_disabled;
 }
 
 - (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {

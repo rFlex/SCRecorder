@@ -8,7 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SCImageViewDisPlayViewController : UIViewController
+@interface SCImageDisplayerViewController : UIViewController
+
 @property (nonatomic, strong) UIImage *photo;
 @property (weak, nonatomic) IBOutlet UIImageView *disPlayImageView;
 

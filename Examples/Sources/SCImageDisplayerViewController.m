@@ -6,16 +6,16 @@
 //  Copyright (c) 2013年 rFlex. All rights reserved.
 //
 
-#import "SCImageViewDisPlayViewController.h"
+#import "SCImageDisplayerViewController.h"
 #import "SCBlurOverlayView.h"
 
-@interface SCImageViewDisPlayViewController ()
+@interface SCImageDisplayerViewController ()
 @property (strong, nonatomic) SCBlurOverlayView *blurOverlayView;
 @property (assign, nonatomic) BOOL hasBlur;
 @property (assign, nonatomic) CGFloat radius;
 @end
 
-@implementation SCImageViewDisPlayViewController
+@implementation SCImageDisplayerViewController
 
 #pragma mark - Propertys
 
