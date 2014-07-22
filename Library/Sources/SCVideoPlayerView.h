@@ -23,7 +23,6 @@
 
 @property (readonly, nonatomic) SCPlayer * player;
 @property (weak, nonatomic) id<SCVideoPlayerViewDelegate> delegate;
-@property (strong, nonatomic, readwrite) UIView *loadingView;
 @property (assign, nonatomic) BOOL tapToPauseEnabled;
 
 - (id)initWithPlayer:(SCPlayer *)player;

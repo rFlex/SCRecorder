@@ -18,8 +18,6 @@
 @optional
 
 - (void)videoPlayer:(SCPlayer*)videoPlayer didPlay:(Float64)secondsElapsed loopsCount:(NSInteger)loopsCount;
-- (void)videoPlayer:(SCPlayer *)videoPlayer didStartLoadingAtItemTime:(CMTime)itemTime;
-- (void)videoPlayer:(SCPlayer *)videoPlayer didEndLoadingAtItemTime:(CMTime)itemTime;
 - (void)videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem*)item;
 - (void)player:(SCPlayer *)player didReachEndForItem:(AVPlayerItem *)item;
 
@@ -80,6 +78,5 @@
 - (CMTime)itemDuration;
 - (CMTime)playableDuration;
 - (BOOL)isPlaying;
-- (BOOL)isLoading;
 
 @end

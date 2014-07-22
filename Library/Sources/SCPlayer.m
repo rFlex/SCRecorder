@@ -13,7 +13,6 @@
 /////////////////////
 
 @interface SCPlayer() <AVPlayerItemOutputPullDelegate, AVPlayerItemOutputPushDelegate> {
-	BOOL _loading;
     BOOL _shouldLoop;
     CADisplayLink *_displayLink;
     AVPlayerItemVideoOutput *_videoOutput;
@@ -22,7 +21,6 @@
 }
 
 @property (strong, nonatomic, readwrite) AVPlayerItem * oldItem;
-@property (assign, nonatomic, readwrite, getter=isLoading) BOOL loading;
 @property (assign, nonatomic) Float64 itemsLoopLength;
 @property (strong, nonatomic, readwrite) id timeObserver;
 
@@ -46,7 +44,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 
 		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
 		
-		_loading = NO;
         _autoCreateSCImageView = YES;
 		
 		self.minimumBufferedTimeBeforePlaying = CMTimeMake(2, 1);
@@ -110,38 +107,12 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 	if ([keyPath isEqualToString:@"currentItem"]) {
 		[self initObserver];
 	} else {
-		if (object == self.currentItem) {
-			if ([keyPath isEqualToString:@"playbackBufferEmpty"]) {
-				if (!self.isLoading) {
-					self.loading = YES;
-				}
-			} else {
-				CMTime playableDuration = [self playableDuration];
-				CMTime minimumTime = self.minimumBufferedTimeBeforePlaying;
-				CMTime itemTime = self.currentItem.duration;
-				
-				if (CMTIME_COMPARE_INLINE(minimumTime, >, itemTime)) {
-					minimumTime = itemTime;
-				}
-                
-				if (CMTIME_COMPARE_INLINE(playableDuration, >=, minimumTime)) {
-					if ([self isPlaying]) {
-						[self play];
-					}
-					if (self.isLoading) {
-						self.loading = NO;
-					}
-				}
-			}
-		}
+		
 	}
 }
 
 - (void)removeOldObservers {
     if (self.oldItem != nil) {
-		[self.oldItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
-		[self.oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
-		
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.oldItem];
         
         [self unsetupVideoOutput:self.oldItem];
@@ -310,10 +281,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 	[self removeOldObservers];
 	
 	if (self.currentItem != nil) {
-		[self.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:NSKeyValueObservingOptionNew context:nil];
-		[self.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:
-		 NSKeyValueObservingOptionNew context:nil];
-		
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
         self.oldItem = self.currentItem;
         
@@ -324,7 +291,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 	if ([delegate respondsToSelector:@selector(videoPlayer:didChangeItem:)]) {
 		[delegate videoPlayer:self didChangeItem:self.currentItem];
 	}
-    self.loading = YES;
 }
 
 - (void)play {
@@ -404,22 +370,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (BOOL)isPlaying {
-	return currentSCVideoPlayer == self;
-}
-
-- (void)setLoading:(BOOL)loading {
-	_loading = loading;
-	
-    id<SCPlayerDelegate> delegate = self.delegate;
-	if (loading) {
-		if ([delegate respondsToSelector:@selector(videoPlayer:didStartLoadingAtItemTime:)]) {
-			[delegate videoPlayer:self didStartLoadingAtItemTime:self.currentItem.currentTime];
-		}
-	} else {
-		if ([delegate respondsToSelector:@selector(videoPlayer:didEndLoadingAtItemTime:)]) {
-			[delegate videoPlayer:self didEndLoadingAtItemTime:self.currentItem.currentTime];
-		}
-	}
+    return self.rate > 0;
 }
 
 - (BOOL)shouldLoop {

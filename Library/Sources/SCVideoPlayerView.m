@@ -81,14 +81,6 @@
 	self.clipsToBounds = YES;
 }
 
-- (void) videoPlayer:(SCPlayer *)videoPlayer didStartLoadingAtItemTime:(CMTime)itemTime {
-	self.loadingView.hidden = NO;
-}
-
-- (void) videoPlayer:(SCPlayer *)videoPlayer didEndLoadingAtItemTime:(CMTime)itemTime {
-	self.loadingView.hidden = YES;
-}
-
 - (void)videoPlayer:(SCPlayer *)videoPlayer didPlay:(Float64)secondsElapsed loopsCount:(NSInteger)loopsCount {
     
 }
@@ -119,19 +111,6 @@
 	[super layoutSubviews];
 	
     [self.player resizePlayerLayerToFitOutputView];
-	self.loadingView.frame = self.bounds;
-}
-
-- (void) setLoadingView:(UIView *)loadingView {
-	if (_loadingView != nil) {
-		[_loadingView removeFromSuperview];
-	}
-	
-	_loadingView = loadingView;
-	
-	if (_loadingView != nil) {
-		[self addSubview:_loadingView];
-	}
 }
 
 - (SCPlayer *)player {
