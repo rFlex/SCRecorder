@@ -37,7 +37,6 @@
 		DC891813192EA63B006FAE71 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC891810192EA623006FAE71 /* libSCRecorder.a */; };
 		DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCB0416C19253FB800D945D2 /* GLKit.framework */; };
 		DCB69AB5197EE31300AF667A /* SCEditVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */; };
-		DCB69AB8197EE37300AF667A /* SCVideoViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB69AB7197EE37300AF667A /* SCVideoViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,8 +99,6 @@
 		DCB0416C19253FB800D945D2 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		DCB69AB3197EE31300AF667A /* SCEditVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCEditVideoViewController.h; sourceTree = "<group>"; };
 		DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCEditVideoViewController.m; sourceTree = "<group>"; };
-		DCB69AB6197EE37300AF667A /* SCVideoViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCVideoViewCell.h; sourceTree = "<group>"; };
-		DCB69AB7197EE37300AF667A /* SCVideoViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCVideoViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -223,8 +220,6 @@
 		DCB69ABB197EE89A00AF667A /* EditVideoVC */ = {
 			isa = PBXGroup;
 			children = (
-				DCB69AB6197EE37300AF667A /* SCVideoViewCell.h */,
-				DCB69AB7197EE37300AF667A /* SCVideoViewCell.m */,
 				DCB69AB3197EE31300AF667A /* SCEditVideoViewController.h */,
 				DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */,
 			);
@@ -355,7 +350,6 @@
 				DC7F375018FC2AF700D54901 /* SCAppDelegate.m in Sources */,
 				DC7F375618FC2AF700D54901 /* SCVideoPlayerViewController.m in Sources */,
 				DC7F375118FC2AF700D54901 /* SCAudioRecordViewController.m in Sources */,
-				DCB69AB8197EE37300AF667A /* SCVideoViewCell.m in Sources */,
 				DC7F375518FC2AF700D54901 /* SCTouchDetector.m in Sources */,
 				DC7F375718FC2AF700D54901 /* SCRecorderViewController.m in Sources */,
 				DC7F375218FC2AF700D54901 /* SCBlurOverlayView.m in Sources */,

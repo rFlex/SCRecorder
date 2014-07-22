@@ -11,10 +11,20 @@
 
 @class SCVideoPlayerView;
 
+@protocol SCVideoPlayerViewDelegate <NSObject>
+
+- (void)videoPlayerViewTappedToPlay:(SCVideoPlayerView *)videoPlayerView;
+
+- (void)videoPlayerViewTappedToPause:(SCVideoPlayerView *)videoPlayerView;
+
+@end
+
 @interface SCVideoPlayerView : UIView<SCPlayerDelegate>
 
 @property (readonly, nonatomic) SCPlayer * player;
+@property (weak, nonatomic) id<SCVideoPlayerViewDelegate> delegate;
 @property (strong, nonatomic, readwrite) UIView *loadingView;
+@property (assign, nonatomic) BOOL tapToPauseEnabled;
 
 - (id)initWithPlayer:(SCPlayer *)player;
 

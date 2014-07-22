@@ -42,7 +42,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 	self = [super init];
 	
 	if (self) {
-        NSLog(@"Allocated SCPlayer");
         self.shouldLoop = NO;
 
 		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
@@ -57,7 +56,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
 }
 
 - (void)dealloc {
-    NSLog(@"Deallocated SCPlayer");
     [self endSendingPlayMessages];
 
     self.outputView = nil;

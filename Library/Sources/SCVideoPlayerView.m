@@ -17,6 +17,7 @@
 	UIView * _loadingView;
     SCPlayer *_player;
     BOOL _holdPlayer;
+    UITapGestureRecognizer *_tapToPauseGesture;
 }
 
 @end
@@ -96,6 +97,24 @@
     
 }
 
+- (void)tapOrPause {
+    id<SCVideoPlayerViewDelegate> delegate = self.delegate;
+    
+    if (self.player.rate == 0) {
+        [self.player play];
+        
+        if ([delegate respondsToSelector:@selector(videoPlayerViewTappedToPlay:)]) {
+            [delegate videoPlayerViewTappedToPlay:self];
+        }
+    } else {
+        [self.player pause];
+        
+        if ([delegate respondsToSelector:@selector(videoPlayerViewTappedToPause:)]) {
+            [delegate videoPlayerViewTappedToPause:self];
+        }
+    }
+}
+
 - (void) layoutSubviews {
 	[super layoutSubviews];
 	
@@ -117,6 +136,24 @@
 
 - (SCPlayer *)player {
     return _player;
+}
+
+- (BOOL)tapToPauseEnabled {
+    return _tapToPauseGesture != nil;
+}
+
+- (void)setTapToPauseEnabled:(BOOL)tapToPauseEnabled {
+    if (tapToPauseEnabled) {
+        if (_tapToPauseGesture == nil) {
+            _tapToPauseGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOrPause)];
+            [self addGestureRecognizer:_tapToPauseGesture];
+        }
+    } else {
+        if (_tapToPauseGesture != nil) {
+            [_tapToPauseGesture.view removeGestureRecognizer:_tapToPauseGesture];
+            _tapToPauseGesture = nil;
+        }
+    }
 }
 
 @end

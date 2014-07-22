@@ -7,7 +7,6 @@
 //
 
 #import "SCEditVideoViewController.h"
-#import "SCVideoViewCell.h"
 
 @interface SCEditVideoViewController () {
     NSMutableArray *_thumbnails;
@@ -21,6 +20,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.videoPlayerView.tapToPauseEnabled = YES;
     self.videoPlayerView.player.shouldLoop = YES;
 }
 
