@@ -67,7 +67,6 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
     __weak SCPlayer *myWeakSelf = self;
     
     self.timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:nil usingBlock:^(CMTime time) {
-        NSLog(@"Tcho tcho");
         SCPlayer *mySelf = myWeakSelf;
         id<SCPlayerDelegate> delegate = mySelf.delegate;
         if ([delegate respondsToSelector:@selector(videoPlayer:didPlay:loopsCount:)]) {
