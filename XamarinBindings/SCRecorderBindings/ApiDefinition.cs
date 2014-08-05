@@ -368,14 +368,6 @@ namespace SCorsin {
 		void DidPlay(SCPlayer player, double secondsElapsed, int loopCount);
 
 		[Abstract]
-		[Export("videoPlayer:didStartLoadingAtItemTime:"), EventArgs("PlayerLoading")]
-		void DidStartLoading(SCPlayer player, CMTime itemItem);
-
-		[Abstract]
-		[Export("videoPlayer:didEndLoadingAtItemTime:"), EventArgs("PlayerLoading")]
-		void DidEndLoading(SCPlayer player, CMTime itemItem);
-
-		[Abstract]
 		[Export("videoPlayer:didChangeItem:"), EventArgs("PlayerChangedItem")]
         void DidChangeItem(SCPlayer player, [NullAllowed] AVPlayerItem item);
 
@@ -428,9 +420,6 @@ namespace SCorsin {
 		[Export("isPlaying")]
 		bool IsPlaying { get; }
 
-		[Export("isLoading")]
-		bool IsLoading { get; }
-
 		[Export("minimumBufferedTimeBeforePlaying")]
 		CMTime MinimumBufferedTimeBeforePlaying { get; set; }
 
@@ -473,10 +462,6 @@ namespace SCorsin {
 
 		[Export("playerLayer")]
 		AVPlayerLayer PlayerLayer { get; }
-
-		[Export("loadingView"), NullAllowed]
-		UIView LoadingView { get; set; }
-
 	}
 
 	[BaseType(typeof(UIView))]

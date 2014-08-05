@@ -176,7 +176,6 @@
 }
 
 - (void)finishSession:(SCRecordSession *)recordSession {
-    _recorder.recordSession = nil;
     [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
         _recordSession = recordSession;
         [self showVideo];
