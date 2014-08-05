@@ -49,6 +49,7 @@
     _selectFilterScrollView.pagingEnabled = YES;
     _selectFilterScrollView.showsHorizontalScrollIndicator = NO;
     _selectFilterScrollView.showsVerticalScrollIndicator = NO;
+    _selectFilterScrollView.backgroundColor = [UIColor clearColor];
     
     _cameraImageView = [[SCImageView alloc] initWithFrame:self.bounds];
     _cameraImageView.delegate = self;
@@ -134,6 +135,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 }
 
 - (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
+
     CIImage *outputImage = view.image;
     if (outputImage != nil) {
         CGRect extent = view.imageSize;
@@ -210,6 +212,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 
 - (void)setImage:(CIImage *)image {
     _cameraImageView.image = image;
+    _cameraImageView.imageSize = [image extent];
     [_cameraImageView setNeedsDisplay];
 }
 

@@ -7,10 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <SCFilterSwitcherView.h>
 
-@interface SCImageDisplayerViewController : UIViewController
+@interface SCImageDisplayerViewController : UIViewController<GLKViewDelegate>
 
 @property (nonatomic, strong) UIImage *photo;
-@property (weak, nonatomic) IBOutlet UIImageView *disPlayImageView;
+@property (weak, nonatomic) IBOutlet SCFilterSwitcherView *filterSwitcherView;
 
 @end
