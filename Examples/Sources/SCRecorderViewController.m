@@ -99,6 +99,7 @@
     [super viewWillAppear:animated];
     
 	self.navigationController.navigationBarHidden = YES;
+    [self updateTimeRecordedLabel];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -117,10 +118,6 @@
     [super viewDidDisappear:animated];
     
     self.navigationController.navigationBarHidden = NO;
-}
-
-- (void)updateLabelForSecond:(Float64)totalRecorded {
-    self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", totalRecorded];
 }
 
 // Focus
@@ -192,7 +189,7 @@
     }
     
 	[self prepareCamera];
-    [self updateLabelForSecond:0];
+    [self updateTimeRecordedLabel];
 }
 
 - (IBAction)switchCameraMode:(id)sender {
@@ -302,8 +299,19 @@
     NSLog(@"End record segment %d: %@", (int)segmentIndex, error);
 }
 
+- (void)updateTimeRecordedLabel {
+    CMTime currentTime = kCMTimeZero;
+    
+    if (_recorder.recordSession != nil) {
+        currentTime = _recorder.recordSession.currentRecordDuration;
+    }
+    
+    self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", CMTimeGetSeconds(currentTime)];
+}
+
 - (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBuffer:(SCRecordSession *)recordSession {
-    self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", CMTimeGetSeconds(recordSession.currentRecordDuration)];
+    [self updateTimeRecordedLabel];
+    
 }
 
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {

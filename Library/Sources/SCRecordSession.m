@@ -38,6 +38,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
     CMTime _lastTimeVideo;
     CMTime _lastTimeAudio;
     CMTime _sessionStartedTime;
+    CMTime _currentRecordDurationWithoutCurrentSegment;
 }
 @end
 
@@ -100,6 +101,8 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
         _lastTime = kCMTimeZero;
         _lastTimeVideo = kCMTimeZero;
         _lastTimeAudio = kCMTimeZero;
+        _currentRecordDurationWithoutCurrentSegment = kCMTimeZero;
+        _currentRecordDuration = kCMTimeZero;
         _videoTimeScale = 1;
         _shouldTrackRecordSegments = YES;
         
@@ -199,6 +202,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
             if ([writer startWriting]) {
                 [writer startSessionAtSourceTime:_lastTime];
                 _sessionStartedTime = _lastTime;
+                _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
                 _recordSegmentReady = YES;
             } else {
                 theError = writer.error;
@@ -328,9 +332,8 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
 }
 
 - (void)recomputeRecordDuration {
-    _lastTime = self.assetRepresentingRecordSegments.duration;
-    _lastTimeAudio = _lastTime;
-    _lastTimeVideo = _lastTime;
+    _currentRecordDurationWithoutCurrentSegment = self.assetRepresentingRecordSegments.duration;
+    [self updateRecordDuration];
 }
 
 - (void)addSegment:(NSURL *)fileUrl {
@@ -552,18 +555,8 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
     }
 }
 
-- (void)updateLastTime:(CMSampleBufferRef)adjustedBuffer duration:(CMTime)duration frameDuration:(CMTime)frameDuration {
-    _lastTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
-    
-    if (CMTIME_IS_VALID(duration)) {
-        _lastTime = CMTimeAdd(_lastTime, duration);
-    } else {
-        if (_videoMaxFrameRate == 0) {
-            _lastTime = CMTimeAdd(_lastTime, frameDuration);
-        } else {
-            _lastTime = CMTimeAdd(_lastTime, CMTimeMake(1, _videoMaxFrameRate));
-        }
-    }
+- (void)updateRecordDuration {
+    _currentRecordDuration = CMTimeAdd(_currentRecordDurationWithoutCurrentSegment, CMTimeSubtract(_lastTime, _sessionStartedTime));
 }
 
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
@@ -586,6 +579,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
             
             if (!CAN_HANDLE_VIDEO) {
                 _lastTime = lastTimeAudio;
+                [self updateRecordDuration];
             }
             
 //            NSLog(@"Appended audio at %f/%f", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(duration));
@@ -616,31 +610,32 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
         CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
         
 //        if (CMTIME_COMPARE_INLINE(lastTimeVideo, >=, _lastTimeVideo)) {
-            if (CMTIME_IS_INVALID(duration)) {
-                if (_videoMaxFrameRate == 0) {
-                    duration = frameDuration;
-                } else {
-                    duration = CMTimeMake(1, _videoMaxFrameRate);
-                }
+        if (CMTIME_IS_INVALID(duration)) {
+            if (_videoMaxFrameRate == 0) {
+                duration = frameDuration;
+            } else {
+                duration = CMTimeMake(1, _videoMaxFrameRate);
             }
-            
-            CMTime computedFrameDuration = duration;
-            
-            if (_videoTimeScale != 1.0) {
-                computedFrameDuration = CMTimeMultiplyByFloat64(computedFrameDuration, _videoTimeScale);
-                _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
-            }
-            
+        }
+        
+        CMTime computedFrameDuration = duration;
+        
+        if (_videoTimeScale != 1.0) {
+            computedFrameDuration = CMTimeMultiplyByFloat64(computedFrameDuration, _videoTimeScale);
+            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
+        }
+        
 //            NSLog(@"%f - Appended video %f (%f)", CMTimeGetSeconds(lastTimeVideo), CMTimeGetSeconds(computedFrameDuration), CMTimeGetSeconds(CMTimeSubtract(lastTimeVideo, _lastTimeVideo)));
         
-            lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
+        lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
         
-            _lastTimeVideo = lastTimeVideo;
-            _lastTime = lastTimeVideo;
-            
-            [_videoInput appendSampleBuffer:adjustedBuffer];
+        _lastTimeVideo = lastTimeVideo;
+        _lastTime = lastTimeVideo;
+        [self updateRecordDuration];
+
+        [_videoInput appendSampleBuffer:adjustedBuffer];
         
-            _currentSegmentHasVideo = YES;
+        _currentSegmentHasVideo = YES;
 //        } else {
 //            NSLog(@"%f - Skipped video", CMTimeGetSeconds(lastTimeVideo));
 //        }
@@ -664,6 +659,10 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
         NSError *error = nil;
         [composition insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofAsset:asset atTime:currentTime error:&error];
         
+        if (error != nil) {
+            NSLog(@"Failed to insert recordSegment at %@: %@", recordSegment, error);
+        }
+        
         currentSegment++;
     }
 
@@ -682,10 +681,6 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
     return _assetWriter != nil;
 }
 
-- (CMTime)currentRecordDuration {
-    return _lastTime;
-}
-
 - (BOOL)recordSegmentReady {
     return _recordSegmentReady;
 }
@@ -695,7 +690,7 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
     
     if (CMTIME_IS_VALID(_suggestedMaxRecordDuration)) {
         Float64 maxRecordDuration = CMTimeGetSeconds(_suggestedMaxRecordDuration);
-        Float64 recordedTime = CMTimeGetSeconds(_lastTime);
+        Float64 recordedTime = CMTimeGetSeconds(_currentRecordDuration);
         
         ratio = (CGFloat)(recordedTime / maxRecordDuration);
     }
