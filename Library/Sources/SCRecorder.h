@@ -62,6 +62,9 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Change the flash mode on the camera
 @property (assign, nonatomic) SCFlashMode flashMode;
 
+// Determine if the device has flash
+@property (assign, nonatomic, readonly) BOOL deviceHasFlash;
+
 // Change the current used device
 @property (assign, nonatomic) AVCaptureDevicePosition device;
 
