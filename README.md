@@ -9,13 +9,10 @@ In short, here is a short list of the cool things you can do:
 - Record multiple video segments
 - Remove any record segment that you don't want
 - Display the result into a convenient video player
+- Save the record session for later somewhere using a serializable NSDictionary (works in NSUserDefaults)
 - Add a video filter using Core Image
 - Merge and export the video using fine tunings that you choose
 
-These classes allow the recording of a video with pause/resume function. Although the project was initially made
-for the sake of taking videos only, you can now take pictures as well with some very useful utility functions
-that make the project totally suitable for a standalone camera engine.
-They are highly configurable, all the classes provide a lot of properties so we are quite sure that it should meet your needs :).
 
 Examples for iOS are provided.
 
