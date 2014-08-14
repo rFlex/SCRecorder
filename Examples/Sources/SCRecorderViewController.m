@@ -16,6 +16,8 @@
 #import "SCImageDisplayerViewController.h"
 #import "SCRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import "SCSessionListViewController.h"
+#import "SCRecordSessionManager.h"
 
 #define kVideoPreset AVCaptureSessionPresetHigh
 
@@ -98,6 +100,8 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    [self prepareCamera];
+    
 	self.navigationController.navigationBarHidden = YES;
     [self updateTimeRecordedLabel];
 }
@@ -152,6 +156,10 @@
         SCImageDisplayerViewController *imageDisplayer = segue.destinationViewController;
         imageDisplayer.photo = _photo;
         _photo = nil;
+    } else if ([segue.destinationViewController isKindOfClass:[SCSessionListViewController class]]) {
+        SCSessionListViewController *sessionListVC = segue.destinationViewController;
+        
+        sessionListVC.recorder = _recorder;
     }
 }
 
@@ -174,6 +182,8 @@
 
 - (void)finishSession:(SCRecordSession *)recordSession {
     [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+        [[SCRecordSessionManager sharedInstance] saveRecordSession:recordSession];
+        
         _recordSession = recordSession;
         [self showVideo];
         [self prepareCamera];
@@ -185,7 +195,13 @@
     
     if (recordSession != nil) {
         _recorder.recordSession = nil;
-        [recordSession cancelSession:nil];
+        
+        // If the recordSession was saved, we don't want to completely destroy it
+        if ([[SCRecordSessionManager sharedInstance] isSaved:recordSession]) {
+            [recordSession endRecordSegment:nil];
+        } else {
+            [recordSession cancelSession:nil];
+        }
     }
     
 	[self prepareCamera];

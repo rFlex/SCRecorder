@@ -17,6 +17,9 @@
 
 extern const NSString *SCRecordSessionSegmentsKey;
 extern const NSString *SCRecordSessionOutputUrlKey;
+extern const NSString *SCRecordSessionDurationKey;
+extern const NSString *SCRecordSessionIdentifierKey;
+extern const NSString *SCRecordSessionDateKey;
 
 @class SCRecordSession;
 @protocol SCRecordSessionDelegate <NSObject>
@@ -27,10 +30,15 @@ extern const NSString *SCRecordSessionOutputUrlKey;
 
 @interface SCRecordSession : NSObject
 
-
 //////////////////
 // GENERAL SETTINGS
 ////
+
+// An unique identifier generated when creating this record session
+@property (readonly, nonatomic) NSString *identifier;
+
+// The date when this record session was created
+@property (readonly, nonatomic) NSDate *date;
 
 // The outputUrl which will be the output file when endSession
 // has been called. The default url is a generated url to the temp directory

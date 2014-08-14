@@ -18,6 +18,9 @@
 
 const NSString *SCRecordSessionSegmentsKey = @"RecordSegments";
 const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
+const NSString *SCRecordSessionDurationKey = @"Duration";
+const NSString *SCRecordSessionIdentifierKey = @"Identifier";
+const NSString *SCRecordSessionDateKey = @"Date";
 
 @interface SCRecordSession() {
     AVAssetWriter *_assetWriter;
@@ -60,11 +63,20 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
             }
             i++;
         }
+        _currentSegmentCount = i;
         NSString *outputUrl = [dictionaryRepresentation objectForKey:SCRecordSessionOutputUrlKey];
         if (outputUrl != nil) {
             self.outputUrl = [NSURL fileURLWithPath:outputUrl];
         }
-        [self recomputeRecordDuration];
+        NSNumber *recordDuration = [dictionaryRepresentation objectForKey:SCRecordSessionDurationKey];
+        if (recordDuration != nil) {
+            _currentRecordDuration = CMTimeMakeWithSeconds(recordDuration.doubleValue, 10000);
+            _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
+        }
+        _identifier = [dictionaryRepresentation objectForKey:SCRecordSessionIdentifierKey];
+        _date = [dictionaryRepresentation objectForKey:SCRecordSessionDateKey];
+        
+//        [self recomputeRecordDuration];
     }
     
     return self;
@@ -105,8 +117,11 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
         _currentRecordDuration = kCMTimeZero;
         _videoTimeScale = 1;
         _shouldTrackRecordSegments = YES;
+        _date = [NSDate date];
         
-        long timeInterval =  (long)[[NSDate date] timeIntervalSince1970];
+        long timeInterval =  (long)[_date timeIntervalSince1970];
+        _identifier = [NSString stringWithFormat:@"%ld", timeInterval];
+        
         self.outputUrl = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%ld%@", NSTemporaryDirectory(), timeInterval, @"SCVideo.mp4"]];
     }
     
@@ -715,7 +730,10 @@ const NSString *SCRecordSessionOutputUrlKey = @"OutputUrl";
     
     return @{
              SCRecordSessionSegmentsKey: recordSegments,
-             SCRecordSessionOutputUrlKey : self.outputUrl.path
+             SCRecordSessionOutputUrlKey : self.outputUrl.path,
+             SCRecordSessionDurationKey : [NSNumber numberWithDouble:CMTimeGetSeconds(self.currentRecordDuration)],
+             SCRecordSessionIdentifierKey : _identifier,
+             SCRecordSessionDateKey : _date
              };
 }
 
