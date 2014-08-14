@@ -755,6 +755,11 @@
     }
 }
 
+- (BOOL)deviceHasFlash {
+    AVCaptureDevice *currentDevice = [self videoDevice];
+    return currentDevice.hasFlash;
+}
+
 - (AVCaptureVideoPreviewLayer*)previewLayer {
     return _previewLayer;
 }
