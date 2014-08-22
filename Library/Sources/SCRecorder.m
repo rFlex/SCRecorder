@@ -193,6 +193,25 @@
 - (void)capturePhoto:(void(^)(NSError*, UIImage*))completionHandler {
     AVCaptureConnection *connection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
     if (connection != nil) {
+    	
+        if ([connection isVideoOrientationSupported]) {
+    
+	     AVCaptureVideoOrientation videoOrientation;
+	     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+	    
+	     if (deviceOrientation == UIDeviceOrientationLandscapeLeft) {
+	          videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
+	     } else if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
+	          videoOrientation = AVCaptureVideoOrientationLandscapeRight;
+	     } else if (deviceOrientation == UIDeviceOrientationPortraitUpsideDown) {
+	          videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+	     } else {
+	          videoOrientation = AVCaptureVideoOrientationPortrait;
+	     }
+	        
+	     connection.videoOrientation = videoOrientation;
+	}
+    
         [_photoOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:
          ^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
              
