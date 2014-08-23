@@ -107,6 +107,13 @@
         
         AVCaptureConnection *photoConnection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
         if ([photoConnection isVideoOrientationSupported]) {
+            // Seems like the photoConnection wants the orientation reversed for some reason I haven't
+            // been able to figure out.
+            if (videoOrientation == AVCaptureVideoOrientationPortrait) {
+                videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+            } else if (videoOrientation == AVCaptureVideoOrientationPortraitUpsideDown) {
+                videoOrientation = AVCaptureVideoOrientationPortrait;
+            }
             photoConnection.videoOrientation = videoOrientation;
         }
     }
