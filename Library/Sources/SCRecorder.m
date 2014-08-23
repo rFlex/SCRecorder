@@ -197,14 +197,19 @@
         if ([connection isVideoOrientationSupported]) {
             AVCaptureVideoOrientation videoOrientation;
             UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
-            if (deviceOrientation == UIDeviceOrientationLandscapeLeft) {
-                videoOrientation = AVCaptureVideoOrientationLandscapeRight;
-            } else if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
-                videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
-            } else if (deviceOrientation == UIDeviceOrientationPortraitUpsideDown) {
-                videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
-            } else {
-                videoOrientation = AVCaptureVideoOrientationPortrait;
+            switch (deviceOrientation) {
+                case UIDeviceOrientationLandscapeLeft:
+                    videoOrientation = AVCaptureVideoOrientationLandscapeRight;
+                    break;
+                case UIDeviceOrientationLandscapeRight:
+                    videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
+                    break;
+                case UIDeviceOrientationPortraitUpsideDown:
+                    videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+                    break;
+                default:
+                    videoOrientation = AVCaptureVideoOrientationPortrait;
+                    break;
             }
             connection.videoOrientation = videoOrientation;
         }
