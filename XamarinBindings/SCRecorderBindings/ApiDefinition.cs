@@ -252,6 +252,12 @@ namespace SCorsin {
 		[Export("videoOrientation")]
 		AVCaptureVideoOrientation VideoOrientation { get; set; }
 
+		[Export("autoSetVideoOrientation")]
+		bool AutoSetVideoOrientation { get; set; }
+
+		[Export("initializeRecordSessionLazily")]
+		bool InitializeRecordSessionLazily { get; set; }
+
 		[Export("frameRate")]
 		int FrameRate { get; set; }
 
@@ -260,6 +266,9 @@ namespace SCorsin {
 
 		[Export("openSession:")]
 		void OpenSession([NullAllowed] OpenSessionDelegate completionHandler);
+
+		[Export("previewViewFrameChanged")]
+		void PreviewViewFrameChanged();
 
 		[Export("closeSession")]
 		void CloseSession();
