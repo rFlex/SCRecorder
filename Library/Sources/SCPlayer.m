@@ -149,7 +149,7 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
             }
             
             CGRect extent = [inputImage extent];
-            
+
             _imageView.imageSize = extent;
             _imageView.image = image;
 //            _imageView.hidden = NO;
@@ -284,6 +284,9 @@ __weak SCPlayer * currentSCVideoPlayer = nil;
         self.oldItem = self.currentItem;
         
         [self setupVideoOutput];
+        if (_useCoreImageView) {
+            [self setupCoreImageView];
+        }
 	}
 
     id<SCPlayerDelegate> delegate = self.delegate;

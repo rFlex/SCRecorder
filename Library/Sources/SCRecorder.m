@@ -37,6 +37,7 @@
         
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
         _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        _initializeRecordSessionLazily = YES;
         
         _videoOrientation = AVCaptureVideoOrientationPortrait;
         
@@ -44,7 +45,7 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionRuntimeError:) name:AVCaptureSessionRuntimeErrorNotification object:self];
-
+        [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification  object:nil];
         
         self.device = AVCaptureDevicePositionBack;
         self.videoEnabled = YES;
@@ -78,8 +79,37 @@
     }
 }
 
+- (void)deviceOrientationChanged:(id)sender {
+    if (_autoSetVideoOrientation) {
+        dispatch_sync(_dispatchQueue, ^{
+            [self updateVideoOrientation];
+        });
+    }
+}
+
 - (void)sessionRuntimeError:(id)sender {
     [self startRunningSession];
+}
+
+- (void)updateVideoOrientation {
+    if (!_recordSession.currentSegmentHasAudio && !_recordSession.currentSegmentHasVideo) {
+        [_recordSession uninitialize];
+        
+        AVCaptureVideoOrientation videoOrientation = [self actualVideoOrientation];
+        AVCaptureConnection *videoConnection = [_videoOutput connectionWithMediaType:AVMediaTypeVideo];
+        
+        if ([videoConnection isVideoOrientationSupported]) {
+            videoConnection.videoOrientation = videoOrientation;
+        }
+        if ([_previewLayer.connection isVideoOrientationSupported]) {
+            _previewLayer.connection.videoOrientation = videoOrientation;
+        }
+        
+        AVCaptureConnection *photoConnection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
+        if ([photoConnection isVideoOrientationSupported]) {
+            photoConnection.videoOrientation = videoOrientation;
+        }
+    }
 }
 
 - (void)beginSessionConfiguration {
@@ -330,6 +360,10 @@
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+    if (_initializeRecordSessionLazily && !_isRecording) {
+        return;
+    }
+    
     SCRecordSession *recordSession = _recordSession;
     
     if (recordSession != nil) {
@@ -480,7 +514,7 @@
     NSError *videoError = nil;
     if (shouldConfigureVideo) {
         [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
-        self.videoOrientation = _videoOrientation;
+        [self updateVideoOrientation];
     }
     
     NSError *audioError = nil;
@@ -512,6 +546,9 @@
     }
 }
 
+- (void)previewViewFrameChanged {
+    _previewLayer.frame = _previewView.bounds;
+}
 
 #pragma mark - FOCUS
 
@@ -682,6 +719,33 @@
 	return nil;
 }
 
+- (AVCaptureVideoOrientation)actualVideoOrientation {
+    AVCaptureVideoOrientation videoOrientation = _videoOrientation;
+    
+    if (_autoSetVideoOrientation) {
+        UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+        
+        switch (deviceOrientation) {
+            case UIDeviceOrientationLandscapeLeft:
+                videoOrientation = AVCaptureVideoOrientationLandscapeRight;
+                break;
+            case UIDeviceOrientationLandscapeRight:
+                videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
+                break;
+            case UIDeviceOrientationPortrait:
+                videoOrientation = AVCaptureVideoOrientationPortrait;
+                break;
+            case UIDeviceOrientationPortraitUpsideDown:
+                videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+                break;
+            default:
+                break;
+        }
+    }
+    
+    return videoOrientation;
+}
+
 - (AVCaptureSession*)captureSession {
     return _captureSession;
 }
@@ -694,7 +758,6 @@
     if (_previewView != nil) {
         _previewLayer.frame = _previewView.bounds;
         [_previewView.layer insertSublayer:_previewLayer atIndex:0];
-        
     }
 }
 

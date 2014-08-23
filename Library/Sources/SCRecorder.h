@@ -97,8 +97,18 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Change the video orientation for the video
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 
+// If this property is true, the videoOrientation property will be set automatically
+// depending on the current device orientation
+// Default is NO
+@property (assign, nonatomic) BOOL autoSetVideoOrientation;
+
 // Change the frame rate for the video
 @property (assign, nonatomic) CMTimeScale frameRate;
+
+// If true, the recorder will initialize the recordSession and create the record segment
+// when asking to record. Otherwise it will do it as soon as possible.
+// Default is YES
+@property (assign, nonatomic) BOOL initializeRecordSessionLazily;
 
 // Focus
 @property (readonly, nonatomic) BOOL focusSupported;
@@ -140,6 +150,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 - (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates;
 
+// Switch to autoFocus
 - (void)autoFocusAtPoint:(CGPoint)point;
 
 // Switch to continuous auto focus mode at the specified point
@@ -161,5 +172,8 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 // Capture a photo from the camera
 - (void)capturePhoto:(void(^)(NSError *error, UIImage *image))completionHandler;
+
+// Signal to the recorder that the previewView frame has changed
+- (void)previewViewFrameChanged;
 
 @end

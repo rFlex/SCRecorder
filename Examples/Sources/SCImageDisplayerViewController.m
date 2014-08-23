@@ -36,7 +36,7 @@
 {
     [super viewDidLoad];
     
-    self.filterSwitcherView.SCImageView.viewMode = SCImageViewModeFillAspectRatio;
+    self.filterSwitcherView.SCImageView.contentMode = UIViewContentModeScaleAspectFit;
     
     self.filterSwitcherView.filterGroups = @[
                                              [NSNull null],

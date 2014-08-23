@@ -39,6 +39,8 @@
 {
     [super viewDidLoad];
     
+    self.filterSwitcherView.SCImageView.contentMode = UIViewContentModeScaleAspectFit;
+    
     self.filterSwitcherView.filterGroups = @[
                                              [NSNull null],
                                              [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectNoir"]],

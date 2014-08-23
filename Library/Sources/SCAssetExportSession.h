@@ -46,10 +46,14 @@ extern NSString *SCAssetExportSessionPresetLowQuality;
 // session preset was set.
 @property (assign, nonatomic) BOOL keepVideoSize;
 
+// If true, the videoTransform property will be ignored and the videoTransform
+// will be the same as the input asset
+@property (assign, nonatomic) BOOL keepVideoTransform;
+
 // If true, the export session will use the GPU for rendering the filters.
 @property (assign, nonatomic) BOOL useGPUForRenderingFilters;
 
-// The transform to use for the video
+// If keepVideoTransform is not true, this will override the transform to use for the video
 @property (assign, nonatomic) CGAffineTransform videoTransform;
 
 // If an error occured during the export, this will contain that error

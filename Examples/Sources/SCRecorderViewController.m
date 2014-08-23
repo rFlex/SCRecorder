@@ -60,6 +60,7 @@
     _recorder.sessionPreset = AVCaptureSessionPreset1280x720;
     _recorder.audioEnabled = YES;
     _recorder.delegate = self;
+    _recorder.autoSetVideoOrientation = YES;
     
     UIView *previewView = self.previewView;
     _recorder.previewView = previewView;
@@ -104,6 +105,12 @@
     
 	self.navigationController.navigationBarHidden = YES;
     [self updateTimeRecordedLabel];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    
+    [_recorder previewViewFrameChanged];
 }
 
 - (void)viewDidAppear:(BOOL)animated {

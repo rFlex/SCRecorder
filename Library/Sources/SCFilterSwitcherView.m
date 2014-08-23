@@ -53,6 +53,7 @@
     
     _cameraImageView = [[SCImageView alloc] initWithFrame:self.bounds];
     _cameraImageView.delegate = self;
+    _cameraImageView.contentMode = self.contentMode;
  
     [self addSubview:_cameraImageView];
     [self addSubview:_selectFilterScrollView];
@@ -135,11 +136,12 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 }
 
 - (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
-
     CIImage *outputImage = view.image;
     if (outputImage != nil) {
+//        NSLog(@"%@", NSStringFromCGAffineTransform(view.transform));
         CGRect extent = view.imageSize;
         CIContext *context = view.ciContext;
+//        NSLog(@"%f/%f/%f/%f", exte);
         
         rect = [view processRect:rect withImageSize:extent.size];
         

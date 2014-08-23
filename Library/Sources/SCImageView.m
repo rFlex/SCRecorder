@@ -38,7 +38,6 @@
 }
 
 - (void)commonInit {
-    self.viewMode = SCImageViewModeFillStretched;
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     
     NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
@@ -50,14 +49,14 @@
 - (CGRect)processRect:(CGRect)rect withImageSize:(CGSize)imageSize {
     rect = [self rectByApplyingContentScale:rect];
     
-    SCImageViewMode mode = self.viewMode;
+    UIViewContentMode mode = self.contentMode;
     
-    if (mode != SCImageViewModeFillStretched) {
+    if (mode != UIViewContentModeScaleToFill) {
         CGFloat horizontalScale = rect.size.width / imageSize.width;
         CGFloat verticalScale = rect.size.height / imageSize.height;
         
-        BOOL shouldResizeWidth = mode == SCImageViewModeFitAspectRatio ? horizontalScale > verticalScale : verticalScale > horizontalScale;
-        BOOL shouldResizeHeight = mode == SCImageViewModeFitAspectRatio ? verticalScale > horizontalScale : horizontalScale > verticalScale;
+        BOOL shouldResizeWidth = mode == UIViewContentModeScaleAspectFit ? horizontalScale > verticalScale : verticalScale > horizontalScale;
+        BOOL shouldResizeHeight = mode == UIViewContentModeScaleAspectFit ? verticalScale > horizontalScale : horizontalScale > verticalScale;
 
         if (shouldResizeWidth) {
             CGFloat newWidth = imageSize.width * verticalScale;

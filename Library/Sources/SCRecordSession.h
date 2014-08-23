@@ -263,6 +263,8 @@ extern const NSString *SCRecordSessionDateKey;
 - (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasAudio:(BOOL)hasAudio error:(NSError **)error;
 - (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasVideo:(BOOL)hasVideo error:(NSError **)error;
 
+- (void)uninitialize;
+
 - (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration;
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
 - (void)makeTimeOffsetDirty;

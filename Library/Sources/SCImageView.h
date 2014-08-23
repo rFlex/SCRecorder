@@ -11,19 +11,12 @@
 #import <Foundation/Foundation.h>
 #import <GLKit/GLKit.h>
 
-typedef enum : NSUInteger {
-    SCImageViewModeFillStretched = 0,
-    SCImageViewModeFillAspectRatio = 1,
-    SCImageViewModeFitAspectRatio = 2
-} SCImageViewMode;
-
 @interface SCImageView : GLKView
 
 @property (strong, nonatomic) CIImage *image;
 @property (assign, nonatomic) CGRect imageSize;
 @property (readonly, nonatomic) CIContext* ciContext;
 @property (readonly, nonatomic) BOOL dirty;
-@property (assign, nonatomic) SCImageViewMode viewMode;
 
 // Make the view dirty, this asks the SCPlayer to render the SCImageView when it can
 - (void)makeDirty;

@@ -243,6 +243,17 @@ const NSString *SCRecordSessionDateKey = @"Date";
     return (NSInteger)((Float32)numPixels * bitsPerPixel);
 }
 
+- (void)uninitialize {
+    [self endRecordSegment:nil];
+    
+    _recorderHasAudio = NO;
+    _recorderHasVideo = NO;
+    _audioInitializationFailed = NO;
+    _videoInitializationFailed = NO;
+    _videoInput = nil;
+    _audioInput = nil;
+}
+
 - (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasAudio:(BOOL)hasAudio error:(NSError *__autoreleasing *)error {
     _recorderHasVideo = YES;
     _recorderHasAudio = hasAudio;
@@ -394,6 +405,12 @@ const NSString *SCRecordSessionDateKey = @"Date";
     }
 }
 
+- (void)_destroyAssetWriter {
+    _currentSegmentHasAudio = NO;
+    _currentSegmentHasVideo = NO;
+    _assetWriter = nil;
+}
+
 - (void)endRecordSegment:(void(^)(NSInteger segmentNumber, NSError* error))completionHandler {
     if (_recordSegmentReady) {
         _recordSegmentReady = NO;
@@ -405,19 +422,20 @@ const NSString *SCRecordSessionDateKey = @"Date";
         
         if (currentSegmentEmpty) {
             [writer cancelWriting];
-            _assetWriter = nil;
+            [self _destroyAssetWriter];
+
             [self removeFile:writer.outputURL];
             
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionHandler != nil) {
+            if (completionHandler != nil) {
+                dispatch_async(dispatch_get_main_queue(), ^{
                     completionHandler(-1, nil);
-                }
-            });
+                });
+            }
         } else {
             [writer endSessionAtSourceTime:_lastTime];
             
             [writer finishWritingWithCompletionHandler: ^{
-                _assetWriter = nil;
+                [self _destroyAssetWriter];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     NSInteger segmentNumber = -1;
                     if (writer.error == nil) {
