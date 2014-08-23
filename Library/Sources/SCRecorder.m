@@ -195,22 +195,19 @@
     if (connection != nil) {
     	
         if ([connection isVideoOrientationSupported]) {
-    
-	     AVCaptureVideoOrientation videoOrientation;
-	     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
-	    
-	     if (deviceOrientation == UIDeviceOrientationLandscapeLeft) {
-	          videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
-	     } else if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
-	          videoOrientation = AVCaptureVideoOrientationLandscapeRight;
-	     } else if (deviceOrientation == UIDeviceOrientationPortraitUpsideDown) {
-	          videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
-	     } else {
-	          videoOrientation = AVCaptureVideoOrientationPortrait;
-	     }
-	        
-	     connection.videoOrientation = videoOrientation;
-	}
+            AVCaptureVideoOrientation videoOrientation;
+            UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+            if (deviceOrientation == UIDeviceOrientationLandscapeLeft) {
+                videoOrientation = AVCaptureVideoOrientationLandscapeRight;
+            } else if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
+                videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
+            } else if (deviceOrientation == UIDeviceOrientationPortraitUpsideDown) {
+                videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+            } else {
+                videoOrientation = AVCaptureVideoOrientationPortrait;
+            }
+            connection.videoOrientation = videoOrientation;
+        }
     
         [_photoOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:
          ^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
