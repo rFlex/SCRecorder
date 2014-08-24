@@ -49,140 +49,257 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
-// Enable the audio, video, and photo
-// Changing these parameters have no effect
-// if the session has been already opened
+/**
+ Enable the audio
+ Changing this parameter has no effect is the session
+ has been already opened
+ */
 @property (assign, nonatomic) BOOL audioEnabled;
+
+/**
+ Enable the video
+ Changing this parameter has no effect is the session
+ has been already opened
+ */
 @property (assign, nonatomic) BOOL videoEnabled;
+
+/**
+ Enable the photo
+ Changing this parameter has no effect is the session
+ has been already opened
+ */
 @property (assign, nonatomic) BOOL photoEnabled;
 
-// Will be YES if the SCRecorder is currently recording
+/**
+ Will be true if the SCRecorder is currently recording
+ */
 @property (readonly, nonatomic) BOOL isRecording;
 
-// Change the flash mode on the camera
+/**
+ Change the flash mode on the camera
+ */
 @property (assign, nonatomic) SCFlashMode flashMode;
 
-// Determine if the device has flash
+
+/**
+ Determine whether the device has flash
+ */
 @property (assign, nonatomic, readonly) BOOL deviceHasFlash;
 
-// Change the current used device
+/**
+ Change the current used device
+ */
 @property (assign, nonatomic) AVCaptureDevicePosition device;
 
-// Get the mode used for the focus
+/**
+ Get the current focus mode used by the camera device
+ */
 @property (readonly, nonatomic) AVCaptureFocusMode focusMode;
 
-// The outputSettings used in the AVCaptureStillImageOutput
+/**
+ The outputSettings used in the AVCaptureStillImageOutput
+ */
 @property (copy, nonatomic) NSDictionary *photoOutputSettings;
 
-// The sessionPreset used for the AVCaptureSession
+/**
+ The session preset used for the AVCaptureSession
+ */
 @property (copy, nonatomic) NSString *sessionPreset;
 
-// The capture session. This property will be null until
-// openSession: has been called. Calling closeSession will set
-// this property to null again.
+/**
+ The captureSession. This will be null until openSession: has
+ been called. Calling closeSession will set this property to null again.
+ */
 @property (readonly, nonatomic) AVCaptureSession *captureSession;
+
+/**
+ Whether the captureSession has been opened.
+ */
 @property (readonly, nonatomic) BOOL isCaptureSessionOpened;
 
-// The previewLayer used for the video preview
+/**
+ The preview layer used for the video preview
+ */
 @property (readonly, nonatomic) AVCaptureVideoPreviewLayer *previewLayer;
 
-// Convenient way to set a view inside the previewLayer
+/**
+ Convenient way to set a view inside the preview layer
+ */
 @property (strong, nonatomic) UIView *previewView;
 
-// Set the delegate used to receive information messages from the recorder
+/**
+ Set the delegate used to receive messages for the SCRecorder
+ */
 @property (weak, nonatomic) id<SCRecorderDelegate> delegate;
 
+/**
+ The record session to which the recorder will flow the camera/microphone buffers
+ */
 @property (strong, nonatomic) SCRecordSession *recordSession;
 
-// Change the video orientation for the video
+/**
+ The video orientation. This is automatically set if autoSetVideoOrientation is enabled
+ */
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 
-// If this property is true, the videoOrientation property will be set automatically
-// depending on the current device orientation
-// Default is NO
+/**
+ If true, the videoOrientation property will be set automatically
+ depending on the current device orientation
+ Default is NO
+ */
 @property (assign, nonatomic) BOOL autoSetVideoOrientation;
 
-// Change the frame rate for the video
+/**
+ The frameRate for the video
+ */
 @property (assign, nonatomic) CMTimeScale frameRate;
 
-// If true, the recorder will initialize the recordSession and create the record segment
-// when asking to record. Otherwise it will do it as soon as possible.
-// Default is YES
+/**
+ If enabled, the recorder will initialize the recordSession and create the record segments
+ when asking to record. Otherwise it will do it as soon as possible.
+ Default is YES
+ */
 @property (assign, nonatomic) BOOL initializeRecordSessionLazily;
 
-// Focus
+/**
+ Whether the focus is supported on the current camera device
+ */
 @property (readonly, nonatomic) BOOL focusSupported;
 
-// If for whatever reasons you need to access the underlying AVCaptureOutputs
+/**
+ The underlying AVCaptureVideoDataOutput
+ */
 @property (readonly, nonatomic) AVCaptureVideoDataOutput *videoOutput;
+
+/**
+ The underlying AVCaptureAudioDataOutput
+ */
 @property (readonly, nonatomic) AVCaptureAudioDataOutput *audioOutput;
+
+/**
+ The underlying AVCaptureStillImageOutput
+ */
 @property (readonly, nonatomic) AVCaptureStillImageOutput *photoOutput;
 
-// Convenient way to create a recorder
+/**
+ Create a recorder
+ @return the newly created recorder
+ */
 + (SCRecorder*)recorder;
 
-// Create the camera session
-// Calling this method will set the captureSession and configure it properly
-// This takes a completionHandler as a convenience for all those errors that can happen, but the method is actually called synchronously
+/**
+ Create the AVCaptureSession
+ Calling this method will the captureSesion and configure it properly.
+ This takes a completion block as a convenience for all the errors that can happen,
+ but the method is actually called synchronously
+ @param completionHandler Called when completed before this method returns
+ */
 - (void)openSession:(void(^)(NSError *sessionError, NSError * audioError, NSError * videoError, NSError *photoError))completionHandler;
 
-// Close the camera session
+/**
+ Close and destroy the AVCaptureSession.
+ */
 - (void)closeSession;
 
-// Start the flow of inputs in the captureSession
-// openSession must has been called before
-// Calling this method will block the main thread until it's done
+/**
+ Start the flow of inputs in the AVCaptureSession.
+ openSession: must has been called before.
+ Calling this method will block until it's done
+ */
 - (void)startRunningSession;
 
-// End the flows of inputs
-// This wont close the session
+/**
+ End the flow of inputs in the AVCaptureSession
+ This wont destroy the AVCaptureSession.
+ */
 - (void)endRunningSession;
 
-// Offer a way to configure multiple things at once
-// You can call multiple beginSessionConfiguration recursively
-// Each call of beginSessionConfiguration must be followed by a commitSessionConfiguration at some point
-// Only the latest commitSessionConfiguration will effectively commit the configuration
+/**
+ Offer a way to configure multiple things at once.
+ You can call beginSessionConfiguration multiple times.
+ Only the latest most outer commitSessionConfiguration will effectively commit
+ the configuration
+ */
 - (void)beginSessionConfiguration;
+
+/**
+ Commit the session configuration after beginSessionConfiguration has been called
+ */
 - (void)commitSessionConfiguration;
 
-// Switch between back and front device
+/**
+ Switch between the camera devices
+ */
 - (void)switchCaptureDevices;
 
+/**
+ Convert the view coordinates to a point usable by the focus methods
+ @return a point of interest usable in the focus methods
+ */
 - (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates;
 
-// Focus automatically at the given point
-// Once the focus is completed, the camera device will goes to locked mode and
-// won't try to do any further focus
+/**
+ Focus automatically at the given point of interest.
+ Once the focus is completed, the camera device will goes to locked mode
+ and won't try to do any further focus
+ @param point A point of interest between 0,0 and 1,1
+ */
 - (void)autoFocusAtPoint:(CGPoint)point;
 
-// Continously focus at a point. The camera device detects when it needs to focus
-// and focus automatically when needed.
+/**
+ Continously focus at a point. The camera device detects when it needs to focus
+ and focus automatically when needed.
+ @param point A point of interest between 0,0 and 1,1,
+ */
 - (void)continuousFocusAtPoint:(CGPoint)point;
 
-// Lock the current focus and prevent any new further focus
+/**
+ Lock the current focus and prevent any new further focus
+ */
 - (void)lockFocus;
 
-// Set an activeFormat that supports the requested framerate
-// This does not change the framerate
+/**
+ Set an active device format that supports the request framerate and size
+ This does not change the frameRate.
+ @return whether the method has succeeded or not
+ */
 - (BOOL)setActiveFormatThatSupportsFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError**)error;
 
-// Calling this method will make the recorder to append sample buffers inside the current setted recordSession
+/**
+ Allow the recorder to append the sample buffers inside the current setted recordSession
+ */
 - (void)record;
 
-// Ask the recorder to stop appending sample buffers inside the recordSession
+/**
+ Disallow the recorder to append the sample buffers inside the current setted recordSession.
+ If a record segment has started, this will be either canceled or completed depending on
+ if it is empty or not.
+ */
 - (void)pause;
 
-// Ask the recorder to stop appending sample buffers inside the recordSession
-// The completionHandler handler is called on the main queue when the recorder is ready to record again
+/**
+ Disallow the recorder to append the sample buffers inside the current setted recordSession.
+ If a record segment has started, this will be either canceled or completed depending on
+ if it is empty or not.
+ @param completionHandler called on the main queue when the recorder is ready to record again.
+ */
 - (void)pause:(void(^)())completionHandler;
 
-// Capture a photo from the camera
+/**
+ Capture a photo from the camera
+ @param completionHandler called on the main queue with the image taken or an error in case of a problem
+ */
 - (void)capturePhoto:(void(^)(NSError *error, UIImage *image))completionHandler;
 
-// Signal to the recorder that the previewView frame has changed
+/**
+ Signal to the recorder that the previewView frame has changed.
+ This will make the previewLayer to matches the size of the previewView.
+ */
 - (void)previewViewFrameChanged;
 
-// Get a image representing the current displayed buffer
+/**
+ Get an image representing the current displayed buffer.
+ */
 - (UIImage *)snapshotOfLastVideoBuffer;
 
 @end
