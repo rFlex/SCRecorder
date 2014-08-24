@@ -722,9 +722,21 @@
     }
 }
 
+- (void)lockFocus {
+    AVCaptureDevice *device = [self.currentVideoDeviceInput device];
+    if ([device isFocusModeSupported:AVCaptureFocusModeLocked]) {
+        NSError *error;
+        if ([device lockForConfiguration:&error]) {
+            [device setFocusMode:AVCaptureFocusModeLocked];
+            [device unlockForConfiguration];
+        }
+    }
+}
+
 // Perform an auto focus at the specified point. The focus mode will automatically change to locked once the auto focus is complete.
 - (void)autoFocusAtPoint:(CGPoint)point {
     AVCaptureDevice *device = [self.currentVideoDeviceInput device];
+    
     if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
         NSError *error;
         if ([device lockForConfiguration:&error]) {

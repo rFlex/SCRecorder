@@ -150,11 +150,17 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 - (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates;
 
-// Switch to autoFocus
+// Focus automatically at the given point
+// Once the focus is completed, the camera device will goes to locked mode and
+// won't try to do any further focus
 - (void)autoFocusAtPoint:(CGPoint)point;
 
-// Switch to continuous auto focus mode at the specified point
+// Continously focus at a point. The camera device detects when it needs to focus
+// and focus automatically when needed.
 - (void)continuousFocusAtPoint:(CGPoint)point;
+
+// Lock the current focus and prevent any new further focus
+- (void)lockFocus;
 
 // Set an activeFormat that supports the requested framerate
 // This does not change the framerate
