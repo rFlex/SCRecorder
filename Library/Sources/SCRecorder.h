@@ -177,6 +177,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (void)previewViewFrameChanged;
 
 // Get a image representing the current displayed buffer
-- (UIImage *)snapshotOfCurrentDisplayedBuffer;
+- (UIImage *)snapshotOfLastVideoBuffer;
 
 @end

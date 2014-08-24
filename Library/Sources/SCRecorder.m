@@ -18,7 +18,7 @@
     AVCaptureAudioDataOutput *_audioOutput;
     AVCaptureStillImageOutput *_photoOutput;
     dispatch_queue_t _dispatchQueue;
-    CMSampleBufferRef _lastOutputBuffer;
+    CMSampleBufferRef _lastVideoBuffer;
     CIContext *_context;
     BOOL _hasVideo;
     BOOL _hasAudio;
@@ -59,8 +59,8 @@
 }
 
 - (void)dealloc {
-    if (_lastOutputBuffer != nil) {
-        CFRelease(_lastOutputBuffer);
+    if (_lastVideoBuffer != nil) {
+        CFRelease(_lastVideoBuffer);
     }
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -273,10 +273,10 @@
     return (image);
 }
 
-- (UIImage *)snapshotOfCurrentDisplayedBuffer {
+- (UIImage *)snapshotOfLastVideoBuffer {
     __block CMSampleBufferRef sampleBuffer;
     dispatch_sync(_dispatchQueue, ^{
-        sampleBuffer = _lastOutputBuffer;
+        sampleBuffer = _lastVideoBuffer;
         CFRetain(sampleBuffer);
     });
     
@@ -439,11 +439,11 @@
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     
     if (captureOutput == _videoOutput) {
-        if (_lastOutputBuffer != nil) {
-            CFRelease(_lastOutputBuffer);
+        if (_lastVideoBuffer != nil) {
+            CFRelease(_lastVideoBuffer);
         }
         CFRetain(sampleBuffer);
-        _lastOutputBuffer = sampleBuffer;
+        _lastVideoBuffer = sampleBuffer;
     }
     
     if (_initializeRecordSessionLazily && !_isRecording) {
