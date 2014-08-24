@@ -176,4 +176,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 // Signal to the recorder that the previewView frame has changed
 - (void)previewViewFrameChanged;
 
+// Get a image representing the current displayed buffer
+- (UIImage *)snapshotOfCurrentDisplayedBuffer;
+
 @end
