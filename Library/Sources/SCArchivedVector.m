@@ -67,6 +67,7 @@
         }
         [aCoder encodeBytes:(uint8_t *)vectorData length:vectorDataSize forKey:@"vector_data"];
     }
+    free(vectorData);
 }
 
 @end
