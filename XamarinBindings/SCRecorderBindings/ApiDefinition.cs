@@ -314,6 +314,9 @@ namespace SCorsin {
 
 		[Export("snapshotOfLastVideoBuffer")]
 		UIImage SnapshotOfLastVideoBuffer();
+
+		[Export("snapshotOfLastAppendedVideoBuffer")]
+		UIImage SnapshotOfLastAppendedVideoBuffer();
 	}
 
 	delegate void CompletionHandler(NSError error);
@@ -534,6 +537,12 @@ namespace SCorsin {
 
 		[Export("videoTransform")]
 		CGAffineTransform VideoTransform { get; set; }
+
+		[Export("ignoreVideo")]
+		bool IgnoreVideo { get; set; }
+
+		[Export("ignoreAudio")]
+		bool IgnoreAudio { get; set; }
 
 	}
 
