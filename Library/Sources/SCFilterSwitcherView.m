@@ -189,14 +189,11 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     SCPlayer *oldInstance = _player;
     if (player != oldInstance) {
         if (oldInstance != nil) {
-            oldInstance.delegate = nil;
             oldInstance.outputView = nil;
             oldInstance.SCImageView = nil;
         }
         
         _player = player;
-        
-        player.delegate = self;
         
         [self updatePlayer];
     }

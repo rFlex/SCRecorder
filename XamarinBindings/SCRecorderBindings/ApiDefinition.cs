@@ -311,6 +311,9 @@ namespace SCorsin {
 
 		[Export("capturePhoto:")]
 		void CapturePhoto([NullAllowed] CapturePhotoDelegate completionHandler);
+
+		[Export("snapshotOfLastVideoBuffer")]
+		UIImage SnapshotOfLastVideoBuffer();
 	}
 
 	delegate void CompletionHandler(NSError error);
@@ -517,9 +520,6 @@ namespace SCorsin {
 		[Export("error")]
 		NSError Error { get; }
 
-		[Export("reverseVideo")]
-		bool ReverseVideo { get; set; }
-
 		[Export("initWithAsset:")]
 		IntPtr Constructor(AVAsset inputAsset);
 
@@ -564,9 +564,6 @@ namespace SCorsin {
 
 		[Export("image")]
 		CIImage Image { get; set; }
-
-		[Export("viewMode")]
-		int ViewMode { get; set; }
 
 	}
 }

@@ -80,6 +80,11 @@
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
+        NSError *error = nil;
+        [_recorder setActiveFormatThatSupportsFrameRate:120 width:1280 andHeight:720 error:&error];
+        _recorder.frameRate = 120;
+        NSLog(@"%@", error);
+
         NSLog(@"==== Opened session ====");
         NSLog(@"Session error: %@", sessionError.description);
         NSLog(@"Audio error : %@", audioError.description);
@@ -319,7 +324,7 @@
 }
 
 - (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error {
-    NSLog(@"End record segment %d: %@", (int)segmentIndex, error);
+    NSLog(@"End record segment %d at %@: %@", (int)segmentIndex, [recordSession.recordSegments objectAtIndex:segmentIndex], error);
 }
 
 - (void)updateTimeRecordedLabel {

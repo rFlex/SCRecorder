@@ -302,7 +302,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     EnsureSuccess(error, completionHandler);
     
     NSArray *audioTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeAudio];
-    if (audioTracks.count > 0) {
+    if (audioTracks.count > 0 && !self.ignoreAudio) {
         _audioOutput = [self addReader:[audioTracks objectAtIndex:0] withSettings:@{ AVFormatIDKey : [NSNumber numberWithUnsignedInt:kAudioFormatType] }];
     } else {
         _audioOutput = nil;
@@ -310,7 +310,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     
     NSArray *videoTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeVideo];
     AVAssetTrack *videoTrack = nil;
-    if (videoTracks.count > 0) {
+    if (videoTracks.count > 0 && !self.ignoreVideo) {
         videoTrack = [videoTracks objectAtIndex:0];
         
         _pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;

@@ -59,6 +59,19 @@ extern NSString *SCAssetExportSessionPresetLowQuality;
 // If an error occured during the export, this will contain that error
 @property (readonly, nonatomic) NSError *error;
 
+/**
+ Whether it should ignore the audio in the inputAsset.
+ If true, the output asset will not contains a audio track.
+ */
+@property (assign, nonatomic) BOOL ignoreAudio;
+
+/**
+ Whether it should ignore the video in the inputAsset.
+ If true, the output asset will not contains a video track.
+ */
+@property (assign, nonatomic) BOOL ignoreVideo;
+
+
 - (id)init;
 
 // Init with the inputAsset
