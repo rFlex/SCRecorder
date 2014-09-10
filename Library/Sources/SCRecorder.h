@@ -10,6 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 #import "SCRecordSession.h"
+#import "SCSampleBufferHolder.h"
 
 typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
@@ -298,8 +299,13 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (void)previewViewFrameChanged;
 
 /**
- Get an image representing the current displayed buffer.
+ Get an image representing the last output video buffer.
  */
 - (UIImage *)snapshotOfLastVideoBuffer;
+
+/**
+ Get an image representing the last appended video buffer
+ */
+- (UIImage *)snapshotOfLastAppendedVideoBuffer;
 
 @end

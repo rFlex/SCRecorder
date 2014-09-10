@@ -17,8 +17,9 @@
     AVCaptureVideoDataOutput *_videoOutput;
     AVCaptureAudioDataOutput *_audioOutput;
     AVCaptureStillImageOutput *_photoOutput;
+    SCSampleBufferHolder *_lastVideoBuffer;
+    SCSampleBufferHolder *_lastAppendedVideoBuffer;
     dispatch_queue_t _dispatchQueue;
-    CMSampleBufferRef _lastVideoBuffer;
     CIContext *_context;
     BOOL _hasVideo;
     BOOL _hasAudio;
@@ -51,6 +52,9 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaServicesWereLost:) name:AVAudioSessionMediaServicesWereLostNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification  object:nil];
         
+        _lastAppendedVideoBuffer = [SCSampleBufferHolder new];
+        _lastVideoBuffer = [SCSampleBufferHolder new];
+        
         self.device = AVCaptureDevicePositionBack;
         self.videoEnabled = YES;
         self.audioEnabled = YES;
@@ -61,10 +65,6 @@
 }
 
 - (void)dealloc {
-    if (_lastVideoBuffer != nil) {
-        CFRelease(_lastVideoBuffer);
-    }
-    
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [self closeSession];
 }
@@ -235,10 +235,10 @@
     [_captureSession stopRunning];
 }
 
-- (UIImage *)snapshotOfLastVideoBuffer {
+- (UIImage *)_imageFromSampleBufferHolder:(SCSampleBufferHolder *)sampleBufferHolder {
     __block CMSampleBufferRef sampleBuffer;
     dispatch_sync(_dispatchQueue, ^{
-        sampleBuffer = _lastVideoBuffer;
+        sampleBuffer = sampleBufferHolder.sampleBuffer;
         CFRetain(sampleBuffer);
     });
     
@@ -250,13 +250,21 @@
     }
     
     CGImageRef cgImage = [_context createCGImage:ciImage fromRect:CGRectMake(0, 0, CVPixelBufferGetWidth(buffer), CVPixelBufferGetHeight(buffer))];
-
-    UIImage *image = [UIImage imageWithCGImage:cgImage];
     
-    CFRelease(sampleBuffer);
+    UIImage *image = [UIImage imageWithCGImage:cgImage];
+
     CGImageRelease(cgImage);
+    CFRelease(sampleBuffer);
     
     return image;
+}
+
+- (UIImage *)snapshotOfLastVideoBuffer {
+    return [self _imageFromSampleBufferHolder:_lastVideoBuffer];
+}
+
+- (UIImage *)snapshotOfLastAppendedVideoBuffer {
+    return [self _imageFromSampleBufferHolder:_lastAppendedVideoBuffer];
 }
 
 - (void)capturePhoto:(void(^)(NSError*, UIImage*))completionHandler {
@@ -401,11 +409,7 @@
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     
     if (captureOutput == _videoOutput) {
-        if (_lastVideoBuffer != nil) {
-            CFRelease(_lastVideoBuffer);
-        }
-        CFRetain(sampleBuffer);
-        _lastVideoBuffer = sampleBuffer;
+        _lastVideoBuffer.sampleBuffer = sampleBuffer;
     }
     
     if (_initializeRecordSessionLazily && !_isRecording) {
@@ -435,8 +439,9 @@
                     if (_isRecording && recordSession.recordSegmentReady) {
                         id<SCRecorderDelegate> delegate = self.delegate;
                         if ([recordSession appendVideoSampleBuffer:sampleBuffer frameDuration:[self frameDurationFromConnection:connection]]) {
-                            if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
+                            _lastAppendedVideoBuffer.sampleBuffer = sampleBuffer;
                             
+                            if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
                                 dispatch_async(dispatch_get_main_queue(), ^{
                                     [delegate recorder:self didAppendVideoSampleBuffer:recordSession];
                                 });
