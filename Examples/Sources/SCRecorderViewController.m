@@ -334,7 +334,6 @@
 
 - (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error {
     NSLog(@"End record segment %d at %@: %@", (int)segmentIndex, [recordSession.recordSegments objectAtIndex:segmentIndex], error);
-    [self updateGhostImage];
 }
 
 - (void)updateTimeRecordedLabel {
@@ -358,6 +357,7 @@
         [_recorder record];
     } else if (touchDetector.state == UIGestureRecognizerStateEnded) {
         [_recorder pause];
+        [self updateGhostImage];
     }
 }
 
