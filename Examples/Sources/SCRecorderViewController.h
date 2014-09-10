@@ -22,9 +22,11 @@
 @property (weak, nonatomic) IBOutlet UIButton *reverseCamera;
 @property (weak, nonatomic) IBOutlet UIButton *flashModeButton;
 @property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;
+@property (weak, nonatomic) IBOutlet UIButton *ghostModeButton;
 
 - (IBAction)switchCameraMode:(id)sender;
 - (IBAction)switchFlash:(id)sender;
 - (IBAction)capturePhoto:(id)sender;
+- (IBAction)switchGhostMode:(id)sender;
 
 @end

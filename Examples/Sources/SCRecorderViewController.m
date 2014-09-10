@@ -29,6 +29,7 @@
     SCRecorder *_recorder;
     UIImage *_photo;
     SCRecordSession *_recordSession;
+    UIImageView *_ghostImageView;
 }
 
 @property (strong, nonatomic) SCRecorderFocusView *focusView;
@@ -55,6 +56,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.capturePhotoButton.alpha = 0.0;
+    
+    _ghostImageView = [[UIImageView alloc] initWithFrame:self.view.bounds];
+    _ghostImageView.contentMode = UIViewContentModeScaleAspectFill;
+    _ghostImageView.alpha = 0.2;
+    _ghostImageView.userInteractionEnabled = NO;
+    _ghostImageView.hidden = YES;
+    
+    [self.view insertSubview:_ghostImageView aboveSubview:self.previewView];
 
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = AVCaptureSessionPreset1280x720;
@@ -325,6 +334,7 @@
 
 - (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error {
     NSLog(@"End record segment %d at %@: %@", (int)segmentIndex, [recordSession.recordSegments objectAtIndex:segmentIndex], error);
+    [self updateGhostImage];
 }
 
 - (void)updateTimeRecordedLabel {
@@ -344,6 +354,7 @@
 
 - (void)handleTouchDetected:(SCTouchDetector*)touchDetector {
     if (touchDetector.state == UIGestureRecognizerStateBegan) {
+        _ghostImageView.hidden = YES;
         [_recorder record];
     } else if (touchDetector.state == UIGestureRecognizerStateEnded) {
         [_recorder pause];
@@ -358,6 +369,16 @@
             [self showAlertViewWithTitle:@"Failed to capture photo" message:error.localizedDescription];
         }
     }];
+}
+
+- (void)updateGhostImage {
+    _ghostImageView.image = [_recorder snapshotOfLastAppendedVideoBuffer];
+    _ghostImageView.hidden = !_ghostModeButton.selected;
+}
+
+- (IBAction)switchGhostMode:(id)sender {
+    _ghostModeButton.selected = !_ghostModeButton.selected;
+    _ghostImageView.hidden = !_ghostModeButton.selected;
 }
 
 @end

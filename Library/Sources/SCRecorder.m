@@ -236,11 +236,18 @@
 }
 
 - (UIImage *)_imageFromSampleBufferHolder:(SCSampleBufferHolder *)sampleBufferHolder {
-    __block CMSampleBufferRef sampleBuffer;
+    __block CMSampleBufferRef sampleBuffer = nil;
     dispatch_sync(_dispatchQueue, ^{
         sampleBuffer = sampleBufferHolder.sampleBuffer;
-        CFRetain(sampleBuffer);
+        
+        if (sampleBuffer != nil) {
+            CFRetain(sampleBuffer);
+        }
     });
+    
+    if (sampleBuffer == nil) {
+        return nil;
+    }
     
     CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CIImage *ciImage = [CIImage imageWithCVPixelBuffer:buffer];

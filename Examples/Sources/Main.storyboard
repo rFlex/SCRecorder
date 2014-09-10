@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="go9-3b-6zS">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="14A329r" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="go9-3b-6zS">
     <dependencies>
         <deployment defaultVersion="1792" identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
@@ -69,7 +69,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <view contentMode="scaleToFill" id="iw9-cB-Pni">
+                            <view contentMode="scaleToFill" id="iw9-cB-Pni" userLabel="Preview View">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
@@ -87,7 +87,7 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
-                            <view alpha="0.75" contentMode="scaleToFill" id="dDr-zv-xXt" userLabel="DownBar">
+                            <view alpha="0.69999999999999996" contentMode="scaleToFill" id="dDr-zv-xXt" userLabel="DownBar">
                                 <rect key="frame" x="0.0" y="477" width="320" height="91"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES"/>
                                 <subviews>
@@ -164,7 +164,7 @@
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Ugv-l0-Q37">
+                            <button opaque="NO" alpha="0.69999999999999973" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Ugv-l0-Q37">
                                 <rect key="frame" x="0.0" y="58" width="130" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="0.3294117647" green="0.87843137250000003" blue="0.51372549020000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -181,7 +181,7 @@
                                     <action selector="switchCameraMode:" destination="2" eventType="touchUpInside" id="1Li-ow-ynw"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="2U0-uM-fX5">
+                            <button opaque="NO" alpha="0.69999999999999973" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="2U0-uM-fX5">
                                 <rect key="frame" x="194" y="58" width="130" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="0.3294117647" green="0.87843137250000003" blue="0.51372549020000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -198,7 +198,25 @@
                                     <segue destination="Osx-D0-1od" kind="push" id="aj0-rR-Qjg"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="uLr-Fl-Xe8">
+                            <button appearanceType="aqua" opaque="NO" alpha="0.74999999999999978" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="K8J-Cv-vLy">
+                                <rect key="frame" x="0.0" y="95" width="130" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.3294117647" green="0.87843137250000003" blue="0.51372549020000002" alpha="1" colorSpace="calibratedRGB"/>
+                                <inset key="insetFor6xAndEarlier" minX="0.0" minY="20" maxX="0.0" maxY="-20"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="Ghost mode off">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="selected" title="Ghost mode on"/>
+                                <state key="highlighted">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="switchGhostMode:" destination="2" eventType="touchUpInside" id="QEr-hV-XRe"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" alpha="0.69999999999999996" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="uLr-Fl-Xe8">
                                 <rect key="frame" x="0.0" y="20" width="91" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="0.3294117647" green="0.87843137250000003" blue="0.51372549020000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -231,6 +249,7 @@
                         <outlet property="capturePhotoButton" destination="HiJ-TG-pdG" id="TgE-z1-oHF"/>
                         <outlet property="downBar" destination="dDr-zv-xXt" id="6u4-bO-KcL"/>
                         <outlet property="flashModeButton" destination="uLr-Fl-Xe8" id="EIc-Xv-uFF"/>
+                        <outlet property="ghostModeButton" destination="K8J-Cv-vLy" id="P4r-Qh-VFK"/>
                         <outlet property="loadingView" destination="fdr-8e-oyR" id="gkZ-Rd-Fe7"/>
                         <outlet property="previewView" destination="iw9-cB-Pni" id="TJx-SO-uXu"/>
                         <outlet property="recordView" destination="jaS-8J-FB6" id="3pb-b1-yXb"/>
