@@ -333,7 +333,7 @@
 }
 
 - (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error {
-    NSLog(@"End record segment %d at %@: %@", (int)segmentIndex, [recordSession.recordSegments objectAtIndex:segmentIndex], error);
+    NSLog(@"End record segment %d at %@: %@", (int)segmentIndex, segmentIndex >= 0 ? [recordSession.recordSegments objectAtIndex:segmentIndex] : nil, error);
 }
 
 - (void)updateTimeRecordedLabel {
