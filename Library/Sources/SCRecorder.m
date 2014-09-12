@@ -794,7 +794,7 @@
     AVCaptureVideoOrientation videoOrientation = _videoOrientation;
     
     if (_autoSetVideoOrientation) {
-        UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+        UIDeviceOrientation deviceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
         
         switch (deviceOrientation) {
             case UIDeviceOrientationLandscapeLeft:
