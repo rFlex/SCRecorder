@@ -37,4 +37,10 @@
 
 @property (assign, nonatomic) BOOL disabled;
 
+/**
+ Generates an UIImage from the currently displayed CIImage. The current selected
+ filterGroup will be applied to this image if applicable.
+ */
+- (UIImage *)currentlyDisplayedImageWithScale:(CGFloat)scale orientation:(UIImageOrientation)orientation;
+
 @end

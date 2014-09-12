@@ -81,12 +81,16 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 - (void)updateCurrentSelected {
     NSUInteger filterGroupsCount = _filterGroups.count;
     NSInteger selectedIndex = (NSInteger)((_selectFilterScrollView.contentOffset.x + _selectFilterScrollView.frame.size.width / 2) / _selectFilterScrollView.frame.size.width) % filterGroupsCount;
-    SCFilterGroup *newFilterGroup = nil;
+    id newFilterGroup = nil;
     
     if (selectedIndex >= 0 && selectedIndex < filterGroupsCount) {
         newFilterGroup = [_filterGroups objectAtIndex:selectedIndex];
     } else {
         NSLog(@"Invalid contentOffset of scrollView in SCFilterSwitcherView (%f/%f with %d)", _selectFilterScrollView.contentOffset.x, _selectFilterScrollView.contentOffset.y, (int)_filterGroups.count);
+    }
+    
+    if (newFilterGroup == [NSNull null]) {
+        newFilterGroup = nil;
     }
     
     if (_selectedFilterGroup != newFilterGroup) {
@@ -183,6 +187,28 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
             index++;
         }
     }
+}
+
+- (UIImage *)currentlyDisplayedImageWithScale:(CGFloat)scale orientation:(UIImageOrientation)imageOrientation {
+    CIImage *inputImage = self.image;
+    
+    CIImage *processedImage = [self.selectedFilterGroup imageByProcessingImage:inputImage];
+    
+    if (processedImage == nil) {
+        processedImage = inputImage;
+    }
+    
+    if (processedImage == nil) {
+        return nil;
+    }
+    
+    CGImageRef outputImage = [self.SCImageView.ciContext createCGImage:processedImage fromRect:inputImage.extent];
+    
+    UIImage *image = [UIImage imageWithCGImage:outputImage scale:scale orientation:imageOrientation];
+    
+    CGImageRelease(outputImage);
+    
+    return image;
 }
 
 - (void)setPlayer:(SCPlayer *)player {
