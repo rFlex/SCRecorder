@@ -39,7 +39,7 @@
 {
     [super viewDidLoad];
     
-    self.filterSwitcherView.SCImageView.contentMode = UIViewContentModeScaleAspectFit;
+    self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFit;
     
     self.filterSwitcherView.filterGroups = @[
                                              [NSNull null],
@@ -52,13 +52,10 @@
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleBordered target:self action:@selector(saveToCameraRoll)];
     
-    // On iPhone 4 and below, this property should be set to YES
-    self.filterSwitcherView.disabled = NO;;
-    
 	_player = [SCPlayer player];
-    self.filterSwitcherView.player = _player;
+    _player.CIImageRenderer = self.filterSwitcherView;
     
-	_player.shouldLoop = YES;
+	_player.loopEnabled = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated {

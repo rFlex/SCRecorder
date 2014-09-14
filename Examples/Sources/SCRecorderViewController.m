@@ -90,8 +90,6 @@
     
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
         NSError *error = nil;
-        [_recorder setActiveFormatThatSupportsFrameRate:120 width:1280 andHeight:720 error:&error];
-        _recorder.frameRate = 120;
         NSLog(@"%@", error);
 
         NSLog(@"==== Opened session ====");

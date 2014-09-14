@@ -410,6 +410,15 @@
     
     if (captureOutput == _videoOutput) {
         _lastVideoBuffer.sampleBuffer = sampleBuffer;
+        id<CIImageRenderer> imageRenderer = _CIImageRenderer;
+        if (imageRenderer != nil) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+                CIImage *ciImage = [CIImage imageWithCVPixelBuffer:buffer];
+
+                imageRenderer.CIImage = ciImage;
+            });
+        }
     }
     
     if (_initializeRecordSessionLazily && !_isRecording) {

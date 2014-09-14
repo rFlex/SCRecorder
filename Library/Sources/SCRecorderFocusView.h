@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "SCRecorder.h"
 
+@class SCRecorder;
+
 @interface SCRecorderFocusView : UIView
 
 @property (weak, nonatomic) SCRecorder *recorder;

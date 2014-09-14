@@ -51,11 +51,6 @@
 		}
 	}
 	
-	// Disabling that for now, this doesn't work well
-	//			for (AVAssetTrack * track in [fileAsset tracksWithMediaType:AVMediaTypeAudio]) {
-	//				[audioTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:nil];
-	//			}
-	
 	for (AVAssetTrack * track in videoTracks) {
 		[videoTrackComposition insertTimeRange:CMTimeRangeMake(kCMTimeZero, duration) ofTrack:track atTime:kCMTimeZero error:&error];
 		

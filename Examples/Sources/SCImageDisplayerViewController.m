@@ -9,7 +9,6 @@
 #import "SCImageDisplayerViewController.h"
 
 @interface SCImageDisplayerViewController () {
-    SCImageView *_imageView;
 }
 @end
 
@@ -70,18 +69,14 @@
     [super viewWillAppear:animated];
     self.navigationController.navigationBarHidden = NO;
     
-    self.filterSwitcherView.SCImageView.transform = [self getImageTransform:self.photo];
+//    self.filterSwitcherView.transform = [self getImageTransform:self.photo];
     
-    self.filterSwitcherView.image = [CIImage imageWithCGImage:self.photo.CGImage];
+    self.filterSwitcherView.CIImage = [CIImage imageWithCGImage:self.photo.CGImage];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     self.navigationController.navigationBarHidden = YES;
-}
-
-- (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
-    [view.ciContext drawImage:view.image inRect:rect fromRect:view.image.extent];
 }
 
 - (void)viewDidLoad
@@ -90,7 +85,7 @@
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStylePlain target:self action:@selector(saveToCameraRoll)];
     
-    self.filterSwitcherView.SCImageView.contentMode = UIViewContentModeScaleAspectFit;
+    self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFit;
     
     self.filterSwitcherView.filterGroups = @[
                                              [NSNull null],

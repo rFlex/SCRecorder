@@ -7,10 +7,10 @@
 //
 
 #import "SCImageView.h"
+#import "CIImageRendererUtils.h"
 
 @interface SCImageView() {
-    EAGLContext *_eaglContext;
-    CIContext *_ciContext;
+    CIContext *_CIContext;
 }
 
 @end
@@ -41,65 +41,43 @@
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     
     NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
-    _ciContext = [CIContext contextWithEAGLContext:context options:options];
+    _CIContext = [CIContext contextWithEAGLContext:context options:options];
     
     self.context = context;
 }
 
-- (CGRect)processRect:(CGRect)rect withImageSize:(CGSize)imageSize {
-    rect = [self rectByApplyingContentScale:rect];
-    
-    UIViewContentMode mode = self.contentMode;
-    
-    if (mode != UIViewContentModeScaleToFill) {
-        CGFloat horizontalScale = rect.size.width / imageSize.width;
-        CGFloat verticalScale = rect.size.height / imageSize.height;
+- (void)drawRect:(CGRect)rect {
+    CIImage *image = _CIImage;
+    if (image != nil) {
+        CGRect extent = [image extent];
         
-        BOOL shouldResizeWidth = mode == UIViewContentModeScaleAspectFit ? horizontalScale > verticalScale : verticalScale > horizontalScale;
-        BOOL shouldResizeHeight = mode == UIViewContentModeScaleAspectFit ? verticalScale > horizontalScale : horizontalScale > verticalScale;
-
-        if (shouldResizeWidth) {
-            CGFloat newWidth = imageSize.width * verticalScale;
-            rect.origin.x = (rect.size.width / 2 - newWidth / 2);
-            rect.size.width = newWidth;
-        } else if (shouldResizeHeight) {
-            CGFloat newHeight = imageSize.height * horizontalScale;
-            rect.origin.y = (rect.size.height / 2 - newHeight / 2);
-            rect.size.height = newHeight;
+        if (_filterGroup != nil) {
+            image = [_filterGroup imageByProcessingImage:image];
         }
+        CGRect outputRect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
+        
+        [_CIContext drawImage:image inRect:outputRect fromRect:extent];
     }
-
-    return rect;
-}
-
-- (CGRect)rectByApplyingContentScale:(CGRect)rect {
-    CGFloat scale = self.contentScaleFactor;
-    rect.origin.x *= scale;
-    rect.origin.y *= scale;
-    rect.size.width *= scale;
-    rect.size.height *= scale;
-    
-    return rect;
-}
-
-- (void)makeDirty {
-    _dirty = YES;
-}
-
-- (void)setNeedsDisplay {
-    _dirty = NO;
-    
-    [super setNeedsDisplay];
 }
 
 - (void)setImage:(CIImage *)image {
-    _image = image;
-    
-    [self makeDirty];
+    self.CIImage = image;
 }
 
-- (CIContext *)ciContext {
-    return _ciContext;
+- (CIImage *)image {
+    return self.CIImage;
+}
+
+- (void)setCIImage:(CIImage *)CIImage {
+    _CIImage = CIImage;
+    
+    [self setNeedsDisplay];
+}
+
+- (void)setFilterGroup:(SCFilterGroup *)filterGroup {
+    _filterGroup = filterGroup;
+    
+    [self setNeedsDisplay];
 }
 
 @end

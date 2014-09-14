@@ -21,7 +21,7 @@
     [super viewDidLoad];
     
     self.videoPlayerView.tapToPauseEnabled = YES;
-    self.videoPlayerView.player.shouldLoop = YES;
+    self.videoPlayerView.player.loopEnabled = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated {

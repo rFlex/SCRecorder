@@ -7,10 +7,13 @@
 //
 
 #import "SCFilterSwitcherView.h"
+#import "CIImageRendererUtils.h"
 
 @interface SCFilterSwitcherView() {
     CGFloat _filterGroupIndexRatio;
-    SCImageView *_cameraImageView;
+    CIContext *_CIContext;
+    EAGLContext *_EAGLContext;
+    GLKView *_glkView;
 }
 
 @end
@@ -38,9 +41,6 @@
 }
 
 - (void)dealloc {
-    _player.outputView = nil;
-    _player.SCImageView = nil;
-    _player.useCoreImageView = NO;
 }
 
 - (void)_commonInit {
@@ -51,18 +51,22 @@
     _selectFilterScrollView.showsVerticalScrollIndicator = NO;
     _selectFilterScrollView.backgroundColor = [UIColor clearColor];
     
-    _cameraImageView = [[SCImageView alloc] initWithFrame:self.bounds];
-    _cameraImageView.delegate = self;
-    _cameraImageView.contentMode = self.contentMode;
- 
-    [self addSubview:_cameraImageView];
+    EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    _glkView = [[GLKView alloc] initWithFrame:self.bounds context:context];
+    
+    NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
+    _CIContext = [CIContext contextWithEAGLContext:context options:options];
+    
+    _glkView.delegate = self;
+    
+    [self addSubview:_glkView];
     [self addSubview:_selectFilterScrollView];
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    _cameraImageView.frame = self.bounds;
+    _glkView.frame = self.bounds;
     _selectFilterScrollView.frame = self.bounds;
 
     [self updateScrollViewContentSize];
@@ -130,32 +134,16 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     
     _filterGroupIndexRatio = ratio;
     
-    if (_player == nil) {
-        [_cameraImageView setNeedsDisplay];
-    } else {
-        [_cameraImageView makeDirty];
-    }
+    [_glkView setNeedsDisplay];
 }
 
-- (void)updatePlayer {
-    _cameraImageView.hidden = _disabled;
-    _selectFilterScrollView.hidden = _disabled;
-    SCPlayer *player = _player;
-    
-    player.SCImageView = _disabled ? nil : _cameraImageView;
-    player.outputView = _disabled ? self : nil;
-    player.useCoreImageView = !_disabled;
-}
-
-- (void)glkView:(SCImageView *)view drawInRect:(CGRect)rect {
-    CIImage *outputImage = view.image;
+- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+    CIImage *outputImage = _CIImage;
     if (outputImage != nil) {
-//        NSLog(@"%@", NSStringFromCGAffineTransform(view.transform));
-        CGRect extent = view.imageSize;
-        CIContext *context = view.ciContext;
-//        NSLog(@"%f/%f/%f/%f", exte);
+        CGRect extent = [outputImage extent];
+        CIContext *context = _CIContext;
         
-        rect = [view processRect:rect withImageSize:extent.size];
+        rect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:_glkView.contentScaleFactor contentMode:self.contentMode];
         
         CGFloat ratio = _filterGroupIndexRatio;
         
@@ -190,7 +178,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 }
 
 - (UIImage *)currentlyDisplayedImageWithScale:(CGFloat)scale orientation:(UIImageOrientation)imageOrientation {
-    CIImage *inputImage = self.image;
+    CIImage *inputImage = self.CIImage;
     
     CIImage *processedImage = [self.selectedFilterGroup imageByProcessingImage:inputImage];
     
@@ -202,7 +190,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
         return nil;
     }
     
-    CGImageRef outputImage = [self.SCImageView.ciContext createCGImage:processedImage fromRect:inputImage.extent];
+    CGImageRef outputImage = [_CIContext createCGImage:processedImage fromRect:inputImage.extent];
     
     UIImage *image = [UIImage imageWithCGImage:outputImage scale:scale orientation:imageOrientation];
     
@@ -211,46 +199,23 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     return image;
 }
 
-- (void)setPlayer:(SCPlayer *)player {
-    SCPlayer *oldInstance = _player;
-    if (player != oldInstance) {
-        if (oldInstance != nil) {
-            oldInstance.outputView = nil;
-            oldInstance.SCImageView = nil;
-        }
-        
-        _player = player;
-        
-        [self updatePlayer];
-    }
-}
-
 - (void)setFilterGroups:(NSArray *)filterGroups {
     _filterGroups = filterGroups;
     
     [self updateScrollViewContentSize];
 }
 
-- (void)setDisabled:(BOOL)disabled {
-    if (_disabled != disabled) {
-        _disabled = disabled;
-        
-        [self updatePlayer];
-    }
+- (void)setCIImage:(CIImage *)CIImage {
+    _CIImage = CIImage;
+    [_glkView setNeedsDisplay];
 }
 
 - (CIImage *)image {
-    return _cameraImageView.image;
+    return self.CIImage;
 }
 
 - (void)setImage:(CIImage *)image {
-    _cameraImageView.image = image;
-    _cameraImageView.imageSize = [image extent];
-    [_cameraImageView setNeedsDisplay];
-}
-
-- (SCImageView *)SCImageView {
-    return _cameraImageView;
+    self.CIImage = image;
 }
 
 @end

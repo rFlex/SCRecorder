@@ -10,18 +10,26 @@
 #import <CoreImage/CoreImage.h>
 #import <Foundation/Foundation.h>
 #import <GLKit/GLKit.h>
+#import "SCFilterGroup.h"
+#import "CIImageRenderer.h"
 
-@interface SCImageView : GLKView
+/**
+ A Core Image renderer that works like a UIView. It supports filter through the
+ filterGroup property.
+ */
+@interface SCImageView : GLKView<CIImageRenderer>
 
-@property (strong, nonatomic) CIImage *image;
-@property (assign, nonatomic) CGRect imageSize;
-@property (readonly, nonatomic) CIContext* ciContext;
-@property (readonly, nonatomic) BOOL dirty;
+/**
+ The filterGroup to apply when rendering. If nil is set, no filter will be applied
+ */
+@property (strong, nonatomic) SCFilterGroup *filterGroup;
 
-// Make the view dirty, this asks the SCPlayer to render the SCImageView when it can
-- (void)makeDirty;
+/**
+ The CIImage to render.
+ */
+@property (strong, nonatomic) CIImage *CIImage;
 
-// Process the rect with imageSize using the specified viewMode
-- (CGRect)processRect:(CGRect)rect withImageSize:(CGSize)imageSize;
+
+@property (strong, nonatomic) CIImage *image DEPRECATED_MSG_ATTRIBUTE("Replaced by the CIImage property");
 
 @end

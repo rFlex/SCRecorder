@@ -9,38 +9,46 @@
 #import <UIKit/UIKit.h>
 #import "SCPlayer.h"
 #import "SCFilterGroup.h"
+#import "CIImageRendererUtils.h"
 
-// Display a Snapchat like presentation of the available
-// filters and let the user choose one
-@interface SCFilterSwitcherView : UIView<SCPlayerDelegate, GLKViewDelegate, UIScrollViewDelegate>
+/**
+ Display a Snapchat like presentation of the available filters and let the user
+ choose one
+ */
+@interface SCFilterSwitcherView : UIView<UIScrollViewDelegate, CIImageRenderer, GLKViewDelegate>
 
-// The available filterGroups that this SCFilterSwitcherView shows
-// If you want to show an empty filter (no processing), just add a [NSNull null]
-// entry instead of an instance of SCFilterGroup
+/**
+ The available filterGroups that this SCFilterSwitcherView shows
+ If you want to show an empty filter (no processing), just add a [NSNull null]
+ entry instead of an instance of SCFilterGroup
+ */
 @property (strong, nonatomic) NSArray *filterGroups;
 
-// The player to which this view should take the video frames from
-@property (strong, nonatomic) SCPlayer *player;
+/**
+ The CIImage to render.
+ */
+@property (strong, nonatomic) CIImage *CIImage;
 
-// The image to which the filters must be applied. If a player is set, this will be automatically
-// updated according to the current displayed player image
-@property (strong, nonatomic) CIImage *image;
-
-// The currently selected filter group
+/**
+ The currently selected filter group.
+ This changes when scrolling in the underlying UIScrollView.
+ This value is Key-Value observable.
+ */
 @property (readonly, nonatomic) SCFilterGroup *selectedFilterGroup;
 
-// The underlying scrollView used for scrolling between filterGroups
+/**
+ The underlying scrollView used for scrolling between filterGroups.
+ You can freely add your views inside.
+ */
 @property (readonly, nonatomic) UIScrollView *selectFilterScrollView;
-
-// The underyling SCImageView used for rendering the video
-@property (readonly, nonatomic) SCImageView *SCImageView;
-
-@property (assign, nonatomic) BOOL disabled;
 
 /**
  Generates an UIImage from the currently displayed CIImage. The current selected
  filterGroup will be applied to this image if applicable.
  */
 - (UIImage *)currentlyDisplayedImageWithScale:(CGFloat)scale orientation:(UIImageOrientation)orientation;
+
+
+@property (strong, nonatomic) CIImage *image DEPRECATED_MSG_ATTRIBUTE("Replaced by the CIImage property");
 
 @end

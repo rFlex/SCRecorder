@@ -14,8 +14,6 @@
 /////////////////////
 
 @interface SCVideoPlayerView() {
-	UIView * _loadingView;
-    SCPlayer *_player;
     BOOL _holdPlayer;
     UITapGestureRecognizer *_tapToPauseGesture;
 }
@@ -28,11 +26,10 @@
 
 @implementation SCVideoPlayerView
 
-- (id) init {
+- (id)init {
 	self = [super init];
 	
 	if (self) {
-		_loadingView = nil;
 		[self commonInit];
 	}
 	
@@ -51,8 +48,6 @@
 }
 
 - (void)dealloc {
-    self.player.outputView = nil;
-    
     if (_holdPlayer) {
         [self.player pause];
         [self.player endSendingPlayMessages];
@@ -70,29 +65,20 @@
 }
 
 - (void)commonInit {
-    if (_player == nil) {
-        _player = [SCPlayer player];
+    self.SCImageViewEnabled = NO;
+    
+    if (_player == nil && [SCVideoPlayerView autoCreatePlayerWhenNeeded]) {
+        self.player = [SCPlayer player];
         _holdPlayer = YES;
     }
     
-    self.player.outputView = self;
-	self.player.delegate = self;
-		
 	self.clipsToBounds = YES;
-}
-
-- (void)videoPlayer:(SCPlayer *)videoPlayer didPlay:(Float64)secondsElapsed loopsCount:(NSInteger)loopsCount {
-    
-}
-
-- (void)videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem *)item {
-    
 }
 
 - (void)tapOrPause {
     id<SCVideoPlayerViewDelegate> delegate = self.delegate;
     
-    if (self.player.rate == 0) {
+    if (!self.player.isPlaying) {
         [self.player play];
         
         if ([delegate respondsToSelector:@selector(videoPlayerViewTappedToPlay:)]) {
@@ -110,11 +96,7 @@
 - (void) layoutSubviews {
 	[super layoutSubviews];
 	
-    [self.player resizePlayerLayerToFitOutputView];
-}
-
-- (SCPlayer *)player {
-    return _player;
+    _playerLayer.frame = self.bounds;
 }
 
 - (BOOL)tapToPauseEnabled {
@@ -133,6 +115,59 @@
             _tapToPauseGesture = nil;
         }
     }
+}
+
+- (void)setPlayer:(SCPlayer *)player {
+    if (player != _player) {
+        _player.CIImageRenderer = nil;
+        
+        _player = player;
+        
+        _player.CIImageRenderer = _SCImageView;
+        _playerLayer.player = player;
+        
+        _holdPlayer = NO;
+    }
+}
+
+- (void)setSCImageViewEnabled:(BOOL)SCImageViewEnabled {
+    _SCImageViewEnabled = SCImageViewEnabled;
+    
+    if (SCImageViewEnabled) {
+        if (_playerLayer != nil) {
+            [_playerLayer removeFromSuperlayer];
+            _playerLayer.player = nil;
+            _playerLayer = nil;
+        }
+        
+        if (_SCImageView == nil) {
+            _SCImageView = [SCImageView new];
+            [self insertSubview:_SCImageView atIndex:0];
+            _player.CIImageRenderer = _SCImageView;
+        }
+    } else {
+        if (_SCImageView != nil) {
+            [_SCImageView removeFromSuperview];
+            _SCImageView = nil;
+            _player.CIImageRenderer = nil;
+        }
+        if (_playerLayer == nil) {
+            _playerLayer = [AVPlayerLayer new];
+            [self.layer insertSublayer:_playerLayer atIndex:0];
+        }
+    }
+    
+    [self setNeedsLayout];
+}
+
+static BOOL _autoCreatePlayerWhenNeeded = YES;
+
++ (BOOL)autoCreatePlayerWhenNeeded {
+    return _autoCreatePlayerWhenNeeded;
+}
+
++ (void)setAutoCreatePlayerWhenNeeded:(BOOL)autoCreatePlayerWhenNeeded {
+    _autoCreatePlayerWhenNeeded = autoCreatePlayerWhenNeeded;
 }
 
 @end

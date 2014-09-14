@@ -11,6 +11,12 @@
 #import <AVFoundation/AVFoundation.h>
 #import "SCRecordSession.h"
 #import "SCSampleBufferHolder.h"
+#import "SCVideoPlayerView.h"
+#import "SCPlayer.h"
+#import "SCAssetExportSession.h"
+#import "SCImageView.h"
+#import "SCFilterSwitcherView.h"
+#import "SCRecorderFocusView.h"
 
 typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
@@ -127,6 +133,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Convenient way to set a view inside the preview layer
  */
 @property (strong, nonatomic) UIView *previewView;
+
+/**
+ If set, this render will receive every received frames as CIImage.
+ Can be useful for displaying a real time filter for example.
+ */
+@property (strong, nonatomic) id<CIImageRenderer> CIImageRenderer;
 
 /**
  Set the delegate used to receive messages for the SCRecorder
