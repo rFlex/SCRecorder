@@ -30,7 +30,7 @@ If you are using cocoapods, you can use this project with the following Podfile
 
 ```ruby
 	platform :ios, '7.0'
-	pod "SCRecorder", "~> 2.0"
+	pod "SCRecorder", "~> 2.1"
 ```
 
 Getting started
@@ -114,7 +114,7 @@ recordSession.videoSizeAsSquare = YES;
 // You can read the recordSegments easily without having to merge them
 AVAsset *recordSessionAsset = [recordSession assetRepresentingRecordSegments];
 
-// Record in slow motion!
+// Record in slow motion! (you need to set a high framerate if you want the video to appear smooth :) )
 recordSession.videoTimeScale = 4;
 	
 // Get a dictionary representation of the record session
@@ -148,14 +148,18 @@ videoPlayer.frame = self.view.bounds;
 [self.view addSubView:videoPlayer];
 [videoPlayer.player play];
 	
-// Add a filter, in real time
+// Add a view that display the video with a filter
 CIFilter *blackAndWhite = [CIFilter filterWithName:@"CIColorControls" keysAndValues:@"inputBrightness", @0.0, @"inputContrast", @1.1, @"inputSaturation", @0.0, nil];
 SCFilter *filter = [[SCFilter alloc] initWithCIFilter:blackAndWhite];
-videoPlayer.player.filterGroup = [SCFilterGroup filterGroupWithFilter:filter];
+SCImageView *SCImageView = [SCImageView new];
+SCImageView.filterGroup = [SCFilterGroup filterGroupWithFilter:filter];
+SCImageView.frame = self.view.bounds;
+[self.view addSubView:SCImageView];
+videoPlayer.player.CIImageRenderer = SCImageView;
 	
 // Import a filter made using CoreImageShop
 NSURL *savedFilterGroupUrl = ...;
-videoPlayer.player.filterGroup = [SCFilterGroup filterGroupWithContentsOfUrl:savedFilterGroupUrl];
+SCFilterGroup *filterGroup = [SCFilterGroup filterGroupWithContentsOfUrl:savedFilterGroupUrl];
 
 // Export your final video with the filter
 SCAssetExportSession exportSession = [[SCAssetExportSession alloc] initWithAsset:recordSessionAsset];
