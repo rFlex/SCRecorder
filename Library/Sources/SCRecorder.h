@@ -15,7 +15,7 @@
 #import "SCPlayer.h"
 #import "SCAssetExportSession.h"
 #import "SCImageView.h"
-#import "SCFilterSwitcherView.h"
+#import "SCSwipeableFilterView.h"
 #import "SCRecorderFocusView.h"
 
 typedef NS_ENUM(NSInteger, SCFlashMode) {

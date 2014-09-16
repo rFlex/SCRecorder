@@ -1,21 +1,17 @@
 //
-//  SCFilterSwitcherView.h
-//  SCRecorderExamples
+//  SCFilterSelectorView.h
+//  SCRecorder
 //
-//  Created by Simon CORSIN on 29/05/14.
-//
+//  Created by Simon CORSIN on 16/09/14.
+//  Copyright (c) 2014 rFlex. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
-#import "SCPlayer.h"
+#import <GLKit/GLKit.h>
 #import "SCFilterGroup.h"
-#import "CIImageRendererUtils.h"
+#import "CIImageRenderer.h"
 
-/**
- Display a Snapchat like presentation of the available filters and let the user
- choose one
- */
-@interface SCFilterSwitcherView : UIView<UIScrollViewDelegate, CIImageRenderer, GLKViewDelegate>
+@interface SCFilterSelectorView : UIView<CIImageRenderer, GLKViewDelegate>
 
 /**
  The available filterGroups that this SCFilterSwitcherView shows
@@ -37,12 +33,6 @@
 @property (readonly, nonatomic) SCFilterGroup *selectedFilterGroup;
 
 /**
- The underlying scrollView used for scrolling between filterGroups.
- You can freely add your views inside.
- */
-@property (readonly, nonatomic) UIScrollView *selectFilterScrollView;
-
-/**
  Generates an UIImage from the currently displayed CIImage. The current selected
  filterGroup will be applied to this image if applicable.
  */
@@ -59,7 +49,5 @@
  The preferred transform for rendering the CIImage
  */
 @property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
-
-@property (strong, nonatomic) CIImage *image DEPRECATED_MSG_ATTRIBUTE("Replaced by the CIImage property");
 
 @end

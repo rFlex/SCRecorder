@@ -8,12 +8,11 @@
 
 #import <UIKit/UIKit.h>
 #import "SCVideoPlayerView.h"
-#import "SCFilterSwitcherView.h"
 #import "SCRecorder.h"
 
 @interface SCVideoPlayerViewController : UIViewController<SCPlayerDelegate>
 
 @property (strong, nonatomic) SCRecordSession *recordSession;
-@property (weak, nonatomic) IBOutlet SCFilterSwitcherView *filterSwitcherView;
+@property (weak, nonatomic) IBOutlet SCSwipeableFilterView *filterSwitcherView;
 
 @end

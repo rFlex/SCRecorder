@@ -39,6 +39,7 @@
 {
     [super viewDidLoad];
     
+    self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
     self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFit;
     
     self.filterSwitcherView.filterGroups = @[

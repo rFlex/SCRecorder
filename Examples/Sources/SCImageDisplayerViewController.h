@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <SCFilterSwitcherView.h>
+#import <SCSwipeableFilterView.h>
 
 @interface SCImageDisplayerViewController : UIViewController
 
 @property (nonatomic, strong) UIImage *photo;
-@property (weak, nonatomic) IBOutlet SCFilterSwitcherView *filterSwitcherView;
+@property (weak, nonatomic) IBOutlet SCSwipeableFilterView *filterSwitcherView;
 
 @end

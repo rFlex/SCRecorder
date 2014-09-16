@@ -34,8 +34,10 @@
 		DC8B89C819C4A47A0048FBF9 /* CIImageRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8B89C719C4A47A0048FBF9 /* CIImageRenderer.h */; };
 		DC8B89CB19C4A9410048FBF9 /* CIImageRendererUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8B89C919C4A9410048FBF9 /* CIImageRendererUtils.h */; };
 		DC8B89CC19C4A9410048FBF9 /* CIImageRendererUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = DC8B89CA19C4A9410048FBF9 /* CIImageRendererUtils.m */; };
-		DC933E8B193814D1007E2E88 /* SCFilterSwitcherView.h in Headers */ = {isa = PBXBuildFile; fileRef = DC933E89193814D1007E2E88 /* SCFilterSwitcherView.h */; };
-		DC933E8C193814D1007E2E88 /* SCFilterSwitcherView.m in Sources */ = {isa = PBXBuildFile; fileRef = DC933E8A193814D1007E2E88 /* SCFilterSwitcherView.m */; };
+		DC933E8B193814D1007E2E88 /* SCSwipeableFilterView.h in Headers */ = {isa = PBXBuildFile; fileRef = DC933E89193814D1007E2E88 /* SCSwipeableFilterView.h */; };
+		DC933E8C193814D1007E2E88 /* SCSwipeableFilterView.m in Sources */ = {isa = PBXBuildFile; fileRef = DC933E8A193814D1007E2E88 /* SCSwipeableFilterView.m */; };
+		DC9966F719C8B89700DDDE21 /* SCFilterSelectorView.h in Headers */ = {isa = PBXBuildFile; fileRef = DC9966F519C8B89700DDDE21 /* SCFilterSelectorView.h */; };
+		DC9966F819C8B89700DDDE21 /* SCFilterSelectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = DC9966F619C8B89700DDDE21 /* SCFilterSelectorView.m */; };
 		DCA836EC18FC2C910058FE13 /* SCRecorderFocusTargetView.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */; };
 		DCA836ED18FC2C910058FE13 /* SCRecorderFocusTargetView.m in Sources */ = {isa = PBXBuildFile; fileRef = DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */; };
 		DCA8EF51192BD1C200839BE2 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC3528A817B963830077F039 /* Cocoa.framework */; };
@@ -91,8 +93,11 @@
 		DC8B89C719C4A47A0048FBF9 /* CIImageRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CIImageRenderer.h; sourceTree = "<group>"; };
 		DC8B89C919C4A9410048FBF9 /* CIImageRendererUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CIImageRendererUtils.h; sourceTree = "<group>"; };
 		DC8B89CA19C4A9410048FBF9 /* CIImageRendererUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CIImageRendererUtils.m; sourceTree = "<group>"; };
-		DC933E89193814D1007E2E88 /* SCFilterSwitcherView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterSwitcherView.h; sourceTree = "<group>"; };
-		DC933E8A193814D1007E2E88 /* SCFilterSwitcherView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterSwitcherView.m; sourceTree = "<group>"; };
+		DC933E89193814D1007E2E88 /* SCSwipeableFilterView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSwipeableFilterView.h; sourceTree = "<group>"; };
+		DC933E8A193814D1007E2E88 /* SCSwipeableFilterView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCSwipeableFilterView.m; sourceTree = "<group>"; };
+		DC9966F519C8B89700DDDE21 /* SCFilterSelectorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterSelectorView.h; sourceTree = "<group>"; };
+		DC9966F619C8B89700DDDE21 /* SCFilterSelectorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterSelectorView.m; sourceTree = "<group>"; };
+		DC9966F919C8B8CF00DDDE21 /* SCFilterSelectorViewInternal.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; path = SCFilterSelectorViewInternal.h; sourceTree = "<group>"; };
 		DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRecorderFocusTargetView.h; sourceTree = "<group>"; };
 		DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRecorderFocusTargetView.m; sourceTree = "<group>"; };
 		DCA8EF50192BD1C200839BE2 /* SCRecorderMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SCRecorderMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -216,13 +221,16 @@
 				DCB04158192458C800D945D2 /* SCImageView.m */,
 				DCB041651924663700D945D2 /* SCAssetExportSession.h */,
 				DCB041661924663700D945D2 /* SCAssetExportSession.m */,
-				DC933E89193814D1007E2E88 /* SCFilterSwitcherView.h */,
-				DC933E8A193814D1007E2E88 /* SCFilterSwitcherView.m */,
+				DC933E89193814D1007E2E88 /* SCSwipeableFilterView.h */,
+				DC933E8A193814D1007E2E88 /* SCSwipeableFilterView.m */,
 				DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */,
 				DC1949BF19C07F1600E92A95 /* SCSampleBufferHolder.m */,
 				DC8B89C719C4A47A0048FBF9 /* CIImageRenderer.h */,
 				DC8B89C919C4A9410048FBF9 /* CIImageRendererUtils.h */,
 				DC8B89CA19C4A9410048FBF9 /* CIImageRendererUtils.m */,
+				DC9966F519C8B89700DDDE21 /* SCFilterSelectorView.h */,
+				DC9966F619C8B89700DDDE21 /* SCFilterSelectorView.m */,
+				DC9966F919C8B8CF00DDDE21 /* SCFilterSelectorViewInternal.h */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -270,8 +278,9 @@
 				DC50285918E51FC9004E833F /* SCRecorder.h in Headers */,
 				DC4CBA531863118E00532F1F /* SCVideoPlayerView.h in Headers */,
 				DC633E2F192BCE0D00050796 /* SCFilter.h in Headers */,
+				DC9966F719C8B89700DDDE21 /* SCFilterSelectorView.h in Headers */,
 				DC891800192D59F9006FAE71 /* SCArchivedVector.h in Headers */,
-				DC933E8B193814D1007E2E88 /* SCFilterSwitcherView.h in Headers */,
+				DC933E8B193814D1007E2E88 /* SCSwipeableFilterView.h in Headers */,
 				DCA836EC18FC2C910058FE13 /* SCRecorderFocusTargetView.h in Headers */,
 				DC4CBA511863118E00532F1F /* SCPlayer.h in Headers */,
 				DCB041671924663700D945D2 /* SCAssetExportSession.h in Headers */,
@@ -385,7 +394,8 @@
 				DC4CBA541863118E00532F1F /* SCVideoPlayerView.m in Sources */,
 				DCA836ED18FC2C910058FE13 /* SCRecorderFocusTargetView.m in Sources */,
 				DC1949C119C07F1600E92A95 /* SCSampleBufferHolder.m in Sources */,
-				DC933E8C193814D1007E2E88 /* SCFilterSwitcherView.m in Sources */,
+				DC9966F819C8B89700DDDE21 /* SCFilterSelectorView.m in Sources */,
+				DC933E8C193814D1007E2E88 /* SCSwipeableFilterView.m in Sources */,
 				DC633E30192BCE0D00050796 /* SCFilter.m in Sources */,
 				DC4CBA521863118E00532F1F /* SCPlayer.m in Sources */,
 				DC633E28192BCE0D00050796 /* SCFilterGroup.m in Sources */,
