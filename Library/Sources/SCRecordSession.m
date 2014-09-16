@@ -449,6 +449,7 @@ const NSString *SCRecordSessionDateKey = @"Date";
                 });
             }];
         }
+        _lastTime = _sessionStartedTime;
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (completionHandler != nil) {
