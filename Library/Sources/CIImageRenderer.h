@@ -25,9 +25,9 @@
 - (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
 
 /**
- Some objects such as the SCPlayer may need to set a transform.
+ The preferred transform for rendering the CIImage
  */
-@property (assign, nonatomic) CGAffineTransform transform;
+@property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
 
 /**
  Some objects such as the SCPlayer may need to get a frame.

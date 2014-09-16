@@ -16,4 +16,6 @@
 
 + (CIImage *)generateImageFromSampleBufferHolder:(SCSampleBufferHolder *)sampleBufferHolder;
 
++ (CGAffineTransform)preferredCIImageTransformFromUIImage:(UIImage *)image;
+
 @end

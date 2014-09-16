@@ -95,4 +95,8 @@
     [self setNeedsDisplay];
 }
 
+- (void)setPreferredCIImageTransform:(CGAffineTransform)preferredCIImageTransform {
+    self.transform = preferredCIImageTransform;
+}
+
 @end

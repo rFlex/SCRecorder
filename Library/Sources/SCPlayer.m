@@ -186,7 +186,7 @@
         
         id<CIImageRenderer> renderer = self.CIImageRenderer;
         
-        if ([renderer respondsToSelector:@selector(frame)] && [renderer respondsToSelector:@selector(setTransform:)]) {
+        if ([renderer respondsToSelector:@selector(frame)] && [renderer respondsToSelector:@selector(setPreferredCIImageTransform:)]) {
             NSArray *videoTracks = [item.asset tracksWithMediaType:AVMediaTypeVideo];
             
             if (videoTracks.count > 0) {
@@ -206,7 +206,8 @@
                     }
                 }
                 
-                [renderer setTransform:transform];
+                
+                [renderer setPreferredCIImageTransform:transform];
             }
         }
     }

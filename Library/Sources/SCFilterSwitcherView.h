@@ -55,6 +55,11 @@
  */
 - (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
 
+/**
+ The preferred transform for rendering the CIImage
+ */
+@property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
+
 @property (strong, nonatomic) CIImage *image DEPRECATED_MSG_ATTRIBUTE("Replaced by the CIImage property");
 
 @end

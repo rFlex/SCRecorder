@@ -141,6 +141,11 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     [_glkView setNeedsDisplay];
 }
 
+- (void)setNeedsDisplay {
+    [super setNeedsDisplay];
+    [_glkView setNeedsDisplay];
+}
+
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
     CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
     
@@ -233,6 +238,10 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 
 - (void)setImage:(CIImage *)image {
     self.CIImage = image;
+}
+
+- (void)setPreferredCIImageTransform:(CGAffineTransform)preferredCIImageTransform {
+    _glkView.transform = preferredCIImageTransform;
 }
 
 @end
