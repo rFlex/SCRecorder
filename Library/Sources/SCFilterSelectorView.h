@@ -11,6 +11,13 @@
 #import "SCFilterGroup.h"
 #import "CIImageRenderer.h"
 
+/**
+ A base class that supports multiple filters and let the user choose one.
+ The default drawing implementation just draws the image fullscreen with the
+ current selectedFilterGroup.
+ You would typically use the currently only available subclass SCSwipeableFilterView.
+ Subclass note: see SCFilterSelectorViewInternal.h
+ */
 @interface SCFilterSelectorView : UIView<CIImageRenderer, GLKViewDelegate>
 
 /**
@@ -33,6 +40,11 @@
 @property (readonly, nonatomic) SCFilterGroup *selectedFilterGroup;
 
 /**
+ The preferred transform for rendering the CIImage
+ */
+@property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
+
+/**
  Generates an UIImage from the currently displayed CIImage. The current selected
  filterGroup will be applied to this image if applicable.
  */
@@ -44,10 +56,5 @@
  as fast.
  */
 - (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
-
-/**
- The preferred transform for rendering the CIImage
- */
-@property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
 
 @end

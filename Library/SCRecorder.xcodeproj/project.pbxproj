@@ -202,35 +202,12 @@
 		DC551C4D17ADD66000E37F8F /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				DCAA1F2219C90021002065CA /* Recorder */,
+				DCAA1F2119C90018002065CA /* Focus */,
+				DCAA1F2019C8FED5002065CA /* FilterDisplayers */,
+				DCAA1F1F19C8FEC6002065CA /* Players */,
+				DCAA1F1E19C8FEBE002065CA /* Tools */,
 				DC633DE2192BCCB600050796 /* Filters */,
-				DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */,
-				DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */,
-				DCF6142717D14A3700341EC2 /* SCPlayer.h */,
-				DCF6142817D14A3700341EC2 /* SCPlayer.m */,
-				DCF6142A17D1527F00341EC2 /* SCVideoPlayerView.h */,
-				DCF6142B17D1527F00341EC2 /* SCVideoPlayerView.m */,
-				DC4CBA391863100500532F1F /* SCRecorderFocusView.h */,
-				DC4CBA3A1863100500532F1F /* SCRecorderFocusView.m */,
-				DC50285218E4F23F004E833F /* SCRecordSession.h */,
-				DC50285318E4F23F004E833F /* SCRecordSession.m */,
-				DC50285518E4FA5E004E833F /* SCRecorder.h */,
-				DC50285618E4FA5E004E833F /* SCRecorder.m */,
-				DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */,
-				DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */,
-				DCB04157192458C800D945D2 /* SCImageView.h */,
-				DCB04158192458C800D945D2 /* SCImageView.m */,
-				DCB041651924663700D945D2 /* SCAssetExportSession.h */,
-				DCB041661924663700D945D2 /* SCAssetExportSession.m */,
-				DC933E89193814D1007E2E88 /* SCSwipeableFilterView.h */,
-				DC933E8A193814D1007E2E88 /* SCSwipeableFilterView.m */,
-				DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */,
-				DC1949BF19C07F1600E92A95 /* SCSampleBufferHolder.m */,
-				DC8B89C719C4A47A0048FBF9 /* CIImageRenderer.h */,
-				DC8B89C919C4A9410048FBF9 /* CIImageRendererUtils.h */,
-				DC8B89CA19C4A9410048FBF9 /* CIImageRendererUtils.m */,
-				DC9966F519C8B89700DDDE21 /* SCFilterSelectorView.h */,
-				DC9966F619C8B89700DDDE21 /* SCFilterSelectorView.m */,
-				DC9966F919C8B8CF00DDDE21 /* SCFilterSelectorViewInternal.h */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -265,6 +242,69 @@
 				DCA8EF58192BD1C200839BE2 /* SCRecorderMac-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		DCAA1F1E19C8FEBE002065CA /* Tools */ = {
+			isa = PBXGroup;
+			children = (
+				DC8B89C919C4A9410048FBF9 /* CIImageRendererUtils.h */,
+				DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */,
+				DC1949BF19C07F1600E92A95 /* SCSampleBufferHolder.m */,
+				DC8B89CA19C4A9410048FBF9 /* CIImageRendererUtils.m */,
+				DCB041651924663700D945D2 /* SCAssetExportSession.h */,
+				DCB041661924663700D945D2 /* SCAssetExportSession.m */,
+				DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */,
+				DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */,
+			);
+			name = Tools;
+			sourceTree = "<group>";
+		};
+		DCAA1F1F19C8FEC6002065CA /* Players */ = {
+			isa = PBXGroup;
+			children = (
+				DCF6142717D14A3700341EC2 /* SCPlayer.h */,
+				DCF6142817D14A3700341EC2 /* SCPlayer.m */,
+				DCF6142A17D1527F00341EC2 /* SCVideoPlayerView.h */,
+				DCF6142B17D1527F00341EC2 /* SCVideoPlayerView.m */,
+			);
+			name = Players;
+			sourceTree = "<group>";
+		};
+		DCAA1F2019C8FED5002065CA /* FilterDisplayers */ = {
+			isa = PBXGroup;
+			children = (
+				DC8B89C719C4A47A0048FBF9 /* CIImageRenderer.h */,
+				DC933E89193814D1007E2E88 /* SCSwipeableFilterView.h */,
+				DC933E8A193814D1007E2E88 /* SCSwipeableFilterView.m */,
+				DC9966F519C8B89700DDDE21 /* SCFilterSelectorView.h */,
+				DC9966F619C8B89700DDDE21 /* SCFilterSelectorView.m */,
+				DC9966F919C8B8CF00DDDE21 /* SCFilterSelectorViewInternal.h */,
+				DCB04157192458C800D945D2 /* SCImageView.h */,
+				DCB04158192458C800D945D2 /* SCImageView.m */,
+			);
+			name = FilterDisplayers;
+			sourceTree = "<group>";
+		};
+		DCAA1F2119C90018002065CA /* Focus */ = {
+			isa = PBXGroup;
+			children = (
+				DC4CBA391863100500532F1F /* SCRecorderFocusView.h */,
+				DC4CBA3A1863100500532F1F /* SCRecorderFocusView.m */,
+				DCA836EA18FC2C910058FE13 /* SCRecorderFocusTargetView.h */,
+				DCA836EB18FC2C910058FE13 /* SCRecorderFocusTargetView.m */,
+			);
+			name = Focus;
+			sourceTree = "<group>";
+		};
+		DCAA1F2219C90021002065CA /* Recorder */ = {
+			isa = PBXGroup;
+			children = (
+				DC50285218E4F23F004E833F /* SCRecordSession.h */,
+				DC50285318E4F23F004E833F /* SCRecordSession.m */,
+				DC50285518E4FA5E004E833F /* SCRecorder.h */,
+				DC50285618E4FA5E004E833F /* SCRecorder.m */,
+			);
+			name = Recorder;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

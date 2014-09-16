@@ -66,8 +66,8 @@
             vectorData[i] = (double)value;
         }
         [aCoder encodeBytes:(uint8_t *)vectorData length:vectorDataSize forKey:@"vector_data"];
+        free(vectorData);
     }
-    free(vectorData);
 }
 
 @end
