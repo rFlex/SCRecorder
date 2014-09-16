@@ -29,6 +29,12 @@ extern NSString *SCAssetExportSessionPresetLowQuality;
 // If nil, this will be automatically set depending on the sessionPreset
 @property (strong, nonatomic) NSDictionary *videoSettings;
 
+/**
+ If not invalid, this will limit the number of frame duration. Video frames
+ may be skipped to ensure it doesn't exceed this value.
+ */
+@property (assign, nonatomic) CMTime maxVideoFrameDuration;
+
 // The settings applied to the audio's AVAssetWriterInput
 // If nil, this will be automatically set depending on the sessionPreset
 @property (strong, nonatomic) NSDictionary *audioSettings;

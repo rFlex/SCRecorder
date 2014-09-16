@@ -30,6 +30,7 @@
     CIContext *_ciContext;
     BOOL _animationsWereEnabled;
     uint32_t _pixelFormat;
+    CMTime _nextAllowedVideoFrame;
 }
 
 @end
@@ -49,6 +50,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         _useGPUForRenderingFilters = YES;
         _keepVideoTransform = YES;
         _videoTransform = CGAffineTransformIdentity;
+        _maxVideoFrameDuration = kCMTimeInvalid;
     }
     
     return self;
@@ -145,7 +147,14 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
                 
                 if (buffer != nil) {
                     if (input == _videoInput) {
-                        [self processSampleBuffer:buffer];
+                        CMTime currentVideoTime = CMSampleBufferGetPresentationTimeStamp(buffer);
+                        if (CMTIME_COMPARE_INLINE(currentVideoTime, >=, _nextAllowedVideoFrame)) {
+                            [self processSampleBuffer:buffer];
+                            
+                            if (CMTIME_IS_VALID(_maxVideoFrameDuration)) {
+                                _nextAllowedVideoFrame = CMTimeAdd(currentVideoTime, _maxVideoFrameDuration);
+                            }
+                        }
                     } else {
                         [input appendSampleBuffer:buffer];
                     }
@@ -290,6 +299,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
 }
 
 - (void)exportAsynchronouslyWithCompletionHandler:(void (^)())completionHandler {
+    _nextAllowedVideoFrame = kCMTimeZero;
     NSError *error = nil;
     
     [[NSFileManager defaultManager] removeItemAtURL:self.outputUrl error:nil];
