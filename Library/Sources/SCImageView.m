@@ -8,9 +8,11 @@
 
 #import "SCImageView.h"
 #import "CIImageRendererUtils.h"
+#import "SCSampleBufferHolder.h"
 
 @interface SCImageView() {
     CIContext *_CIContext;
+    SCSampleBufferHolder *_sampleBufferHolder;
 }
 
 @end
@@ -44,9 +46,17 @@
     _CIContext = [CIContext contextWithEAGLContext:context options:options];
     
     self.context = context;
+    
+    _sampleBufferHolder = [SCSampleBufferHolder new];
 }
 
 - (void)drawRect:(CGRect)rect {
+    CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
+    
+    if (newImage != nil) {
+        _CIImage = newImage;
+    }
+    
     CIImage *image = _CIImage;
     if (image != nil) {
         CGRect extent = [image extent];
@@ -58,6 +68,11 @@
         
         [_CIContext drawImage:image inRect:outputRect fromRect:extent];
     }
+}
+
+- (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    _sampleBufferHolder.sampleBuffer = sampleBuffer;
+    [self setNeedsDisplay];
 }
 
 - (void)setImage:(CIImage *)image {

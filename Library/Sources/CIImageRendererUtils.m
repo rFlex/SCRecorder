@@ -43,4 +43,16 @@
     return rect;
 }
 
++ (CIImage *)generateImageFromSampleBufferHolder:(SCSampleBufferHolder *)sampleBufferHolder {
+    CIImage *image = nil;
+    CMSampleBufferRef sampleBuffer = sampleBufferHolder.sampleBuffer;
+    
+    if (sampleBuffer != nil) {
+        image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(sampleBuffer)];
+        sampleBufferHolder.sampleBuffer = nil;
+    }
+    
+    return image;
+}
+
 @end

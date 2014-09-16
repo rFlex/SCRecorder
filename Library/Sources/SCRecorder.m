@@ -412,11 +412,18 @@
         _lastVideoBuffer.sampleBuffer = sampleBuffer;
         id<CIImageRenderer> imageRenderer = _CIImageRenderer;
         if (imageRenderer != nil) {
+            CFRetain(sampleBuffer);
             dispatch_async(dispatch_get_main_queue(), ^{
-                CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-                CIImage *ciImage = [CIImage imageWithCVPixelBuffer:buffer];
-
-                imageRenderer.CIImage = ciImage;
+                if ([imageRenderer respondsToSelector:@selector(setImageBySampleBuffer:)]) {
+                    [imageRenderer setImageBySampleBuffer:sampleBuffer];
+                } else {
+                    CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+                    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:buffer];
+                    
+                    imageRenderer.CIImage = ciImage;
+                }
+                
+                CFRelease(sampleBuffer);
             });
         }
     }
@@ -469,7 +476,6 @@
                 }
             }
         } else if (captureOutput == _audioOutput) {
-
             if (!recordSession.audioInitializationFailed && !recordSession.shouldIgnoreAudio) {
                 if (!recordSession.audioInitialized) {
                     NSError * error = nil;

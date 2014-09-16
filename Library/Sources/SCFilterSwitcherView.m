@@ -8,12 +8,14 @@
 
 #import "SCFilterSwitcherView.h"
 #import "CIImageRendererUtils.h"
+#import "SCSampleBufferHolder.h"
 
 @interface SCFilterSwitcherView() {
     CGFloat _filterGroupIndexRatio;
     CIContext *_CIContext;
     EAGLContext *_EAGLContext;
     GLKView *_glkView;
+    SCSampleBufferHolder *_sampleBufferHolder;
 }
 
 @end
@@ -58,6 +60,8 @@
     _CIContext = [CIContext contextWithEAGLContext:context options:options];
     
     _glkView.delegate = self;
+    
+    _sampleBufferHolder = [SCSampleBufferHolder new];
     
     [self addSubview:_glkView];
     [self addSubview:_selectFilterScrollView];
@@ -138,7 +142,14 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+    CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
+    
+    if (newImage != nil) {
+        _CIImage = newImage;
+    }
+    
     CIImage *outputImage = _CIImage;
+    
     if (outputImage != nil) {
         CGRect extent = [outputImage extent];
         CIContext *context = _CIContext;
@@ -197,6 +208,12 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     CGImageRelease(outputImage);
     
     return image;
+}
+
+- (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    _sampleBufferHolder.sampleBuffer = sampleBuffer;
+    
+    [_glkView setNeedsDisplay];
 }
 
 - (void)setFilterGroups:(NSArray *)filterGroups {

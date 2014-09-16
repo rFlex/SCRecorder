@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreImage/CoreImage.h>
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
 #import "SCFilterGroup.h"
 #import "CIImageRenderer.h"
@@ -29,6 +30,12 @@
  */
 @property (strong, nonatomic) CIImage *CIImage;
 
+/**
+ Set the CIImage using a sampleBuffer. The CIImage will be automatically generated
+ when needed. This avoids creating multiple CIImage if the SCImageView can't render them
+ as fast.
+ */
+- (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
 
 @property (strong, nonatomic) CIImage *image DEPRECATED_MSG_ATTRIBUTE("Replaced by the CIImage property");
 

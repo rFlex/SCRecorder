@@ -48,6 +48,12 @@
  */
 - (UIImage *)currentlyDisplayedImageWithScale:(CGFloat)scale orientation:(UIImageOrientation)orientation;
 
+/**
+ Set the CIImage using a sampleBuffer. The CIImage will be automatically generated
+ when needed. This avoids creating multiple CIImage if the SCImageView can't render them
+ as fast.
+ */
+- (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
 
 @property (strong, nonatomic) CIImage *image DEPRECATED_MSG_ATTRIBUTE("Replaced by the CIImage property");
 

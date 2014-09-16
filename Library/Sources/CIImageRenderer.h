@@ -19,6 +19,12 @@
 @optional
 
 /**
+ Some objects may use this property to set a buffer instead of always creating
+ a CIImage. This avoids creating multiple CIImage if it is not necesarry.
+ */
+- (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
+
+/**
  Some objects such as the SCPlayer may need to set a transform.
  */
 @property (assign, nonatomic) CGAffineTransform transform;
