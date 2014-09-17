@@ -82,7 +82,13 @@
     CIImage *outputImage = _CIImage;
     
     if (outputImage != nil) {
+        if (_imageTransformFilter != nil) {
+            [_imageTransformFilter setValue:outputImage forKey:kCIInputImageKey];
+            outputImage = [_imageTransformFilter valueForKey:kCIOutputImageKey];
+        }
+
         rect = [CIImageRendererUtils processRect:rect withImageSize:outputImage.extent.size contentScale:_glkView.contentScaleFactor contentMode:self.contentMode];
+
 
         [self render:outputImage toContext:_CIContext inRect:rect];
     }
@@ -137,7 +143,10 @@
 }
 
 - (void)setPreferredCIImageTransform:(CGAffineTransform)preferredCIImageTransform {
-    _glkView.transform = preferredCIImageTransform;
+    _imageTransformFilter = [CIFilter filterWithName:@"CIAffineTransform"];
+    [_imageTransformFilter setValue:[NSValue valueWithBytes:&preferredCIImageTransform
+                                      objCType:@encode(CGAffineTransform)]
+                forKey:@"inputTransform"];
 }
 
 @end
