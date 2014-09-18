@@ -150,16 +150,23 @@
     [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
 }
 
+- (void)blabla {
+    NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
+    _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
+    [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
+    _videoOutput.suppressesPlayerRendering = YES;
+}
+
 - (void)setupDisplayLink {
     if (_displayLink == nil) {
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
         _displayLink.frameInterval = 1;
         [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         
-        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
-        _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
-        [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
-        _videoOutput.suppressesPlayerRendering = YES;
+//        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
+//        _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
+//        [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
+//        _videoOutput.suppressesPlayerRendering = YES;
         
         [self suspendDisplay];
         
@@ -179,10 +186,13 @@
 }
 
 - (void)setupVideoOutputToItem:(AVPlayerItem *)item {
-    if (_videoOutput != nil && item != nil) {
-        if (![item.outputs containsObject:_videoOutput]) {
-            [item addOutput:_videoOutput];
-        }
+    if (_displayLink != nil && item != nil && _videoOutput == nil) {
+        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
+        _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
+        [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
+        _videoOutput.suppressesPlayerRendering = YES;
+        
+        [item addOutput:_videoOutput];
         
         id<CIImageRenderer> renderer = self.CIImageRenderer;
         
@@ -218,6 +228,7 @@
         if ([item.outputs containsObject:_videoOutput]) {
             [item removeOutput:_videoOutput];
         }
+        _videoOutput = nil;
     }
 }
 
@@ -227,10 +238,10 @@
 	if (self.currentItem != nil) {
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
         _oldItem = self.currentItem;
-        
 
         [self setupVideoOutputToItem:self.currentItem];
 	}
+    
 
     id<SCPlayerDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(player:didChangeItem:)]) {
