@@ -150,13 +150,6 @@
     [_videoOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
 }
 
-- (void)blabla {
-    NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
-    _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
-    [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
-    _videoOutput.suppressesPlayerRendering = YES;
-}
-
 - (void)setupDisplayLink {
     if (_displayLink == nil) {
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];

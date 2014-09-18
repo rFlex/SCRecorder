@@ -19,7 +19,8 @@
     AVCaptureStillImageOutput *_photoOutput;
     SCSampleBufferHolder *_lastVideoBuffer;
     SCSampleBufferHolder *_lastAppendedVideoBuffer;
-    dispatch_queue_t _dispatchQueue;
+    dispatch_queue_t _videoQueue;
+    dispatch_queue_t _audioQueue;
     CIContext *_context;
     BOOL _hasVideo;
     BOOL _hasAudio;
@@ -36,7 +37,9 @@
     self = [super init];
     
     if (self) {
-        _dispatchQueue = dispatch_queue_create("me.corsin.SCRecorder", nil);
+        _videoQueue = dispatch_queue_create("me.corsin.SCRecorder.Video", nil);
+        _audioQueue = dispatch_queue_create("me.corsin.SCRecorder.Audio", nil);
+        _recordSessionQueue = dispatch_queue_create("me.corsin.SCRecorder.RecordSession", nil);
         
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
         _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
@@ -89,7 +92,7 @@
 
 - (void)deviceOrientationChanged:(id)sender {
     if (_autoSetVideoOrientation) {
-        dispatch_sync(_dispatchQueue, ^{
+        dispatch_sync(_recordSessionQueue, ^{
             [self updateVideoOrientation];
         });
     }
@@ -165,7 +168,7 @@
         if (_videoOutput == nil) {
             _videoOutput = [[AVCaptureVideoDataOutput alloc] init];
             _videoOutput.alwaysDiscardsLateVideoFrames = NO;
-            [_videoOutput setSampleBufferDelegate:self queue:_dispatchQueue];
+            [_videoOutput setSampleBufferDelegate:self queue:_videoQueue];
         }
         
         if ([session canAddOutput:_videoOutput]) {
@@ -180,7 +183,7 @@
     if (_audioEnabled) {
         if (_audioOutput == nil) {
             _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
-            [_audioOutput setSampleBufferDelegate:self queue:_dispatchQueue];
+            [_audioOutput setSampleBufferDelegate:self queue:_audioQueue];
         }
         
         if ([session canAddOutput:_audioOutput]) {
@@ -230,7 +233,7 @@
 
 - (UIImage *)_imageFromSampleBufferHolder:(SCSampleBufferHolder *)sampleBufferHolder {
     __block CMSampleBufferRef sampleBuffer = nil;
-    dispatch_sync(_dispatchQueue, ^{
+    dispatch_sync(_videoQueue, ^{
         sampleBuffer = sampleBufferHolder.sampleBuffer;
         
         if (sampleBuffer != nil) {
@@ -317,7 +320,7 @@
 }
 
 - (void)record {
-    dispatch_sync(_dispatchQueue, ^{
+    dispatch_sync(_recordSessionQueue, ^{
         _isRecording = YES;
     });
 }
@@ -327,7 +330,7 @@
 }
 
 - (void)pause:(void(^)())completionHandler {
-    dispatch_sync(_dispatchQueue, ^{
+    dispatch_sync(_recordSessionQueue, ^{
         _isRecording = NO;
         SCRecordSession *recordSession = _recordSession;
         
@@ -431,88 +434,95 @@
         return;
     }
     
-    SCRecordSession *recordSession = _recordSession;
-    
-    if (recordSession != nil) {
-        if (captureOutput == _videoOutput) {
-            if (!recordSession.videoInitializationFailed && !recordSession.shouldIgnoreVideo) {
-                if (!recordSession.videoInitialized) {
-                    NSError *error = nil;
-                    [recordSession initializeVideoUsingSampleBuffer:sampleBuffer hasAudio:_hasAudio error:&error];
-                    
-                    id<SCRecorderDelegate> delegate = self.delegate;
-                    if ([delegate respondsToSelector:@selector(recorder:didInitializeVideoInRecordSession:error:)]) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [delegate recorder:self didInitializeVideoInRecordSession:recordSession error:error];
-                        });
-                    }
-                }
-                
-                if (!_hasAudio || recordSession.audioInitialized || recordSession.shouldIgnoreAudio || recordSession.audioInitializationFailed) {
-                    [self beginRecordSegmentIfNeeded:recordSession];
-                    
-                    if (_isRecording && recordSession.recordSegmentReady) {
-                        id<SCRecorderDelegate> delegate = self.delegate;
-                        if ([recordSession appendVideoSampleBuffer:sampleBuffer frameDuration:[self frameDurationFromConnection:connection]]) {
-                            _lastAppendedVideoBuffer.sampleBuffer = sampleBuffer;
+    CFRetain(sampleBuffer);
+    dispatch_async(_recordSessionQueue, ^{
+        SCRecordSession *recordSession = _recordSession;
+
+        if (!(_initializeRecordSessionLazily && !_isRecording) && recordSession != nil) {
+            if (recordSession != nil) {
+                if (captureOutput == _videoOutput) {
+                    if (!recordSession.videoInitializationFailed && !recordSession.shouldIgnoreVideo) {
+                        if (!recordSession.videoInitialized) {
+                            NSError *error = nil;
+                            [recordSession initializeVideoUsingSampleBuffer:sampleBuffer hasAudio:_hasAudio error:&error];
                             
-                            if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
+                            id<SCRecorderDelegate> delegate = self.delegate;
+                            if ([delegate respondsToSelector:@selector(recorder:didInitializeVideoInRecordSession:error:)]) {
                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                    [delegate recorder:self didAppendVideoSampleBuffer:recordSession];
-                                });
-                            }
-                            
-                            [self checkRecordSessionDuration:recordSession];
-                        } else {
-                            if ([delegate respondsToSelector:@selector(recorder:didSkipVideoSampleBuffer:)]) {
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    [delegate recorder:self didSkipVideoSampleBuffer:recordSession];
+                                    [delegate recorder:self didInitializeVideoInRecordSession:recordSession error:error];
                                 });
                             }
                         }
                         
+                        if (!_hasAudio || recordSession.audioInitialized || recordSession.shouldIgnoreAudio || recordSession.audioInitializationFailed) {
+                            [self beginRecordSegmentIfNeeded:recordSession];
+                            
+                            if (_isRecording && recordSession.recordSegmentReady) {
+                                id<SCRecorderDelegate> delegate = self.delegate;
+                                if ([recordSession appendVideoSampleBuffer:sampleBuffer frameDuration:[self frameDurationFromConnection:connection]]) {
+                                    _lastAppendedVideoBuffer.sampleBuffer = sampleBuffer;
+                                    
+                                    if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [delegate recorder:self didAppendVideoSampleBuffer:recordSession];
+                                        });
+                                    }
+                                    
+                                    [self checkRecordSessionDuration:recordSession];
+                                } else {
+                                    if ([delegate respondsToSelector:@selector(recorder:didSkipVideoSampleBuffer:)]) {
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [delegate recorder:self didSkipVideoSampleBuffer:recordSession];
+                                        });
+                                    }
+                                }
+                                
+                            }
+                        }
                     }
-                }
-            }
-        } else if (captureOutput == _audioOutput) {
-            if (!recordSession.audioInitializationFailed && !recordSession.shouldIgnoreAudio) {
-                if (!recordSession.audioInitialized) {
-                    NSError * error = nil;
-                    [recordSession initializeAudioUsingSampleBuffer:sampleBuffer hasVideo:_hasVideo error:&error];
-                    
-                    id<SCRecorderDelegate> delegate = self.delegate;
-                    if ([delegate respondsToSelector:@selector(recorder:didInitializeAudioInRecordSession:error:)]) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [delegate recorder:self didInitializeAudioInRecordSession:recordSession error:error];
-                        });
-                    }
-                }
-                
-                if (!_hasVideo || recordSession.videoInitialized || recordSession.shouldIgnoreVideo || recordSession.videoInitializationFailed) {
-                    [self beginRecordSegmentIfNeeded:recordSession];
-                    
-                    if (_isRecording && recordSession.recordSegmentReady) {
-                        id<SCRecorderDelegate> delegate = self.delegate;
-                        if ([recordSession appendAudioSampleBuffer:sampleBuffer]) {
-                            if ([delegate respondsToSelector:@selector(recorder:didAppendAudioSampleBuffer:)]) {
+                } else if (captureOutput == _audioOutput) {
+                    if (!recordSession.audioInitializationFailed && !recordSession.shouldIgnoreAudio) {
+                        if (!recordSession.audioInitialized) {
+                            NSError * error = nil;
+                            [recordSession initializeAudioUsingSampleBuffer:sampleBuffer hasVideo:_hasVideo error:&error];
+                            
+                            id<SCRecorderDelegate> delegate = self.delegate;
+                            if ([delegate respondsToSelector:@selector(recorder:didInitializeAudioInRecordSession:error:)]) {
                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                    [delegate recorder:self didAppendAudioSampleBuffer:recordSession];
+                                    [delegate recorder:self didInitializeAudioInRecordSession:recordSession error:error];
                                 });
                             }
+                        }
+                        
+                        if (!_hasVideo || recordSession.videoInitialized || recordSession.shouldIgnoreVideo || recordSession.videoInitializationFailed) {
+                            [self beginRecordSegmentIfNeeded:recordSession];
                             
-                            [self checkRecordSessionDuration:recordSession];
-                        } else {
-                            if ([delegate respondsToSelector:@selector(recorder:didSkipAudioSampleBuffer:)]) {
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    [delegate recorder:self didSkipAudioSampleBuffer:recordSession];
-                                });
+                            if (_isRecording && recordSession.recordSegmentReady) {
+                                id<SCRecorderDelegate> delegate = self.delegate;
+                                if ([recordSession appendAudioSampleBuffer:sampleBuffer]) {
+                                    if ([delegate respondsToSelector:@selector(recorder:didAppendAudioSampleBuffer:)]) {
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [delegate recorder:self didAppendAudioSampleBuffer:recordSession];
+                                        });
+                                    }
+                                    
+                                    [self checkRecordSessionDuration:recordSession];
+                                } else {
+                                    if ([delegate respondsToSelector:@selector(recorder:didSkipAudioSampleBuffer:)]) {
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [delegate recorder:self didSkipAudioSampleBuffer:recordSession];
+                                        });
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
+        
+        CFRelease(sampleBuffer);
+    });
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -947,7 +957,7 @@
 
 - (void)setRecordSession:(SCRecordSession *)recordSession {
     if (_recordSession != recordSession) {
-        dispatch_sync(_dispatchQueue, ^{
+        dispatch_sync(_recordSessionQueue, ^{
             [recordSession makeTimeOffsetDirty];
             _recordSession = recordSession;
         });

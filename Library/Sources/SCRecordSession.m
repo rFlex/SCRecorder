@@ -198,6 +198,8 @@ const NSString *SCRecordSessionDateKey = @"Date";
         }
         
         if (theError == nil) {
+            writer.shouldOptimizeForNetworkUse = YES;
+            
             if (_videoInput != nil) {
                 if ([writer canAddInput:_videoInput]) {
                     [writer addInput:_videoInput];

@@ -71,6 +71,10 @@
     _recorder.delegate = self;
     _recorder.autoSetVideoOrientation = YES;
     
+    // On iOS 8 and iPhone 5S, enabling this seems to be slow
+    _recorder.initializeRecordSessionLazily = NO;
+    
+    
     UIView *previewView = self.previewView;
     _recorder.previewView = previewView;
     

@@ -195,6 +195,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @property (readonly, nonatomic) AVCaptureStillImageOutput *photoOutput;
 
 /**
+ The dispatch queue that the SCRecorder uses for sending messages to the attached
+ SCRecordSession.
+ */
+@property (readonly, nonatomic) dispatch_queue_t recordSessionQueue;
+
+/**
  Create a recorder
  @return the newly created recorder
  */
