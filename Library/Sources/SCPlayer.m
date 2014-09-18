@@ -161,16 +161,12 @@
     if (_displayLink == nil) {
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
         _displayLink.frameInterval = 1;
-        [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-        
-//        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
-//        _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
-//        [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
-//        _videoOutput.suppressesPlayerRendering = YES;
-        
-        [self suspendDisplay];
         
         [self setupVideoOutputToItem:self.currentItem];
+
+        [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        
+        [self suspendDisplay];
     }
 }
 
@@ -193,6 +189,8 @@
         _videoOutput.suppressesPlayerRendering = YES;
         
         [item addOutput:_videoOutput];
+        
+        _displayLink.paused = NO;
         
         id<CIImageRenderer> renderer = self.CIImageRenderer;
         

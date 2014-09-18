@@ -317,6 +317,9 @@ namespace SCorsin {
 
 		[Export("snapshotOfLastAppendedVideoBuffer")]
 		UIImage SnapshotOfLastAppendedVideoBuffer();
+
+		[Export("CIImageRenderer"), NullAllowed]
+		NSObject CIImageRenderer { get; set; }
 	}
 
 	delegate void CompletionHandler(NSError error);
@@ -379,11 +382,11 @@ namespace SCorsin {
 	[Model, Protocol]
 	interface SCPlayerDelegate {
 		[Abstract]	
-		[Export("videoPlayer:didPlay:loopsCount:"), EventArgs("PlayerDidPlay")]
+		[Export("player:didPlay:loopsCount:"), EventArgs("PlayerDidPlay")]
 		void DidPlay(SCPlayer player, double secondsElapsed, int loopCount);
 
 		[Abstract]
-		[Export("videoPlayer:didChangeItem:"), EventArgs("PlayerChangedItem")]
+		[Export("player:didChangeItem:"), EventArgs("PlayerChangedItem")]
         void DidChangeItem(SCPlayer player, [NullAllowed] AVPlayerItem item);
 
 	}
@@ -396,17 +399,6 @@ namespace SCorsin {
 
 		[Wrap("WeakDelegate")]
 		SCPlayerDelegate Delegate { get; set; }
-
-		[Static]
-		[Export("pauseCurrentPlayer")]
-		void PauseCurrentPlayer();
-
-		[Static]
-		[Export("currentPlayer")]
-		SCPlayer CurrentPlayer { get; }
-
-		[Export("filterGroup"), NullAllowed]
-		SCFilterGroup FilterGroup { get; set; }
 
 		[Export("setItemByStringPath:")]
         void SetItem([NullAllowed] string stringPath);
@@ -435,14 +427,8 @@ namespace SCorsin {
 		[Export("isPlaying")]
 		bool IsPlaying { get; }
 
-		[Export("minimumBufferedTimeBeforePlaying")]
-		CMTime MinimumBufferedTimeBeforePlaying { get; set; }
-
-		[Export("shouldLoop")]
-		bool ShouldLoop { get; set; }
-
-		[Export("shouldPlayConcurrently")]
-		bool ShouldPlayConcurrently { get; set; }
+		[Export("loopEnabled")]
+		bool LoopEnabled { get; set; }
 
 		[Export("beginSendingPlayMessages")]
 		void BeginSendingPlayMessages();
@@ -452,31 +438,29 @@ namespace SCorsin {
 
 		[Export("isSendingPlayMessages")]
 		bool IsSendingPlayMessages { get; }
-	
-		[Export("SCImageView")]
-		SCImageView SCImageView { get; }
-
-		[Export("outputView"), NullAllowed]
-		UIView OutputView { get; set; }
-
-		[Export("useCoreImageView")]
-		bool UseCoreImageView { get; set; }
 
 		[Export("autoRotate")]
 		bool AutoRotate { get; set; }
 
-		[Export("autoCreateSCImageView")]
-		bool AutoCreateSCImageView { get; set; }
+		[Export("CIImageRenderer"), NullAllowed]
+		NSObject CIImageRenderer { get; set; }
+
 	}
 
 	[BaseType(typeof(UIView))]
 	interface SCVideoPlayerView : SCPlayerDelegate {
 
-		[Export("player")]
-		SCPlayer Player { get; }
+		[Export("player"), NullAllowed]
+		SCPlayer Player { get; set; }
 
 		[Export("playerLayer")]
 		AVPlayerLayer PlayerLayer { get; }
+
+		[Export("SCImageViewEnabled")]
+		bool SCImageViewEnabled { get; set; }
+
+		[Export("SCImageView")]
+		SCImageView SCImageView { get; }
 	}
 
 	[BaseType(typeof(UIView))]
@@ -547,32 +531,44 @@ namespace SCorsin {
 	}
 
 	[BaseType(typeof(UIView))]
-	interface SCFilterSwitcherView {
+	interface SCFilterSelectorView {
 
 		[Export("filterGroups"), NullAllowed]
 		SCFilterGroup[] FilterGroups { get; set; }
 
-		[Export("player"), NullAllowed]
-		SCPlayer Player { get; set; }
+		[Export("CIImage"), NullAllowed]
+		CIImage CIImage { get; set; }
 
 		[Export("selectedFilterGroup")]
 		SCFilterGroup SelectedFilterGroup { get; }
 
+		[Export("preferredCIImageTransform")]
+		CGAffineTransform PreferredCIImageTransform { get; set; }
+
+		[Export("currentlyDisplayedImageWithScale:orientation:")]
+		UIImage CurrentlyDisplayedImage(float scale, UIImageOrientation orientation);
+	}
+
+	[BaseType(typeof(SCFilterSelectorView))]
+	interface SCSwipeableFilterView {
+
 		[Export("selectFilterScrollView")]
 		UIScrollView SelectFilterScrollView { get; }
 
-		[Export("disabled")]
-		bool Disabled { get; set; }
-
-		[Export("SCImageView")]
-		SCImageView SCImageView { get; }
+		[Export("refreshAutomaticallyWhenScrolling")]
+		bool RefreshAutomaticallyWhenScrolling { get; set; }
 	}
 
 	[BaseType(typeof(GLKView))]
 	interface SCImageView {
 
-		[Export("image")]
-		CIImage Image { get; set; }
+		[Export("CIImage"), NullAllowed]
+		CIImage CIImage { get; set; }
+
+		[Export("filterGroup"), NullAllowed]
+		SCFilterGroup FilterGroup { get; set; }
 
 	}
+
+
 }
