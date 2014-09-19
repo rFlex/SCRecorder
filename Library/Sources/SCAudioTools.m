@@ -15,7 +15,7 @@
 }
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-+ (void) overrideCategoryMixWithOthers {
++ (void)overrideCategoryMixWithOthers {
 	
     UInt32 doSetProperty = 1;
     

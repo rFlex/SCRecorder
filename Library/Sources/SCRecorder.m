@@ -589,7 +589,9 @@
     NSError *videoError = nil;
     if (shouldConfigureVideo) {
         [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
-        [self updateVideoOrientation];
+        dispatch_sync(_recordSessionQueue, ^{
+            [self updateVideoOrientation];
+        });
     }
     
     NSError *audioError = nil;
