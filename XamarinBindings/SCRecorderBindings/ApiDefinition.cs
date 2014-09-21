@@ -528,6 +528,8 @@ namespace SCorsin {
 		[Export("ignoreAudio")]
 		bool IgnoreAudio { get; set; }
 
+		[Export("maxVideoFrameDuration")]
+		CMTime MaxVideoFrameDuration { get; set; }
 	}
 
 	[BaseType(typeof(UIView))]

@@ -970,12 +970,20 @@
     return [self currentVideoDeviceInput].device.focusMode;
 }
 
-- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate dimensions:(CMVideoDimensions)dimensions {
+- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameDuration:(CMTime)frameDuration {
+    CMVideoDimensions dimensions;
+    dimensions.width = 0;
+    dimensions.height = 0;
+    
+    return [self formatInRange:format frameDuration:frameDuration dimensions:dimensions];
+}
+
+- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameDuration:(CMTime)frameDuration dimensions:(CMVideoDimensions)dimensions {
     CMVideoDimensions size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
     
     if (size.width >= dimensions.width && size.height >= dimensions.height) {
-        for (AVFrameRateRange * range in format.videoSupportedFrameRateRanges) {
-            if ((CMTimeScale)range.minFrameRate <= frameRate && (CMTimeScale)range.maxFrameRate >= frameRate) {
+        for (AVFrameRateRange *range in format.videoSupportedFrameRateRanges) {
+            if (CMTIME_COMPARE_INLINE(range.minFrameDuration, <=, frameDuration) && CMTIME_COMPARE_INLINE(range.maxFrameDuration, >=, frameDuration)) {
                 return YES;
             }
         }
@@ -1020,13 +1028,7 @@
     
     if (device != nil) {
         NSError * error = nil;
-        BOOL formatSupported = NO;
-        for (AVFrameRateRange * frameRateRange in device.activeFormat.videoSupportedFrameRateRanges) {
-            if (((NSInteger)frameRateRange.minFrameRate <= framePerSeconds) && (framePerSeconds <= (NSInteger)frameRateRange.maxFrameRate)) {
-                formatSupported = YES;
-                break;
-            }
-        }
+        BOOL formatSupported = [self formatInRange:device.activeFormat frameDuration:fps];
         
         if (formatSupported) {
             if ([device respondsToSelector:@selector(activeVideoMinFrameDuration)]) {
@@ -1062,23 +1064,31 @@
     CMVideoDimensions dimensions;
     dimensions.width = width;
     dimensions.height = height;
+    CMTime frameDuration = CMTimeMake(1, frameRate);
     
     BOOL foundSupported = NO;
     
     if (device != nil) {
         if (device.activeFormat != nil) {
-            foundSupported = [self formatInRange:device.activeFormat frameRate:frameRate dimensions:dimensions];
+            foundSupported = [self formatInRange:device.activeFormat frameDuration:frameDuration dimensions:dimensions];
         }
         
         if (!foundSupported) {
-            for (AVCaptureDeviceFormat * format in device.formats) {
-                if ([self formatInRange:format frameRate:frameRate dimensions:dimensions]) {
+            for (AVCaptureDeviceFormat *format in device.formats) {
+                if ([self formatInRange:format frameDuration:frameDuration dimensions:dimensions]) {
+                    BOOL shouldSetOldFrameRate = [self formatInRange:format frameDuration:CMTimeMake(1, self.frameRate)];
+                    
                     CMTime oldFrameRate = CMTimeMake(1, self.frameRate);
                     if ([device lockForConfiguration:error]) {
                         
                         device.activeFormat = format;
-                        device.activeVideoMinFrameDuration = oldFrameRate;
-                        device.activeVideoMaxFrameDuration = oldFrameRate;
+                        
+                        if (shouldSetOldFrameRate) {
+                            device.activeVideoMinFrameDuration = oldFrameRate;
+                            device.activeVideoMaxFrameDuration = oldFrameRate;
+                        } else {
+                            NSLog(@"Cannot set the old framerate. Leaving the default framerate.");
+                        }
                         
                         [device unlockForConfiguration];
                         foundSupported = YES;
