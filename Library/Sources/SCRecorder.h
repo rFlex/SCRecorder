@@ -273,6 +273,11 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (void)continuousFocusAtPoint:(CGPoint)point;
 
 /**
+ Focus at the center then switch back to a continuous focus at the center.
+ */
+- (void)focusCenter;
+
+/**
  Lock the current focus and prevent any new further focus
  */
 - (void)lockFocus;

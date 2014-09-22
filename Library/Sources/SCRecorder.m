@@ -26,6 +26,7 @@
     BOOL _hasAudio;
     BOOL _usingMainQueue;
     BOOL _shouldAutoresumeRecording;
+    BOOL _needsSwitchBackToContinuousFocus;
     int _beginSessionConfigurationCount;
 }
 
@@ -538,6 +539,12 @@
             if ([delegate respondsToSelector:@selector(recorderDidEndFocus:)]) {
                 [delegate recorderDidEndFocus:self];
             }
+            
+            if (_needsSwitchBackToContinuousFocus) {
+                _needsSwitchBackToContinuousFocus = NO;
+                [self continuousFocusAtPoint:CGPointMake(0.5, 0.5)];
+            }
+
         }
     }
 }
@@ -732,42 +739,44 @@
     }
 }
 
-// Perform an auto focus at the specified point. The focus mode will automatically change to locked once the auto focus is complete.
-- (void)autoFocusAtPoint:(CGPoint)point {
+- (void)applyFocusMode:(AVCaptureFocusMode)focusMode withPointOfInterest:(CGPoint)point {
     AVCaptureDevice *device = [self.currentVideoDeviceInput device];
     
-    if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
+    if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:focusMode]) {
+        CGPoint currentPointOfInterest = device.focusPointOfInterest;
+        AVCaptureFocusMode currentFocusMode = device.focusMode;
+        
         NSError *error;
-        if ([device lockForConfiguration:&error]) {
-            [device setFocusPointOfInterest:point];
-            [device setFocusMode:AVCaptureFocusModeAutoFocus];
-            [device unlockForConfiguration];
-            
-            id<SCRecorderDelegate> delegate = self.delegate;
-            if ([delegate respondsToSelector:@selector(recorderWillStartFocus:)]) {
-                [delegate recorderWillStartFocus:self];
+        if (!CGPointEqualToPoint(point, currentPointOfInterest) || currentFocusMode != focusMode) {
+            if ([device lockForConfiguration:&error]) {
+                [device setFocusPointOfInterest:point];
+                [device setFocusMode:focusMode];
+                [device unlockForConfiguration];
+                
+                if (focusMode != AVCaptureFocusModeContinuousAutoFocus) {
+                    id<SCRecorderDelegate> delegate = self.delegate;
+                    if ([delegate respondsToSelector:@selector(recorderWillStartFocus:)]) {
+                        [delegate recorderWillStartFocus:self];
+                    }
+                }
             }
         }
     }
 }
 
+// Perform an auto focus at the specified point. The focus mode will automatically change to locked once the auto focus is complete.
+- (void)autoFocusAtPoint:(CGPoint)point {
+    [self applyFocusMode:AVCaptureFocusModeAutoFocus withPointOfInterest:point];
+}
+
 // Switch to continuous auto focus mode at the specified point
 - (void)continuousFocusAtPoint:(CGPoint)point {
-    AVCaptureDevice *device = [self.currentVideoDeviceInput device];
-	
-    if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
-		NSError *error;
-		if ([device lockForConfiguration:&error]) {
-			[device setFocusPointOfInterest:point];
-			[device setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
-			[device unlockForConfiguration];
-            
-            id<SCRecorderDelegate> delegate = self.delegate;
-            if ([delegate respondsToSelector:@selector(recorderWillStartFocus:)]) {
-                [delegate recorderWillStartFocus:self];
-            }
-		}
-	}
+    [self applyFocusMode:AVCaptureFocusModeContinuousAutoFocus withPointOfInterest:point];
+}
+
+- (void)focusCenter {
+    _needsSwitchBackToContinuousFocus = YES;
+    [self autoFocusAtPoint:CGPointMake(0.5, 0.5)];
 }
 
 - (BOOL)focusSupported {

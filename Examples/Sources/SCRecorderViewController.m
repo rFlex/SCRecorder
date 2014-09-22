@@ -133,6 +133,7 @@
     [super viewDidAppear:animated];
     
     [_recorder startRunningSession];
+    [_recorder focusCenter];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

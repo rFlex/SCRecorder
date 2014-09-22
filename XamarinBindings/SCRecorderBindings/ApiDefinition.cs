@@ -300,6 +300,9 @@ namespace SCorsin {
 		[Export("setActiveFormatThatSupportsFrameRate:width:andHeight:error:")]
 		bool SetActiveFormatThatSupportsFrameRate(int frameRate, int width, int height, out NSError error);
 
+		[Export("focusCenter")]
+		void FocusCenter();
+
 		[Export("record")]
 		void Record();
 
@@ -320,6 +323,7 @@ namespace SCorsin {
 
 		[Export("CIImageRenderer"), NullAllowed]
 		NSObject CIImageRenderer { get; set; }
+
 	}
 
 	delegate void CompletionHandler(NSError error);
