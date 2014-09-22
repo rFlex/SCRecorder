@@ -34,6 +34,7 @@
 - (void)commonInit {
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     _glkView = [[GLKView alloc] initWithFrame:self.bounds context:context];
+    _glkView.backgroundColor = [UIColor clearColor];
     
     NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
     _CIContext = [CIContext contextWithEAGLContext:context options:options];
