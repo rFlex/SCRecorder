@@ -684,6 +684,10 @@ const NSString *SCRecordSessionDateKey = @"Date";
 }
 
 - (AVAsset *)assetRepresentingRecordSegments {
+    if (_recordSegments.count == 1) {
+        return [AVAsset assetWithURL:_recordSegments.firstObject];
+    }
+    
     AVMutableComposition *composition = [AVMutableComposition composition];
     
     NSDictionary *options = @{AVURLAssetPreferPreciseDurationAndTimingKey : @YES};

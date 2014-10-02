@@ -191,7 +191,9 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
                                        };
             _ciContext = [CIContext contextWithOptions:options];
         } else {
-            _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:nil];
+            NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
+
+            _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:options];
         }
         
     } else {

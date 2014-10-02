@@ -35,10 +35,10 @@
 		DC7F376D18FC2B0300D54901 /* Record-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376118FC2B0300D54901 /* Record-Normal-icon.png */; };
 		DC7F376E18FC2B0300D54901 /* Record-Pressed-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376218FC2B0300D54901 /* Record-Pressed-icon.png */; };
 		DC7F376F18FC2B0300D54901 /* Stop-Normal-Red-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */; };
-		DC88B924196E1F86005D953E /* blitch.cisf in Resources */ = {isa = PBXBuildFile; fileRef = DC88B923196E1F86005D953E /* blitch.cisf */; };
 		DC891813192EA63B006FAE71 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC891810192EA623006FAE71 /* libSCRecorder.a */; };
 		DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCB0416C19253FB800D945D2 /* GLKit.framework */; };
 		DCB69AB5197EE31300AF667A /* SCEditVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */; };
+		DCBF83CF19DE1560006547EE /* a_filter.cisf in Resources */ = {isa = PBXBuildFile; fileRef = DCBF83CE19DE1560006547EE /* a_filter.cisf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,11 +100,11 @@
 		DC7F376118FC2B0300D54901 /* Record-Normal-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Record-Normal-icon.png"; sourceTree = "<group>"; };
 		DC7F376218FC2B0300D54901 /* Record-Pressed-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Record-Pressed-icon.png"; sourceTree = "<group>"; };
 		DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Stop-Normal-Red-icon.png"; sourceTree = "<group>"; };
-		DC88B923196E1F86005D953E /* blitch.cisf */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = blitch.cisf; sourceTree = "<group>"; };
 		DC89180A192EA622006FAE71 /* SCRecorder.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SCRecorder.xcodeproj; path = ../Library/SCRecorder.xcodeproj; sourceTree = "<group>"; };
 		DCB0416C19253FB800D945D2 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		DCB69AB3197EE31300AF667A /* SCEditVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCEditVideoViewController.h; sourceTree = "<group>"; };
 		DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCEditVideoViewController.m; sourceTree = "<group>"; };
+		DCBF83CE19DE1560006547EE /* a_filter.cisf */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = a_filter.cisf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -194,7 +194,7 @@
 		DC7F371218FC2A0D00D54901 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				DC88B923196E1F86005D953E /* blitch.cisf */,
+				DCBF83CE19DE1560006547EE /* a_filter.cisf */,
 				DC1C8E9E18FD24C9005A342D /* Main.storyboard */,
 				DC7F375818FC2B0300D54901 /* capture_flip@2x.png */,
 				DC7F375918FC2B0300D54901 /* capture_onion_selected@2x.png */,
@@ -350,8 +350,8 @@
 				DC7F376C18FC2B0300D54901 /* Play-Pressed-icon.png in Resources */,
 				DC7F376918FC2B0300D54901 /* Default@2x.png in Resources */,
 				DC7F376A18FC2B0300D54901 /* Pause-Normal-icon.png in Resources */,
+				DCBF83CF19DE1560006547EE /* a_filter.cisf in Resources */,
 				DC7F376618FC2B0300D54901 /* capture_onion@2x.png in Resources */,
-				DC88B924196E1F86005D953E /* blitch.cisf in Resources */,
 				DC7F376E18FC2B0300D54901 /* Record-Pressed-icon.png in Resources */,
 				DC7F376518FC2B0300D54901 /* capture_onion_selected@2x.png in Resources */,
 				DC1C8E9F18FD24C9005A342D /* Main.storyboard in Resources */,

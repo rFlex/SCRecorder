@@ -194,6 +194,14 @@
                 AVAssetTrack *track = videoTracks.firstObject;
                 
                 CGAffineTransform transform = track.preferredTransform;
+                
+//                NSLog(@"Transform: %@ / Size: %@ (transformed frame: %@)", NSStringFromCGAffineTransform(transform), NSStringFromCGSize(track.naturalSize), NSStringFromCGRect( CGRectApplyAffineTransform(CGRectMake(0, 0, track.naturalSize.width, track.naturalSize.height), transform)));
+                
+                // Return the video if it is upside down
+                if (transform.b == 1 && transform.c == -1) {
+                    transform = CGAffineTransformRotate(transform, M_PI);
+                }
+                
                 if (self.autoRotate) {
                     CGSize videoSize = track.naturalSize;
                     CGSize viewSize =  [renderer frame].size;

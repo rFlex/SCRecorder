@@ -48,7 +48,9 @@
                                              [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectChrome"]],
                                              [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]],
                                              [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectTonal"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectFade"]]                                    
+                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectFade"]],
+                                             // Adding a filter created using CoreImageShop
+                                             [SCFilterGroup filterGroupWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]]
                                              ];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleBordered target:self action:@selector(saveToCameraRoll)];
@@ -100,7 +102,7 @@
         exportSession.filterGroup = currentFilter;
         exportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
         exportSession.outputUrl = self.recordSession.outputUrl;
-        exportSession.outputFileType = self.recordSession.suggestedFileType;
+        exportSession.outputFileType = AVFileTypeMPEG4;
         exportSession.keepVideoSize = YES;
         [exportSession exportAsynchronouslyWithCompletionHandler:^{
             completionHandler(exportSession.error);

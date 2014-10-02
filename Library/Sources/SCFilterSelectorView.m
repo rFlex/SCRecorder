@@ -36,7 +36,7 @@
     _glkView = [[GLKView alloc] initWithFrame:self.bounds context:context];
     _glkView.backgroundColor = [UIColor clearColor];
     
-    NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
+    NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
     _CIContext = [CIContext contextWithEAGLContext:context options:options];
     
     _glkView.delegate = self;
