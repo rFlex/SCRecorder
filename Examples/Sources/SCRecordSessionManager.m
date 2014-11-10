@@ -77,6 +77,7 @@
         [metadatas removeObjectAtIndex:index];
     }];
 }
+
 - (NSArray *)savedRecordSessions {
     return [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsStorageKey];
 }

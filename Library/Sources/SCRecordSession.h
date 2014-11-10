@@ -22,6 +22,7 @@ extern const NSString *SCRecordSessionIdentifierKey;
 extern const NSString *SCRecordSessionDateKey;
 
 @class SCRecordSession;
+@class SCRecorder;
 @protocol SCRecordSessionDelegate <NSObject>
 
 @optional
@@ -74,7 +75,7 @@ extern const NSString *SCRecordSessionDateKey;
 /**
  The current record duration
  */
-@property (readonly, nonatomic) CMTime currentRecordDuration;
+@property (readonly, atomic) CMTime currentRecordDuration;
 
 /**
  The suggested maximum record duration that this session should handle
@@ -342,6 +343,8 @@ extern const NSString *SCRecordSessionDateKey;
 //////////////////
 // PRIVATE API
 ////
+
+@property (weak, nonatomic) SCRecorder *recorder;
 
 @property (readonly, nonatomic) BOOL videoInitialized;
 @property (readonly, nonatomic) BOOL audioInitialized;

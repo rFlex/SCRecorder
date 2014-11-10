@@ -42,6 +42,8 @@
         _audioQueue = dispatch_queue_create("me.corsin.SCRecorder.Audio", nil);
         _recordSessionQueue = dispatch_queue_create("me.corsin.SCRecorder.RecordSession", nil);
         
+        dispatch_queue_set_specific(_recordSessionQueue, kSCRecorderRecordSessionQueueKey, "true", nil);
+        
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
         _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
         _initializeRecordSessionLazily = YES;
@@ -55,7 +57,7 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaServicesWereReset:) name:AVAudioSessionMediaServicesWereResetNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaServicesWereLost:) name:AVAudioSessionMediaServicesWereLostNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification  object:nil];
-        
+                
         _lastAppendedVideoBuffer = [SCSampleBufferHolder new];
         _lastVideoBuffer = [SCSampleBufferHolder new];
         
@@ -969,8 +971,12 @@
 - (void)setRecordSession:(SCRecordSession *)recordSession {
     if (_recordSession != recordSession) {
         dispatch_sync(_recordSessionQueue, ^{
+            _recordSession.recorder = nil;
             [recordSession makeTimeOffsetDirty];
+            
             _recordSession = recordSession;
+            
+            recordSession.recorder = self;
         });
     }
 }

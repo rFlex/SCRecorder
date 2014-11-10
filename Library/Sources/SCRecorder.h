@@ -18,6 +18,8 @@
 #import "SCSwipeableFilterView.h"
 #import "SCRecorderFocusView.h"
 
+#define kSCRecorderRecordSessionQueueKey "SCRecorderRecordSessionQueue"
+
 typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
     SCFlashModeOn   = AVCaptureFlashModeOn,

@@ -18,6 +18,7 @@
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "SCSessionListViewController.h"
 #import "SCRecordSessionManager.h"
+#import <MobileCoreServices/MobileCoreServices.h>
 
 #define kVideoPreset AVCaptureSessionPresetHigh
 
@@ -196,7 +197,24 @@
 	[_recorder switchCaptureDevices];
 }
 
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    NSURL *url = info[UIImagePickerControllerMediaURL];
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    
+    [_recorder.recordSession addSegment:url];
+    _recordSession = [SCRecordSession recordSession];
+    [_recordSession addSegment:url];
+    
+    [self showVideo];
+}
 - (void) handleStopButtonTapped:(id)sender {
+//    UIImagePickerController *pickerLibrary = [[UIImagePickerController alloc] init];
+//    pickerLibrary.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+//    pickerLibrary.mediaTypes = @[(NSString*)kUTTypeMovie];
+//    pickerLibrary.delegate = self;
+//    [self presentModalViewController:pickerLibrary animated:YES];
+    
     SCRecordSession *recordSession = _recorder.recordSession;
     
     if (recordSession != nil) {
