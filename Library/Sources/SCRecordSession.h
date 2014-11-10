@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
+#import "SCFilterGroup.h"
 
 #define kRecordSessionDefaultVideoCodec AVVideoCodecH264
 #define kRecordSessionDefaultVideoScalingMode AVVideoScalingModeResizeAspectFill
@@ -194,6 +195,17 @@ extern const NSString *SCRecordSessionDateKey;
  */
 @property (assign, nonatomic) BOOL videoShouldKeepOnlyKeyFrames;
 
+/**
+ If not nil, each appended frame will be processed by this SCFilterGroup.
+ While it seems convenient, this removes the possibility to change the
+ filter after the segment has been added.
+ Setting a new filterGroup will cause the SCRecordSession to stop the
+ current record segment if the previous filterGroup was NIL and the
+ new filterGroup is NOT NIL or vice versa. If you want to have a smooth
+ transition between filters in the same record segment, make sure to set
+ an empty SCFilterGroup instead of setting this property to nil.
+ */
+@property (strong, nonatomic) SCFilterGroup *filterGroup;
 
 //////////////////
 // AUDIO SETTINGS

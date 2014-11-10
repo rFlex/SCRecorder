@@ -44,6 +44,11 @@ const NSString *SCRecordSessionDateKey = @"Date";
     CMTime _lastTimeAudio;
     CMTime _sessionStartedTime;
     CMTime _currentRecordDurationWithoutCurrentSegment;
+    
+    // Used when SCFilterGroup is non-nil
+    CIContext *_CIContext;
+//    EAGLContext *_EAGLContext;
+    AVAssetWriterInputPixelBufferAdaptor *_videoPixelBufferAdaptor;
 }
 @end
 
@@ -271,6 +276,7 @@ const NSString *SCRecordSessionDateKey = @"Date";
     _videoInitializationFailed = NO;
     _videoInput = nil;
     _audioInput = nil;
+    _videoPixelBufferAdaptor = nil;
 }
 
 - (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasAudio:(BOOL)hasAudio error:(NSError *__autoreleasing *)error {
@@ -278,9 +284,8 @@ const NSString *SCRecordSessionDateKey = @"Date";
     _recorderHasAudio = hasAudio;
     NSDictionary *videoSettings = self.videoOutputSettings;
         
+    CGSize videoSize = self.videoSize;
     if (videoSettings == nil) {
-        CGSize videoSize = self.videoSize;
-        
         if (CGSizeEqualToSize(videoSize, CGSizeZero)) {
             CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
             size_t width = CVPixelBufferGetWidth(imageBuffer);
@@ -319,6 +324,16 @@ const NSString *SCRecordSessionDateKey = @"Date";
         _videoInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
         _videoInput.expectsMediaDataInRealTime = YES;
         _videoInput.transform = self.videoAffineTransform;
+        
+        if (_filterGroup != nil) {
+            NSDictionary *pixelBufferAttributes = @{
+                                                    (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
+                                                    (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
+                                                    (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:videoSize.height]
+                                                    };
+            
+            _videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
+        }
     }
     @catch (NSException *exception) {
         theError = [SCRecordSession createError:exception.reason];
@@ -655,8 +670,6 @@ const NSString *SCRecordSessionDateKey = @"Date";
                 [self updateRecordDuration];
             }
             
-//            NSLog(@"Appended audio at %f/%f", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(duration));
-            
             [_audioInput appendSampleBuffer:adjustedBuffer];
             _currentSegmentHasAudio = YES;
         }
@@ -677,12 +690,9 @@ const NSString *SCRecordSessionDateKey = @"Date";
             _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
         }
         
-        CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
-        
-        CMTime lastTimeVideo = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
+        CMTime lastTimeVideo = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer), _timeOffset);
         CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
         
-//        if (CMTIME_COMPARE_INLINE(lastTimeVideo, >=, _lastTimeVideo)) {
         if (CMTIME_IS_INVALID(duration)) {
             if (_videoMaxFrameRate == 0) {
                 duration = frameDuration;
@@ -698,22 +708,39 @@ const NSString *SCRecordSessionDateKey = @"Date";
             _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
         }
         
-//            NSLog(@"%f - Appended video %f (%f)", CMTimeGetSeconds(lastTimeVideo), CMTimeGetSeconds(computedFrameDuration), CMTimeGetSeconds(CMTimeSubtract(lastTimeVideo, _lastTimeVideo)));
-        
         lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
         
         _lastTimeVideo = lastTimeVideo;
         _lastTime = lastTimeVideo;
         [self updateRecordDuration];
-
-        [_videoInput appendSampleBuffer:adjustedBuffer];
+        
+        if (_videoPixelBufferAdaptor != nil) {
+            CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
+            
+            CIImage *result = [_filterGroup imageByProcessingImage:image];
+            
+            CVPixelBufferRef outputPixelBuffer = nil;
+            CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelBufferAdaptor pixelBufferPool], &outputPixelBuffer);
+            
+            CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
+            
+            [_CIContext render:result toCVPixelBuffer:outputPixelBuffer];
+            
+            [_videoPixelBufferAdaptor appendPixelBuffer:outputPixelBuffer withPresentationTime:lastTimeVideo];
+            
+            CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
+            
+            CVPixelBufferRelease(outputPixelBuffer);
+        } else {
+            CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
+            
+            [_videoInput appendSampleBuffer:adjustedBuffer];
+            
+            CFRelease(adjustedBuffer);
+        }
         
         _currentSegmentHasVideo = YES;
-//        } else {
-//            NSLog(@"%f - Skipped video", CMTimeGetSeconds(lastTimeVideo));
-//        }
         
-        CFRelease(adjustedBuffer);
         return YES;
     } else {
         return NO;
@@ -801,6 +828,26 @@ const NSString *SCRecordSessionDateKey = @"Date";
              SCRecordSessionIdentifierKey : _identifier,
              SCRecordSessionDateKey : _date
              };
+}
+
+- (void)setFilterGroup:(SCFilterGroup *)filterGroup {
+    [self _dispatchSynchronouslyOnSafeQueue:^{
+        if ((_filterGroup == nil && filterGroup != nil)) {
+            [self uninitialize];
+//            _EAGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+            
+            NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
+            
+            _CIContext = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] options:options];
+        } else if (_filterGroup != nil && filterGroup == nil) {
+            [self uninitialize];
+            
+//            _EAGLContext = nil;
+            _CIContext = nil;
+        }
+        
+        _filterGroup = filterGroup;
+    }];
 }
 
 @end

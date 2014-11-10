@@ -125,6 +125,10 @@
     [_filters removeObjectAtIndex:index];
 }
 
++ (SCFilterGroup *)emptyFilterGroup {
+    return [[SCFilterGroup alloc] initWithFilters:[NSArray new]];
+}
+
 + (SCFilterGroup *)filterGroupWithFilter:(SCFilter *)filter {
     return [[SCFilterGroup alloc] initWithFilter:filter];
 }

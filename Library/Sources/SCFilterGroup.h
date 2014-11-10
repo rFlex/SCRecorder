@@ -52,6 +52,8 @@
 // Process the image using the underlying Core Image filters
 - (CIImage *)imageByProcessingImage:(CIImage *)image;
 
++ (SCFilterGroup *)emptyFilterGroup;
+
 + (SCFilterGroup *)filterGroupWithFilter:(SCFilter *)filter;
 
 + (SCFilterGroup *)filterGroupWithFilters:(NSArray *)filters;
