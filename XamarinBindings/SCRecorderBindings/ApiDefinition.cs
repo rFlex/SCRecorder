@@ -30,6 +30,12 @@ namespace SCorsin {
 		[Export("initWithDictionaryRepresentation:")]
 		IntPtr Constructor(NSDictionary dictionaryRepresentation);
 
+		[Export("identifier")]
+		string Identifier { get; }
+
+		[Export("date")]
+		NSDate Date { get; }
+
 		[Export("outputUrl"), NullAllowed]
 		NSUrl OutputUrl { get; set; }
 
@@ -77,6 +83,9 @@ namespace SCorsin {
 
 		[Export("videoScalingMode"), NullAllowed]
 		NSString VideoScalingMode { get; set; }
+
+		[Export("filterGroup"), NullAllowed]
+		SCFilterGroup FilterGroup { get; set; }
 
 		[Export("shouldIgnoreVideo")]
 		bool ShouldIgnoreVideo { get; set; }
@@ -148,8 +157,11 @@ namespace SCorsin {
 	[Model, BaseType(typeof(NSObject)), Protocol]
 	interface SCRecorderDelegate {
 
-		[Abstract, Export("recorder:didReconfigureInputs:audioInputError:"), EventArgs("RecorderDidReconfigureInputsDelegate")]
-		void DidReconfigureInputs(SCRecorder recorder, NSError videoInputError, NSError audioInputError);
+		[Abstract, Export("recorder:didReconfigureVideoInput:"), EventArgs("RecorderDidReconfigureVideoInputDelegate")]
+		void DidReconfigureVideoInput(SCRecorder recorder, NSError videoInputError);
+
+		[Abstract, Export("recorder:didReconfigureAudioInput:"), EventArgs("RecorderDidReconfigureAudioInputDelegate")]
+		void DidReconfigureAudioInput(SCRecorder recorder, NSError audioInputError);
 
 		[Export("recorder:didChangeFlashMode:error:"), Abstract, EventArgs("RecorderDidChangeFlashModeDelegate")]
 		void DidChangeFlashMode(SCRecorder recorder, int flashMode, NSError error);
@@ -218,6 +230,9 @@ namespace SCorsin {
 
 		[Export("isRecording")]
 		bool IsRecording { get; }
+
+		[Export("deviceHasFlash")]
+		bool DeviceHasFlash { get; }
 
 		[Export("flashMode")]
 		int FlashMode { get; set; }
