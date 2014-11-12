@@ -108,21 +108,21 @@
 - (void)updateVideoOrientation {
     if (!_recordSession.currentSegmentHasAudio && !_recordSession.currentSegmentHasVideo) {
         [_recordSession uninitialize];
-        
-        AVCaptureVideoOrientation videoOrientation = [self actualVideoOrientation];
-        AVCaptureConnection *videoConnection = [_videoOutput connectionWithMediaType:AVMediaTypeVideo];
-        
-        if ([videoConnection isVideoOrientationSupported]) {
-            videoConnection.videoOrientation = videoOrientation;
-        }
-        if ([_previewLayer.connection isVideoOrientationSupported]) {
-            _previewLayer.connection.videoOrientation = videoOrientation;
-        }
-        
-        AVCaptureConnection *photoConnection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
-        if ([photoConnection isVideoOrientationSupported]) {
-            photoConnection.videoOrientation = videoOrientation;
-        }
+    }
+    
+    AVCaptureVideoOrientation videoOrientation = [self actualVideoOrientation];
+    AVCaptureConnection *videoConnection = [_videoOutput connectionWithMediaType:AVMediaTypeVideo];
+    
+    if ([videoConnection isVideoOrientationSupported]) {
+        videoConnection.videoOrientation = videoOrientation;
+    }
+    if ([_previewLayer.connection isVideoOrientationSupported]) {
+        _previewLayer.connection.videoOrientation = videoOrientation;
+    }
+    
+    AVCaptureConnection *photoConnection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
+    if ([photoConnection isVideoOrientationSupported]) {
+        photoConnection.videoOrientation = videoOrientation;
     }
 }
 
