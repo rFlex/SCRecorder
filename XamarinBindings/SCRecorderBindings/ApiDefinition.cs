@@ -312,8 +312,8 @@ namespace SCorsin {
 		[Export("continuousFocusAtPoint:")]
 		void ContinuousFocusAtPoint(PointF point);
 
-		[Export("setActiveFormatThatSupportsFrameRate:width:andHeight:error:")]
-		bool SetActiveFormatThatSupportsFrameRate(int frameRate, int width, int height, out NSError error);
+		[Export("setActiveFormatWithFrameRate:width:andHeight:error:")]
+		bool SetActiveFormatWithFrameRate(int frameRate, int width, int height, out NSError error);
 
 		[Export("focusCenter")]
 		void FocusCenter();

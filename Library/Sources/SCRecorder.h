@@ -296,10 +296,10 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 /**
  Set an active device format that supports the request framerate and size
- This does not change the frameRate.
+ This changes the frameRate.
  @return whether the method has succeeded or not
  */
-- (BOOL)setActiveFormatThatSupportsFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError**)error;
+- (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError**)error;
 
 /**
  Allow the recorder to append the sample buffers inside the current setted recordSession

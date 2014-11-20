@@ -726,8 +726,8 @@ const NSString *SCRecordSessionDateKey = @"Date";
             CVPixelBufferRelease(outputPixelBuffer);
         } else {
             CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
-            CMTime sampleBufferDuration = CMSampleBufferGetDuration(adjustedBuffer);
-            CMTime startTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
+//            CMTime sampleBufferDuration = CMSampleBufferGetDuration(adjustedBuffer);
+//            CMTime startTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
             
 //            NSLog(@"Appending sample buffer: %fs -> %fs", CMTimeGetSeconds(startTime), CMTimeGetSeconds(CMTimeAdd(sampleBufferDuration, startTime)));
             
