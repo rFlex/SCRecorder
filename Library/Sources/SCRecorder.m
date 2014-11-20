@@ -50,6 +50,7 @@
         
         _videoOrientation = AVCaptureVideoOrientationPortrait;
         
+        [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(_subjectAreaDidChange) name:AVCaptureDeviceSubjectAreaDidChangeNotification  object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionInterrupted:) name:AVAudioSessionInterruptionNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
@@ -57,7 +58,7 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaServicesWereReset:) name:AVAudioSessionMediaServicesWereResetNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaServicesWereLost:) name:AVAudioSessionMediaServicesWereLostNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification  object:nil];
-                
+        
         _lastAppendedVideoBuffer = [SCSampleBufferHolder new];
         _lastVideoBuffer = [SCSampleBufferHolder new];
         
@@ -232,6 +233,10 @@
 
 - (void)endRunningSession {
     [_captureSession stopRunning];
+}
+
+- (void)_subjectAreaDidChange {
+    [self focusCenter];
 }
 
 - (UIImage *)_imageFromSampleBufferHolder:(SCSampleBufferHolder *)sampleBufferHolder {
@@ -544,7 +549,7 @@
             
             if (_needsSwitchBackToContinuousFocus) {
                 _needsSwitchBackToContinuousFocus = NO;
-                [self continuousFocusAtPoint:CGPointMake(0.5, 0.5)];
+                [self continuousFocusAtPoint:self.focusPointOfInterest];
             }
 
         }
@@ -564,6 +569,23 @@
     AVCaptureDevice *currentUsedDevice = currentInput.device;
     
     if (currentUsedDevice != newDevice) {
+        if ([mediaType isEqualToString:AVMediaTypeVideo]) {
+            NSError *error;
+            if ([newDevice lockForConfiguration:&error]) {
+                if (newDevice.isSmoothAutoFocusSupported) {
+                    newDevice.smoothAutoFocusEnabled = YES;
+                }
+                newDevice.subjectAreaChangeMonitoringEnabled = true;
+                
+                if (newDevice.isLowLightBoostSupported) {
+                    newDevice.automaticallyEnablesLowLightBoostWhenAvailable = YES;
+                }
+                [newDevice unlockForConfiguration];
+            } else {
+                NSLog(@"Failed to configure device: %@", error);
+            }
+        }
+
         AVCaptureDeviceInput *newInput = nil;
         
         if (newDevice != nil) {
@@ -583,6 +605,15 @@
                     [_captureSession addInput:newInput];
                     if ([newInput.device hasMediaType:AVMediaTypeVideo]) {
                         [self addVideoObservers:newInput.device];
+                        
+                        AVCaptureConnection *videoConnection = [self videoConnection];
+                        if ([videoConnection isVideoStabilizationSupported]) {
+                            if ([videoConnection respondsToSelector:@selector(setPreferredVideoStabilizationMode:)]) {
+                                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
+                            } else {
+                                videoConnection.enablesVideoStabilizationWhenAvailable = YES;
+                            }
+                        }
                     }
                 } else {
                     *error = [SCRecorder createError:@"Failed to add input to capture session"];
@@ -781,6 +812,15 @@
     [self autoFocusAtPoint:CGPointMake(0.5, 0.5)];
 }
 
+- (void)refocus {
+    _needsSwitchBackToContinuousFocus = YES;
+    [self autoFocusAtPoint:self.focusPointOfInterest];
+}
+
+- (CGPoint)focusPointOfInterest {
+    return [self.currentVideoDeviceInput device].focusPointOfInterest;
+}
+
 - (BOOL)focusSupported {
     return [self currentVideoDeviceInput].device.isFocusPointOfInterestSupported;
 }
@@ -811,20 +851,24 @@
     return [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
 }
 
++ (AVCaptureDevice *)videoDeviceForPosition:(AVCaptureDevicePosition)position {
+    NSArray * videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    
+    for (AVCaptureDevice * device in videoDevices) {
+        if (device.position == (AVCaptureDevicePosition)position) {
+            return device;
+        }
+    }
+    
+    return nil;
+}
+
 - (AVCaptureDevice*)videoDevice {
     if (!self.videoEnabled) {
         return nil;
     }
     
-	NSArray * videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-	
-	for (AVCaptureDevice * device in videoDevices) {
-		if (device.position == (AVCaptureDevicePosition)_device) {
-			return device;
-		}
-	}
-	
-	return nil;
+    return [SCRecorder videoDeviceForPosition:_device];
 }
 
 - (AVCaptureVideoOrientation)actualVideoOrientation {
@@ -1007,7 +1051,7 @@
     return NO;
 }
 
-- (AVCaptureConnection*) getVideoConnection {
+- (AVCaptureConnection*)videoConnection {
 	for (AVCaptureConnection * connection in _videoOutput.connections) {
 		for (AVCaptureInputPort * port in connection.inputPorts) {
 			if ([port.mediaType isEqual:AVMediaTypeVideo]) {
@@ -1028,7 +1072,7 @@
         if ([deviceInput.device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
             framerate = deviceInput.device.activeVideoMaxFrameDuration.timescale;
         } else {
-            AVCaptureConnection * videoConnection = [self getVideoConnection];
+            AVCaptureConnection *videoConnection = [self videoConnection];
             framerate = videoConnection.videoMaxFrameDuration.timescale;
         }
     }
@@ -1055,7 +1099,7 @@
                     NSLog(@"Failed to set FramePerSeconds into camera device: %@", error.description);
                 }
             } else {
-                AVCaptureConnection * connection = [self getVideoConnection];
+                AVCaptureConnection * connection = [self videoConnection];
                 if (connection.isVideoMaxFrameDurationSupported) {
                     connection.videoMaxFrameDuration = fps;
                 } else {

@@ -182,6 +182,11 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @property (readonly, nonatomic) BOOL focusSupported;
 
 /**
+ The current focus point of interest
+ */
+@property (readonly, nonatomic) CGPoint focusPointOfInterest;
+
+/**
  The underlying AVCaptureVideoDataOutput
  */
 @property (readonly, nonatomic) AVCaptureVideoDataOutput *videoOutput;
@@ -278,6 +283,11 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Focus at the center then switch back to a continuous focus at the center.
  */
 - (void)focusCenter;
+
+/**
+ Refocus at the current position 
+ */
+- (void)refocus;
 
 /**
  Lock the current focus and prevent any new further focus
