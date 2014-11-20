@@ -239,6 +239,7 @@ const NSString *SCRecordSessionDateKey = @"Date";
             }
             
             if ([writer startWriting]) {
+//                NSLog(@"Starting session at %fs", CMTimeGetSeconds(_lastTime));
                 [writer startSessionAtSourceTime:_lastTime];
                 _sessionStartedTime = _lastTime;
                 _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
@@ -422,7 +423,7 @@ const NSString *SCRecordSessionDateKey = @"Date";
     for (CMItemCount i = 0; i < count; i++) {
         pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
         pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
-//        pInfo[i].duration = duration;
+        pInfo[i].duration = duration;
     }
     
     CMSampleBufferRef sout;
@@ -473,6 +474,7 @@ const NSString *SCRecordSessionDateKey = @"Date";
                     });
                 }
             } else {
+//                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_lastTime));
                 [writer endSessionAtSourceTime:_lastTime];
                 
                 [writer finishWritingWithCompletionHandler: ^{
@@ -688,6 +690,8 @@ const NSString *SCRecordSessionDateKey = @"Date";
         if (_shouldRecomputeTimeOffset) {
             _shouldRecomputeTimeOffset = NO;
             _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
+//            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
+
         }
         
         CMTime lastTimeVideo = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer), _timeOffset);
@@ -701,17 +705,6 @@ const NSString *SCRecordSessionDateKey = @"Date";
             }
         }
         
-        CMTime computedFrameDuration = duration;
-        
-        if (_videoTimeScale != 1.0) {
-            computedFrameDuration = CMTimeMultiplyByFloat64(computedFrameDuration, _videoTimeScale);
-            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
-        }
-        
-        lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
-        
-        _lastTimeVideo = lastTimeVideo;
-        _lastTime = lastTimeVideo;
         [self updateRecordDuration];
         
         if (_videoPixelBufferAdaptor != nil) {
@@ -733,11 +726,27 @@ const NSString *SCRecordSessionDateKey = @"Date";
             CVPixelBufferRelease(outputPixelBuffer);
         } else {
             CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
+            CMTime sampleBufferDuration = CMSampleBufferGetDuration(adjustedBuffer);
+            CMTime startTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
+            
+//            NSLog(@"Appending sample buffer: %fs -> %fs", CMTimeGetSeconds(startTime), CMTimeGetSeconds(CMTimeAdd(sampleBufferDuration, startTime)));
             
             [_videoInput appendSampleBuffer:adjustedBuffer];
             
             CFRelease(adjustedBuffer);
         }
+        
+        CMTime computedFrameDuration = duration;
+        
+        if (_videoTimeScale != 1.0) {
+            computedFrameDuration = CMTimeMultiplyByFloat64(computedFrameDuration, _videoTimeScale);
+            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
+        }
+        
+        lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
+        
+        _lastTimeVideo = lastTimeVideo;
+        _lastTime = lastTimeVideo;
         
         _currentSegmentHasVideo = YES;
         
