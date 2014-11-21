@@ -39,15 +39,11 @@ const NSString *SCRecordSessionDateKey = @"Date";
     BOOL _recorderHasVideo;
     int _currentSegmentCount;
     CMTime _timeOffset;
-    CMTime _lastTime;
     CMTime _lastTimeVideo;
     CMTime _lastTimeAudio;
-    CMTime _sessionStartedTime;
-    CMTime _currentRecordDurationWithoutCurrentSegment;
     
     // Used when SCFilterGroup is non-nil
     CIContext *_CIContext;
-//    EAGLContext *_EAGLContext;
     AVAssetWriterInputPixelBufferAdaptor *_videoPixelBufferAdaptor;
 }
 @end
@@ -77,13 +73,11 @@ const NSString *SCRecordSessionDateKey = @"Date";
         }
         NSNumber *recordDuration = [dictionaryRepresentation objectForKey:SCRecordSessionDurationKey];
         if (recordDuration != nil) {
-            _currentRecordDuration = CMTimeMakeWithSeconds(recordDuration.doubleValue, 10000);
-            _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
+            _segmentsDuration = CMTimeMakeWithSeconds(recordDuration.doubleValue, 10000);
         }
+        
         _identifier = [dictionaryRepresentation objectForKey:SCRecordSessionIdentifierKey];
         _date = [dictionaryRepresentation objectForKey:SCRecordSessionDateKey];
-        
-//        [self recomputeRecordDuration];
     }
     
     return self;
@@ -117,11 +111,10 @@ const NSString *SCRecordSessionDateKey = @"Date";
         _videoInitializationFailed = NO;
         _currentSegmentCount = 0;
         _timeOffset = kCMTimeZero;
-        _lastTime = kCMTimeZero;
         _lastTimeVideo = kCMTimeZero;
         _lastTimeAudio = kCMTimeZero;
-        _currentRecordDurationWithoutCurrentSegment = kCMTimeZero;
-        _currentRecordDuration = kCMTimeZero;
+        _currentSegmentDuration = kCMTimeZero;
+        _segmentsDuration = kCMTimeZero;
         _videoTimeScale = 1;
         _shouldTrackRecordSegments = YES;
         _date = [NSDate date];
@@ -164,25 +157,46 @@ const NSString *SCRecordSessionDateKey = @"Date";
 
 - (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile {
     [self _dispatchSynchronouslyOnSafeQueue:^{
-        if (deleteFile) {
-            NSURL *fileUrl = [_recordSegments objectAtIndex:segmentIndex];
-            [self removeFile:fileUrl];
+        NSURL *fileUrl = [_recordSegments objectAtIndex:segmentIndex];
+        CMTime segmentDuration = [(AVAsset *)[AVAsset assetWithURL:fileUrl] duration];
+        [_recordSegments removeObjectAtIndex:segmentIndex];
+        
+        if (CMTIME_IS_VALID(segmentDuration)) {
+            _segmentsDuration = CMTimeSubtract(_segmentsDuration, segmentDuration);
+        } else {
+            NSLog(@"Removed invalid segment index %d. Recomputing duration manually", (int)segmentIndex);
+            _segmentsDuration = self.assetRepresentingRecordSegments.duration;
         }
         
-        [_recordSegments removeObjectAtIndex:segmentIndex];
-        [self recomputeRecordDuration];
+        if (deleteFile) {
+            [self removeFile:fileUrl];
+        }
+    }];
+}
+
+- (void)removeLastSegment {
+    [self _dispatchSynchronouslyOnSafeQueue:^{
+        if (_recordSegments.count > 0) {
+            [self removeSegmentAtIndex:_recordSegments.count - 1 deleteFile:YES];
+        }
     }];
 }
 
 - (void)removeAllSegments {
+    [self removeAllSegments:YES];
+}
+
+- (void)removeAllSegments:(BOOL)removeFiles {
     [self _dispatchSynchronouslyOnSafeQueue:^{
         while (_recordSegments.count > 0) {
-            NSURL *fileUrl = [_recordSegments objectAtIndex:0];
-            [self removeFile:fileUrl];
+            if (removeFiles) {
+                NSURL *fileUrl = [_recordSegments objectAtIndex:0];
+                [self removeFile:fileUrl];
+            }
             [_recordSegments removeObjectAtIndex:0];
         }
         
-        [self recomputeRecordDuration];
+        _segmentsDuration = kCMTimeZero;
     }];
 }
 
@@ -240,9 +254,9 @@ const NSString *SCRecordSessionDateKey = @"Date";
             
             if ([writer startWriting]) {
 //                NSLog(@"Starting session at %fs", CMTimeGetSeconds(_lastTime));
-                [writer startSessionAtSourceTime:_lastTime];
-                _sessionStartedTime = _lastTime;
-                _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
+                [writer startSessionAtSourceTime:kCMTimeZero];
+//                _sessionStartedTime = _lastTime;
+//                _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
                 _recordSegmentReady = YES;
             } else {
                 theError = writer.error;
@@ -392,22 +406,47 @@ const NSString *SCRecordSessionDateKey = @"Date";
     UISaveVideoAtPathToSavedPhotosAlbum(self.outputUrl.path, nil, nil, nil);
 }
 
-- (void)recomputeRecordDuration {
-    _currentRecordDurationWithoutCurrentSegment = self.assetRepresentingRecordSegments.duration;
-    [self updateRecordDuration];
-}
+//- (void)recomputeRecordDuration {
+//    NSLog(@"Old Duration: %fs", CMTimeGetSeconds(_currentRecordDurationWithoutCurrentSegment));
+//    _currentRecordDurationWithoutCurrentSegment = self.assetRepresentingRecordSegments.duration;
+//    NSLog(@"New Duration: %fs", CMTimeGetSeconds(_currentRecordDurationWithoutCurrentSegment));
+//    [self updateRecordDuration];
+//}
 
 - (void)addSegment:(NSURL *)fileUrl {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        [_recordSegments addObject:fileUrl];
-        [self recomputeRecordDuration];
-    }];
+    AVAsset *asset = [AVAsset assetWithURL:fileUrl];
+    CMTime duration = asset.duration;
+    
+    if (CMTIME_IS_VALID(duration)) {
+        [self _addSegment:fileUrl duration:duration];
+    } else {
+        NSLog(@"Unable to read asset at url %@", fileUrl);
+    }
+    
 }
 
 - (void)insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex {
+    AVAsset *asset = [AVAsset assetWithURL:fileUrl];
+    CMTime duration = asset.duration;
+    
+    if (CMTIME_IS_VALID(duration)) {
+        [self _insertSegment:fileUrl atIndex:segmentIndex duration:duration];
+    } else {
+        NSLog(@"Unable to read asset at url %@", fileUrl);
+    }
+}
+
+- (void)_addSegment:(NSURL *)fileUrl duration:(CMTime)duration {
+    [self _dispatchSynchronouslyOnSafeQueue:^{
+        [_recordSegments addObject:fileUrl];
+        _segmentsDuration = CMTimeAdd(_segmentsDuration, duration);
+    }];
+}
+
+- (void)_insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex duration:(CMTime)duration{
     [self _dispatchSynchronouslyOnSafeQueue:^{
         [_recordSegments insertObject:fileUrl atIndex:segmentIndex];
-        [self recomputeRecordDuration];
+        _segmentsDuration = CMTimeAdd(_segmentsDuration, duration);
     }];
 }
 
@@ -474,25 +513,30 @@ const NSString *SCRecordSessionDateKey = @"Date";
                     });
                 }
             } else {
-//                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_lastTime));
-                [writer endSessionAtSourceTime:_lastTime];
+//                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_currentSegmentDuration));
+                [writer endSessionAtSourceTime:_currentSegmentDuration];
                 
                 [writer finishWritingWithCompletionHandler: ^{
-                    [self _destroyAssetWriter];
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    [self _dispatchSynchronouslyOnSafeQueue:^{
                         NSInteger segmentNumber = -1;
+                        
                         if (writer.error == nil) {
                             segmentNumber = _recordSegments.count;
-                            [_recordSegments addObject:writer.outputURL];
+                            [self _addSegment:writer.outputURL duration:_currentSegmentDuration];
                         }
                         
-                        if (completionHandler != nil) {
-                            completionHandler(segmentNumber, writer.error);
-                        }
-                    });
+                        _currentSegmentDuration = kCMTimeZero;
+                        [self _destroyAssetWriter];
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            if (completionHandler != nil) {
+                                completionHandler(segmentNumber, writer.error);
+                            }
+                        });
+                    }];
+                    
                 }];
             }
-            _lastTime = _sessionStartedTime;
         } else {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (completionHandler != nil) {
@@ -645,17 +689,13 @@ const NSString *SCRecordSessionDateKey = @"Date";
     }];
 }
 
-- (void)updateRecordDuration {
-    _currentRecordDuration = CMTimeAdd(_currentRecordDurationWithoutCurrentSegment, CMTimeSubtract(_lastTime, _sessionStartedTime));
-}
-
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
     if (!IS_WAITING_VIDEO && [_audioInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer);
         
         if (_shouldRecomputeTimeOffset) {
             _shouldRecomputeTimeOffset = NO;
-            _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
+            _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
         }
         
         CMTime duration = CMSampleBufferGetDuration(audioSampleBuffer);
@@ -668,8 +708,7 @@ const NSString *SCRecordSessionDateKey = @"Date";
             _lastTimeAudio = lastTimeAudio;
             
             if (!CAN_HANDLE_VIDEO) {
-                _lastTime = lastTimeAudio;
-                [self updateRecordDuration];
+                _currentSegmentDuration = lastTimeAudio;
             }
             
             [_audioInput appendSampleBuffer:adjustedBuffer];
@@ -689,7 +728,7 @@ const NSString *SCRecordSessionDateKey = @"Date";
         
         if (_shouldRecomputeTimeOffset) {
             _shouldRecomputeTimeOffset = NO;
-            _timeOffset = CMTimeSubtract(actualBufferTime, _lastTime);
+            _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
 //            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
 
         }
@@ -704,8 +743,6 @@ const NSString *SCRecordSessionDateKey = @"Date";
                 duration = CMTimeMake(1, _videoMaxFrameRate);
             }
         }
-        
-        [self updateRecordDuration];
         
         if (_videoPixelBufferAdaptor != nil) {
             CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
@@ -726,8 +763,8 @@ const NSString *SCRecordSessionDateKey = @"Date";
             CVPixelBufferRelease(outputPixelBuffer);
         } else {
             CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
-//            CMTime sampleBufferDuration = CMSampleBufferGetDuration(adjustedBuffer);
-//            CMTime startTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
+            CMTime sampleBufferDuration = CMSampleBufferGetDuration(adjustedBuffer);
+            CMTime startTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
             
 //            NSLog(@"Appending sample buffer: %fs -> %fs", CMTimeGetSeconds(startTime), CMTimeGetSeconds(CMTimeAdd(sampleBufferDuration, startTime)));
             
@@ -743,10 +780,10 @@ const NSString *SCRecordSessionDateKey = @"Date";
             _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
         }
         
-        lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
+//        lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
         
         _lastTimeVideo = lastTimeVideo;
-        _lastTime = lastTimeVideo;
+        _currentSegmentDuration = lastTimeVideo;
         
         _currentSegmentHasVideo = YES;
         
@@ -807,7 +844,7 @@ const NSString *SCRecordSessionDateKey = @"Date";
     
     if (CMTIME_IS_VALID(_suggestedMaxRecordDuration)) {
         Float64 maxRecordDuration = CMTimeGetSeconds(_suggestedMaxRecordDuration);
-        Float64 recordedTime = CMTimeGetSeconds(_currentRecordDuration);
+        Float64 recordedTime = CMTimeGetSeconds(self.currentRecordDuration);
         
         ratio = (CGFloat)(recordedTime / maxRecordDuration);
     }
@@ -821,6 +858,10 @@ const NSString *SCRecordSessionDateKey = @"Date";
 
 - (BOOL)currentSegmentHasAudio {
     return _currentSegmentHasAudio;
+}
+
+- (CMTime)currentRecordDuration {
+    return CMTimeAdd(_segmentsDuration, _currentSegmentDuration);
 }
 
 - (NSDictionary *)dictionaryRepresentation {
@@ -843,15 +884,11 @@ const NSString *SCRecordSessionDateKey = @"Date";
     [self _dispatchSynchronouslyOnSafeQueue:^{
         if ((_filterGroup == nil && filterGroup != nil)) {
             [self uninitialize];
-//            _EAGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-            
             NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
             
             _CIContext = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] options:options];
         } else if (_filterGroup != nil && filterGroup == nil) {
             [self uninitialize];
-            
-//            _EAGLContext = nil;
             _CIContext = nil;
         }
         

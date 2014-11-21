@@ -74,9 +74,20 @@ extern const NSString *SCRecordSessionDateKey;
 @property (readonly, nonatomic) NSArray *recordSegments;
 
 /**
- The current record duration
+ The current record duration including the duration of
+ the current recording segment, if any.
  */
-@property (readonly, atomic) CMTime currentRecordDuration;
+@property (readonly, nonatomic) CMTime currentRecordDuration;
+
+/**
+ The duration of the recorded record segments.
+ */
+@property (readonly, atomic) CMTime segmentsDuration;
+
+/**
+ The duration of the current recording segment.
+ */
+@property (readonly, atomic) CMTime currentSegmentDuration;
 
 /**
  The suggested maximum record duration that this session should handle
@@ -292,25 +303,29 @@ extern const NSString *SCRecordSessionDateKey;
 - (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile;
 
 /**
- Manually add a record segment
- Unexpected behavior can occur if you call this method if
- recordSegmentBegan is true
+ Manually add a record segment.
  */
 - (void)addSegment:(NSURL *)fileUrl;
 
 /**
- Manually insert a record segment
- Unexpected behavior can occur if you call this method if
- recordSegmentBegan is true
+ Manually insert a record segment.
  */
 - (void)insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex;
 
 /**
- Remove all the record segments and their associated files
- Unexpected behavior can occur if you call this method if
- recordSegmentBegan is true
+ Remove all the record segments and their associated files.
  */
 - (void)removeAllSegments;
+
+/**
+ Remove all the record segments and their associated files if deleteFiles is true.
+ */
+- (void)removeAllSegments:(BOOL)deleteFiles;
+
+/**
+ Remove the last segment safely. Does not do anything if no segments were recorded.
+ */
+- (void)removeLastSegment;
 
 /**
  Merge all recordSegments into the outputUrl

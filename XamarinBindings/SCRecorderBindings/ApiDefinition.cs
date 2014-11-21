@@ -141,6 +141,9 @@ namespace SCorsin {
 		[Export("cancelSession:")]
 		void CancelSession([NullAllowed] Action completionHandler);
 
+		[Export("removeLastSegment")]
+		void RemoveLastSegment();
+
 		[Export("assetRepresentingRecordSegments")]
 		AVAsset AssetRepresentingRecordSegments { get; }
 
