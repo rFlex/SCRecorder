@@ -107,22 +107,27 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         CIImage *result = [_filterGroup imageByProcessingImage:image];
 
         CVPixelBufferRef outputPixelBuffer = nil;
-        CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
-        
-        CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
-        
-        [_ciContext render:result toCVPixelBuffer:outputPixelBuffer];
-        
-        [self processPixelBuffer:outputPixelBuffer presentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
-        
-        CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
-        
-        if (_eaglContext == nil) {
-            CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+        CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
+
+        if (ret == kCVReturnSuccess) {
+            CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
+            
+            [_ciContext render:result toCVPixelBuffer:outputPixelBuffer];
+            
+            [self processPixelBuffer:outputPixelBuffer presentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
+            
+            CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
+            
+            if (_eaglContext == nil) {
+                CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+            }
+            
+            CVPixelBufferRelease(outputPixelBuffer);
+            outputPixelBuffer = nil;
+        } else {
+            NSLog(@"Unable to allocate pixelBuffer: %d", ret);
         }
         
-        CVPixelBufferRelease(outputPixelBuffer);
-        outputPixelBuffer = nil;
     } else {
         [_videoInput appendSampleBuffer:sampleBuffer];
     }
