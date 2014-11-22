@@ -81,22 +81,32 @@
     }
 }
 
+- (void)video:(NSString *)videoPath didFinishSavingWithError:(NSError *)error contextInfo: (void *) contextInfo {
+    [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+
+    if (error == nil) {
+        [[[UIAlertView alloc] initWithTitle:@"Saved to camera roll" message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    } else {
+        [[[UIAlertView alloc] initWithTitle:@"Failed to save" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    }
+}
+
 - (void)saveToCameraRoll {
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     SCFilterGroup *currentFilter = self.filterSwitcherView.selectedFilterGroup;
     
-    void(^completionHandler)(NSError *error) = ^(NSError *error) {
-        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+    void(^completionHandler)(NSURL *url, NSError *error) = ^(NSURL *url, NSError *error) {
         if (error == nil) {
-            [self.recordSession saveToCameraRoll];
-            [[[UIAlertView alloc] initWithTitle:@"Saved to camera roll" message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            UISaveVideoAtPathToSavedPhotosAlbum(url.path, self, @selector(video:didFinishSavingWithError:contextInfo:), nil);
         } else {
+            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+
             [[[UIAlertView alloc] initWithTitle:@"Failed to save" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
     };
     
     if (currentFilter == nil) {
-        [self.recordSession mergeRecordSegments:completionHandler];
+        [self.recordSession mergeRecordSegmentsUsingPreset:AVAssetExportPresetHighestQuality completionHandler:completionHandler];
     } else {
         SCAssetExportSession *exportSession = [[SCAssetExportSession alloc] initWithAsset:self.recordSession.assetRepresentingRecordSegments];
         exportSession.filterGroup = currentFilter;
@@ -105,7 +115,7 @@
         exportSession.outputFileType = AVFileTypeMPEG4;
         exportSession.keepVideoSize = YES;
         [exportSession exportAsynchronouslyWithCompletionHandler:^{
-            completionHandler(exportSession.error);
+            completionHandler(exportSession.outputUrl, exportSession.error);
         }];
     }
 }

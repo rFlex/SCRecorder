@@ -16,11 +16,14 @@
 #define kRecordSessionDefaultAudioBitrate 128000
 #define kRecordSessionDefaultAudioFormat kAudioFormatMPEG4AAC
 
-extern const NSString *SCRecordSessionSegmentsKey;
-extern const NSString *SCRecordSessionOutputUrlKey;
+extern const NSString *SCRecordSessionSegmentFilenamesKey;
 extern const NSString *SCRecordSessionDurationKey;
 extern const NSString *SCRecordSessionIdentifierKey;
 extern const NSString *SCRecordSessionDateKey;
+extern const NSString *SCRecordSessionDirectoryKey;
+
+extern const NSString *SCRecordSessionTemporaryDirectory;
+extern const NSString *SCRecordSessionCacheDirectory;
 
 @class SCRecordSession;
 @class SCRecorder;
@@ -31,6 +34,7 @@ extern const NSString *SCRecordSessionDateKey;
 @end
 
 @interface SCRecordSession : NSObject
+
 
 //////////////////
 // GENERAL SETTINGS
@@ -47,23 +51,28 @@ extern const NSString *SCRecordSessionDateKey;
 @property (readonly, nonatomic) NSDate *date;
 
 /**
- The outputUrl which will be the output file when endSession
- has been called. The default url is a generated url to the temp directory.
+ The directory to which the record segments will be saved.
+ Can be either SCRecordSessionTemporaryDirectory or an arbritary directory.
+ Default is SCRecordSessionTemporaryDirectory.
  */
-@property (strong, nonatomic) NSURL *outputUrl;
+@property (copy, nonatomic) NSString *recordSegmentsDirectory;
 
 /**
  The output file type used for the AVAssetWriter.
- If null, AVFileTypeMPEG4 will be used for a video file, AVFileTypeAppleM4E for an audio file
+ If null, AVFileTypeMPEG4 will be used for a video file, AVFileTypeAppleM4A for an audio file
  */
 @property (copy, nonatomic) NSString *fileType;
 
 /**
- If true, every record segments will be tracked and added into a separate
- NSURL inside the recordSegments.
- Default is YES
+ The extension of every record segments.
+ If null, the SCRecordSession will figure out one depending on the fileType.
  */
-@property (assign, nonatomic) BOOL shouldTrackRecordSegments;
+@property (copy, nonatomic) NSString *fileExtension;
+
+/**
+ The output url based on the identifier, the recordSegmentsDirectory and the fileExtension
+ */
+@property (readonly, nonatomic) NSURL *outputUrl;
 
 /**
  Contains every record segment as NSURL.
@@ -114,14 +123,6 @@ extern const NSString *SCRecordSessionDateKey;
  If you set a non-null value here, the other settings will be ignored
  */
 @property (strong, nonatomic) NSDictionary *audioOutputSettings;
-
-/**
- If null, the SCRecordSession will try to figure out which preset
- to use for the AVAssetExportSession when merging the recordSegments
- (this only happens when shouldTrackRecordSegments is true)
- If this value is not null, it will use this property.
- */
-@property (copy, nonatomic) NSString *recordSegmentsMergePreset;
 
 /**
  True if a recordSegment has began
@@ -218,6 +219,7 @@ extern const NSString *SCRecordSessionDateKey;
  */
 @property (strong, nonatomic) SCFilterGroup *filterGroup;
 
+
 //////////////////
 // AUDIO SETTINGS
 ////
@@ -273,12 +275,6 @@ extern const NSString *SCRecordSessionDateKey;
 + (id)recordSession:(NSDictionary *)dictionaryRepresentation;
 
 /**
- If the video was already merged, this save
- the merged video to the camera roll
- */
-- (void)saveToCameraRoll;
-
-/**
  Start a new record segment.
  This method is automatically called by the SCRecorder
  */
@@ -328,26 +324,17 @@ extern const NSString *SCRecordSessionDateKey;
 - (void)removeLastSegment;
 
 /**
- Merge all recordSegments into the outputUrl
- */
-- (void)mergeRecordSegments:(void(^)(NSError *error))completionHandler;
-
-/**
- End the session.
- End the current recordSegment (if any), call mergeRecordSegments and
- if the merge succeed, delete every recordSegments.
- If you don't want a segment to be automatically added when calling this method,
- you should remove the SCRecordSession from the SCRecorder
- */
-- (void)endSession:(void(^)(NSError *error))completionHandler;
-
-/**
  Cancel the session.
  End the current recordSegment (if any) and call removeAllSegments
  If you don't want a segment to be automatically added when calling this method,
  you should remove the SCRecordSession from the SCRecorder
  */
 - (void)cancelSession:(void(^)())completionHandler;
+
+/**
+ Merge the recorded record segments using the given AVAssetExportSessionPreset.
+ */
+- (void)mergeRecordSegmentsUsingPreset:(NSString *)exportSessionPreset completionHandler:(void(^)(NSURL *outputUrl, NSError *error))completionHandler;
 
 /**
  Returns an asset representing all the record segments
@@ -363,9 +350,10 @@ extern const NSString *SCRecordSessionDateKey;
 - (NSDictionary *)dictionaryRepresentation;
 
 /**
- Returns the fileType that the SCRecordSession is going to use
+ Returns a record segment URL for a filename and a directory.
  */
-- (NSString *)suggestedFileType;
++ (NSURL *)recordSegmentURLForFilename:(NSString *)filename andDirectory:(NSString *)directory;
+
 
 //////////////////
 // PRIVATE API
@@ -388,6 +376,5 @@ extern const NSString *SCRecordSessionDateKey;
 
 - (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration;
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
-- (void)makeTimeOffsetDirty;
 
 @end

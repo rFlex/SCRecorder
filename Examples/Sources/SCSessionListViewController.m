@@ -49,14 +49,18 @@
     
     cell.dateLabel.text = [formatter stringFromDate:recordSession[SCRecordSessionDateKey]];
     
-    NSArray *recordSegments = recordSession[SCRecordSessionSegmentsKey];
+    NSArray *recordSegments = recordSession[SCRecordSessionSegmentFilenamesKey];
 
     cell.segmentsCountLabel.text = [NSString stringWithFormat:@"%d segments", (int)[recordSegments count]];
     
     cell.durationLabel.text = [NSString stringWithFormat:@"%fs", [recordSession[SCRecordSessionDurationKey] doubleValue]];
     
     if (recordSegments.count > 0) {
-        [cell.videoPlayerView.player setItemByUrl:[NSURL fileURLWithPath:recordSegments.firstObject]];
+        NSString *filename = recordSegments.firstObject;
+        NSString *directory = recordSession[SCRecordSessionDirectoryKey];
+        NSURL *url = [SCRecordSession recordSegmentURLForFilename:filename andDirectory:directory];
+        
+        [cell.videoPlayerView.player setItemByUrl:url];
     }
     
     return cell;
@@ -65,7 +69,7 @@
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *recordSession = [[SCRecordSessionManager sharedInstance].savedRecordSessions objectAtIndex:indexPath.row];
     
-    NSArray *urls = recordSession[SCRecordSessionSegmentsKey];
+    NSArray *urls = recordSession[SCRecordSessionSegmentFilenamesKey];
     NSFileManager *manager = [NSFileManager defaultManager];
     
     for (NSString *path in urls) {

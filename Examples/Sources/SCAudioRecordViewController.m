@@ -40,6 +40,8 @@
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
         if (audioError != nil) {
             [self showError:audioError];
+        } else {
+            [_recorder startRunningSession];
         }
     }];
     [self hidePlayControl:NO];
@@ -95,14 +97,16 @@
     
     if (session != nil) {
         _recorder.recordSession = nil;
-        [session endSession:^(NSError *error) {
-            if (error == nil) {
-                self.fileUrl = session.outputUrl;
-                [self showPlayControl:YES];
-                [self.player setItemByUrl:self.fileUrl];
-            } else {
-                [self showError:error];
-            }
+        [session endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+            [session mergeRecordSegmentsUsingPreset:AVAssetExportPresetAppleM4A completionHandler:^(NSURL *outputUrl, NSError *error) {
+                if (error == nil) {
+                    self.fileUrl = outputUrl;
+                    [self showPlayControl:YES];
+                    [self.player setItemByUrl:self.fileUrl];
+                } else {
+                    [self showError:error];
+                }
+            }];
         }];
     }
     [_recorder pause];

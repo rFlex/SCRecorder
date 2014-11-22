@@ -343,22 +343,17 @@
         SCRecordSession *recordSession = _recordSession;
         
         if (recordSession != nil) {
-            if (recordSession.shouldTrackRecordSegments) {
-                if (recordSession.recordSegmentReady) {
-                    [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
-                        id<SCRecorderDelegate> delegate = self.delegate;
-                        if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {
-                            [delegate recorder:self didEndRecordSegment:recordSession segmentIndex:segmentIndex error:error];
-                        }
-                        if (completionHandler != nil) {
-                            completionHandler();
-                        }
-                    }];
-                } else {
-                    dispatch_handler(completionHandler);
-                }
+            if (recordSession.recordSegmentReady) {
+                [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+                    id<SCRecorderDelegate> delegate = self.delegate;
+                    if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {
+                        [delegate recorder:self didEndRecordSegment:recordSession segmentIndex:segmentIndex error:error];
+                    }
+                    if (completionHandler != nil) {
+                        completionHandler();
+                    }
+                }];
             } else {
-                [recordSession makeTimeOffsetDirty];
                 dispatch_handler(completionHandler);
             }
         } else {
@@ -1016,7 +1011,6 @@
     if (_recordSession != recordSession) {
         dispatch_sync(_recordSessionQueue, ^{
             _recordSession.recorder = nil;
-            [recordSession makeTimeOffsetDirty];
             
             _recordSession = recordSession;
             

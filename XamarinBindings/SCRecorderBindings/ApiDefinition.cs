@@ -22,7 +22,7 @@ using MonoTouch.GLKit;
 namespace SCorsin {
 
 	public delegate void EndRecordSegmentDelegate(int segmentIndex, NSError errore);
-	public delegate void GenericErrorDelegate(NSError error);
+	public delegate void GenericErrorDelegate(NSUrl outputUrl, NSError error);
 
 	[BaseType(typeof(NSObject))]
 	interface SCRecordSession {
@@ -36,20 +36,26 @@ namespace SCorsin {
 		[Export("date")]
 		NSDate Date { get; }
 
-		[Export("outputUrl"), NullAllowed]
-		NSUrl OutputUrl { get; set; }
+		[Export("outputUrl")]
+		NSUrl OutputUrl { get; }
 
 		[Export("fileType"), NullAllowed]
 		NSString FileType { get; set; }
 
-		[Export("shouldTrackRecordSegments")]
-		bool ShouldTrackRecordSegments { get; set; }
+		[Export("fileExtension"), NullAllowed]
+		NSString FileExtension { get; set; }
 
 		[Export("recordSegments")]
 		NSUrl[] RecordSegments { get; }
 
 		[Export("currentRecordDuration")]
 		CMTime CurrentRecordDuration { get; }
+
+		[Export("segmentsDuration")]
+		CMTime SegmentsDuration { get; }
+
+		[Export("currentSegmentDuration")]
+		CMTime CurrentSegmentDuration { get; }
 
 		[Export("suggestedMaxRecordDuration")]
 		CMTime SuggestedMaxRecordDuration { get; set; }
@@ -111,11 +117,8 @@ namespace SCorsin {
 		[Export("shouldIgnoreAudio")]
 		bool ShouldIgnoreAudio { get; set; }
 
-		[Export("saveToCameraRoll")]
-		void SaveToCameraRoll();
-
 		[Export("beginRecordSegment:")]
-		void beginRecordSegment(out NSError error);
+		void BeginRecordSegment(out NSError error);
 
 		[Export("endRecordSegment:")]
 		void EndRecordSegment([NullAllowed] EndRecordSegmentDelegate completionHandler);
@@ -132,11 +135,8 @@ namespace SCorsin {
 		[Export("removeAllSegments")]
 		void RemoveAllSegments();
 
-		[Export("mergeRecordSegments:")]
-		void MergeRecordSegments([NullAllowed] GenericErrorDelegate completionHandler);
-
-		[Export("endSession:")]
-		void EndSession([NullAllowed] GenericErrorDelegate completionHandler);
+		[Export("mergeRecordSegmentsUsingPreset:completionHandler:")]
+		void MergeRecordSegments(NSString exportSessionPreset, [NullAllowed] GenericErrorDelegate completionHandler);
 
 		[Export("cancelSession:")]
 		void CancelSession([NullAllowed] Action completionHandler);
