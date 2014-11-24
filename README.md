@@ -139,7 +139,7 @@ recordSession mergeRecordSegmentsUsingPreset:AVAssetExportSessionPresetHighest c
 AVAsset *asset = [recordSession assetRepresentingRecordSegments];
 
 SCAssetExportSession assetExportSession = [[SCAssetExportSession alloc] initWithAsset:asset];
-assetExportSession.filterGroup = [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant”]];
+assetExportSession.filterGroup = [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]];
 assetExportSession.outputUrl = recordSession.outputUrl;
 assetExportSession.outputFileType = AVFileTypeMPEG4;
 assetExportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
