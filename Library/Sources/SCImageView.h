@@ -37,6 +37,11 @@
  */
 - (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
 
+/**
+ Set the CIImage using an UIImage
+ */
+- (void)setImageByUIImage:(UIImage *)image;
+
 @property (strong, nonatomic) CIImage *image DEPRECATED_MSG_ATTRIBUTE("Replaced by the CIImage property");
 
 @end

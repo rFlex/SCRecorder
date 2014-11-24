@@ -7,14 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SCRecordSession.h"
+#import "SCRecordSession_Internal.h"
 #import "SCRecorder.h"
 
 // These are sets in defines to avoid repeated method calls
-#define CAN_HANDLE_AUDIO (_recorderHasAudio && !_shouldIgnoreAudio && !_audioInitializationFailed)
-#define CAN_HANDLE_VIDEO (_recorderHasVideo && !_shouldIgnoreVideo && !_videoInitializationFailed)
-#define IS_WAITING_AUDIO (CAN_HANDLE_AUDIO && !_currentSegmentHasAudio)
-#define IS_WAITING_VIDEO (CAN_HANDLE_VIDEO && !_currentSegmentHasVideo)
+//#define CAN_HANDLE_AUDIO (_recorderHasAudio && !_shouldIgnoreAudio && !_audioInitializationFailed)
+//#define CAN_HANDLE_VIDEO (_recorderHasVideo && !_shouldIgnoreVideo && !_videoInitializationFailed)
+//#define IS_WAITING_AUDIO (CAN_HANDLE_AUDIO && !_currentSegmentHasAudio)
+//#define IS_WAITING_VIDEO (CAN_HANDLE_VIDEO && !_currentSegmentHasVideo)
 
 #pragma mark - Private definition
 
@@ -26,30 +26,6 @@ NSString *SCRecordSessionDirectoryKey = @"Directory";
 
 NSString *SCRecordSessionTemporaryDirectory = @"TemporaryDirectory";
 NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
-
-@interface SCRecordSession() {
-    AVAssetWriter *_assetWriter;
-    AVAssetWriterInput *_videoInput;
-    AVAssetWriterInput *_audioInput;
-    NSMutableArray *_recordSegments;
-    BOOL _audioInitializationFailed;
-    BOOL _videoInitializationFailed;
-    BOOL _shouldRecomputeTimeOffset;
-    BOOL _recordSegmentReady;
-    BOOL _currentSegmentHasVideo;
-    BOOL _currentSegmentHasAudio;
-    BOOL _recorderHasAudio;
-    BOOL _recorderHasVideo;
-    int _currentSegmentCount;
-    CMTime _timeOffset;
-    CMTime _lastTimeVideo;
-    CMTime _lastTimeAudio;
-    
-    // Used when SCFilterGroup is non-nil
-    CIContext *_CIContext;
-    AVAssetWriterInputPixelBufferAdaptor *_videoPixelBufferAdaptor;
-}
-@end
 
 @implementation SCRecordSession
 
@@ -105,22 +81,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 - (id)init {
     self = [super init];
     
-    if (self) {
-        self.videoSize = CGSizeZero;
-        self.videoCodec = kRecordSessionDefaultVideoCodec;
-        self.videoScalingMode = kRecordSessionDefaultVideoScalingMode;
-        self.videoBitsPerPixel = kRecordSessionDefaultOutputBitPerPixel;
-        self.videoAffineTransform = CGAffineTransformIdentity;
-        self.videoMaxFrameRate = 0;
-        
-        self.audioSampleRate = 0;
-        self.audioChannels = 0;
-        self.audioBitRate = kRecordSessionDefaultAudioBitrate;
-        self.audioEncodeType = kRecordSessionDefaultAudioFormat;
-        
-        self.suggestedMaxRecordDuration = kCMTimeInvalid;
-        self.videoShouldKeepOnlyKeyFrames = NO;
-        
+    if (self) {        
         _recordSegments = [[NSMutableArray alloc] init];
         
         _assetWriter = nil;
@@ -134,7 +95,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         _lastTimeAudio = kCMTimeZero;
         _currentSegmentDuration = kCMTimeZero;
         _segmentsDuration = kCMTimeZero;
-        _videoTimeScale = 1;
         _date = [NSDate date];
         _recordSegmentsDirectory = SCRecordSessionTemporaryDirectory;
         _identifier = [NSString stringWithFormat:@"%ld", (long)[_date timeIntervalSince1970]];
@@ -173,10 +133,10 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 - (void)_dispatchSynchronouslyOnSafeQueue:(void(^)())block {
     SCRecorder *recorder = self.recorder;
     
-    if (recorder != nil && dispatch_get_specific(kSCRecorderRecordSessionQueueKey) == nil) {
-        dispatch_sync(recorder.recordSessionQueue, block);
-    } else {
+    if (recorder == nil || [SCRecorder isRecordSessionQueue]) {
         block();
+    } else {
+        dispatch_sync(recorder.recordSessionQueue, block);
     }
 }
 
@@ -234,9 +194,10 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     NSString *fileType = self.fileType;
     
     if (fileType == nil) {
-        if (_recorderHasVideo && !_shouldIgnoreVideo) {
+        SCRecorder *recorder = self.recorder;
+        if (recorder.videoEnabledAndReady) {
             fileType = AVFileTypeMPEG4;
-        } else if (_recorderHasAudio && !_shouldIgnoreAudio) {
+        } else if (recorder.audioEnabledAndReady) {
             fileType = AVFileTypeAppleM4A;
         }
     }
@@ -319,7 +280,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         if ([writer startWriting]) {
             //                NSLog(@"Starting session at %fs", CMTimeGetSeconds(_lastTime));
             [writer startSessionAtSourceTime:kCMTimeZero];
-            _shouldRecomputeTimeOffset = YES;
+            _timeOffset = kCMTimeInvalid;
             //                _sessionStartedTime = _lastTime;
             //                _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
             _recordSegmentReady = YES;
@@ -346,9 +307,9 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 
 - (void)uninitialize {
     [self endRecordSegment:nil];
-    
-    _recorderHasAudio = NO;
-    _recorderHasVideo = NO;
+
+    _audioConfiguration = nil;
+    _videoConfiguration = nil;
     _audioInitializationFailed = NO;
     _videoInitializationFailed = NO;
     _videoInput = nil;
@@ -356,60 +317,31 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     _videoPixelBufferAdaptor = nil;
 }
 
-- (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasAudio:(BOOL)hasAudio error:(NSError *__autoreleasing *)error {
-    _recorderHasVideo = YES;
-    _recorderHasAudio = hasAudio;
-    NSDictionary *videoSettings = self.videoOutputSettings;
-        
-    CGSize videoSize = self.videoSize;
-    if (videoSettings == nil) {
-        if (CGSizeEqualToSize(videoSize, CGSizeZero)) {
-            CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-            size_t width = CVPixelBufferGetWidth(imageBuffer);
-            size_t height = CVPixelBufferGetHeight(imageBuffer);
-            videoSize.width = width;
-            videoSize.height = height;
-            
-            if (self.videoSizeAsSquare) {
-                if (width > height) {
-                    videoSize.width = height;
-                } else {
-                    videoSize.height = width;
-                }
-            }
-        }
-        
-        NSInteger bitsPerSecond = [SCRecordSession getBitsPerSecondForOutputVideoSize:videoSize andBitsPerPixel:self.videoBitsPerPixel];
-        
-        NSMutableDictionary *compressionSettings = [NSMutableDictionary dictionaryWithObject:[NSNumber numberWithInteger:bitsPerSecond] forKey:AVVideoAverageBitRateKey];
-        
-        if (self.videoShouldKeepOnlyKeyFrames) {
-            [compressionSettings setObject:@1 forKey:AVVideoMaxKeyFrameIntervalKey];
-        }
-        
-        videoSettings = @{
-                          AVVideoCodecKey : self.videoCodec,
-                          AVVideoScalingModeKey : self.videoScalingMode,
-                          AVVideoWidthKey : [NSNumber numberWithInteger:videoSize.width],
-                          AVVideoHeightKey : [NSNumber numberWithInteger:videoSize.height],
-                          AVVideoCompressionPropertiesKey : compressionSettings
-                          };
-    }
-    
+- (void)initializeVideo:(NSDictionary *)videoSettings error:(NSError *__autoreleasing *)error {
     NSError *theError = nil;
     @try {
+        _videoConfiguration = self.recorder.videoConfiguration;
         _videoInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
         _videoInput.expectsMediaDataInRealTime = YES;
-        _videoInput.transform = self.videoAffineTransform;
+        _videoInput.transform = _videoConfiguration.affineTransform;
         
-        if (_filterGroup != nil) {
+        SCFilterGroup *filterGroup = _videoConfiguration.filterGroup;
+        if (filterGroup != nil) {
             NSDictionary *pixelBufferAttributes = @{
                                                     (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
-                                                    (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
-                                                    (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:videoSize.height]
+                                                    (id)kCVPixelBufferWidthKey : videoSettings[AVVideoWidthKey],
+                                                    (id)kCVPixelBufferHeightKey : videoSettings[AVVideoHeightKey]
                                                     };
             
             _videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
+            
+            if (_CIContext == nil) {
+                NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
+                
+                _CIContext = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] options:options];
+            }
+        } else {
+            _CIContext = nil;
         }
     }
     @catch (NSException *exception) {
@@ -418,39 +350,17 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     
     _videoInitializationFailed = theError != nil;
     
+
+    
     if (error != nil) {
         *error = theError;
     }
 }
 
-- (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasVideo:(BOOL)hasVideo error:(NSError *__autoreleasing *)error {
-    _recorderHasAudio = YES;
-    _recorderHasVideo = hasVideo;
-    NSDictionary *audioSettings = self.audioOutputSettings;
-    
-    if (audioSettings == nil) {
-        Float64 sampleRate = self.audioSampleRate;
-        int channels = self.audioChannels;
-        CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
-        const AudioStreamBasicDescription * streamBasicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
-        
-        if (sampleRate == 0) {
-            sampleRate = streamBasicDescription->mSampleRate;
-        }
-        if (channels == 0) {
-            channels = streamBasicDescription->mChannelsPerFrame;
-        }
-        
-        audioSettings = @{
-                          AVFormatIDKey : [NSNumber numberWithInt: self.audioEncodeType],
-                          AVEncoderBitRateKey : [NSNumber numberWithInt: self.audioBitRate],
-                          AVSampleRateKey : [NSNumber numberWithFloat: sampleRate],
-                          AVNumberOfChannelsKey : [NSNumber numberWithInt: channels]
-                          };
-    }
-    
+- (void)initializeAudio:(NSDictionary *)audioSettings error:(NSError *__autoreleasing *)error {
     NSError *theError = nil;
     @try {
+        _audioConfiguration = self.recorder.audioConfiguration;
         _audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioSettings];
         _audioInput.expectsMediaDataInRealTime = YES;
     } @catch (NSException *exception) {
@@ -540,17 +450,20 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     _currentSegmentHasAudio = NO;
     _currentSegmentHasVideo = NO;
     _assetWriter = nil;
+    _lastTimeVideo = kCMTimeInvalid;
+    _lastTimeAudio = kCMTimeInvalid;
+    _currentSegmentDuration = kCMTimeZero;
 }
 
 - (void)endRecordSegment:(void(^)(NSInteger segmentNumber, NSError* error))completionHandler {
     [self _dispatchSynchronouslyOnSafeQueue:^{
         if (_recordSegmentReady) {
             _recordSegmentReady = NO;
-            _shouldRecomputeTimeOffset = YES;
             
             AVAssetWriter *writer = _assetWriter;
+            SCRecorder *recorder = self.recorder;
             
-            BOOL currentSegmentEmpty = IS_WAITING_AUDIO || IS_WAITING_VIDEO;
+            BOOL currentSegmentEmpty = (!_currentSegmentHasVideo && recorder.videoEnabledAndReady) || (!_currentSegmentHasAudio && recorder.audioEnabledAndReady);
             
             if (currentSegmentEmpty) {
                 [writer cancelWriting];
@@ -576,7 +489,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
                             [self _addSegment:writer.outputURL duration:_currentSegmentDuration];
                         }
                         
-                        _currentSegmentDuration = kCMTimeZero;
                         [self _destroyAssetWriter];
                         
                         dispatch_async(dispatch_get_main_queue(), ^{
@@ -697,11 +609,10 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 }
 
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
-    if (!IS_WAITING_VIDEO && [_audioInput isReadyForMoreMediaData]) {
+    if ([_audioInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer);
         
-        if (_shouldRecomputeTimeOffset) {
-            _shouldRecomputeTimeOffset = NO;
+        if (CMTIME_IS_INVALID(_timeOffset)) {
             _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
         }
         
@@ -714,7 +625,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         if (CMTIME_COMPARE_INLINE(presentationTime, >=, kCMTimeZero)) {
             _lastTimeAudio = lastTimeAudio;
             
-            if (!CAN_HANDLE_VIDEO) {
+            if (!_currentSegmentHasVideo) {
                 _currentSegmentDuration = lastTimeAudio;
             }
             
@@ -729,32 +640,34 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     }
 }
 
-- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration {
+- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer {
     if ([_videoInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
         
-        if (_shouldRecomputeTimeOffset) {
-            _shouldRecomputeTimeOffset = NO;
+        if (CMTIME_IS_INVALID(_timeOffset)) {
             _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
 //            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
-
-        }
-        
-        CMTime lastTimeVideo = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer), _timeOffset);
-        CMTime duration = CMSampleBufferGetDuration(videoSampleBuffer);
-        
-        if (CMTIME_IS_INVALID(duration)) {
-            if (_videoMaxFrameRate == 0) {
-                duration = frameDuration;
-            } else {
-                duration = CMTimeMake(1, _videoMaxFrameRate);
+        } else {
+            CGFloat videoTimeScale = _videoConfiguration.timeScale;
+            if (videoTimeScale != 1.0) {
+                if (CMTIME_IS_VALID(_lastTimeVideo)) {
+                    CMTime bufferDuration = CMTimeSubtract(actualBufferTime, _lastTimeVideo);
+                    
+                    CMTime computedFrameDuration = CMTimeMultiplyByFloat64(bufferDuration, videoTimeScale);
+                    _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(bufferDuration, computedFrameDuration));
+//                    NSLog(@"%fs (computed: %fs), new time offset: %fs", CMTimeGetSeconds(bufferDuration), CMTimeGetSeconds(computedFrameDuration), CMTimeGetSeconds(_timeOffset));
+                } else {
+                    NSLog(@"Unable to compute new buffer ");
+                }
             }
         }
+        
+        CMTime bufferTimestamp = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer), _timeOffset);
         
         if (_videoPixelBufferAdaptor != nil) {
             CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
             
-            CIImage *result = [_filterGroup imageByProcessingImage:image];
+            CIImage *result = [_videoConfiguration.filterGroup imageByProcessingImage:image];
             
             CVPixelBufferRef outputPixelBuffer = nil;
             CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelBufferAdaptor pixelBufferPool], &outputPixelBuffer);
@@ -763,7 +676,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             
             [_CIContext render:result toCVPixelBuffer:outputPixelBuffer];
             
-            [_videoPixelBufferAdaptor appendPixelBuffer:outputPixelBuffer withPresentationTime:lastTimeVideo];
+            [_videoPixelBufferAdaptor appendPixelBuffer:outputPixelBuffer withPresentationTime:bufferTimestamp];
             
             CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
             
@@ -779,18 +692,9 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             
             CFRelease(adjustedBuffer);
         }
-        
-        CMTime computedFrameDuration = duration;
-        
-        if (_videoTimeScale != 1.0) {
-            computedFrameDuration = CMTimeMultiplyByFloat64(computedFrameDuration, _videoTimeScale);
-            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
-        }
-        
-//        lastTimeVideo = CMTimeAdd(lastTimeVideo, computedFrameDuration);
-        
-        _lastTimeVideo = lastTimeVideo;
-        _currentSegmentDuration = lastTimeVideo;
+   
+        _lastTimeVideo = actualBufferTime;
+        _currentSegmentDuration = bufferTimestamp;
         
         _currentSegmentHasVideo = YES;
         
@@ -846,19 +750,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return _recordSegmentReady;
 }
 
-- (CGFloat)ratioRecorded {
-    CGFloat ratio = 0;
-    
-    if (CMTIME_IS_VALID(_suggestedMaxRecordDuration)) {
-        Float64 maxRecordDuration = CMTimeGetSeconds(_suggestedMaxRecordDuration);
-        Float64 recordedTime = CMTimeGetSeconds(self.currentRecordDuration);
-        
-        ratio = (CGFloat)(recordedTime / maxRecordDuration);
-    }
-    
-    return ratio;
-}
-
 - (BOOL)currentSegmentHasVideo {
     return _currentSegmentHasVideo;
 }
@@ -885,22 +776,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
              SCRecordSessionDateKey : _date,             
              SCRecordSessionDirectoryKey : _recordSegmentsDirectory
              };
-}
-
-- (void)setFilterGroup:(SCFilterGroup *)filterGroup {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        if ((_filterGroup == nil && filterGroup != nil)) {
-            [self uninitialize];
-            NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
-            
-            _CIContext = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] options:options];
-        } else if (_filterGroup != nil && filterGroup == nil) {
-            [self uninitialize];
-            _CIContext = nil;
-        }
-        
-        _filterGroup = filterGroup;
-    }];
 }
 
 - (NSURL *)outputUrl {

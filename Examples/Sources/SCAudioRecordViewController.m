@@ -11,18 +11,14 @@
 
 @interface SCAudioRecordViewController () {
     SCRecorder *_recorder;
+    SCRecordSession *_recordSession;
 }
 
-@property (strong, nonatomic) SCPlayer * player;
-@property (copy, nonatomic) NSURL * fileUrl;
+@property (strong, nonatomic) SCPlayer *player;
 
 @end
 
 @implementation SCAudioRecordViewController
-
-- (void)dealloc {
-    [self.player endSendingPlayMessages];
-}
 
 - (void)viewDidLoad
 {
@@ -34,8 +30,8 @@
     
     _recorder = [SCRecorder recorder];
     _recorder.delegate = self;
-    _recorder.videoEnabled = NO;
-    _recorder.photoEnabled = NO;
+    _recorder.photoConfiguration.enabled = NO;
+    _recorder.videoConfiguration.enabled = NO;
     
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
         if (audioError != nil) {
@@ -45,22 +41,30 @@
         }
     }];
     [self hidePlayControl:NO];
+    [self createSession];
+}
+
+- (void)dealloc {
+    [self.player endSendingPlayMessages];
 }
 
 - (void)showError:(NSError*)error {
       [[[UIAlertView alloc] initWithTitle:@"Something went wrong" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
 }
 
+- (void)createSession {
+    SCRecordSession *session = [SCRecordSession recordSession];
+    session.fileType = AVFileTypeAppleM4A;
+    [self updateRecordTimeLabel:kCMTimeZero];
+    
+    _recorder.recordSession = session;
+}
+
+- (void)updateRecordTimeLabel:(CMTime)time {
+    self.recordTimeLabel.text = [NSString stringWithFormat:@"%.2fs", CMTimeGetSeconds(time)];
+}
+
 - (IBAction)recordPressed:(id)sender {
-    SCRecordSession *session = _recorder.recordSession;
-    
-    if (session == nil) {
-        session = [SCRecordSession recordSession];
-        session.fileType = AVFileTypeAppleM4A;
-        
-        _recorder.recordSession = session;
-    }
-    
     if (_recorder.isRecording) {
         [_recorder pause];
     } else {
@@ -89,28 +93,27 @@
 }
 
 - (void)recorder:(SCRecorder *)recorder didAppendAudioSampleBuffer:(SCRecordSession *)recordSession {
-    self.recordTimeLabel.text = [NSString stringWithFormat:@"%.2fs", CMTimeGetSeconds(recordSession.currentRecordDuration)];
+    [self updateRecordTimeLabel:recordSession.currentRecordDuration];
+}
+
+- (void)deleteRecordSession {
+    [self.player setItemByAsset:nil];
+    [_recordSession removeAllSegments];
+    _recordSession = nil;
 }
 
 - (IBAction)stopRecordPressed:(id)sender {
-    SCRecordSession *session = _recorder.recordSession;
-    
-    if (session != nil) {
-        _recorder.recordSession = nil;
-        [session endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
-            [session mergeRecordSegmentsUsingPreset:AVAssetExportPresetAppleM4A completionHandler:^(NSURL *outputUrl, NSError *error) {
-                if (error == nil) {
-                    self.fileUrl = outputUrl;
-                    [self showPlayControl:YES];
-                    [self.player setItemByUrl:self.fileUrl];
-                } else {
-                    [self showError:error];
-                }
-            }];
-        }];
-    }
-    [_recorder pause];
-}
+    [_recorder pause:^{
+        [self deleteRecordSession];
+        [self showPlayControl:YES];
+        _recordSession = _recorder.recordSession;
+        
+        AVAsset *asset = _recordSession.assetRepresentingRecordSegments;
+        self.playSlider.maximumValue = CMTimeGetSeconds(asset.duration);
+        [self.player setItemByAsset:asset];
+        
+        [self createSession];
+    }];}
 
 - (IBAction)playButtonPressed:(id)sender {
     if (self.player.isPlaying) {
@@ -118,20 +121,23 @@
     } else {
         [self.player play];
     }
+    
+    [self _updatePlayButton];
+}
+
+- (void)_updatePlayButton {
     self.playButton.selected = self.player.isPlaying;
 }
 
-- (void)videoPlayer:(SCPlayer *)videoPlayer didChangeItem:(AVPlayerItem *)item {
-
+- (void)player:(SCPlayer *)player didReachEndForItem:(AVPlayerItem *)item {
+    [player pause];
+    [player seekToTime:kCMTimeZero];
+    [self _updatePlayButton];
 }
 
-- (void)videoPlayer:(SCPlayer *)videoPlayer didEndLoadingAtItemTime:(CMTime)itemTime {
-    float seconds = CMTimeGetSeconds(self.player.currentItem.duration);
-    self.playSlider.maximumValue = seconds;
-}
-
-- (void)videoPlayer:(SCPlayer *)videoPlayer didPlay:(CMTime)secondsElapsed timeTotal:(CMTime)timeTotal {
-    self.playSlider.value = CMTimeGetSeconds(secondsElapsed);
+- (void)player:(SCPlayer *)player didPlay:(CMTime)currentTime loopsCount:(NSInteger)loopsCount {
+    self.playSlider.value = CMTimeGetSeconds(currentTime);
+    self.playLabel.text = [NSString stringWithFormat:@"%.2fs", CMTimeGetSeconds(currentTime)];
 }
 
 - (IBAction)playSliderValueChanged:(id)sender {
@@ -139,8 +145,8 @@
 }
 
 - (IBAction)deletePressed:(id)sender {
-    self.fileUrl = nil;
     [self hidePlayControl:YES];
+    [self deleteRecordSession];
 }
 
 @end

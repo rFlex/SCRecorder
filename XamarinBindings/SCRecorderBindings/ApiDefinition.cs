@@ -21,6 +21,79 @@ using MonoTouch.GLKit;
 
 namespace SCorsin {
 
+	[BaseType(typeof(NSObject))]
+	interface SCPhotoConfiguration {
+
+		[Export("enabled")]
+		bool Enabled { get; set; }
+
+		[Export("options")]
+		NSDictionary Options { get; set; }
+
+	}
+
+	[BaseType(typeof(NSObject))]
+	interface SCMediaTypeConfiguration {
+
+		[Export("enabled")]
+		bool Enabled { get; set; }
+
+		[Export("shouldIgnore")]
+		bool ShouldIgnore { get; set; }
+
+		[Export("options")]
+		NSDictionary Options { get; set; }
+
+		[Export("bitrate")]
+		ulong Bitrate { get; set; }
+
+	}
+
+	[BaseType(typeof(SCMediaTypeConfiguration))]
+	interface SCVideoConfiguration {
+
+		[Export("size")]
+		SizeF Size { get; set; }
+
+		[Export("affineTransform")]
+		CGAffineTransform AffineTransform { get; set; }
+
+		[Export("codec")]
+		NSString Codec { get; set; }
+
+		[Export("scalingMode")]
+		NSString ScalingMode { get; set; }
+
+		[Export("maxFrameRate")]
+		int MaxFrameRate { get; set; }
+
+		[Export("timeScale")]
+		float TimeScale { get; set; }
+
+		[Export("sizeAsSquare")]
+		bool SizeAsSquare { get; set; }
+
+		[Export("shouldKeepOnlyKeyFrames")]
+		bool ShouldKeepOnlyKeyFrames { get; set; }
+
+		[Export("filterGroup")]
+		SCFilterGroup FilterGroup { get; set; }
+
+	}
+
+	[BaseType(typeof(SCMediaTypeConfiguration))]
+	interface SCAudioConfiguration {
+
+		[Export("sampleRate")]
+		double SampleRate { get; set; } 
+
+		[Export("channelsCount")]
+		int ChannelsCount { get; set; }
+
+		[Export("format")]
+		int Format { get; set; }
+	}
+
 	public delegate void EndRecordSegmentDelegate(int segmentIndex, NSError errore);
 	public delegate void GenericErrorDelegate(NSUrl outputUrl, NSError error);
 
@@ -57,65 +130,8 @@ namespace SCorsin {
 		[Export("currentSegmentDuration")]
 		CMTime CurrentSegmentDuration { get; }
 
-		[Export("suggestedMaxRecordDuration")]
-		CMTime SuggestedMaxRecordDuration { get; set; }
-
-		[Export("ratioRecorded")]
-		float RatioRecorded { get; }
-
-		[Export("videoOutputSettings"), NullAllowed]
-		NSDictionary VideoOutputSettings { get; set; }
-
-		[Export("audioOutputSettings"), NullAllowed]
-		NSDictionary AudioOutputSettings { get; set; }
-
-		[Export("recordSegmentsMergePreset"), NullAllowed]
-		NSString RecordSegmentsMergePreset { get; set; }
-
 		[Export("recordSegmentBegan")]
 		bool RecordSegmentBegan { get; }
-
-		[Export("videoSize")]
-		SizeF VideoSize { get; set; }
-
-		[Export("videoAffineTransform")]
-		CGAffineTransform VideoAffineTransform { get; set; }
-
-		[Export("videoBitsPerPixel")]
-		float VideoBitsPerPixel { get; set; }
-
-		[Export("videoCodec"), NullAllowed]
-		NSString VideoCodec { get; set; }
-
-		[Export("videoScalingMode"), NullAllowed]
-		NSString VideoScalingMode { get; set; }
-
-		[Export("filterGroup"), NullAllowed]
-		SCFilterGroup FilterGroup { get; set; }
-
-		[Export("shouldIgnoreVideo")]
-		bool ShouldIgnoreVideo { get; set; }
-
-		[Export("videoMaxFrameRate")]
-		int VideoMaxFrameRate { get; set; }
-
-		[Export("videoTimeScale")]
-		float VideoTimeScale { get; set; }
-
-		[Export("audioSampleRate")]
-		float AudioSampleRate { get; set; }
-
-		[Export("audioChannels")]
-		int AudioChannels { get; set; }
-
-		[Export("audioBitRate")]
-		int AudioBitRate { get; set; }
-
-		[Export("audioEncodeType")]
-		int AudioEncodeType { get; set; }
-
-		[Export("shouldIgnoreAudio")]
-		bool ShouldIgnoreAudio { get; set; }
 
 		[Export("beginRecordSegment:")]
 		void BeginRecordSegment(out NSError error);
@@ -147,14 +163,11 @@ namespace SCorsin {
 		[Export("assetRepresentingRecordSegments")]
 		AVAsset AssetRepresentingRecordSegments { get; }
 
-		[Export("videoShouldKeepOnlyKeyFrames")]
-		bool VideoShouldKeepOnlyKeyFrames { get; set; }
-
-		[Export("videoSizeAsSquare")]
-		bool VideoSizeAsSquare { get; set; }
-
 		[Export("dictionaryRepresentation")]
 		NSDictionary DictionaryRepresentation { get; }
+
+		[Export("recorder")]
+		SCRecorder Recorder { get; }
 	}
 
 	[Model, BaseType(typeof(NSObject)), Protocol]
@@ -216,17 +229,26 @@ namespace SCorsin {
 	[BaseType(typeof(NSObject), Delegates = new string [] { "Delegate" }, Events = new Type [] { typeof(SCRecorderDelegate) })]
 	interface SCRecorder {
 
+		[Export("videoConfiguration")]
+		SCVideoConfiguration VideoConfiguration { get; }
+
+		[Export("audioConfiguration")]
+		SCAudioConfiguration AudioConfiguration { get; }
+
+		[Export("photoConfiguration")]
+		SCPhotoConfiguration PhotoConfiguration { get; }
+
 		[Export("delegate")]
 		NSObject WeakDelegate { get; set; }
 
 		[Wrap("WeakDelegate")]
 		SCRecorderDelegate Delegate { get; set; }
 
-		[Export("audioEnabled")]
-		bool AudioEnabled { get; set; }
+		[Export("videoEnabledAndReady")]
+		bool VideoEnabledAndReady { get; }
 
-		[Export("videoEnabled")]
-		bool VideoEnabled { get; set; }
+		[Export("audioEnabledAndReady")]
+		bool AudioEnabledAndReady { get; }
 
 		[Export("photoEnabled")]
 		bool PhotoEnabled { get; set; }
@@ -341,6 +363,12 @@ namespace SCorsin {
 
 		[Export("CIImageRenderer"), NullAllowed]
 		NSObject CIImageRenderer { get; set; }
+
+		[Export("ratioRecorded")]
+		float RatioRecorder { get; }
+
+		[Export("maxRecordDuration")]
+		CMTime MaxRecordDuration { get; set; }
 
 	}
 

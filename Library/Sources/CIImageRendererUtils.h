@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "SCSampleBufferHolder.h"
+#import "CIImageRenderer.h"
 
 @interface CIImageRendererUtils : NSObject
 
@@ -17,5 +18,7 @@
 + (CIImage *)generateImageFromSampleBufferHolder:(SCSampleBufferHolder *)sampleBufferHolder;
 
 + (CGAffineTransform)preferredCIImageTransformFromUIImage:(UIImage *)image;
+
++ (void)putUIImage:(UIImage *)image toRenderer:(id<CIImageRenderer>)renderer;
 
 @end

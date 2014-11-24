@@ -57,4 +57,9 @@
  */
 - (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
 
+/**
+ Set the CIImage using an UIImage
+ */
+- (void)setImageByUIImage:(UIImage *)image;
+
 @end

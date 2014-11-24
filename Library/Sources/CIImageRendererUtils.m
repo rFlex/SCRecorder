@@ -106,4 +106,10 @@
     return transform;
 }
 
++ (void)putUIImage:(UIImage *)image toRenderer:(id<CIImageRenderer>)renderer {
+    renderer.preferredCIImageTransform = [CIImageRendererUtils preferredCIImageTransformFromUIImage:image];
+    
+    renderer.CIImage = [CIImage imageWithCGImage:image.CGImage];
+}
+
 @end

@@ -25,6 +25,11 @@
 - (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
 
 /**
+ Set the CIImage using an UIImage
+ */
+- (void)setImageByUIImage:(UIImage *)image;
+
+/**
  The preferred transform for rendering the CIImage
  */
 @property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;

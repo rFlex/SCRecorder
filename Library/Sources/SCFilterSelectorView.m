@@ -143,6 +143,10 @@
     [_glkView setNeedsDisplay];
 }
 
+- (void)setImageByUIImage:(UIImage *)image {
+    [CIImageRendererUtils putUIImage:image toRenderer:self];
+}
+
 - (void)setPreferredCIImageTransform:(CGAffineTransform)preferredCIImageTransform {
     _imageTransformFilter = [CIFilter filterWithName:@"CIAffineTransform"];
     [_imageTransformFilter setValue:[NSValue valueWithBytes:&preferredCIImageTransform

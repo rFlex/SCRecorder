@@ -68,7 +68,8 @@
 
     _recorder = [SCRecorder recorder];
     _recorder.sessionPreset = AVCaptureSessionPreset1280x720;
-    _recorder.audioEnabled = YES;
+    _recorder.maxRecordDuration = CMTimeMake(5, 1);
+    
     _recorder.delegate = self;
     _recorder.autoSetVideoOrientation = YES;
     
@@ -130,7 +131,6 @@
     [super viewDidAppear:animated];
     
     [_recorder startRunningSession];
-    [_recorder focusCenter];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -205,27 +205,16 @@
     [self showVideo];
 }
 - (void) handleStopButtonTapped:(id)sender {
-//    UIImagePickerController *pickerLibrary = [[UIImagePickerController alloc] init];
-//    pickerLibrary.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
-//    pickerLibrary.mediaTypes = @[(NSString*)kUTTypeMovie];
-//    pickerLibrary.delegate = self;
-//    [self presentModalViewController:pickerLibrary animated:YES];
-    
-    SCRecordSession *recordSession = _recorder.recordSession;
-    
-    if (recordSession != nil) {
-        [self finishSession:recordSession];
-    }
+    [_recorder pause:^{
+        [self saveAndShowSession:_recorder.recordSession];        
+    }];
 }
 
-- (void)finishSession:(SCRecordSession *)recordSession {
-    [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
-        [[SCRecordSessionManager sharedInstance] saveRecordSession:recordSession];
+- (void)saveAndShowSession:(SCRecordSession *)recordSession {
+    [[SCRecordSessionManager sharedInstance] saveRecordSession:recordSession];
         
-        _recordSession = recordSession;
-        [self showVideo];
-        [self prepareCamera];
-    }];
+    _recordSession = recordSession;
+    [self showVideo];
 }
 
 - (void) handleRetakeButtonTapped:(id)sender {
@@ -319,14 +308,13 @@
     if (_recorder.recordSession == nil) {
         
         SCRecordSession *session = [SCRecordSession recordSession];
-        session.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(5, 10000);
         
         _recorder.recordSession = session;
     }
 }
 
 - (void)recorder:(SCRecorder *)recorder didCompleteRecordSession:(SCRecordSession *)recordSession {
-    [self finishSession:recordSession];
+    [self saveAndShowSession:recordSession];
 }
 
 - (void)recorder:(SCRecorder *)recorder didInitializeAudioInRecordSession:(SCRecordSession *)recordSession error:(NSError *)error {

@@ -75,6 +75,10 @@
     [self setNeedsDisplay];
 }
 
+- (void)setImageByUIImage:(UIImage *)image {
+    [CIImageRendererUtils putUIImage:image toRenderer:self];
+}
+
 - (void)setImage:(CIImage *)image {
     self.CIImage = image;
 }

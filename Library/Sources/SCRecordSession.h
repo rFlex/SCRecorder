@@ -27,14 +27,8 @@ extern const NSString *SCRecordSessionCacheDirectory;
 
 @class SCRecordSession;
 @class SCRecorder;
-@protocol SCRecordSessionDelegate <NSObject>
-
-@optional
-
-@end
 
 @interface SCRecordSession : NSObject
-
 
 //////////////////
 // GENERAL SETTINGS
@@ -99,180 +93,32 @@ extern const NSString *SCRecordSessionCacheDirectory;
 @property (readonly, atomic) CMTime currentSegmentDuration;
 
 /**
- The suggested maximum record duration that this session should handle
- If currentRecordDuration becomes more or equal than this value, the
- SCRecordSession will be removed from the SCRecorder
- */
-@property (assign, nonatomic) CMTime suggestedMaxRecordDuration;
-
-/**
- If suggestedMaxRecordDuration is a valid value,
- this will contains a float between 0 and 1 representing the
- recorded ratio, 1 being fully recorded.
- */
-@property (readonly, nonatomic) CGFloat ratioRecorded;
-
-/**
- Set the video dictionary used for configuring the AVAssetWriter
- If you set a non-null value here, the other settings will be ignored
- */
-@property (strong, nonatomic) NSDictionary *videoOutputSettings;
-
-/**
- Set the audio dictionary used for configuring the AVAssetWriter
- If you set a non-null value here, the other settings will be ignored
- */
-@property (strong, nonatomic) NSDictionary *audioOutputSettings;
-
-/**
  True if a recordSegment has began
  */
 @property (readonly, nonatomic) BOOL recordSegmentBegan;
 
-
-//////////////////
-// VIDEO SETTINGS
-////
-
 /**
- Change the size of the video
- If videoOutputSettings has been changed, this property will be ignored
- If this value is CGSizeZero, the input video size received
- from the camera will be used
- Default is CGSizeZero
+ The recorder that is managing this SCRecordSession
  */
-@property (assign, nonatomic) CGSize videoSize;
-
-/**
- Change the affine transform for the video
- If videoOutputSettings has been changed, this property will be ignored
- */
-@property (assign, nonatomic) CGAffineTransform videoAffineTransform;
-
-/**
- Changing the bits per pixel for the compression
- If videoOutputSettings has been changed, this property will be ignored
- */
-@property (assign, nonatomic) Float32 videoBitsPerPixel;
-
-/**
- Set the codec used for the video
- Default is AVVideoCodecH264
- */
-@property (copy, nonatomic) NSString *videoCodec;
-
-/**
- Set the video scaling mode
- */
-@property (copy, nonatomic) NSString *videoScalingMode;
-
-/**
- If the recorder provides video and this property is set to no, the
- recorder won't send video buffer to this session
- Default is NO
- */
-@property (assign, nonatomic) BOOL shouldIgnoreVideo;
-
-/**
- The maximum framerate that this SCRecordSession should handle
- If the camera appends too much frames, they will be dropped.
- If this property's value is 0, it will use the current video
- framerate from the camera.
- */
-@property (assign, nonatomic) CMTimeScale videoMaxFrameRate;
-
-/**
- The time scale of the video
- A value different than 1 with the sound enabled will probably fail.
- A value more than 1 will make the buffers last longer, it creates
- a slow motion effect. A value less than 1 will make the buffers be
- shorter, it creates a timelapse effect.
- */
-@property (assign, nonatomic) CGFloat videoTimeScale;
-
-/**
- If true and videoSize is CGSizeZero, the videoSize
- used will equal to the minimum width or height found,
- thus making the video square.
- */
-@property (assign, nonatomic) BOOL videoSizeAsSquare;
-
-/**
-  If true, each frame will be encoded as a keyframe
- This is needed if you want to merge the recordSegments using
- the passthrough preset. This will seriously impact the video
- size. You can set this to NO and change the recordSegmentsMergePreset if you want
- a better quality/size ratio, but the merge will be slower.
- Default is NO
- */
-@property (assign, nonatomic) BOOL videoShouldKeepOnlyKeyFrames;
-
-/**
- If not nil, each appended frame will be processed by this SCFilterGroup.
- While it seems convenient, this removes the possibility to change the
- filter after the segment has been added.
- Setting a new filterGroup will cause the SCRecordSession to stop the
- current record segment if the previous filterGroup was NIL and the
- new filterGroup is NOT NIL or vice versa. If you want to have a smooth
- transition between filters in the same record segment, make sure to set
- an empty SCFilterGroup instead of setting this property to nil.
- */
-@property (strong, nonatomic) SCFilterGroup *filterGroup;
-
-
-//////////////////
-// AUDIO SETTINGS
-////
-
-/**
- Set the sample rate of the audio
- If audioOutputSettings has been changed, this property will be ignored
- */
-@property (assign, nonatomic) Float64 audioSampleRate;
-
-/**
- Set the number of channels
- If audioOutputSettings is not nil,, this property will be ignored
- */
-@property (assign, nonatomic) int audioChannels;
-
-/**
- Set the bitrate of the audio
- If audioOutputSettings is not nil,, this property will be ignored
- */
-@property (assign, nonatomic) int audioBitRate;
-
-/**
- Must be like kAudioFormat* (example kAudioFormatMPEGLayer3)
- If audioOutputSettings is not nil, this property will be ignored
- */
-@property (assign, nonatomic) int audioEncodeType;
-
-/**
- If the recorder provides audio and this property is set to no, the
- recorder won't send audio buffer to this session
- Default is NO
- */
-@property (assign, nonatomic) BOOL shouldIgnoreAudio;
-
+@property (readonly, nonatomic, weak) SCRecorder *recorder;
 
 //////////////////
 // PUBLIC METHODS
 ////
 
-- (id)init;
+- (instancetype)init;
 
-- (id)initWithDictionaryRepresentation:(NSDictionary *)dictionaryRepresentation;
+- (instancetype)initWithDictionaryRepresentation:(NSDictionary *)dictionaryRepresentation;
 
 /**
  Create a SCRecordSession
  */
-+ (id)recordSession;
++ (instancetype)recordSession;
 
 /**
  Create a SCRecordSession based on dictionary representation
  */
-+ (id)recordSession:(NSDictionary *)dictionaryRepresentation;
++ (instancetype)recordSession:(NSDictionary *)dictionaryRepresentation;
 
 /**
  Start a new record segment.
@@ -353,28 +199,5 @@ extern const NSString *SCRecordSessionCacheDirectory;
  Returns a record segment URL for a filename and a directory.
  */
 + (NSURL *)recordSegmentURLForFilename:(NSString *)filename andDirectory:(NSString *)directory;
-
-
-//////////////////
-// PRIVATE API
-////
-
-@property (weak, nonatomic) SCRecorder *recorder;
-
-@property (readonly, nonatomic) BOOL videoInitialized;
-@property (readonly, nonatomic) BOOL audioInitialized;
-@property (readonly, nonatomic) BOOL videoInitializationFailed;
-@property (readonly, nonatomic) BOOL audioInitializationFailed;
-@property (readonly, nonatomic) BOOL recordSegmentReady;
-@property (readonly, nonatomic) BOOL currentSegmentHasAudio;
-@property (readonly, nonatomic) BOOL currentSegmentHasVideo;
-
-- (void)initializeVideoUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasAudio:(BOOL)hasAudio error:(NSError **)error;
-- (void)initializeAudioUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer hasVideo:(BOOL)hasVideo error:(NSError **)error;
-
-- (void)uninitialize;
-
-- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer frameDuration:(CMTime)frameDuration;
-- (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
 
 @end

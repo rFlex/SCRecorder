@@ -17,8 +17,9 @@
 #import "SCImageView.h"
 #import "SCSwipeableFilterView.h"
 #import "SCRecorderFocusView.h"
-
-#define kSCRecorderRecordSessionQueueKey "SCRecorderRecordSessionQueue"
+#import "SCVideoConfiguration.h"
+#import "SCAudioConfiguration.h"
+#import "SCPhotoConfiguration.h"
 
 typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
@@ -58,26 +59,31 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
-/**
- Enable the audio
- Changing this parameter has no effect is the session
- has been already opened
- */
-@property (assign, nonatomic) BOOL audioEnabled;
 
 /**
- Enable the video
- Changing this parameter has no effect is the session
- has been already opened
+ Access the configuration for the video.
  */
-@property (assign, nonatomic) BOOL videoEnabled;
+@property (readonly, nonatomic) SCVideoConfiguration *videoConfiguration;
 
 /**
- Enable the photo
- Changing this parameter has no effect is the session
- has been already opened
+ Access the configuration for the audio.
  */
-@property (assign, nonatomic) BOOL photoEnabled;
+@property (readonly, nonatomic) SCAudioConfiguration *audioConfiguration;
+
+/**
+ Access the configuration for the photo.
+ */
+@property (readonly, nonatomic) SCPhotoConfiguration *photoConfiguration;
+
+/**
+ Return whether the video is enabled and ready to use.
+ */
+@property (readonly, nonatomic) BOOL videoEnabledAndReady;
+
+/**
+ Return whether the audio is enabled and ready to use.
+ */
+@property (readonly, nonatomic) BOOL audioEnabledAndReady;
 
 /**
  Will be true if the SCRecorder is currently recording
@@ -88,7 +94,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Change the flash mode on the camera
  */
 @property (assign, nonatomic) SCFlashMode flashMode;
-
 
 /**
  Determine whether the device has flash
@@ -104,11 +109,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Get the current focus mode used by the camera device
  */
 @property (readonly, nonatomic) AVCaptureFocusMode focusMode;
-
-/**
- The outputSettings used in the AVCaptureStillImageOutput
- */
-@property (copy, nonatomic) NSDictionary *photoOutputSettings;
 
 /**
  The session preset used for the AVCaptureSession
@@ -168,6 +168,21 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  The frameRate for the video
  */
 @property (assign, nonatomic) CMTimeScale frameRate;
+
+/**
+ The maximum record duration. When the record session record duration
+ reaches this bound, the recorder will automatically pause the recording,
+ end the current record segment and send recorder:didCompleteRecordSession: on the 
+ delegate.
+ */
+@property (assign, nonatomic) CMTime maxRecordDuration;
+
+/**
+ If maxRecordDuration is not kCMTimeInvalid,
+ this will contains a float between 0 and 1 representing the
+ recorded ratio on the current record session, 1 being fully recorded.
+ */
+@property (readonly, nonatomic) CGFloat ratioRecorded;
 
 /**
  If enabled, the recorder will initialize the recordSession and create the record segments
@@ -295,6 +310,13 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (void)lockFocus;
 
 /**
+ Set an active device format that supports the requested framerate and the current video size
+ This changes the frameRate.
+ @return whether the method has succeeded or not
+ */
+- (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate error:(NSError **)error;
+
+/**
  Set an active device format that supports the request framerate and size
  This changes the frameRate.
  @return whether the method has succeeded or not
@@ -342,5 +364,15 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Get an image representing the last appended video buffer
  */
 - (UIImage *)snapshotOfLastAppendedVideoBuffer;
+
+/**
+ Returns a shared recorder if you want to use the same instance throughout your app.
+ */
++ (SCRecorder *)sharedRecorder;
+
+/**
+ Returns whether the current queue is the record session queue.
+ */
++ (BOOL)isRecordSessionQueue;
 
 @end

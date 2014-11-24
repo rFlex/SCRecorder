@@ -18,17 +18,7 @@
     [super viewWillAppear:animated];
     self.navigationController.navigationBarHidden = NO;
     
-    UIGraphicsBeginImageContext(CGSizeMake(200, 700));
-    
-    [self.photo drawAtPoint:CGPointMake(0, 0)];
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    
-    UIGraphicsEndImageContext();
-    
-    self.filterSwitcherView.preferredCIImageTransform = [CIImageRendererUtils preferredCIImageTransformFromUIImage:image];
-    
-    self.filterSwitcherView.CIImage = [CIImage imageWithCGImage:image.CGImage];
+    [self.filterSwitcherView setImageByUIImage:self.photo];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
