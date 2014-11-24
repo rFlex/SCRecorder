@@ -3,7 +3,7 @@ SCRecorder
 
 ![](screenshot_1.png)     ![](screenshot_2.png)
 
-A Vine/Instagram like audio/video recorder in Objective-C.
+A Vine/Instagram like audio/video recorder and filter framework in Objective-C.
 
 In short, here is a short list of the cool things you can do:
 - Record multiple video segments
@@ -30,7 +30,7 @@ If you are using cocoapods, you can use this project with the following Podfile
 
 ```ruby
 	platform :ios, '7.0'
-	pod "SCRecorder", "~> 2.1"
+	pod 'SCRecorder'
 ```
 
 Getting started
@@ -40,7 +40,7 @@ SCRecorder is the main class that connect the inputs and outputs together. It wi
 
 ```objective-c
 // Create the recorder
-SCRecorder *recorder = [SCRecorder recorder];
+SCRecorder *recorder = [SCRecorder recorder]; // You can also use +[SCRecorder sharedRecorder]
 	
 // Set the sessionPreset used by the AVCaptureSession
 recorder.sessionPreset = AVCaptureSessionPresetHigh;
@@ -54,124 +54,171 @@ recorder.delegate = self;
 	[recorder startRunningSession];
 }];
 ```
+
+Configuring the recorder
+--------------------
+
+You can configure the video, audio and photo output settings in their configuration instance that you can access just like this:
+```objective-c
+
+// Get the video configuration object
+recorder.videoConfiguration;
+
+// Get the audio configuration object
+recorder.audioConfiguration;
+
+// Get the photo configuration object
+recorder.photoConfiguration;
+```
+
+You can configure the input settings (framerate of the video, whether the flash should be enabled etc...) directly on the SCRecorder.
+```objective-c
+
+recorder.sessionPreset = AVCaptureSessionPresetHigh;
+recorder.device = AVCaptureDevicePositionFront;
+
+```
 	
 Begin the recording
 --------------------
 
-The second class we are gonna see is SCRecordSession, which is the class that process the inputs and append them into an output file. A record session can contains one or several record segments. A record segment is just a continuous video and/or audio file, represented as a NSURL. It starts when you hold the record button and end when you release it, if you implemented the record button the same way as instagram and vine did. When you end the SCRecordSession, it will merge the record segments (if needed). If the record is started on the SCRecorder, setting a SCRecordSession inside it will automatically start a record segment. If you don't want this to happen, you must remove the SCRecordSession from the SCRecorder while manipulating it.
+The second class we are gonna see is SCRecordSession, which is the class that process the inputs and append them into an output file. A record session can contain multiple record segments. A record segment is just a continuous video and/or audio file, represented as a NSURL. It starts when you hold the record button and end when you release it, if you implemented the record button the same way as instagram and vine did. A call of [SCRecorder record] starts a new record segment if needed.
 
 ```objective-c
 // Creating the recordSession
 SCRecordSession *recordSession = [SCRecordSession recordSession];
-	
-// Before setting it to the recorder, you can configure many things on the recordSession,
-// like the audio/video compression, the maximum record duration time, the output file url...
 
 recorder.recordSession = recordSession;
 	
 [recorder record];
 ```	
 
-Finishing the record
+Finishing the record and editing
 ---------------------
 
-You can call endSession on the SCRecordSession to stop the current recording segment, merge every record segments and delete the underlying files used by the record segments. Only one file will be remaining after calling this method, which will be contained in the outputUrl. Note that this property is automatically generated, but you can set one if you want to record to a specific location.
+When you are done recording, you need to pause the SCRecorder. Each call of -[SCRecorder pause] causes the current record segment to be completed and appended as a NSURL that is available through the -[SCRecordSession recordSegments] array. You can then read the record segments using -[SCRecordSession assetRepresentingRecordSegments]. You can also read each individual file by using one of the NSURL entry inside the recordSegments array.
 
 ```objective-c
-SCRecordSession *recordSession = recorder.recordSession;
-recorder.recordSession = nil;
+// When done with the current record segment
+[recorder pause:^{ 
+	SCRecordSession *recordSession = recorder.recordSession;
+
+	// Removing segments
+	[recordSession removeSegmentAtIndex:0 deleteFile:YES]; // Remove first segment
+	[recordSession removeLastSegment]; // Remove lastsegment
+
+	// Read the record segment
+	SCPlayer *player = ...; // Get instance of SCPlayer
+	[player setItemByAsset:recordSession.assetRepresentingRecordSegments];
+	[player play];
 	
-[recordSession endSession:^(NSError *error) {
-	if (error == nil) {
-		NSURL *fileUrl = recordSession.outputUrl;
-		// Do something with the output file :)
-	} else {
-		// Handle the error
-	}
+	// Play the video with a black and white filter
+	SCImageView *SCImageView = ...; // Get instance of SCImageView
+	player.CIImageRenderer = SCImageView;
+	SCImageView.filterGroup = [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectNoir"]];
 }];
-```	
-
-And start doing the cool stuffs!
----------------------------------
-
-```objective-c
-// You can read each record segments individually
-SCRecordSession *recordSession = recorder.recordSession;
-for (NSURL *recordSegment in recordSession.recordSegments) {
-	// Do something cool with it
-}
-	
-// You can remove a record segment at anytime
-// Setting deleteFile to YES will delete the underlying file
-[recordSession removeSegmentAtIndex:1 deleteFile:YES];
-
-// Record a square video like Vine/Instagram
-recordSession.videoSizeAsSquare = YES;
-	
-// Or add a random record segment that you made before
-[recordSession insertSegment:fileUrl atIndex:0];
-	
-// You can read the recordSegments easily without having to merge them
-AVAsset *recordSessionAsset = [recordSession assetRepresentingRecordSegments];
-
-// Record in slow motion! (you need to set a high framerate if you want the video to appear smooth :) )
-recordSession.videoTimeScale = 4;
-	
-// Get a dictionary representation of the record session
-// And save it somewhere, so you can use it later!
-NSDictionary *dictionaryRepresentation = [recordSession dictionaryRepresentation];
-[[NSUserDefaults standardUserDefaults] setObject:dictionaryRepresentation forKey:@"RecordSession"];
-	
-// Restore a record session from a saved dictionary representation
-NSDictionary *dictionaryRepresentation = [[NSUserDefaults standardUserDefaults] objectForKey:@"RecordSession"];
-SCRecordSession *recordSession = [SCRecordSession recordSession:dictionaryRepresentation];
-	
-// Limiting the record duration
-// When the record reaches this value, the recorder will remove the recordSession and call
-// recorder:didCompleteRecordSession: on the SCRecorder delegate. It's up to you
-// to do whatever you want with the recordSession after (the recordSegments won't be merge nor deleted, but
-// the current recordSegment will be finished automatically)
-recordSession.suggestedMaxRecordDuration = CMTimeMakeWithSeconds(7, 10000);
-	
-// Taking a picture
-[recorder capturePhoto:^(NSError *error, UIImage *image) {
-	if (image != nil) {
-		// Do something cool with it!
-	}
-}];
-	
-// Display your recordSession
-SCVideoPlayerView *videoPlayer = [[SCVideoPlayerView alloc] init];
-[videoPlayer.player setItemByAsset:recordSessionAsset];
-
-videoPlayer.frame = self.view.bounds;
-[self.view addSubView:videoPlayer];
-[videoPlayer.player play];
-	
-// Add a view that display the video with a filter
-CIFilter *blackAndWhite = [CIFilter filterWithName:@"CIColorControls" keysAndValues:@"inputBrightness", @0.0, @"inputContrast", @1.1, @"inputSaturation", @0.0, nil];
-SCFilter *filter = [[SCFilter alloc] initWithCIFilter:blackAndWhite];
-SCImageView *SCImageView = [SCImageView new];
-SCImageView.filterGroup = [SCFilterGroup filterGroupWithFilter:filter];
-SCImageView.frame = self.view.bounds;
-[self.view addSubView:SCImageView];
-videoPlayer.player.CIImageRenderer = SCImageView;
-	
-// Import a filter made using CoreImageShop
-NSURL *savedFilterGroupUrl = ...;
-SCFilterGroup *filterGroup = [SCFilterGroup filterGroupWithContentsOfUrl:savedFilterGroupUrl];
-
-// Export your final video with the filter
-SCAssetExportSession exportSession = [[SCAssetExportSession alloc] initWithAsset:recordSessionAsset];
-exportSession.keepVideoSize = YES;
-exportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
-exportSession.fileType = AVFileTypeMPEG4;
-exportSession.outputUrl = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingString:@"_output.mp4"]];
-exportSession.filterGroup = [SCFilterGroup filterGroupWithFilter:filter];
-	
-[exportSession exportAsynchronouslyWithCompletionHandler:^ {
-	NSError *error = exportSession.error;
-		
-	// Etc...
-}]
 ```
+
+Merging all the record segments into one file
+---------------------
+
+Once you are done editing your record session, you can merge the record segments into one file that you can upload to your server and store locally. You can either go the easy way with few customization using -[SCRecordSession mergeRecordSegmentsUsingPreset: completionHandler:], or you can use the asset returned by -[SCRecordSession assetRepresentingRecordSegments] and export yourself using the native AVAssetExportSession, the more customizable with filter support SCAssetExportSession, or an exporter that you implemented yourself.
+
+```objective-c
+
+SCRecordSession *recordSession = ...;
+
+// Easy way
+recordSession mergeRecordSegmentsUsingPreset:AVAssetExportSessionPresetHighest completionHandler:^(NSURL *outputUrl, NSError *error) {
+	if (error == nil) {
+		// File recorded to outputUrl
+	}
+}];
+
+// With more customization
+AVAsset *asset = [recordSession assetRepresentingRecordSegments];
+
+SCAssetExportSession assetExportSession = [[SCAssetExportSession alloc] initWithAsset:asset];
+assetExportSession.filterGroup = [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant”]];
+assetExportSession.outputUrl = recordSession.outputUrl;
+assetExportSession.outputFileType = AVFileTypeMPEG4;
+assetExportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
+assetExportSession.keepVideoSize = YES;
+[assetExportSession exportAsynchronouslyWithCompletionHandler: ^{
+	if (assetExportSession.error == nil) {
+		// We have our video and/or audio file
+	} else {
+		// Something bad happened
+	}
+}];
+
+```
+
+Creating/manipulating filters
+---------------------
+
+SCRecorder comes with a filter API built on top of Core Image. SCFilter is the class that wraps a CIFilter. It can have a delegate to know when a filter parameter has changed and is compliant to NSCoding. Even though CIFilter is also NSCoding compliant, SCFilter was needed because it fixed some incompatibility issue while trying to deserialise a CIFilter on iOS that was serialised on OS X. SCFilterGroup is a class that contains a list of SCFilter. SCFilterGroup can be saved directly into a file and restored from this file. Using the CoreImageShop Mac project, you can create SCFilterGroup’s and use them on your iOS app.  
+
+```objective-c
+
+// Manually creating a filter chain
+SCFilter *blackAndWhite = [SCFilter filterWithName:@"CIColorControls"];
+[blackAndWhite setParameterValue:@0 forKey:@"inputSaturation"];
+
+SCFilter *exposure = [SCFilter filterWithName:@"CIExposureAdjust"];
+[exposure setParameterValue:@0.7 forKey:@"inputEV"];
+
+SCFilterGroup *filterGroup = [SCFilterGroup filterGroupWithFilters:@[blackAndWhite, exposure]];
+
+// Saving to a file
+NSError *error = nil;
+[filterGroup writeToFile:[NSURL fileUrlWithPath:@"some-url.cisf"] error:&error];
+if (error == nil) {
+
+}
+
+// Restoring the filter group
+SCFilterGroup *restoredFilterGroup = [SCFilterGroup filterGroupWithContentsOfUrl:[NSURL fileUrlWithPath:@"some-url.cisf"]];
+```
+
+Using the filters
+---------------------
+
+SCFilterGroup can be either used in a view to render a filtered image in real time, or in a processing object to render the filter to a file. You can use an SCFilterGroup in one of the following classes:
+
+- SCAssetExportSession (processing)
+- SCVideoConfiguration (processing)
+- SCImageView (live rendering)
+- SCSwipeableFilterView (live rendering)
+
+
+Some details about the other provided classes
+---------------------
+
+#### SCRecorderFocusView
+
+Simple view that can have an SCRecorder instance. It will handle the tap to focus. SCRecorder delegate can call -[SCRecorderFocusView showFocusAnimation] and -[SCRecorder hideFocusAnimation] to show and hide the animation when needed.
+
+#### CIImageRenderer (protocol)
+
+Every class that conforms to this protocol can render a CIImage.
+
+#### SCImageView<CIImageRenderer>
+
+A simple CIImageRenderer view that can have a SCFilterGroup. It renders the input CIImage using the SCFilterGroup, if there is any.
+
+#### SCSwipeableFilterView<CIImageRenderer>
+
+A CIImageRenderer view that has a scroll and a list of SCFilterGroup. It let the user scrolls between the filters so he can chose one. The selected filter can be retrieved using -[SCSwipeableFilterView selectedFilterGroup]. This basically works the same as the Snapchat composition page.
+
+#### SCAssetExportSession
+
+Exporter that has basically the same API as the Apple AVAssetExportSession but adds more control on the output quality. It can also have a SCFilterGroup so each image buffer are processed using that filter group.
+
+#### SCPlayer
+
+Player based on the Apple AVPlayer. It adds some convenience methods and the possibility to have a CIImageRenderer that will be used to render the video image buffers. You can combine this class with a CIImageRenderer to render a live filter on a video.
+
+#### SCVideoPlayerView
+
+A view that render an SCPlayer easily. It supports tap to play/pause. By default, it holds an SCPlayer instance itself and share the same lifecycle as this SCPlayer. You can disable this feature by calling +[SCVideoPlayerView setAutoCreatePlayerWhenNeeded:NO].
