@@ -43,7 +43,7 @@
 @property (copy, nonatomic) NSString *scalingMode;
 
 /**
- The maximum framerate that this SCRecordSession should handle
+ The maximum input framerate that this SCRecordSession should handle
  If the camera appends too much frames, they will be dropped.
  If this property's value is 0, it will use the current video
  framerate from the camera.

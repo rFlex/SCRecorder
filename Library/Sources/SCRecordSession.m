@@ -93,8 +93,10 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         _timeOffset = kCMTimeZero;
         _lastTimeVideo = kCMTimeZero;
         _lastTimeAudio = kCMTimeZero;
+        _lastAppendedVideo = kCMTimeZero;
         _currentSegmentDuration = kCMTimeZero;
         _segmentsDuration = kCMTimeZero;
+        _sessionBegan = kCMTimeZero;
         _date = [NSDate date];
         _recordSegmentsDirectory = SCRecordSessionTemporaryDirectory;
         _identifier = [NSString stringWithFormat:@"%ld", (long)[_date timeIntervalSince1970]];
@@ -612,6 +614,10 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     if ([_audioInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer);
         
+        if (CMTIME_IS_INVALID(_sessionBegan)) {
+            _sessionBegan = actualBufferTime;
+        }
+        
         if (CMTIME_IS_INVALID(_timeOffset)) {
             _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
         }
@@ -644,6 +650,23 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     if ([_videoInput isReadyForMoreMediaData]) {
         CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
         
+        if (CMTIME_IS_INVALID(_sessionBegan)) {
+            _sessionBegan = actualBufferTime;
+        }
+        
+        if (_videoConfiguration.maxFrameRate > 0) {
+            CMTime interval = CMTimeMake(1, _videoConfiguration.maxFrameRate);
+            
+            CMTime offset = CMTimeSubtract(actualBufferTime, _lastAppendedVideo);
+            if (CMTIME_COMPARE_INLINE(_lastAppendedVideo, ==, kCMTimeZero)) {
+                offset = CMTimeSubtract(actualBufferTime, _sessionBegan);
+            }
+            
+            if  (CMTIME_COMPARE_INLINE(offset, <, interval)) {
+                return NO;
+            }
+        }
+        
         if (CMTIME_IS_INVALID(_timeOffset)) {
             _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
 //            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
@@ -662,8 +685,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             }
         }
         
-        CMTime bufferTimestamp = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer), _timeOffset);
-        
+        CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
         if (_videoPixelBufferAdaptor != nil) {
             CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
             
@@ -693,6 +715,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             CFRelease(adjustedBuffer);
         }
    
+        _lastAppendedVideo = actualBufferTime;
         _lastTimeVideo = actualBufferTime;
         _currentSegmentDuration = bufferTimestamp;
         
