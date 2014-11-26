@@ -62,16 +62,43 @@ You can configure the video, audio and photo output settings in their configurat
 ```objective-c
 
 // Get the video configuration object
-recorder.videoConfiguration;
+SCVideoConfiguration *video = recorder.videoConfiguration;
+
+// Whether the video should be enabled or not
+video.enabled = YES;
+// The bitrate of the video video
+video.bitrate = 2000000; // 2Mbit/s
+// Size of the video output
+video.size = CGSizeMake(1280, 720);
+// Scaling if the output aspect ratio is different than the output one
+video.scalingMode = AVVideoScalingModeResizeAspectFill;
+// The timescale ratio to use. Higher than 1 makes the time go slower, between 0 and 1 makes the time go faster
+video.timeScale = 1;
+// Whether the output video size should be infered so it creates a square video
+video.sizeAsSquare = NO;
+// The filter to apply to each output video buffer (this do not affect the presentation layer)
+video.filterGroup = [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]];
 
 // Get the audio configuration object
-recorder.audioConfiguration;
+SCAudioConfiguration *audio = recorder.audioConfiguration;
+
+// Whether the audio should be enabled or not
+audio.enabled = YES;
+// the bitrate of the audio output
+audio.bitrate = 128000; // 128kbit/s
+// Number of audio output channels
+audio.channelsCount = 1; // Mono output
+// The sample rate of the audio output
+audio.sampleRate = 0; // Use same input 
+// The format of the audio output
+audio.format = kAudioFormatMPEG4AAC; // AAC
 
 // Get the photo configuration object
-recorder.photoConfiguration;
+SCPhotoConfiguration *photo = recorder.photoConfiguration;
+photo.enabled = NO;
 ```
 
-You can configure the input settings (framerate of the video, whether the flash should be enabled etc...) directly on the SCRecorder.
+You can configure the input device settings (framerate of the video, whether the flash should be enabled etc...) directly on the SCRecorder.
 ```objective-c
 
 recorder.sessionPreset = AVCaptureSessionPresetHigh;
