@@ -449,7 +449,7 @@
         if (!(_initializeRecordSessionLazily && !_isRecording) && recordSession != nil) {
             if (recordSession != nil) {
                 if (captureOutput == _videoOutput) {
-                    if (!recordSession.videoInitializationFailed) {
+                    if (!recordSession.videoInitializationFailed && !_videoConfiguration.shouldIgnore) {
                         if (!recordSession.videoInitialized) {
                             NSError *error = nil;
                             NSDictionary *settings = [self.videoConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
@@ -490,7 +490,7 @@
                         }
                     }
                 } else if (captureOutput == _audioOutput) {
-                    if (!recordSession.audioInitializationFailed) {
+                    if (!recordSession.audioInitializationFailed && !_audioConfiguration.shouldIgnore) {
                         if (!recordSession.audioInitialized) {
                             NSError *error = nil;
                             NSDictionary *settings = [self.audioConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
