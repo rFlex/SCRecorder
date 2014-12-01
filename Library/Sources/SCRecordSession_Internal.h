@@ -21,7 +21,6 @@
     BOOL _currentSegmentHasAudio;
     int _currentSegmentCount;
     CMTime _timeOffset;
-    CMTime _lastTimeVideo;
     CMTime _lastTimeAudio;
     
     SCVideoConfiguration *_videoConfiguration;
@@ -47,7 +46,7 @@
 
 - (void)uninitialize;
 
-- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer;
+- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer duration:(CMTime)duration;
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
 
 @end
