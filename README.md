@@ -36,7 +36,7 @@ If you are using cocoapods, you can use this project with the following Podfile
 Getting started
 ----------------
 
-SCRecorder is the main class that connect the inputs and outputs together. It will handle all the underlying AVFoundation stuffs.
+[SCRecorder](Library/Sources/SCRecorder.h) is the main class that connect the inputs and outputs together. It will handle all the underlying AVFoundation stuffs.
 
 ```objective-c
 // Create the recorder
@@ -58,7 +58,7 @@ recorder.delegate = self;
 Configuring the recorder
 --------------------
 
-You can configure the video, audio and photo output settings in their configuration instance that you can access just like this:
+You can configure the video, audio and photo output settings in their configuration instance ([SCVideoConfiguration](Library/Sources/SCVideoConfiguration.h), [SCAudioConfiguration](Library/Sources/SCAudioConfiguration.h), [SCPhotoConfiguration](Library/Sources/SCPhotoConfiguration.h)),  that you can access just like this:
 ```objective-c
 
 // Get the video configuration object
@@ -109,7 +109,7 @@ recorder.device = AVCaptureDevicePositionFront;
 Begin the recording
 --------------------
 
-The second class we are gonna see is SCRecordSession, which is the class that process the inputs and append them into an output file. A record session can contain multiple record segments. A record segment is just a continuous video and/or audio file, represented as a NSURL. It starts when you hold the record button and end when you release it, if you implemented the record button the same way as instagram and vine did. A call of [SCRecorder record] starts a new record segment if needed.
+The second class we are gonna see is [SCRecordSession](Library/Sources/SCRecordSession.h), which is the class that process the inputs and append them into an output file. A record session can contain multiple record segments. A record segment is just a continuous video and/or audio file, represented as a NSURL. It starts when you hold the record button and end when you release it, if you implemented the record button the same way as instagram and vine did. A call of [SCRecorder record] starts a new record segment if needed.
 
 ```objective-c
 // Creating the recordSession
@@ -184,7 +184,7 @@ assetExportSession.keepVideoSize = YES;
 Creating/manipulating filters
 ---------------------
 
-SCRecorder comes with a filter API built on top of Core Image. SCFilter is the class that wraps a CIFilter. It can have a delegate to know when a filter parameter has changed and is compliant to NSCoding. Even though CIFilter is also NSCoding compliant, SCFilter was needed because it fixed some incompatibility issue while trying to deserialise a CIFilter on iOS that was serialised on OS X. SCFilterGroup is a class that contains a list of SCFilter. SCFilterGroup can be saved directly into a file and restored from this file. Using the CoreImageShop Mac project, you can create SCFilterGroup’s and use them on your iOS app.  
+SCRecorder comes with a filter API built on top of Core Image. [SCFilter](Library/Sources/SCFilter.h) is the class that wraps a CIFilter. It can have a delegate to know when a filter parameter has changed and is compliant to NSCoding. Even though CIFilter is also NSCoding compliant, SCFilter was needed because it fixed some incompatibility issue while trying to deserialise a CIFilter on iOS that was serialised on OS X. [SCFilterGroup](Library/Sources/SCFilterGroup.h) is a class that contains a list of SCFilter. SCFilterGroup can be saved directly into a file and restored from this file.
 
 ```objective-c
 
@@ -208,44 +208,46 @@ if (error == nil) {
 SCFilterGroup *restoredFilterGroup = [SCFilterGroup filterGroupWithContentsOfUrl:[NSURL fileUrlWithPath:@"some-url.cisf"]];
 ```
 
+If you want to create your own filters easily, you can also check out [CoreImageShop](https://github.com/rFlex/CoreImageShop) which is a Mac application that will generate serialized SCFilterGroup directly useable by the filter classes in this project.
+
 Using the filters
 ---------------------
 
 SCFilterGroup can be either used in a view to render a filtered image in real time, or in a processing object to render the filter to a file. You can use an SCFilterGroup in one of the following classes:
 
-- SCAssetExportSession (processing)
-- SCVideoConfiguration (processing)
-- SCImageView (live rendering)
-- SCSwipeableFilterView (live rendering)
+- [SCAssetExportSession](Library/Sources/SCAssetExportSession.h) (processing)
+- [SCVideoConfiguration](Library/Sources/SCVideoConfiguration.h) (processing)
+- [SCImageView](Library/Sources/SCImageView.h) (live rendering)
+- [SCSwipeableFilterView](Library/Sources/SCSwipeableFilterView.h) (live rendering)
 
 
 Some details about the other provided classes
 ---------------------
 
-#### SCRecorderFocusView
+#### [SCRecorderFocusView](Library/Sources/SCRecorderFocusView.h)
 
 Simple view that can have an SCRecorder instance. It will handle the tap to focus. SCRecorder delegate can call -[SCRecorderFocusView showFocusAnimation] and -[SCRecorder hideFocusAnimation] to show and hide the animation when needed.
 
-#### CIImageRenderer (protocol)
+#### [CIImageRenderer](Library/Sources/CIImageRenderer.h) (protocol)
 
 Every class that conforms to this protocol can render a CIImage.
 
-#### SCImageView<CIImageRenderer>
+#### [SCImageView<CIImageRenderer>](Library/Sources/SCImageView.h)
 
 A simple CIImageRenderer view that can have a SCFilterGroup. It renders the input CIImage using the SCFilterGroup, if there is any.
 
-#### SCSwipeableFilterView<CIImageRenderer>
+#### [SCSwipeableFilterView<CIImageRenderer>](Library/Sources/SCSwipeableFilterView.h)
 
 A CIImageRenderer view that has a scroll and a list of SCFilterGroup. It let the user scrolls between the filters so he can chose one. The selected filter can be retrieved using -[SCSwipeableFilterView selectedFilterGroup]. This basically works the same as the Snapchat composition page.
 
-#### SCAssetExportSession
+#### [SCAssetExportSession](Library/Sources/SCAssetExportSession.h)
 
 Exporter that has basically the same API as the Apple AVAssetExportSession but adds more control on the output quality. It can also have a SCFilterGroup so each image buffer are processed using that filter group.
 
-#### SCPlayer
+#### [SCPlayer](Library/Sources/SCPlayer.h)
 
 Player based on the Apple AVPlayer. It adds some convenience methods and the possibility to have a CIImageRenderer that will be used to render the video image buffers. You can combine this class with a CIImageRenderer to render a live filter on a video.
 
-#### SCVideoPlayerView
+#### [SCVideoPlayerView](Library/Sources/SCVideoPlayerView.h)
 
 A view that render an SCPlayer easily. It supports tap to play/pause. By default, it holds an SCPlayer instance itself and share the same lifecycle as this SCPlayer. You can disable this feature by calling +[SCVideoPlayerView setAutoCreatePlayerWhenNeeded:NO].
