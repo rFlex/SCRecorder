@@ -135,6 +135,8 @@
 }
 
 - (void)replaceCurrentItemWithPlayerItem:(AVPlayerItem *)item {
+    _itemsLoopLength = 1;
+
     [super replaceCurrentItemWithPlayerItem:item];
     [self suspendDisplay];
 }
@@ -276,7 +278,6 @@
 }
 
 - (void)setItem:(AVPlayerItem *)item {
-	_itemsLoopLength = 1;
 	[self replaceCurrentItemWithPlayerItem:item];
 }
 
