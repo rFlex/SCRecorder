@@ -417,6 +417,16 @@
     }
 }
 
+- (CMTime)frameDurationFromConnection:(AVCaptureConnection *)connection {
+    AVCaptureDevice *device = [self currentVideoDeviceInput].device;
+    
+    if ([device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
+        return device.activeVideoMinFrameDuration;
+    }
+    
+    return connection.videoMinFrameDuration;
+}
+
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     if (captureOutput == _videoOutput) {
         _lastVideoBuffer.sampleBuffer = sampleBuffer;
@@ -468,7 +478,7 @@
                             
                             if (_isRecording && recordSession.recordSegmentReady) {
                                 id<SCRecorderDelegate> delegate = self.delegate;
-                                if ([recordSession appendVideoSampleBuffer:sampleBuffer]) {
+                                if ([recordSession appendVideoSampleBuffer:sampleBuffer duration:[self frameDurationFromConnection:connection]]) {
                                     _lastAppendedVideoBuffer.sampleBuffer = sampleBuffer;
                                     
                                     if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
