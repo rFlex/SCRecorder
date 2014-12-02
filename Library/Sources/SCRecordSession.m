@@ -541,17 +541,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
                     completionHandler(nil, [SCRecordSession createError:@"The session does not contains any record segment"]);
                 });
             }
-        } else if (_recordSegments.count == 1) {
-            // If we only have one segment, we can just copy that file to the destination
-            NSURL *fileUrl = [_recordSegments objectAtIndex:0];
-            NSError *error = nil;
-            [[NSFileManager defaultManager] copyItemAtURL:fileUrl toURL:outputUrl error:&error];
-            
-            if (completionHandler != nil) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(outputUrl, error);
-                });
-            }
         } else {
             AVAsset *asset = [self assetRepresentingRecordSegments];
             
@@ -695,6 +684,20 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     }
 }
 
+- (CMTime)_appendTrack:(AVAssetTrack *)track toCompositionTrack:(AVMutableCompositionTrack *)compositionTrack atTime:(CMTime)time {
+    CMTimeRange timeRange = track.timeRange;
+    time = CMTimeAdd(time, timeRange.start);
+    
+    NSError *error = nil;
+    [compositionTrack insertTimeRange:timeRange ofTrack:track atTime:time error:&error];
+    
+    if (error != nil) {
+        NSLog(@"Failed to insert append %@ track: %@", compositionTrack.mediaType, error);
+    }
+    
+    return CMTimeAdd(time, timeRange.duration);
+}
+
 - (AVAsset *)assetRepresentingRecordSegments {
     __block AVAsset *asset = nil;
     [self _dispatchSynchronouslyOnSafeQueue:^{
@@ -702,18 +705,34 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             asset = [AVAsset assetWithURL:_recordSegments.firstObject];
         } else {
             AVMutableComposition *composition = [AVMutableComposition composition];
+            AVMutableCompositionTrack *audioTrack = nil;
+            AVMutableCompositionTrack *videoTrack = nil;
             
-            NSDictionary *options = @{AVURLAssetPreferPreciseDurationAndTimingKey : @YES};
+            NSDictionary *options = @{ AVURLAssetPreferPreciseDurationAndTimingKey : @YES };
             int currentSegment = 0;
             for (NSURL *recordSegment in _recordSegments) {
                 AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:recordSegment options:options];
                 CMTime currentTime = composition.duration;
                 
-                NSError *error = nil;
-                [composition insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofAsset:asset atTime:currentTime error:&error];
+                NSArray *audioAssetTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
+                NSArray *videoAssetTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
                 
-                if (error != nil) {
-                    NSLog(@"Failed to insert recordSegment at %@: %@", recordSegment, error);
+                CMTime audioTime = currentTime;
+                for (AVAssetTrack *audioAssetTrack in audioAssetTracks) {
+                    if (audioTrack == nil) {
+                        audioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+                    }
+              
+                    audioTime = [self _appendTrack:audioAssetTrack toCompositionTrack:audioTrack atTime:audioTime];
+                }
+            
+                CMTime videoTime = currentTime;
+                for (AVAssetTrack *videoAssetTrack in videoAssetTracks) {
+                    if (videoTrack == nil) {
+                        videoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+                    }
+                
+                    videoTime = [self _appendTrack:videoAssetTrack toCompositionTrack:videoTrack atTime:videoTime];
                 }
                 
                 currentSegment++;
