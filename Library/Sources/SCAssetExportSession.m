@@ -344,12 +344,22 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     EnsureSuccess(error, completionHandler);
     
     if (_audioOutput != nil) {
+        if (_audioSettings == nil) {
+            error = [SCAssetExportSession createError:@"Missing audio settings. (If you don't want fine tunings, you can set the sessionPreset)"];
+            EnsureSuccess(error, completionHandler);
+        }
+
         _audioInput = [self addWriter:AVMediaTypeAudio withSettings:self.audioSettings];
     } else {
         _audioInput = nil;
     }
     
     if (_videoOutput != nil) {
+        if (_videoSettings == nil) {
+            error = [SCAssetExportSession createError:@"Missing video settings. (If you don't want fine tunings, you can set the sessionPreset)"];
+            EnsureSuccess(error, completionHandler);
+        }
+
         _videoInput = [self addWriter:AVMediaTypeVideo withSettings:self.videoSettings];
         if (_keepVideoTransform) {
             _videoInput.transform = videoTrack.preferredTransform;
