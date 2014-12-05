@@ -166,10 +166,10 @@ recordSession mergeRecordSegmentsUsingPreset:AVAssetExportSessionPresetHighest c
 AVAsset *asset = [recordSession assetRepresentingRecordSegments];
 
 SCAssetExportSession assetExportSession = [[SCAssetExportSession alloc] initWithAsset:asset];
-assetExportSession.filterGroup = [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]];
 assetExportSession.outputUrl = recordSession.outputUrl;
 assetExportSession.outputFileType = AVFileTypeMPEG4;
-assetExportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
+assetExportSession.videoConfiguration.filterGroup = [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]];
+assetExportSession.videoConfiguration.preset = SCPresetHighestQuality;
 assetExportSession.keepVideoSize = YES;
 [assetExportSession exportAsynchronouslyWithCompletionHandler: ^{
 	if (assetExportSession.error == nil) {
@@ -215,7 +215,6 @@ Using the filters
 
 SCFilterGroup can be either used in a view to render a filtered image in real time, or in a processing object to render the filter to a file. You can use an SCFilterGroup in one of the following classes:
 
-- [SCAssetExportSession](Library/Sources/SCAssetExportSession.h) (processing)
 - [SCVideoConfiguration](Library/Sources/SCVideoConfiguration.h) (processing)
 - [SCImageView](Library/Sources/SCImageView.h) (live rendering)
 - [SCSwipeableFilterView](Library/Sources/SCSwipeableFilterView.h) (live rendering)
@@ -242,7 +241,7 @@ A CIImageRenderer view that has a scroll and a list of SCFilterGroup. It let the
 
 #### [SCAssetExportSession](Library/Sources/SCAssetExportSession.h)
 
-Exporter that has basically the same API as the Apple AVAssetExportSession but adds more control on the output quality. It can also have a SCFilterGroup so each image buffer are processed using that filter group.
+Exporter that has basically the same API as the Apple AVAssetExportSession but adds more control on the output quality. Output configuration works like the SCRecorder, with a SCVideoConfiguration and SCAudioConfiguration instance to configure the relevant output.
 
 #### [SCPlayer](Library/Sources/SCPlayer.h)
 
