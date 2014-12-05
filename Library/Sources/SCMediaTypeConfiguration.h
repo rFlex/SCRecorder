@@ -9,6 +9,10 @@
 #import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 
+extern NSString *SCPresetHighestQuality;
+extern NSString *SCPresetMediumQuality;
+extern NSString *SCPresetLowQuality;
+
 @interface SCMediaTypeConfiguration : NSObject
 
 /**
@@ -36,6 +40,12 @@
  and this options dictionary will be used instead.
  */
 @property (copy, nonatomic) NSDictionary *options;
+
+/**
+ Defines a preset to use. If set, most properties will be
+ ignored to use values that reflect this preset.
+ */
+@property (copy, nonatomic) NSString *preset;
 
 - (NSDictionary *)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer;
 

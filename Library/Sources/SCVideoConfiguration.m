@@ -20,36 +20,57 @@
         _scalingMode = kSCVideoConfigurationDefaultScalingMode;
         _affineTransform = CGAffineTransformIdentity;
         _timeScale = 1;
+        _keepInputAffineTransform = YES;
     }
     
     return self;
 }
 
-- (NSDictionary *)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
+    float ratio = videoSize.width / requestedWidth;
+    
+    if (ratio <= 1) {
+        return videoSize;
+    }
+    
+    return CGSizeMake(videoSize.width / ratio, videoSize.height / ratio);
+}
+
+- (NSDictionary *)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize {
     NSDictionary *options = self.options;
     if (options != nil) {
         return options;
     }
     
-    CGSize videoSize = self.size;
+    CGSize outputSize = self.size;
+    unsigned long bitrate = self.bitrate;
     
-    if (CGSizeEqualToSize(videoSize, CGSizeZero)) {
-        CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-        size_t width = CVPixelBufferGetWidth(imageBuffer);
-        size_t height = CVPixelBufferGetHeight(imageBuffer);
-        videoSize.width = width;
-        videoSize.height = height;
-        
-        if (self.sizeAsSquare) {
-            if (width > height) {
-                videoSize.width = height;
-            } else {
-                videoSize.height = width;
-            }
+    if (self.preset != nil) {
+        if ([self.preset isEqualToString:SCPresetLowQuality]) {
+            bitrate = 500000;
+            outputSize = MakeVideoSize(videoSize, 640);
+        } else if ([self.preset isEqualToString:SCPresetMediumQuality]) {
+            bitrate = 1000000;
+            outputSize = MakeVideoSize(videoSize, 1280);
+        } else if ([self.preset isEqualToString:SCPresetHighestQuality]) {
+            bitrate = 6000000;
+            outputSize = MakeVideoSize(videoSize, 1920);
+        } else {
+            NSLog(@"Unrecognized video preset %@", self.preset);
         }
     }
     
-    unsigned long bitrate = self.bitrate;
+    if (CGSizeEqualToSize(outputSize, CGSizeZero)) {
+        outputSize = videoSize;
+
+        if (self.sizeAsSquare) {
+            if (videoSize.width > videoSize.height) {
+                outputSize.width = videoSize.height;
+            } else {
+                outputSize.height = videoSize.width;
+            }
+        }
+    }
     
     NSMutableDictionary *compressionSettings = [NSMutableDictionary dictionaryWithObject:[NSNumber numberWithUnsignedLong:bitrate] forKey:AVVideoAverageBitRateKey];
     
@@ -58,12 +79,21 @@
     }
     
     return @{
-                      AVVideoCodecKey : self.codec,
-                      AVVideoScalingModeKey : self.scalingMode,
-                      AVVideoWidthKey : [NSNumber numberWithInteger:videoSize.width],
-                      AVVideoHeightKey : [NSNumber numberWithInteger:videoSize.height],
-                      AVVideoCompressionPropertiesKey : compressionSettings
-                      };
+             AVVideoCodecKey : self.codec,
+             AVVideoScalingModeKey : self.scalingMode,
+             AVVideoWidthKey : [NSNumber numberWithInteger:videoSize.width],
+             AVVideoHeightKey : [NSNumber numberWithInteger:videoSize.height],
+             AVVideoCompressionPropertiesKey : compressionSettings
+             };
+
+}
+
+- (NSDictionary *)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    size_t width = CVPixelBufferGetWidth(imageBuffer);
+    size_t height = CVPixelBufferGetHeight(imageBuffer);
+    
+    return [self createAssetWriterOptionsWithVideoSize:CGSizeMake(width, height)];
 }
 
 @end

@@ -55,6 +55,8 @@
  A value more than 1 will make the buffers last longer, it creates
  a slow motion effect. A value less than 1 will make the buffers be
  shorter, it creates a timelapse effect.
+ 
+ Only used in SCRecorder.
  */
 @property (assign, nonatomic) CGFloat timeScale;
 
@@ -86,5 +88,16 @@
  an empty SCFilterGroup instead of setting this property to nil.
  */
 @property (strong, nonatomic) SCFilterGroup *filterGroup;
+
+/**
+ If YES, the affineTransform will be ignored and the output affineTransform
+ will be the same as the input asset.
+ 
+ Only used in SCAssetExportSession.
+ */
+@property (assign, nonatomic) BOOL keepInputAffineTransform;
+
+
+- (NSDictionary *)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize;
 
 @end

@@ -29,21 +29,45 @@
     
     Float64 sampleRate = self.sampleRate;
     int channels = self.channelsCount;
-    CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
-    const AudioStreamBasicDescription * streamBasicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
+    UInt64 bitrate = self.bitrate;
+    
+    if (self.preset != nil) {
+        if ([self.preset isEqualToString:SCPresetLowQuality]) {
+            bitrate = 64000;
+            channels = 1;
+        } else if ([self.preset isEqualToString:SCPresetMediumQuality]) {
+            bitrate = 128000;
+        } else if ([self.preset isEqualToString:SCPresetHighestQuality]) {
+            bitrate = 320000;
+        } else {
+            NSLog(@"Unrecognized video preset %@", self.preset);
+        }
+    }
+    
+    if (sampleBuffer != nil) {
+        CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
+        const AudioStreamBasicDescription *streamBasicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
+        
+        if (sampleRate == 0) {
+            sampleRate = streamBasicDescription->mSampleRate;
+        }
+        if (channels == 0) {
+            channels = streamBasicDescription->mChannelsPerFrame;
+        }
+    }
     
     if (sampleRate == 0) {
-        sampleRate = streamBasicDescription->mSampleRate;
+        sampleRate = kSCAudioConfigurationDefaultSampleRate;
     }
     if (channels == 0) {
-        channels = streamBasicDescription->mChannelsPerFrame;
+        channels = kSCAudioConfigurationDefaultNumberOfChannels;
     }
     
     return @{
              AVFormatIDKey : [NSNumber numberWithInt: self.format],
-             AVEncoderBitRateKey : [NSNumber numberWithUnsignedLong:self.bitrate],
-             AVSampleRateKey : [NSNumber numberWithFloat: sampleRate],
-             AVNumberOfChannelsKey : [NSNumber numberWithInt: channels]
+             AVEncoderBitRateKey : [NSNumber numberWithUnsignedLong: bitrate],
+             AVNumberOfChannelsKey : [NSNumber numberWithInt: channels],
+             AVSampleRateKey : [NSNumber numberWithInt: sampleRate]
              };
 }
 

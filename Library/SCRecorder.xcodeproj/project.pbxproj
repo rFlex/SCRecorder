@@ -219,6 +219,7 @@
 		DC551C4D17ADD66000E37F8F /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				DCA1639F1A2028DC00505966 /* Configuration */,
 				DCAA1F2219C90021002065CA /* Recorder */,
 				DCAA1F2119C90018002065CA /* Focus */,
 				DCAA1F2019C8FED5002065CA /* FilterDisplayers */,
@@ -331,7 +332,6 @@
 		DCAA1F2219C90021002065CA /* Recorder */ = {
 			isa = PBXGroup;
 			children = (
-				DCA1639F1A2028DC00505966 /* Configuration */,
 				DC50285218E4F23F004E833F /* SCRecordSession.h */,
 				DC50285318E4F23F004E833F /* SCRecordSession.m */,
 				DC50285518E4FA5E004E833F /* SCRecorder.h */,

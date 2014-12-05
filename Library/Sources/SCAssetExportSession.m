@@ -35,10 +35,6 @@
 
 @end
 
-const NSString *SCAssetExportSessionPresetHighestQuality = @"HighestQuality";
-const NSString *SCAssetExportSessionPresetMediumQuality = @"MediumQuality";
-const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
-
 @implementation SCAssetExportSession
 
 -(id)init {
@@ -48,9 +44,8 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         _dispatchQueue = dispatch_queue_create("me.corsin.EvAssetExportSession", nil);
         _dispatchGroup = dispatch_group_create();
         _useGPUForRenderingFilters = YES;
-        _keepVideoTransform = YES;
-        _videoTransform = CGAffineTransformIdentity;
-        _maxVideoFrameDuration = kCMTimeInvalid;
+        _audioConfiguration = [SCAudioConfiguration new];
+        _videoConfiguration = [SCVideoConfiguration new];
     }
     
     return self;
@@ -89,13 +84,11 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     return writer;
 }
 
-- (void)processPixelBuffer:(CVPixelBufferRef)pixelBuffer presentationTime:(CMTime)presentationTime {
-    if (![_videoPixelAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:presentationTime]) {
-        NSLog(@"Failed to append to pixel buffer");
-    }
+- (BOOL)processPixelBuffer:(CVPixelBufferRef)pixelBuffer presentationTime:(CMTime)presentationTime {
+    return [_videoPixelAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:presentationTime];
 }
 
-- (void)processSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+- (BOOL)processSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     if (_ciContext != nil) {
         CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
         
@@ -104,7 +97,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         }
         
         CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
-        CIImage *result = [_filterGroup imageByProcessingImage:image];
+        CIImage *result = [_videoConfiguration.filterGroup imageByProcessingImage:image];
 
         CVPixelBufferRef outputPixelBuffer = nil;
         CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
@@ -114,7 +107,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
             
             [_ciContext render:result toCVPixelBuffer:outputPixelBuffer];
             
-            [self processPixelBuffer:outputPixelBuffer presentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
+            BOOL success = [self processPixelBuffer:outputPixelBuffer presentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
             
             CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
             
@@ -124,12 +117,15 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
             
             CVPixelBufferRelease(outputPixelBuffer);
             outputPixelBuffer = nil;
+            
+            return success;
         } else {
             NSLog(@"Unable to allocate pixelBuffer: %d", ret);
+            return NO;
         }
         
     } else {
-        [_videoInput appendSampleBuffer:sampleBuffer];
+        return [_videoInput appendSampleBuffer:sampleBuffer];
     }
 }
 
@@ -147,30 +143,37 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     if (input != nil) {
         dispatch_group_enter(_dispatchGroup);
         [input requestMediaDataWhenReadyOnQueue:_dispatchQueue usingBlock:^{
-            while (input.isReadyForMoreMediaData) {
+            BOOL shouldReadNextBuffer = YES;
+            while (input.isReadyForMoreMediaData && shouldReadNextBuffer) {
                 CMSampleBufferRef buffer = [output copyNextSampleBuffer];
                 
                 if (buffer != nil) {
                     if (input == _videoInput) {
                         CMTime currentVideoTime = CMSampleBufferGetPresentationTimeStamp(buffer);
                         if (CMTIME_COMPARE_INLINE(currentVideoTime, >=, _nextAllowedVideoFrame)) {
-                            [self processSampleBuffer:buffer];
+//                            NSLog(@"Appending at %fs", CMTimeGetSeconds(currentVideoTime));
+                            shouldReadNextBuffer = [self processSampleBuffer:buffer];
                             
-                            if (CMTIME_IS_VALID(_maxVideoFrameDuration)) {
-                                _nextAllowedVideoFrame = CMTimeAdd(currentVideoTime, _maxVideoFrameDuration);
+                            if (_videoConfiguration.maxFrameRate > 0) {
+                                _nextAllowedVideoFrame = CMTimeAdd(currentVideoTime, CMTimeMake(1, _videoConfiguration.maxFrameRate));
                             }
+                        } else {
+//                            NSLog(@"Skipping at %fs", CMTimeGetSeconds(currentVideoTime));
                         }
                     } else {
-                        [input appendSampleBuffer:buffer];
+                        shouldReadNextBuffer = [input appendSampleBuffer:buffer];
                     }
                     
                     CFRelease(buffer);
                 } else {
-                    [self markInputComplete:input error:nil];
-                    
-                    dispatch_group_leave(_dispatchGroup);
-                    break;
+                    shouldReadNextBuffer = NO;
                 }
+            }
+            
+            if (!shouldReadNextBuffer) {
+                [self markInputComplete:input error:nil];
+                
+                dispatch_group_leave(_dispatchGroup);
             }
         }];
     }
@@ -191,9 +194,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
         }
         
         if (_eaglContext == nil) {
-            NSDictionary *options = @{
-                                      kCIContextUseSoftwareRenderer : [NSNumber numberWithBool:YES]
-                                       };
+            NSDictionary *options = @{ kCIContextUseSoftwareRenderer : [NSNumber numberWithBool:YES] };
             _ciContext = [CIContext contextWithOptions:options];
         } else {
             NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
@@ -216,80 +217,13 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
 }
 
 - (void)setupSettings:(AVAssetTrack *)videoTrack error:(NSError **)error {
-    if (_sessionPreset != nil) {
-        int sampleRate = 0;
-        int audioBitrate = 0;
-        int channels = 0;
-        double width = 0;
-        double height = 0;
-        double videoBitrate = 0;
+    if (videoTrack != nil) {
         
-        if (videoTrack != nil && _keepVideoSize) {
-            width = videoTrack.naturalSize.width;
-            height = videoTrack.naturalSize.height;
-        }
-        
-        // Because Yoda was my master
-        if ([SCAssetExportSessionPresetHighestQuality isEqualToString:_sessionPreset]) {
-            sampleRate = 44100;
-            audioBitrate = 256 k;
-            channels = 2;
-            
-            if (!_keepVideoSize) {
-                width = 1920;
-                height = 1080;
-            }
-            
-            videoBitrate = width * height * 4;
-        } else if ([SCAssetExportSessionPresetMediumQuality isEqualToString:_sessionPreset]) {
-            sampleRate = 44100;
-            audioBitrate = 128 k;
-            channels = 2;
-            
-            if (!_keepVideoSize) {
-                width = 1280;
-                height = 720;
-            }
-            
-            videoBitrate = width * height;
-        } else if ([SCAssetExportSessionPresetLowQuality isEqualToString:_sessionPreset]) {
-            sampleRate = 44100;
-            audioBitrate = 64 k;
-            channels = 1;
-            
-            if (!_keepVideoSize) {
-                width = 640;
-                height = 480;
-            }
-            
-            videoBitrate = width * height / 2;
-        } else {
-            *error = [SCAssetExportSession createError:@"Unrecognized export preset"];
-            return;
-        }
-        
-        if (_audioSettings == nil) {
-            _audioSettings = @{
-                               AVFormatIDKey : [NSNumber numberWithInt:kAudioFormatMPEG4AAC],
-                               AVSampleRateKey : [NSNumber numberWithInt:sampleRate],
-                               AVEncoderBitRateKey : [NSNumber numberWithInt:audioBitrate],
-                               AVNumberOfChannelsKey : [NSNumber numberWithInt:channels]
-                               };
-
-        }
-        if (_videoSettings == nil) {
-            _videoSettings = @{
-                               AVVideoCodecKey : AVVideoCodecH264,
-                               AVVideoWidthKey : [NSNumber numberWithDouble:width],
-                               AVVideoHeightKey : [NSNumber numberWithDouble:height],
-                               AVVideoCompressionPropertiesKey : @{AVVideoAverageBitRateKey: [NSNumber numberWithDouble:videoBitrate ]}
-                               };
-        }
     }
 }
 
 - (BOOL)needsCIContext {
-    return _filterGroup.filters.count > 0;
+    return _videoConfiguration.filterGroup.filters.count > 0;
 }
 
 - (void)setupPixelBufferAdaptor:(AVAssetTrack *)videoTrack {
@@ -319,7 +253,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     EnsureSuccess(error, completionHandler);
     
     NSArray *audioTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeAudio];
-    if (audioTracks.count > 0 && !self.ignoreAudio) {
+    if (audioTracks.count > 0 && self.audioConfiguration.enabled && !self.audioConfiguration.shouldIgnore) {
         _audioOutput = [self addReader:[audioTracks objectAtIndex:0] withSettings:@{ AVFormatIDKey : [NSNumber numberWithUnsignedInt:kAudioFormatType] }];
     } else {
         _audioOutput = nil;
@@ -327,7 +261,7 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     
     NSArray *videoTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeVideo];
     AVAssetTrack *videoTrack = nil;
-    if (videoTracks.count > 0 && !self.ignoreVideo) {
+    if (videoTracks.count > 0 && self.videoConfiguration.enabled && !self.videoConfiguration.shouldIgnore) {
         videoTrack = [videoTracks objectAtIndex:0];
         
         _pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
@@ -344,27 +278,20 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     EnsureSuccess(error, completionHandler);
     
     if (_audioOutput != nil) {
-        if (_audioSettings == nil) {
-            error = [SCAssetExportSession createError:@"Missing audio settings. (If you don't want fine tunings, you can set the sessionPreset)"];
-            EnsureSuccess(error, completionHandler);
-        }
-
-        _audioInput = [self addWriter:AVMediaTypeAudio withSettings:self.audioSettings];
+        NSDictionary *audioSettings = [_audioConfiguration createAssetWriterOptionsUsingSampleBuffer:nil];
+        _audioInput = [self addWriter:AVMediaTypeAudio withSettings:audioSettings];
     } else {
         _audioInput = nil;
     }
     
     if (_videoOutput != nil) {
-        if (_videoSettings == nil) {
-            error = [SCAssetExportSession createError:@"Missing video settings. (If you don't want fine tunings, you can set the sessionPreset)"];
-            EnsureSuccess(error, completionHandler);
-        }
+        NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:videoTrack.naturalSize];
 
-        _videoInput = [self addWriter:AVMediaTypeVideo withSettings:self.videoSettings];
-        if (_keepVideoTransform) {
+        _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];
+        if (_videoConfiguration.keepInputAffineTransform) {
             _videoInput.transform = videoTrack.preferredTransform;
         } else {
-            _videoInput.transform = self.videoTransform;
+            _videoInput.transform = _videoConfiguration.affineTransform;
         }
     } else {
         _videoInput = nil;
@@ -388,6 +315,10 @@ const NSString *SCAssetExportSessionPresetLowQuality = @"LowQuality";
     [self beginReadWriteOnInput:_audioInput fromOutput:_audioOutput];
     
     dispatch_group_notify(_dispatchGroup, _dispatchQueue, ^{
+        if (_error == nil) {
+            _error = _writer.error;
+        }
+        
         if (_error == nil) {
             [_writer finishWritingWithCompletionHandler:^{
                 _error = _writer.error;

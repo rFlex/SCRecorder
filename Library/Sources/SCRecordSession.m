@@ -693,6 +693,8 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     
     if (error != nil) {
         NSLog(@"Failed to insert append %@ track: %@", compositionTrack.mediaType, error);
+    } else {
+//        NSLog(@"Inserted %@ at %fs (%fs -> %fs)", track.mediaType, CMTimeGetSeconds(time), CMTimeGetSeconds(timeRange.start), CMTimeGetSeconds(timeRange.duration));
     }
     
     return CMTimeAdd(time, timeRange.duration);

@@ -109,11 +109,12 @@
         [self.recordSession mergeRecordSegmentsUsingPreset:AVAssetExportPresetHighestQuality completionHandler:completionHandler];
     } else {
         SCAssetExportSession *exportSession = [[SCAssetExportSession alloc] initWithAsset:self.recordSession.assetRepresentingRecordSegments];
-        exportSession.filterGroup = currentFilter;
-        exportSession.sessionPreset = SCAssetExportSessionPresetHighestQuality;
+        exportSession.videoConfiguration.filterGroup = currentFilter;
+        exportSession.videoConfiguration.preset = SCPresetHighestQuality;
+        exportSession.audioConfiguration.preset = SCPresetHighestQuality;
+        exportSession.videoConfiguration.maxFrameRate = 35;
         exportSession.outputUrl = self.recordSession.outputUrl;
         exportSession.outputFileType = AVFileTypeMPEG4;
-        exportSession.keepVideoSize = YES;
         [exportSession exportAsynchronouslyWithCompletionHandler:^{
             completionHandler(exportSession.outputUrl, exportSession.error);
         }];

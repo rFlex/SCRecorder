@@ -10,6 +10,10 @@
 
 @implementation SCMediaTypeConfiguration
 
+const NSString *SCPresetHighestQuality = @"HighestQuality";
+const NSString *SCPresetMediumQuality = @"MediumQuality";
+const NSString *SCPresetLowQuality = @"LowQuality";
+
 - (id)init {
     self = [super init];
     
