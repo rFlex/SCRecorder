@@ -36,4 +36,11 @@
  */
 @property (assign, nonatomic) int format;
 
+/**
+ The audioMix to apply.
+ 
+ Only used in SCAssetExportSession.
+ */
+@property (strong, nonatomic) AVAudioMix *audioMix;
+
 @end

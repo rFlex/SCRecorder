@@ -98,6 +98,9 @@ namespace SCorsin {
 
 		[Export("format")]
 		int Format { get; set; }
+
+		[Export("audioMix")]
+		AVAudioMix AudioMix { get; set; }
 	}
 
 	public delegate void EndRecordSegmentDelegate(int segmentIndex, NSError errore);

@@ -61,19 +61,6 @@
     return self;
 }
 
-- (AVAssetReaderOutput *)addReader:(AVAssetTrack *)track  withSettings:(NSDictionary*)outputSettings {
-    AVAssetReaderOutput *reader = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:track outputSettings:outputSettings];
-    
-    if ([_reader canAddOutput:reader]) {
-        [_reader addOutput:reader];
-    } else {
-        NSLog(@"Cannot add input reader %d", kAudioFormatMPEG4AAC);
-        reader = nil;
-    }
-    
-    return reader;
-}
-
 - (AVAssetWriterInput *)addWriter:(NSString *)mediaType withSettings:(NSDictionary *)outputSettings {
     AVAssetWriterInput *writer = [AVAssetWriterInput assetWriterInputWithMediaType:mediaType outputSettings:outputSettings];
     
@@ -254,7 +241,24 @@
     
     NSArray *audioTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeAudio];
     if (audioTracks.count > 0 && self.audioConfiguration.enabled && !self.audioConfiguration.shouldIgnore) {
-        _audioOutput = [self addReader:[audioTracks objectAtIndex:0] withSettings:@{ AVFormatIDKey : [NSNumber numberWithUnsignedInt:kAudioFormatType] }];
+        AVAudioMix *audioMix = self.audioConfiguration.audioMix;
+        
+        AVAssetReaderOutput *reader = nil;
+        NSDictionary *settings = @{ AVFormatIDKey : [NSNumber numberWithUnsignedInt:kAudioFormatType] };
+        if (audioMix == nil) {
+            reader = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTracks.firstObject outputSettings:settings];
+        } else {
+            AVAssetReaderAudioMixOutput *audioMixOutput = [AVAssetReaderAudioMixOutput assetReaderAudioMixOutputWithAudioTracks:audioTracks audioSettings:settings];
+            audioMixOutput.audioMix = audioMix;
+            reader = audioMixOutput;
+        }
+        
+        if ([_reader canAddOutput:reader]) {
+            [_reader addOutput:reader];
+            _audioOutput = reader;
+        } else {
+            NSLog(@"Unable to add audio reader output");
+        }
     } else {
         _audioOutput = nil;
     }
@@ -265,10 +269,17 @@
         videoTrack = [videoTracks objectAtIndex:0];
         
         _pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
-        _videoOutput = [self addReader:videoTrack withSettings:@{
-                                                                 (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
-                                                                 (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
-                                                                 }];
+        AVAssetReaderOutput *reader = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:@{
+                                                                                                                       (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
+                                                                                                                       (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
+                                                                                                                       }];
+        
+        if ([_reader canAddOutput:reader]) {
+            [_reader addOutput:reader];
+            _videoOutput = reader;
+        } else {
+            NSLog(@"Unable to add video reader output");
+        }
     } else {
         _videoOutput = nil;
     }
