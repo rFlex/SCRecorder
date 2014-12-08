@@ -82,7 +82,7 @@
         if (_eaglContext == nil) {
             CVPixelBufferLockBaseAddress(pixelBuffer, 0);
         }
-        
+
         CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
         CIImage *result = [_videoConfiguration.filterGroup imageByProcessingImage:image];
 
@@ -138,14 +138,14 @@
                     if (input == _videoInput) {
                         CMTime currentVideoTime = CMSampleBufferGetPresentationTimeStamp(buffer);
                         if (CMTIME_COMPARE_INLINE(currentVideoTime, >=, _nextAllowedVideoFrame)) {
-//                            NSLog(@"Appending at %fs", CMTimeGetSeconds(currentVideoTime));
+//                            NSLog(@"Appending at %fs (%fs)", CMTimeGetSeconds(currentVideoTime), CMTimeGetSeconds(CMSampleBufferGetOutputDuration(buffer)));
                             shouldReadNextBuffer = [self processSampleBuffer:buffer];
                             
                             if (_videoConfiguration.maxFrameRate > 0) {
                                 _nextAllowedVideoFrame = CMTimeAdd(currentVideoTime, CMTimeMake(1, _videoConfiguration.maxFrameRate));
                             }
                         } else {
-//                            NSLog(@"Skipping at %fs", CMTimeGetSeconds(currentVideoTime));
+//                            NSLog(@"Skipping at %fs (%fs)", CMTimeGetSeconds(currentVideoTime), CMTimeGetSeconds(CMSampleBufferGetOutputDuration(buffer)));
                         }
                     } else {
                         shouldReadNextBuffer = [input appendSampleBuffer:buffer];
@@ -252,6 +252,7 @@
             audioMixOutput.audioMix = audioMix;
             reader = audioMixOutput;
         }
+        reader.alwaysCopiesSampleData = NO;
         
         if ([_reader canAddOutput:reader]) {
             [_reader addOutput:reader];
@@ -273,7 +274,8 @@
                                                                                                                        (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
                                                                                                                        (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
                                                                                                                        }];
-        
+        reader.alwaysCopiesSampleData = NO;
+
         if ([_reader canAddOutput:reader]) {
             [_reader addOutput:reader];
             _videoOutput = reader;
