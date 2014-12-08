@@ -576,6 +576,17 @@ namespace SCorsin {
 		bool UseGPUForRenderingFilters { get; set; }
 	}
 
+	[BaseType(typeof(SCAssetExportSession))]
+	interface EvAssetExportSession {
+
+		[Export("reverseVideo")]
+		bool ReverseVideo { get; set; }
+
+		[Export("initWithAsset:")]
+		IntPtr Constructor(AVAsset inputAsset);
+
+	}
+
 	[BaseType(typeof(UIView))]
 	interface SCFilterSelectorView {
 

@@ -13,7 +13,6 @@
 #define kVideoPixelFormatTypeForCI kCVPixelFormatType_32BGRA
 #define kVideoPixelFormatTypeDefault kCVPixelFormatType_422YpCbCr8
 #define kAudioFormatType kAudioFormatLinearPCM
-#define k *1000.0
 
 @interface SCAssetExportSession() {
     AVAssetWriter *_writer;
