@@ -62,13 +62,13 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
     
     if (CGSizeEqualToSize(outputSize, CGSizeZero)) {
         outputSize = videoSize;
-
-        if (self.sizeAsSquare) {
-            if (videoSize.width > videoSize.height) {
-                outputSize.width = videoSize.height;
-            } else {
-                outputSize.height = videoSize.width;
-            }
+    }
+    
+    if (self.sizeAsSquare) {
+        if (videoSize.width > videoSize.height) {
+            outputSize.width = videoSize.height;
+        } else {
+            outputSize.height = videoSize.width;
         }
     }
     
@@ -81,8 +81,8 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
     return @{
              AVVideoCodecKey : self.codec,
              AVVideoScalingModeKey : self.scalingMode,
-             AVVideoWidthKey : [NSNumber numberWithInteger:videoSize.width],
-             AVVideoHeightKey : [NSNumber numberWithInteger:videoSize.height],
+             AVVideoWidthKey : [NSNumber numberWithInteger:outputSize.width],
+             AVVideoHeightKey : [NSNumber numberWithInteger:outputSize.height],
              AVVideoCompressionPropertiesKey : compressionSettings
              };
 
