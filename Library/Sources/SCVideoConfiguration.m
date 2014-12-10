@@ -78,6 +78,10 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
         [compressionSettings setObject:@1 forKey:AVVideoMaxKeyFrameIntervalKey];
     }
     
+    if (self.customAVVideoProfileLevelKey) {
+        [compressionSettings setObject:AVVideoProfileLevelH264Baseline30 forKey:AVVideoProfileLevelKey];
+    }
+    
     return @{
              AVVideoCodecKey : self.codec,
              AVVideoScalingModeKey : self.scalingMode,
