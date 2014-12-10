@@ -202,12 +202,6 @@
     return [NSError errorWithDomain:@"SCAssetExportSession" code:200 userInfo:@{NSLocalizedDescriptionKey : errorDescription}];
 }
 
-- (void)setupSettings:(AVAssetTrack *)videoTrack error:(NSError **)error {
-    if (videoTrack != nil) {
-        
-    }
-}
-
 - (BOOL)needsCIContext {
     return _videoConfiguration.filterGroup.filters.count > 0;
 }
@@ -225,6 +219,60 @@
     }
 }
 
+- (AVVideoComposition *)_buildVideoCompositionWithOutputSize:(CGSize)videoSize videoTrack:(AVAssetTrack *)videoTrack {
+    UIImage *watermarkImage = self.videoConfiguration.watermarkImage;
+    
+    if (watermarkImage != nil) {
+        CALayer *aLayer = [CALayer layer];
+        aLayer.contents = (id)watermarkImage.CGImage;
+        
+        CGRect watermarkFrame = self.videoConfiguration.watermarkFrame;
+        
+        switch (self.videoConfiguration.watermarkAnchorLocation) {
+            case SCWatermarkAnchorLocationTopLeft:
+                watermarkFrame.origin.y += videoSize.height - watermarkFrame.size.height;
+                break;
+            case SCWatermarkAnchorLocationTopRight:
+                watermarkFrame.origin.y += videoSize.height - watermarkFrame.size.height;
+                watermarkFrame.origin.x = videoSize.width - watermarkFrame.size.width - watermarkFrame.origin.x;
+                break;
+            case SCWatermarkAnchorLocationBottomLeft:
+                
+                break;
+            case SCWatermarkAnchorLocationBottomRight:
+                watermarkFrame.origin.x = videoSize.width - watermarkFrame.size.width - watermarkFrame.origin.x;
+                break;
+        }
+        
+        aLayer.frame = watermarkFrame;
+        
+        CALayer *parentLayer = [CALayer layer];
+        CALayer *videoLayer = [CALayer layer];
+        parentLayer.frame = CGRectMake(0, 0, videoSize.width, videoSize.height);
+        videoLayer.frame = CGRectMake(0, 0, videoSize.width, videoSize.height);
+        [parentLayer addSublayer:videoLayer];
+        [parentLayer addSublayer:aLayer];
+        
+        AVMutableVideoComposition* videoComp = [AVMutableVideoComposition videoComposition];
+        videoComp.renderSize = videoSize;
+        videoComp.frameDuration = CMTimeMake(1, (int)videoTrack.nominalFrameRate);
+        
+        videoComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:parentLayer];
+        
+        /// instruction
+        AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+        instruction.timeRange = CMTimeRangeMake(kCMTimeZero, [self.inputAsset duration]);
+        AVMutableVideoCompositionLayerInstruction* layerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+        
+        instruction.layerInstructions = [NSArray arrayWithObject:layerInstruction];
+        videoComp.instructions = [NSArray arrayWithObject:instruction];
+                
+        return videoComp;
+    }
+    
+    return nil;
+}
+
 - (void)exportAsynchronouslyWithCompletionHandler:(void (^)())completionHandler {
     _nextAllowedVideoFrame = kCMTimeZero;
     NSError *error = nil;
@@ -240,6 +288,11 @@
     
     NSArray *audioTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeAudio];
     if (audioTracks.count > 0 && self.audioConfiguration.enabled && !self.audioConfiguration.shouldIgnore) {
+        // Input
+        NSDictionary *audioSettings = [_audioConfiguration createAssetWriterOptionsUsingSampleBuffer:nil];
+        _audioInput = [self addWriter:AVMediaTypeAudio withSettings:audioSettings];
+        
+        // Output
         AVAudioMix *audioMix = self.audioConfiguration.audioMix;
         
         AVAssetReaderOutput *reader = nil;
@@ -267,12 +320,40 @@
     AVAssetTrack *videoTrack = nil;
     if (videoTracks.count > 0 && self.videoConfiguration.enabled && !self.videoConfiguration.shouldIgnore) {
         videoTrack = [videoTracks objectAtIndex:0];
+
+        // Input
+        NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:videoTrack.naturalSize];
         
+        _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];
+        if (_videoConfiguration.keepInputAffineTransform) {
+            _videoInput.transform = videoTrack.preferredTransform;
+        } else {
+            _videoInput.transform = _videoConfiguration.affineTransform;
+        }
+        
+        // Output
         _pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
-        AVAssetReaderOutput *reader = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:@{
-                                                                                                                       (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
-                                                                                                                       (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
-                                                                                                                       }];
+        NSDictionary *settings = @{
+                               (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
+                               (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
+                               };
+        
+        AVVideoComposition *videoComposition = self.videoConfiguration.composition;
+        
+        if (videoComposition == nil) {
+            videoComposition = [self _buildVideoCompositionWithOutputSize:CGSizeMake([videoSettings[AVVideoWidthKey] floatValue], [videoSettings[AVVideoHeightKey] floatValue]) videoTrack:videoTrack];
+        }
+        
+        AVAssetReaderOutput *reader = nil;
+        
+        if (videoComposition == nil) {
+            reader = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:settings];
+        } else {
+            AVAssetReaderVideoCompositionOutput *videoCompositionOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:settings];
+            videoCompositionOutput.videoComposition = videoComposition;
+            reader = videoCompositionOutput;
+        }
+        
         reader.alwaysCopiesSampleData = NO;
 
         if ([_reader canAddOutput:reader]) {
@@ -285,29 +366,7 @@
         _videoOutput = nil;
     }
     
-    [self setupSettings:videoTrack error:&error];
-    
     EnsureSuccess(error, completionHandler);
-    
-    if (_audioOutput != nil) {
-        NSDictionary *audioSettings = [_audioConfiguration createAssetWriterOptionsUsingSampleBuffer:nil];
-        _audioInput = [self addWriter:AVMediaTypeAudio withSettings:audioSettings];
-    } else {
-        _audioInput = nil;
-    }
-    
-    if (_videoOutput != nil) {
-        NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:videoTrack.naturalSize];
-
-        _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];
-        if (_videoConfiguration.keepInputAffineTransform) {
-            _videoInput.transform = videoTrack.preferredTransform;
-        } else {
-            _videoInput.transform = _videoConfiguration.affineTransform;
-        }
-    } else {
-        _videoInput = nil;
-    }
     
     [self setupCoreImage:videoTrack];
     

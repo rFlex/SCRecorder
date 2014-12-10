@@ -14,6 +14,13 @@
 #define kSCVideoConfigurationDefaultScalingMode AVVideoScalingModeResizeAspectFill
 #define kSCVideoConfigurationDefaultBitrate 2000000
 
+typedef enum : NSUInteger {
+    SCWatermarkAnchorLocationTopLeft,
+    SCWatermarkAnchorLocationTopRight,
+    SCWatermarkAnchorLocationBottomLeft,
+    SCWatermarkAnchorLocationBottomRight
+} SCWatermarkAnchorLocation;
+
 @interface SCVideoConfiguration : SCMediaTypeConfiguration
 
 /**
@@ -96,6 +103,38 @@
  Only used in SCAssetExportSession.
  */
 @property (assign, nonatomic) BOOL keepInputAffineTransform;
+
+/**
+ The video composition to use.
+ 
+ Only used in SCAssetExportSession.
+ */
+@property (strong, nonatomic) AVVideoComposition *composition;
+
+/**
+ The watermark to use. If the composition is not set, this watermark
+ image will be applied on the exported video.
+ 
+ Only used in SCAssetExportSession.
+ */
+@property (strong, nonatomic) UIImage *watermarkImage;
+
+/**
+ The watermark image location and size.
+ 
+ Only used in SCAssetExportSession.
+ */
+@property (assign, nonatomic) CGRect watermarkFrame;
+
+/**
+ The watermark anchor location.
+ 
+ Default is top left
+ 
+ Only used in SCAssetExportSession.
+ */
+@property (assign, nonatomic) SCWatermarkAnchorLocation watermarkAnchorLocation;
+
 
 
 - (NSDictionary *)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize;

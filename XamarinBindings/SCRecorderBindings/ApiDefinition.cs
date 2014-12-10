@@ -85,6 +85,18 @@ namespace SCorsin {
 		[Export("filterGroup")]
 		SCFilterGroup FilterGroup { get; set; }
 
+		[Export("composition")]
+		AVVideoComposition Composition { get; set; }
+
+		[Export("watermarkImage")]
+		UIImage WatermarkImage { get; set; }
+
+		[Export("watermarkFrame")]
+		RectangleF WatermarkFrame { get; set; }
+
+		[Export("watermarkAnchorLocation")]
+		int WatermarkAnchorLocation { get; set; }
+
 	}
 
 	[BaseType(typeof(SCMediaTypeConfiguration))]

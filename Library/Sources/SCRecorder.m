@@ -661,33 +661,35 @@
 }
 
 - (void)reconfigureVideoInput:(BOOL)shouldConfigureVideo audioInput:(BOOL)shouldConfigureAudio {
-    [self beginSessionConfiguration];
-    
-    NSError *videoError = nil;
-    if (shouldConfigureVideo) {
-        [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
-        dispatch_sync(_recordSessionQueue, ^{
-            [self updateVideoOrientation];
-        });
-    }
-    
-    NSError *audioError = nil;
-    
-    if (shouldConfigureAudio) {
-        [self configureDevice:[self audioDevice] mediaType:AVMediaTypeAudio error:&audioError];
-    }
-    
-    [self commitSessionConfiguration];
-    
-    id<SCRecorderDelegate> delegate = self.delegate;
-    if (shouldConfigureAudio) {
-        if ([delegate respondsToSelector:@selector(recorder:didReconfigureAudioInput:)]) {
-            [delegate recorder:self didReconfigureAudioInput:audioError];
+    if (_captureSession != nil) {
+        [self beginSessionConfiguration];
+        
+        NSError *videoError = nil;
+        if (shouldConfigureVideo) {
+            [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
+            dispatch_sync(_recordSessionQueue, ^{
+                [self updateVideoOrientation];
+            });
         }
-    }
-    if (shouldConfigureVideo) {
-        if ([delegate respondsToSelector:@selector(recorder:didReconfigureVideoInput:)]) {
-            [delegate recorder:self didReconfigureVideoInput:videoError];
+        
+        NSError *audioError = nil;
+        
+        if (shouldConfigureAudio) {
+            [self configureDevice:[self audioDevice] mediaType:AVMediaTypeAudio error:&audioError];
+        }
+        
+        [self commitSessionConfiguration];
+        
+        id<SCRecorderDelegate> delegate = self.delegate;
+        if (shouldConfigureAudio) {
+            if ([delegate respondsToSelector:@selector(recorder:didReconfigureAudioInput:)]) {
+                [delegate recorder:self didReconfigureAudioInput:audioError];
+            }
+        }
+        if (shouldConfigureVideo) {
+            if ([delegate respondsToSelector:@selector(recorder:didReconfigureVideoInput:)]) {
+                [delegate recorder:self didReconfigureVideoInput:videoError];
+            }
         }
     }
 }
