@@ -129,7 +129,7 @@ typedef enum : NSUInteger {
 /**
  Set a specific key to the video profile
  */
-@property (assign, nonatomic) NSString *customAVVideoProfileLevelKey;
+@property (assign, nonatomic) NSString *profileLevel;
 
 /**
  The watermark anchor location.
