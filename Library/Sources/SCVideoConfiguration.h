@@ -127,6 +127,11 @@ typedef enum : NSUInteger {
 @property (assign, nonatomic) CGRect watermarkFrame;
 
 /**
+ Set a specific key to the video profile
+ */
+@property (assign, nonatomic) NSString *profileLevel;
+
+/**
  The watermark anchor location.
  
  Default is top left
