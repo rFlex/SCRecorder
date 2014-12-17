@@ -634,16 +634,16 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         if (CMTIME_IS_INVALID(_timeOffset)) {
             _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
 //            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
-        } else {
-            CGFloat videoTimeScale = _videoConfiguration.timeScale;
-            if (videoTimeScale != 1.0) {
-                CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
-                _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
-                duration = computedFrameDuration;
-            }
         }
         
         CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
+        
+        CGFloat videoTimeScale = _videoConfiguration.timeScale;
+        if (videoTimeScale != 1.0) {
+            CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
+            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
+            duration = computedFrameDuration;
+        }
         
         if (_videoPixelBufferAdaptor != nil) {
             CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
