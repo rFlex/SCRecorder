@@ -429,6 +429,10 @@
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     if (captureOutput == _videoOutput) {
+        if (_videoConfiguration.shouldIgnore) {
+            return;
+        }
+        
         _lastVideoBuffer.sampleBuffer = sampleBuffer;
         id<CIImageRenderer> imageRenderer = _CIImageRenderer;
         if (imageRenderer != nil) {
@@ -446,6 +450,8 @@
                 CFRelease(sampleBuffer);
             });
         }
+    } else if (_audioConfiguration.shouldIgnore) {
+        return;
     }
     
     if (_initializeRecordSessionLazily && !_isRecording) {
@@ -540,7 +546,7 @@
                 }
             }
         }
-        
+
         CFRelease(sampleBuffer);
     });
 }
