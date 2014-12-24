@@ -890,24 +890,12 @@
     return [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
 }
 
-+ (AVCaptureDevice *)videoDeviceForPosition:(AVCaptureDevicePosition)position {
-    NSArray * videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-    
-    for (AVCaptureDevice * device in videoDevices) {
-        if (device.position == (AVCaptureDevicePosition)position) {
-            return device;
-        }
-    }
-    
-    return nil;
-}
-
 - (AVCaptureDevice*)videoDevice {
     if (!self.videoConfiguration.enabled) {
         return nil;
     }
     
-    return [SCRecorder videoDeviceForPosition:_device];
+    return [SCRecorderTools videoDeviceForPosition:_device];
 }
 
 - (AVCaptureVideoOrientation)actualVideoOrientation {
@@ -1067,28 +1055,6 @@
     return [self currentVideoDeviceInput].device.focusMode;
 }
 
-- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate {
-    CMVideoDimensions dimensions;
-    dimensions.width = 0;
-    dimensions.height = 0;
-    
-    return [self formatInRange:format frameRate:frameRate dimensions:dimensions];
-}
-
-- (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate dimensions:(CMVideoDimensions)dimensions {
-    CMVideoDimensions size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
-    
-    if (size.width >= dimensions.width && size.height >= dimensions.height) {
-        for (AVFrameRateRange *range in format.videoSupportedFrameRateRanges) {
-            if (range.minFrameDuration.timescale >= frameRate && range.maxFrameDuration.timescale <= frameRate) {
-                return YES;
-            }
-        }
-    }
-    
-    return NO;
-}
-
 - (AVCaptureConnection*)videoConnection {
 	for (AVCaptureConnection * connection in _videoOutput.connections) {
 		for (AVCaptureInputPort * port in connection.inputPorts) {
@@ -1125,7 +1091,7 @@
     
     if (device != nil) {
         NSError * error = nil;
-        BOOL formatSupported = [self formatInRange:device.activeFormat frameRate:framePerSeconds];
+        BOOL formatSupported = [SCRecorderTools formatInRange:device.activeFormat frameRate:framePerSeconds];
         
         if (formatSupported) {
             if ([device respondsToSelector:@selector(activeVideoMinFrameDuration)]) {
@@ -1155,17 +1121,6 @@
     }
 }
 
-- (CMTimeScale)_maxFrameRateForFormat:(AVCaptureDeviceFormat *)format minFrameRate:(CMTimeScale)minFrameRate {
-    CMTimeScale lowerTimeScale = 0;
-    for (AVFrameRateRange *range in format.videoSupportedFrameRateRanges) {
-        if (range.minFrameDuration.timescale >= minFrameRate && (lowerTimeScale == 0 || range.minFrameDuration.timescale < lowerTimeScale)) {
-            lowerTimeScale = range.minFrameDuration.timescale;
-        }
-    }
-    
-    return lowerTimeScale;
-}
-
 - (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate error:(NSError *__autoreleasing *)error {
     return [self setActiveFormatWithFrameRate:frameRate width:self.videoConfiguration.size.width andHeight:self.videoConfiguration.size.height error:error];
 }
@@ -1182,7 +1137,7 @@
         AVCaptureDeviceFormat *bestFormat = nil;
         
         for (AVCaptureDeviceFormat *format in device.formats) {
-            if ([self formatInRange:format frameRate:frameRate dimensions:dimensions]) {
+            if ([SCRecorderTools formatInRange:format frameRate:frameRate dimensions:dimensions]) {
                 if (bestFormat == nil) {
                     bestFormat = format;
                 } else {
@@ -1192,7 +1147,7 @@
                     if (currentDimensions.width < bestDimensions.width && currentDimensions.height < bestDimensions.height) {
                         bestFormat = format;
                     } else if (currentDimensions.width == bestDimensions.width && currentDimensions.height == bestDimensions.height) {
-                        if ([self _maxFrameRateForFormat:bestFormat minFrameRate:frameRate] > [self _maxFrameRateForFormat:format minFrameRate:frameRate]) {
+                        if ([SCRecorderTools maxFrameRateForFormat:bestFormat minFrameRate:frameRate] > [SCRecorderTools maxFrameRateForFormat:format minFrameRate:frameRate]) {
                             bestFormat = format;
                         }
                     }

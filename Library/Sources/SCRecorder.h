@@ -20,6 +20,7 @@
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
 #import "SCPhotoConfiguration.h"
+#import "SCRecorderTools.h"
 
 typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
