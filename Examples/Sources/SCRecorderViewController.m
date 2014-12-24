@@ -67,7 +67,7 @@
     [self.view insertSubview:_ghostImageView aboveSubview:self.previewView];
 
     _recorder = [SCRecorder recorder];
-    _recorder.sessionPreset = AVCaptureSessionPreset1280x720;
+    _recorder.sessionPreset = [SCRecorderTools bestSessionPresetCompatibleWithAllDevices];
     _recorder.maxRecordDuration = CMTimeMake(5, 1);
     
     _recorder.delegate = self;
