@@ -151,6 +151,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         [_recordSegments removeObjectAtIndex:segmentIndex];
         
         if (CMTIME_IS_VALID(segmentDuration)) {
+//            NSLog(@"Removed duration of %fs", CMTimeGetSeconds(segmentDuration));
             _segmentsDuration = CMTimeSubtract(_segmentsDuration, segmentDuration);
         } else {
             NSLog(@"Removed invalid segment index %d. Recomputing duration manually", (int)segmentIndex);
@@ -298,12 +299,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return writer;
 }
 
-+ (NSInteger)getBitsPerSecondForOutputVideoSize:(CGSize)size andBitsPerPixel:(Float32)bitsPerPixel {
-    int numPixels = size.width * size.height;
-    
-    return (NSInteger)((Float32)numPixels * bitsPerPixel);
-}
-
 - (void)uninitialize {
     [self endRecordSegment:nil];
 
@@ -349,8 +344,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     
     _videoInitializationFailed = theError != nil;
     
-
-    
     if (error != nil) {
         *error = theError;
     }
@@ -382,7 +375,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     } else {
         NSLog(@"Unable to read asset at url %@", fileUrl);
     }
-    
 }
 
 - (void)insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex {
@@ -636,14 +628,16 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 //            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
         }
         
-        CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
-        
         CGFloat videoTimeScale = _videoConfiguration.timeScale;
         if (videoTimeScale != 1.0) {
             CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
-            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
+            if (_currentSegmentDuration.value > 0) {
+                _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
+            }
             duration = computedFrameDuration;
         }
+        
+        CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
         
         if (_videoPixelBufferAdaptor != nil) {
             CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
@@ -666,8 +660,8 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
 //            CMTime sampleBufferDuration = CMSampleBufferGetDuration(adjustedBuffer);
 //            CMTime startTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
-            
-//            NSLog(@"Appending sample buffer: %fs -> %fs", CMTimeGetSeconds(startTime), CMTimeGetSeconds(CMTimeAdd(sampleBufferDuration, startTime)));
+//            
+//            NSLog(@"Appending sample buffer: %fs -> %fs", CMTimeGetSeconds(startTime), CMTimeGetSeconds(CMTimeAdd(startTime, duration)));
             
             [_videoInput appendSampleBuffer:adjustedBuffer];
             

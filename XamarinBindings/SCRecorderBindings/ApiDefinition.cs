@@ -271,9 +271,6 @@ namespace SCorsin {
 		[Export("audioEnabledAndReady")]
 		bool AudioEnabledAndReady { get; }
 
-		[Export("photoEnabled")]
-		bool PhotoEnabled { get; set; }
-
 		[Export("isRecording")]
 		bool IsRecording { get; }
 
