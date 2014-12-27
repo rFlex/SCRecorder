@@ -48,6 +48,8 @@
         _audioQueue = dispatch_queue_create("me.corsin.SCRecorder.Audio", nil);
         _recordSessionQueue = dispatch_queue_create("me.corsin.SCRecorder.RecordSession", nil);
         
+//        dispatch_set_target_queue(_recordSessionQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0 ));
+        
         dispatch_queue_set_specific(_recordSessionQueue, kSCRecorderRecordSessionQueueKey, "true", nil);
         
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
@@ -402,7 +404,7 @@
     if (CMTIME_IS_VALID(suggestedMaxRecordDuration)) {
         if (CMTIME_COMPARE_INLINE(currentRecordDuration, >=, suggestedMaxRecordDuration)) {
             _isRecording = NO;
-            
+
             [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
                 id<SCRecorderDelegate> delegate = self.delegate;
                 if ([delegate respondsToSelector:@selector(recorder:didEndRecordSegment:segmentIndex:error:)]) {

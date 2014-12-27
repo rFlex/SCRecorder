@@ -60,7 +60,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
-
 /**
  Access the configuration for the video.
  */
