@@ -89,7 +89,8 @@
     
     self.focusView.outsideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
-    
+
+//    _recorder.initializeRecordSessionLazily = NO;
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
         NSError *error = nil;
         NSLog(@"%@", error);
@@ -102,6 +103,10 @@
         NSLog(@"=======================");
         [self prepareCamera];
     }];
+}
+
+- (void)recorder:(SCRecorder *)recorder didSkipVideoSampleBuffer:(SCRecordSession *)recordSession {
+    NSLog(@"Skipped video buffer");
 }
 
 - (void)recorder:(SCRecorder *)recorder didReconfigureAudioInput:(NSError *)audioInputError {

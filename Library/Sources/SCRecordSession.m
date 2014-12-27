@@ -81,7 +81,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 - (id)init {
     self = [super init];
     
-    if (self) {        
+    if (self) {
         _recordSegments = [[NSMutableArray alloc] init];
         
         _assetWriter = nil;
@@ -408,7 +408,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 - (CMSampleBufferRef)adjustBuffer:(CMSampleBufferRef)sample withTimeOffset:(CMTime)offset andDuration:(CMTime)duration {
     CMItemCount count;
     CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
-    CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
+    CMSampleTimingInfo *pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
     CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
     
     for (CMItemCount i = 0; i < count; i++) {
@@ -657,21 +657,24 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             
             CVPixelBufferRelease(outputPixelBuffer);
         } else {
-            CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
-//            CMTime sampleBufferDuration = CMSampleBufferGetDuration(adjustedBuffer);
-//            CMTime startTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
-//            
-//            NSLog(@"Appending sample buffer: %fs -> %fs", CMTimeGetSeconds(startTime), CMTimeGetSeconds(CMTimeAdd(startTime, duration)));
+            CMSampleTimingInfo timingInfo = {0,};
+            timingInfo.duration = kCMTimeInvalid;
+            timingInfo.decodeTimeStamp = kCMTimeInvalid;
+            timingInfo.presentationTimeStamp = bufferTimestamp;
+
+            CMSampleBufferRef adjustedBuffer = nil;
+            
+            CMSampleBufferCreateCopyWithNewTiming(nil, videoSampleBuffer, 1, &timingInfo, &adjustedBuffer);
             
             [_videoInput appendSampleBuffer:adjustedBuffer];
-            
+
             CFRelease(adjustedBuffer);
         }
 
         _currentSegmentDuration = CMTimeAdd(bufferTimestamp, duration);
         
         _currentSegmentHasVideo = YES;
-        
+
         return YES;
     } else {
         return NO;
