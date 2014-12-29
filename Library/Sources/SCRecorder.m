@@ -14,6 +14,8 @@
 #define SCRecorderAudioEnabledContext ((void*)0x3)
 #define SCRecorderPhotoOptionsContext ((void*)0x3)
 #define kSCRecorderRecordSessionQueueKey "SCRecorderRecordSessionQueue"
+#define kMinTimeBetweenAppend 0
+//#define kMinTimeBetweenAppend 0.0015
 
 @interface SCRecorder() {
     AVCaptureVideoPreviewLayer *_previewLayer;
@@ -34,7 +36,11 @@
     BOOL _shouldAutoresumeRecording;
     BOOL _needsSwitchBackToContinuousFocus;
     int _beginSessionConfigurationCount;
+    NSMutableArray *_pendingBuffers;
+    double _lastAppendedTime;
 }
+
+@property (readonly, atomic) int buffersWaitingToProcessCount;
 
 @end
 
@@ -44,12 +50,13 @@
     self = [super init];
     
     if (self) {
+        _pendingBuffers = [NSMutableArray new];
         _videoQueue = dispatch_queue_create("me.corsin.SCRecorder.Video", nil);
         _audioQueue = dispatch_queue_create("me.corsin.SCRecorder.Audio", nil);
         _recordSessionQueue = dispatch_queue_create("me.corsin.SCRecorder.RecordSession", nil);
         
-//        dispatch_set_target_queue(_videoQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
-        
+        dispatch_set_target_queue(_recordSessionQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+
         dispatch_queue_set_specific(_recordSessionQueue, kSCRecorderRecordSessionQueueKey, "true", nil);
         
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
@@ -79,6 +86,7 @@
         [_videoConfiguration addObserver:self forKeyPath:@"enabled" options:NSKeyValueObservingOptionNew context:SCRecorderVideoEnabledContext];
         [_audioConfiguration addObserver:self forKeyPath:@"enabled" options:NSKeyValueObservingOptionNew context:SCRecorderAudioEnabledContext];
         [_photoConfiguration addObserver:self forKeyPath:@"options" options:NSKeyValueObservingOptionNew context:SCRecorderPhotoOptionsContext];
+        _pendingBuffers = [NSMutableArray new];
     }
     
     return self;
@@ -460,11 +468,21 @@
         return;
     }
     
-//    _buffersWaitingToProcessCount++;
-//    NSLog(@"Waiting to process %d", _buffersWaitingToProcessCount);
+    _buffersWaitingToProcessCount++;
+    if (_isRecording) {
+        if (_buffersWaitingToProcessCount > 10) {
+//            NSLog(@"Warning: Reached %d waiting to process", _buffersWaitingToProcessCount);
+        }
+//        NSLog(@"Waiting to process %d", _buffersWaitingToProcessCount);
+    }
     CFRetain(sampleBuffer);
     dispatch_async(_recordSessionQueue, ^{
-//        double before = CACurrentMediaTime();
+        double timeToWait = kMinTimeBetweenAppend - (CACurrentMediaTime() - _lastAppendedTime);
+        
+        if (timeToWait > 0) {
+            [NSThread sleepForTimeInterval:timeToWait];
+        }
+        
         SCRecordSession *recordSession = _recordSession;
 
         if (!(_initializeRecordSessionLazily && !_isRecording) && recordSession != nil) {
@@ -474,6 +492,7 @@
                         if (!recordSession.videoInitialized) {
                             NSError *error = nil;
                             NSDictionary *settings = [self.videoConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
+                            
                             CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
                             [recordSession initializeVideo:settings formatDescription:formatDescription error:&error];
                             
@@ -556,8 +575,12 @@
         }
 
         CFRelease(sampleBuffer);
-//        _buffersWaitingToProcessCount--;
-//        NSLog(@"End waiting to process %d in %lfs", _buffersWaitingToProcessCount, CACurrentMediaTime() - before);
+        _lastAppendedTime = CACurrentMediaTime();
+
+        _buffersWaitingToProcessCount--;
+        if (_isRecording) {
+//            NSLog(@"End waiting to process %d", _buffersWaitingToProcessCount);
+        }
     });
 }
 

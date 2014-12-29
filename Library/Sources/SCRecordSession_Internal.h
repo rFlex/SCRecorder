@@ -29,6 +29,7 @@
     // Used when SCFilterGroup is non-nil
     CIContext *_CIContext;
     AVAssetWriterInputPixelBufferAdaptor *_videoPixelBufferAdaptor;
+    CMTime _lastTimeVideo;
 }
 
 @property (weak, nonatomic) SCRecorder *recorder;

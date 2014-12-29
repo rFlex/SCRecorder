@@ -622,25 +622,35 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 }
 
 - (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer duration:(CMTime)duration {
+    CMTime actualBufferDuration = duration;
+    CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
+
+    if (CMTIME_IS_INVALID(_timeOffset)) {
+        _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
+        //            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
+    }
+    
+    CGFloat videoTimeScale = _videoConfiguration.timeScale;
+    if (videoTimeScale != 1.0) {
+        CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
+        if (_currentSegmentDuration.value > 0) {
+            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
+        }
+        duration = computedFrameDuration;
+    }
+    
+    CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
+    
+    CMTime timeVideo = _lastTimeVideo;
+    
+    if (CMTIME_IS_VALID(_lastTimeVideo)) {
+        while (CMTIME_COMPARE_INLINE(CMTimeSubtract(actualBufferTime, timeVideo), >=, CMTimeMultiply(actualBufferDuration, 2))) {
+            NSLog(@"Missing buffer");
+            timeVideo = CMTimeAdd(timeVideo, actualBufferDuration);
+        }
+    }
+    
     if ([_videoInput isReadyForMoreMediaData]) {
-        CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
-        
-        if (CMTIME_IS_INVALID(_timeOffset)) {
-            _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
-//            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
-        }
-        
-        CGFloat videoTimeScale = _videoConfiguration.timeScale;
-        if (videoTimeScale != 1.0) {
-            CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
-            if (_currentSegmentDuration.value > 0) {
-                _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
-            }
-            duration = computedFrameDuration;
-        }
-        
-        CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
-        
         if (_videoPixelBufferAdaptor != nil) {
             CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
             
@@ -668,18 +678,23 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             
             CMSampleBufferCreateCopyWithNewTiming(nil, videoSampleBuffer, 1, &timingInfo, &adjustedBuffer);
             
-//            NSLog(@"Appending video at %fs (buffer: %fs)", CMTimeGetSeconds(bufferTimestamp), CMTimeGetSeconds(actualBufferTime));
-            [_videoInput appendSampleBuffer:adjustedBuffer];
-
+            NSLog(@"Appending video at %fs (since last time: %fs)", CMTimeGetSeconds(bufferTimestamp), CMTimeGetSeconds(CMTimeSubtract(actualBufferTime, _lastTimeVideo)));
+            if (![_videoInput appendSampleBuffer:adjustedBuffer]) {
+                NSLog(@"Failed to append video sample buffer at %fs: %@", CMTimeGetSeconds(bufferTimestamp), _assetWriter.error);
+            }
             CFRelease(adjustedBuffer);
         }
 
         _currentSegmentDuration = CMTimeAdd(bufferTimestamp, duration);
-        
+        _lastTimeVideo = actualBufferTime;
+
         _currentSegmentHasVideo = YES;
 
         return YES;
     } else {
+        NSLog(@"Skipping video at %fs (since last time: %fs)", CMTimeGetSeconds(bufferTimestamp), CMTimeGetSeconds(CMTimeSubtract(actualBufferTime, _lastTimeVideo)));
+        _lastTimeVideo = actualBufferTime;
+
         return NO;
     }
 }
@@ -713,43 +728,45 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 }
 
 - (void)appendRecordSegmentsToComposition:(AVMutableComposition *)composition {
-    AVMutableCompositionTrack *audioTrack = nil;
-    AVMutableCompositionTrack *videoTrack = nil;
-    
-    NSDictionary *options = @{ AVURLAssetPreferPreciseDurationAndTimingKey : @YES };
-    int currentSegment = 0;
-    CMTime currentTime = kCMTimeZero;
-    for (NSURL *recordSegment in _recordSegments) {
-        AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:recordSegment options:options];
+    [self _dispatchSynchronouslyOnSafeQueue:^{
+        AVMutableCompositionTrack *audioTrack = nil;
+        AVMutableCompositionTrack *videoTrack = nil;
         
-        NSArray *audioAssetTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
-        NSArray *videoAssetTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
-        
-        CMTime maxBounds = kCMTimeInvalid;
-        
-        CMTime videoTime = currentTime;
-        for (AVAssetTrack *videoAssetTrack in videoAssetTracks) {
-            if (videoTrack == nil) {
-                videoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+        NSDictionary *options = @{ AVURLAssetPreferPreciseDurationAndTimingKey : @YES };
+        int currentSegment = 0;
+        CMTime currentTime = kCMTimeZero;
+        for (NSURL *recordSegment in _recordSegments) {
+            AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:recordSegment options:options];
+            
+            NSArray *audioAssetTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
+            NSArray *videoAssetTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+            
+            CMTime maxBounds = kCMTimeInvalid;
+            
+            CMTime videoTime = currentTime;
+            for (AVAssetTrack *videoAssetTrack in videoAssetTracks) {
+                if (videoTrack == nil) {
+                    videoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+                }
+                
+                videoTime = [self _appendTrack:videoAssetTrack toCompositionTrack:videoTrack atTime:videoTime withBounds:maxBounds];
+                maxBounds = videoTime;
             }
             
-            videoTime = [self _appendTrack:videoAssetTrack toCompositionTrack:videoTrack atTime:videoTime withBounds:maxBounds];
-            maxBounds = videoTime;
-        }
-        
-        CMTime audioTime = currentTime;
-        for (AVAssetTrack *audioAssetTrack in audioAssetTracks) {
-            if (audioTrack == nil) {
-                audioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+            CMTime audioTime = currentTime;
+            for (AVAssetTrack *audioAssetTrack in audioAssetTracks) {
+                if (audioTrack == nil) {
+                    audioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+                }
+                
+                audioTime = [self _appendTrack:audioAssetTrack toCompositionTrack:audioTrack atTime:audioTime withBounds:maxBounds];
             }
             
-            audioTime = [self _appendTrack:audioAssetTrack toCompositionTrack:audioTrack atTime:audioTime withBounds:maxBounds];
+            currentTime = composition.duration;
+            
+            currentSegment++;
         }
-        
-        currentTime = composition.duration;
-        
-        currentSegment++;
-    }
+    }];
 }
 
 - (AVAsset *)assetRepresentingRecordSegments {

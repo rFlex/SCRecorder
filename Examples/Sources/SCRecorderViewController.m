@@ -90,8 +90,11 @@
     self.focusView.outsideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
 
-//    _recorder.initializeRecordSessionLazily = NO;
+    _recorder.initializeRecordSessionLazily = NO;
+    _recorder.audioConfiguration.enabled = NO;
     [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
+        [_recorder setActiveFormatWithFrameRate:240 error:nil];
+        _recorder.videoConfiguration.timeScale = 8;
         NSError *error = nil;
         NSLog(@"%@", error);
 
@@ -106,7 +109,7 @@
 }
 
 - (void)recorder:(SCRecorder *)recorder didSkipVideoSampleBuffer:(SCRecordSession *)recordSession {
-    NSLog(@"Skipped video buffer");
+//    NSLog(@"Skipped video buffer");
 }
 
 - (void)recorder:(SCRecorder *)recorder didReconfigureAudioInput:(NSError *)audioInputError {
@@ -313,6 +316,7 @@
     if (_recorder.recordSession == nil) {
         
         SCRecordSession *session = [SCRecordSession recordSession];
+        session.fileType = AVFileTypeQuickTimeMovie;
         
         _recorder.recordSession = session;
     }
