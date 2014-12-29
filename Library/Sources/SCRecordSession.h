@@ -189,6 +189,11 @@ extern const NSString *SCRecordSessionCacheDirectory;
 - (AVAsset *)assetRepresentingRecordSegments;
 
 /**
+ Append all the record segments to a given AVMutableComposition.
+ */
+- (void)appendRecordSegmentsToComposition:(AVMutableComposition *)composition;
+
+/**
  Returns a dictionary that represents this SCRecordSession
  This will only contains strings and can be therefore safely serialized
  in any text format
