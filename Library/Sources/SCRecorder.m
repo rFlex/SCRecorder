@@ -48,7 +48,7 @@
         _audioQueue = dispatch_queue_create("me.corsin.SCRecorder.Audio", nil);
         _recordSessionQueue = dispatch_queue_create("me.corsin.SCRecorder.RecordSession", nil);
         
-//        dispatch_set_target_queue(_recordSessionQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0 ));
+//        dispatch_set_target_queue(_videoQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
         
         dispatch_queue_set_specific(_recordSessionQueue, kSCRecorderRecordSessionQueueKey, "true", nil);
         
@@ -460,8 +460,11 @@
         return;
     }
     
+//    _buffersWaitingToProcessCount++;
+//    NSLog(@"Waiting to process %d", _buffersWaitingToProcessCount);
     CFRetain(sampleBuffer);
     dispatch_async(_recordSessionQueue, ^{
+//        double before = CACurrentMediaTime();
         SCRecordSession *recordSession = _recordSession;
 
         if (!(_initializeRecordSessionLazily && !_isRecording) && recordSession != nil) {
@@ -471,7 +474,8 @@
                         if (!recordSession.videoInitialized) {
                             NSError *error = nil;
                             NSDictionary *settings = [self.videoConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
-                            [recordSession initializeVideo:settings error:&error];
+                            CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
+                            [recordSession initializeVideo:settings formatDescription:formatDescription error:&error];
                             
                             id<SCRecorderDelegate> delegate = self.delegate;
                             if ([delegate respondsToSelector:@selector(recorder:didInitializeVideoInRecordSession:error:)]) {
@@ -486,7 +490,8 @@
                             
                             if (_isRecording && recordSession.recordSegmentReady) {
                                 id<SCRecorderDelegate> delegate = self.delegate;
-                                if ([recordSession appendVideoSampleBuffer:sampleBuffer duration:[self frameDurationFromConnection:connection]]) {
+                                CMTime duration = [self frameDurationFromConnection:connection];
+                                if ([recordSession appendVideoSampleBuffer:sampleBuffer duration:duration]) {
                                     _lastAppendedVideoBuffer.sampleBuffer = sampleBuffer;
                                     
                                     if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
@@ -512,7 +517,8 @@
                         if (!recordSession.audioInitialized) {
                             NSError *error = nil;
                             NSDictionary *settings = [self.audioConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
-                            [recordSession initializeAudio:settings error:&error];
+                            CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
+                            [recordSession initializeAudio:settings formatDescription:formatDescription error:&error];
                             
                             id<SCRecorderDelegate> delegate = self.delegate;
                             if ([delegate respondsToSelector:@selector(recorder:didInitializeAudioInRecordSession:error:)]) {
@@ -550,6 +556,8 @@
         }
 
         CFRelease(sampleBuffer);
+//        _buffersWaitingToProcessCount--;
+//        NSLog(@"End waiting to process %d in %lfs", _buffersWaitingToProcessCount, CACurrentMediaTime() - before);
     });
 }
 

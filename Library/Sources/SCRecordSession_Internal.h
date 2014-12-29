@@ -41,8 +41,8 @@
 @property (readonly, nonatomic) BOOL currentSegmentHasAudio;
 @property (readonly, nonatomic) BOOL currentSegmentHasVideo;
 
-- (void)initializeVideo:(NSDictionary *)videoOptions error:(NSError **)error;
-- (void)initializeAudio:(NSDictionary *)audioOptions error:(NSError **)error;
+- (void)initializeVideo:(NSDictionary *)videoOptions formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError **)error;
+- (void)initializeAudio:(NSDictionary *)audioOptions formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError **)error;
 
 - (void)uninitialize;
 
