@@ -30,6 +30,9 @@
     CIContext *_CIContext;
     AVAssetWriterInputPixelBufferAdaptor *_videoPixelBufferAdaptor;
     CMTime _lastTimeVideo;
+    
+    // Used when the fastRecordMethod is enabled
+    AVCaptureMovieFileOutput *_movieFileOutput;
 }
 
 @property (weak, nonatomic) SCRecorder *recorder;
@@ -41,6 +44,7 @@
 @property (readonly, nonatomic) BOOL recordSegmentReady;
 @property (readonly, nonatomic) BOOL currentSegmentHasAudio;
 @property (readonly, nonatomic) BOOL currentSegmentHasVideo;
+@property (readonly, nonatomic) BOOL isUsingMovieFileOutput;
 
 - (void)initializeVideo:(NSDictionary *)videoOptions formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError **)error;
 - (void)initializeAudio:(NSDictionary *)audioOptions formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError **)error;
@@ -49,5 +53,8 @@
 
 - (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer duration:(CMTime)duration;
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
+- (void)beginRecordSegmentUsingMovieFileOutput:(AVCaptureMovieFileOutput *)movieFileOutput error:(NSError **)error delegate:(id<AVCaptureFileOutputRecordingDelegate>)delegate;
+
+- (void)appendRecordSegment:(void(^)(NSInteger segmentNumber, NSError* error))completionHandler error:(NSError *)error url:(NSURL *)url duration:(CMTime)duration;
 
 @end
