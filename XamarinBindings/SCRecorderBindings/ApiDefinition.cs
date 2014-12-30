@@ -271,6 +271,9 @@ namespace SCorsin {
 		[Export("audioEnabledAndReady")]
 		bool AudioEnabledAndReady { get; }
 
+		[Export("fastRecordMethodEnabled")]
+		bool FastRecordMethodEnabled { get; set; }
+
 		[Export("isRecording")]
 		bool IsRecording { get; }
 

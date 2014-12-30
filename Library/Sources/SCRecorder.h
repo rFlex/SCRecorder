@@ -58,7 +58,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @end
 
 
-@interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
+@interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 
 /**
  Access the configuration for the video.
@@ -176,6 +176,16 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  delegate.
  */
 @property (assign, nonatomic) CMTime maxRecordDuration;
+
+/**
+ Whether the fast recording method should be enabled.
+ Enabling this will disallow pretty much every features provided
+ by SCVideoConfiguration and SCAudioConfiguration. It will internally 
+ uses a AVCaptureMovieFileOutput that provides no settings. If you have
+ some performance issue, you can try enabling this.
+ Default is NO.
+ */
+@property (assign, nonatomic) BOOL fastRecordMethodEnabled;
 
 /**
  If maxRecordDuration is not kCMTimeInvalid,

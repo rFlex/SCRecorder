@@ -63,7 +63,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
+        
     [_player setItemByAsset:_recordSession.assetRepresentingRecordSegments];
 	[_player play];
 }
