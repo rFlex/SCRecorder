@@ -1311,7 +1311,7 @@
     return foundSupported;
 }
 
-- (CGFloat)recordedRatio {
+- (CGFloat)ratioRecorded {
     CGFloat ratio = 0;
     
     if (CMTIME_IS_VALID(_maxRecordDuration)) {
