@@ -312,16 +312,18 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return writer;
 }
 
-- (void)uninitialize {
-    [self endRecordSegment:nil];
-
-    _audioConfiguration = nil;
-    _videoConfiguration = nil;
-    _audioInitializationFailed = NO;
-    _videoInitializationFailed = NO;
-    _videoInput = nil;
-    _audioInput = nil;
-    _videoPixelBufferAdaptor = nil;
+- (void)deinitialize {
+    [self _dispatchSynchronouslyOnSafeQueue:^{
+        [self endRecordSegment:nil];
+        
+        _audioConfiguration = nil;
+        _videoConfiguration = nil;
+        _audioInitializationFailed = NO;
+        _videoInitializationFailed = NO;
+        _videoInput = nil;
+        _audioInput = nil;
+        _videoPixelBufferAdaptor = nil;
+    }];
 }
 
 - (void)initializeVideo:(NSDictionary *)videoSettings formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError *__autoreleasing *)error {
@@ -709,7 +711,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             
             CMSampleBufferCreateCopyWithNewTiming(kCFAllocatorDefault, videoSampleBuffer, 1, &timingInfo, &adjustedBuffer);
             
-//            NSLog(@"Appending video at %fs (since last time: %fs)", CMTimeGetSeconds(bufferTimestamp), CMTimeGetSeconds(CMTimeSubtract(actualBufferTime, _lastTimeVideo)));
+            NSLog(@"Appending video at %fs (since last time: %fs)", CMTimeGetSeconds(bufferTimestamp), CMTimeGetSeconds(CMTimeSubtract(actualBufferTime, _lastTimeVideo)));
             if (![_videoInput appendSampleBuffer:adjustedBuffer]) {
                 NSLog(@"Failed to append video sample buffer at %fs: %@", CMTimeGetSeconds(bufferTimestamp), _assetWriter.error);
             }

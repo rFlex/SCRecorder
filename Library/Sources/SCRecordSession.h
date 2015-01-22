@@ -194,6 +194,12 @@ extern const NSString *SCRecordSessionCacheDirectory;
 - (void)appendRecordSegmentsToComposition:(AVMutableComposition *)composition;
 
 /**
+ Stop the current segment and deinitialize the video and the audio.
+ This can be usefull if the input video or audio profile changed.
+ */
+- (void)deinitialize;
+
+/**
  Returns a dictionary that represents this SCRecordSession
  This will only contains strings and can be therefore safely serialized
  in any text format
