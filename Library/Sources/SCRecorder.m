@@ -1162,7 +1162,7 @@
 
 - (void)setVideoOrientation:(AVCaptureVideoOrientation)videoOrientation {
     _videoOrientation = videoOrientation;
-    [[_videoOutput connectionWithMediaType:AVMediaTypeVideo] setVideoOrientation:videoOrientation];
+    [self updateVideoOrientation];
 }
 
 - (void)setRecordSession:(SCRecordSession *)recordSession {
@@ -1311,7 +1311,7 @@
     return foundSupported;
 }
 
-- (CGFloat)recordedRatio {
+- (CGFloat)ratioRecorded {
     CGFloat ratio = 0;
     
     if (CMTIME_IS_VALID(_maxRecordDuration)) {
