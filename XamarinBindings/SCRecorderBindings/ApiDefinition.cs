@@ -181,6 +181,9 @@ namespace SCorsin {
 		[Export("removeLastSegment")]
 		void RemoveLastSegment();
 
+		[Export("deinitialize")]
+		void Deinitialize();
+
 		[Export("assetRepresentingRecordSegments")]
 		AVAsset AssetRepresentingRecordSegments { get; }
 

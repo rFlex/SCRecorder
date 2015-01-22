@@ -134,7 +134,7 @@
 
 - (void)updateVideoOrientation {
     if (!_recordSession.currentSegmentHasAudio && !_recordSession.currentSegmentHasVideo) {
-        [_recordSession uninitialize];
+        [_recordSession deinitialize];
     }
     
     AVCaptureVideoOrientation videoOrientation = [self actualVideoOrientation];
