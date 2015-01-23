@@ -711,7 +711,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             
             CMSampleBufferCreateCopyWithNewTiming(kCFAllocatorDefault, videoSampleBuffer, 1, &timingInfo, &adjustedBuffer);
             
-            NSLog(@"Appending video at %fs (since last time: %fs)", CMTimeGetSeconds(bufferTimestamp), CMTimeGetSeconds(CMTimeSubtract(actualBufferTime, _lastTimeVideo)));
+//            NSLog(@"Appending video at %fs (since last time: %fs)", CMTimeGetSeconds(bufferTimestamp), CMTimeGetSeconds(CMTimeSubtract(actualBufferTime, _lastTimeVideo)));
             if (![_videoInput appendSampleBuffer:adjustedBuffer]) {
                 NSLog(@"Failed to append video sample buffer at %fs: %@", CMTimeGetSeconds(bufferTimestamp), _assetWriter.error);
             }

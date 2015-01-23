@@ -207,9 +207,8 @@
     return _videoConfiguration.filterGroup.filters.count > 0;
 }
 
-- (void)setupPixelBufferAdaptor:(AVAssetTrack *)videoTrack {
+- (void)setupPixelBufferAdaptor:(CGSize)videoSize {
     if ([self needsInputPixelBufferAdaptor] && _videoInput != nil) {
-        CGSize videoSize = videoTrack.naturalSize;
         NSDictionary *pixelBufferAttributes = @{
                                                 (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:_pixelFormat],
                                                 (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
@@ -263,7 +262,7 @@
         /// instruction
         AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
         instruction.timeRange = CMTimeRangeMake(kCMTimeZero, [self.inputAsset duration]);
-        AVMutableVideoCompositionLayerInstruction* layerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+        AVMutableVideoCompositionLayerInstruction *layerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
         
         instruction.layerInstructions = [NSArray arrayWithObject:layerInstruction];
         videoComp.instructions = [NSArray arrayWithObject:instruction];
@@ -318,12 +317,15 @@
     }
     
     NSArray *videoTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeVideo];
+    CGSize videoSize = CGSizeZero;
     AVAssetTrack *videoTrack = nil;
     if (videoTracks.count > 0 && self.videoConfiguration.enabled && !self.videoConfiguration.shouldIgnore) {
         videoTrack = [videoTracks objectAtIndex:0];
 
         // Input
         NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:videoTrack.naturalSize];
+        videoSize.width = [videoSettings[AVVideoWidthKey] doubleValue];
+        videoSize.height = [videoSettings[AVVideoHeightKey] doubleValue];
         
         _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];
         if (_videoConfiguration.keepInputAffineTransform) {
@@ -371,7 +373,7 @@
     
     [self setupCoreImage:videoTrack];
     
-    [self setupPixelBufferAdaptor:videoTrack];
+    [self setupPixelBufferAdaptor:videoSize];
     
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);
