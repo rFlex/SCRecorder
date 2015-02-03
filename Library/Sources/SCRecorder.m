@@ -36,6 +36,7 @@
     BOOL _videoOutputAdded;
     BOOL _shouldAutoresumeRecording;
     BOOL _needsSwitchBackToContinuousFocus;
+    BOOL _needUpdateOrientationAfterSegment;
     int _beginSessionConfigurationCount;
     double _lastAppendedTime;
     NSTimer *_movieOutputProgressTimer;
@@ -123,9 +124,35 @@
 - (void)deviceOrientationChanged:(id)sender {
     if (_autoSetVideoOrientation) {
         dispatch_sync(_recordSessionQueue, ^{
-            [self updateVideoOrientation];
+            if (_isRecording) {
+                _needUpdateOrientationAfterSegment = YES;
+            } else{
+                [self updateVideoOrientation];
+            }
         });
     }
+}
+
+- (NSString *)deviceOrientationString:(UIDeviceOrientation)orientation {
+    switch (orientation) {
+        case UIDeviceOrientationPortrait:
+            return @"UIInterfaceOrientationPortrait";
+        case UIDeviceOrientationPortraitUpsideDown:
+            return @"UIInterfaceOrientationPortraitUpsideDown";
+        case UIDeviceOrientationLandscapeLeft:
+            return @"UIInterfaceOrientationLandscapeLeft";
+        case UIDeviceOrientationLandscapeRight:
+            return @"UIInterfaceOrientationLandscapeRight";
+        default:
+            return @"Invalid Interface Orientation";
+    }
+}
+
+- (BOOL)currentOrientationSupportedByApplication {
+    NSArray *supportedOrientations = [[[NSBundle mainBundle] infoDictionary]     objectForKey:@"UISupportedInterfaceOrientations"];
+    NSString *name = [self deviceOrientationString:[[UIDevice currentDevice] orientation]];
+    
+    return [supportedOrientations containsObject:name];
 }
 
 - (void)sessionRuntimeError:(id)sender {
@@ -143,8 +170,11 @@
     if ([videoConnection isVideoOrientationSupported]) {
         videoConnection.videoOrientation = videoOrientation;
     }
-    if ([_previewLayer.connection isVideoOrientationSupported]) {
-        _previewLayer.connection.videoOrientation = videoOrientation;
+    
+    if ([self currentOrientationSupportedByApplication]) {
+        if ([_previewLayer.connection isVideoOrientationSupported]) {
+            _previewLayer.connection.videoOrientation = videoOrientation;
+        }
     }
     
     AVCaptureConnection *photoConnection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
@@ -409,6 +439,13 @@
 
 - (void)pause:(void(^)())completionHandler {
     dispatch_sync(_recordSessionQueue, ^{
+        void (^updateVideoOrientationIfNeeded)(void) = ^{
+            if (_needUpdateOrientationAfterSegment) {
+                _needUpdateOrientationAfterSegment = NO;
+                [self updateVideoOrientation];
+            }
+        };
+        
         _isRecording = NO;
         
         SCRecordSession *recordSession = _recordSession;
@@ -419,7 +456,9 @@
                     _pauseCompletionHandler = completionHandler;
                     [_movieOutputProgressTimer invalidate];
                     _movieOutputProgressTimer = nil;
-                    [recordSession endRecordSegment:nil];
+                    [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+                        updateVideoOrientationIfNeeded();
+                    }];
                 } else {
                     [recordSession endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
                         id<SCRecorderDelegate> delegate = self.delegate;
@@ -429,12 +468,15 @@
                         if (completionHandler != nil) {
                             completionHandler();
                         }
+                        updateVideoOrientationIfNeeded();
                     }];
                 }
             } else {
+                updateVideoOrientationIfNeeded();
                 dispatch_handler(completionHandler);
             }
         } else {
+            updateVideoOrientationIfNeeded();
             dispatch_handler(completionHandler);
         }
     });
