@@ -120,7 +120,7 @@ typedef enum : NSUInteger {
 @property (strong, nonatomic) UIImage *watermarkImage;
 
 /**
- The watermark image location and size.
+ The watermark image location and size in the input video frame coordinates.
  
  Only used in SCAssetExportSession.
  */

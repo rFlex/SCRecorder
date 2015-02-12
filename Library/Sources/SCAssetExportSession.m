@@ -219,10 +219,11 @@
     }
 }
 
-- (AVVideoComposition *)_buildVideoCompositionWithOutputSize:(CGSize)videoSize videoTrack:(AVAssetTrack *)videoTrack {
+- (AVVideoComposition *)_buildVideoCompositionOfVideoTrack:(AVAssetTrack *)videoTrack {
     UIImage *watermarkImage = self.videoConfiguration.watermarkImage;
     
     if (watermarkImage != nil) {
+        CGSize videoSize = videoTrack.naturalSize;
         CALayer *aLayer = [CALayer layer];
         aLayer.contents = (id)watermarkImage.CGImage;
         
@@ -344,7 +345,7 @@
         AVVideoComposition *videoComposition = self.videoConfiguration.composition;
         
         if (videoComposition == nil) {
-            videoComposition = [self _buildVideoCompositionWithOutputSize:CGSizeMake([videoSettings[AVVideoWidthKey] floatValue], [videoSettings[AVVideoHeightKey] floatValue]) videoTrack:videoTrack];
+            videoComposition = [self _buildVideoCompositionOfVideoTrack:videoTrack];
         }
         
         AVAssetReaderOutput *reader = nil;
