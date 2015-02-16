@@ -16,7 +16,7 @@
 #import "SCAssetExportSession.h"
 #import "SCImageView.h"
 #import "SCSwipeableFilterView.h"
-#import "SCRecorderFocusView.h"
+#import "SCRecorderToolsView.h"
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
 #import "SCPhotoConfiguration.h"
@@ -109,6 +109,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Get the current focus mode used by the camera device
  */
 @property (readonly, nonatomic) AVCaptureFocusMode focusMode;
+
+/**
+ Will be true if the camera is adjusting the focus.
+ This property is KVO observable.
+ */
+@property (readonly, nonatomic) BOOL isAdjustingFocus;
 
 /**
  The session preset used for the AVCaptureSession

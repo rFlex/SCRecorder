@@ -12,7 +12,6 @@
 #import "SCRecorderViewController.h"
 #import "SCAudioTools.h"
 #import "SCVideoPlayerViewController.h"
-#import "SCRecorderFocusView.h"
 #import "SCImageDisplayerViewController.h"
 #import "SCRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
@@ -33,7 +32,7 @@
     UIImageView *_ghostImageView;
 }
 
-@property (strong, nonatomic) SCRecorderFocusView *focusView;
+@property (strong, nonatomic) SCRecorderToolsView *focusView;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -83,7 +82,7 @@
     [self.recordView addGestureRecognizer:[[SCTouchDetector alloc] initWithTarget:self action:@selector(handleTouchDetected:)]];
     self.loadingView.hidden = YES;
     
-    self.focusView = [[SCRecorderFocusView alloc] initWithFrame:previewView.bounds];
+    self.focusView = [[SCRecorderToolsView alloc] initWithFrame:previewView.bounds];
     self.focusView.recorder = _recorder;
     [previewView addSubview:self.focusView];
     
@@ -148,19 +147,6 @@
     [super viewDidDisappear:animated];
     
     self.navigationController.navigationBarHidden = NO;
-}
-
-// Focus
-- (void)recorderDidStartFocus:(SCRecorder *)recorder {
-    [self.focusView showFocusAnimation];
-}
-
-- (void)recorderDidEndFocus:(SCRecorder *)recorder {
-    [self.focusView hideFocusAnimation];
-}
-
-- (void)recorderWillStartFocus:(SCRecorder *)recorder {
-    [self.focusView showFocusAnimation];
 }
 
 #pragma mark - Handle
