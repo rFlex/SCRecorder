@@ -174,7 +174,7 @@
     }
 }
 
-- (void)setupCoreImage:(AVAssetTrack *)videoTrack {
+- (BOOL)setupCoreImage:(AVAssetTrack *)videoTrack {
     if ([self needsCIContext] && _videoInput != nil) {
         if (self.useGPUForRenderingFilters) {
             _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
@@ -189,9 +189,12 @@
             _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:options];
         }
         
+        return YES;
     } else {
         _ciContext = nil;
         _eaglContext = nil;
+        
+        return NO;
     }
 }
 
@@ -372,9 +375,9 @@
     
     EnsureSuccess(error, completionHandler);
     
-    [self setupCoreImage:videoTrack];
-    
-    [self setupPixelBufferAdaptor:videoSize];
+    if ([self setupCoreImage:videoTrack]) {
+        [self setupPixelBufferAdaptor:videoTrack.naturalSize];        
+    }
     
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);
