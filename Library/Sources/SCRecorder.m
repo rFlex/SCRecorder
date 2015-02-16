@@ -14,8 +14,7 @@
 #define SCRecorderAudioEnabledContext ((void*)0x3)
 #define SCRecorderPhotoOptionsContext ((void*)0x3)
 #define kSCRecorderRecordSessionQueueKey "SCRecorderRecordSessionQueue"
-#define kMinTimeBetweenAppend 0
-//#define kMinTimeBetweenAppend 0.0020
+#define kMinTimeBetweenAppend 0.002
 
 @interface SCRecorder() {
     AVCaptureVideoPreviewLayer *_previewLayer;
@@ -538,6 +537,7 @@
         double timeToWait = kMinTimeBetweenAppend - (CACurrentMediaTime() - _lastAppendedTime);
         
         if (timeToWait > 0) {
+//            NSLog(@"Too fast! Waiting %fs", timeToWait);
             [NSThread sleepForTimeInterval:timeToWait];
         }
         
