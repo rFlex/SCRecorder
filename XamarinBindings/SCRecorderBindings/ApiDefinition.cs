@@ -346,8 +346,8 @@ namespace SCorsin {
 		[Export("beginSessionConfiguration")]
 		void BeginSessionConfiguration();
 
-		[Export("endSessionConfiguration")]
-		void EndSessionConfiguration();
+		[Export("commitSessionConfiguration")]
+		void CommitSessionConfiguration();
 
 		[Export("switchCaptureDevices")]
 		void SwitchCaptureDevices();
