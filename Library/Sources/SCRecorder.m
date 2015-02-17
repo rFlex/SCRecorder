@@ -41,6 +41,10 @@
     NSTimer *_movieOutputProgressTimer;
     CMTime _lastMovieFileOutputTime;
     void(^_pauseCompletionHandler)();
+    
+    SCFilter *_transformFilter;
+    size_t _transformFilterBufferWidth;
+    size_t _transformFilterBufferHeight;
 }
 
 @property (readonly, atomic) int buffersWaitingToProcessCount;
@@ -79,6 +83,7 @@
         _lastAppendedVideoBuffer = [SCSampleBufferHolder new];
         _lastVideoBuffer = [SCSampleBufferHolder new];
         _maxRecordDuration = kCMTimeInvalid;
+        _resetZoomOnChangeDevice = YES;
         
         self.device = AVCaptureDevicePositionBack;
         _videoConfiguration = [SCVideoConfiguration new];
@@ -88,6 +93,12 @@
         [_videoConfiguration addObserver:self forKeyPath:@"enabled" options:NSKeyValueObservingOptionNew context:SCRecorderVideoEnabledContext];
         [_audioConfiguration addObserver:self forKeyPath:@"enabled" options:NSKeyValueObservingOptionNew context:SCRecorderAudioEnabledContext];
         [_photoConfiguration addObserver:self forKeyPath:@"options" options:NSKeyValueObservingOptionNew context:SCRecorderPhotoOptionsContext];
+        
+        NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
+        
+        _context = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] options:options];
+        
+        _videoZoomFactor = 1;
     }
     
     return self;
@@ -295,10 +306,6 @@
     CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CIImage *ciImage = [CIImage imageWithCVPixelBuffer:buffer];
     
-    if (_context == nil) {
-        _context = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2]];
-    }
-    
     CGImageRef cgImage = [_context createCGImage:ciImage fromRect:CGRectMake(0, 0, CVPixelBufferGetWidth(buffer), CVPixelBufferGetHeight(buffer))];
     
     UIImage *image = [UIImage imageWithCGImage:cgImage];
@@ -494,6 +501,80 @@
     return connection.videoMinFrameDuration;
 }
 
+- (SCFilter *)_transformFilterUsingBufferWidth:(size_t)bufferWidth bufferHeight:(size_t)bufferHeight mirrored:(BOOL)mirrored {
+    @synchronized(self) {
+        if (_transformFilter == nil || _transformFilterBufferWidth != bufferWidth || _transformFilterBufferHeight != bufferHeight) {
+            CGFloat zoomFactor = _videoZoomFactor;
+            BOOL zoomFactoryIsOne = zoomFactor == 1.0;
+            BOOL shouldMirrorBuffer = _keepMirroringOnWrite && mirrored;
+
+            CGAffineTransform tx = CGAffineTransformIdentity;
+            
+            if (zoomFactoryIsOne && !shouldMirrorBuffer) {
+                _transformFilter = nil;
+            } else {
+                if (shouldMirrorBuffer) {
+                    tx = CGAffineTransformTranslate(CGAffineTransformScale(tx, -1, 1), -(CGFloat)bufferWidth, 0);
+                }
+                
+                if (!zoomFactoryIsOne) {
+                    tx = CGAffineTransformTranslate(tx, ((bufferWidth * zoomFactor) - bufferWidth) / -2, ((bufferHeight * zoomFactor) - bufferHeight) / -2);
+                    tx = CGAffineTransformScale(tx, zoomFactor, zoomFactor);
+                }
+                _transformFilter = [SCFilter filterWithAffineTransform:tx];
+            }
+            
+            _transformFilterBufferWidth = bufferWidth;
+            _transformFilterBufferHeight = bufferHeight;
+        }
+        
+        return _transformFilter;
+    }
+}
+
+- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer toRecordSession:(SCRecordSession *)recordSession duration:(CMTime)duration connection:(AVCaptureConnection *)connection {
+    CVPixelBufferRef sampleBufferImage = CMSampleBufferGetImageBuffer(sampleBuffer);
+
+    size_t bufferWidth = (CGFloat)CVPixelBufferGetWidth(sampleBufferImage);
+    size_t bufferHeight = (CGFloat)CVPixelBufferGetHeight(sampleBufferImage);
+
+    CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+    SCFilterGroup *filterGroup = _videoConfiguration.filterGroup;
+    SCFilter *transformFilter = [self _transformFilterUsingBufferWidth:bufferWidth bufferHeight:bufferHeight mirrored:connection.videoMirrored];
+
+    if (filterGroup == nil && transformFilter == nil) {
+        return [recordSession appendVideoPixelBuffer:sampleBufferImage atTime:time duration:duration];
+    }
+
+    CVPixelBufferRef pixelBuffer = [recordSession createPixelBuffer];
+    
+    if (pixelBuffer == nil) {
+        return NO;
+    }
+    
+    CIImage *image = [CIImage imageWithCVPixelBuffer:sampleBufferImage];
+    
+    if (transformFilter != nil) {
+        image = [transformFilter imageByProcessingImage:image];
+    }
+    
+    if (filterGroup != nil) {
+        image = [filterGroup imageByProcessingImage:image];
+    }
+    
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    
+    [_context render:image toCVPixelBuffer:pixelBuffer];
+    
+    BOOL ret = [recordSession appendVideoPixelBuffer:pixelBuffer atTime:time duration:duration];
+    
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    
+    CVPixelBufferRelease(pixelBuffer);
+    
+    return ret;
+}
+
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     if (captureOutput == _videoOutput) {
         if (_videoConfiguration.shouldIgnore) {
@@ -569,7 +650,8 @@
                             if (_isRecording && recordSession.recordSegmentReady) {
                                 id<SCRecorderDelegate> delegate = self.delegate;
                                 CMTime duration = [self frameDurationFromConnection:connection];
-                                if ([recordSession appendVideoSampleBuffer:sampleBuffer duration:duration]) {
+                                
+                                if ([self appendVideoSampleBuffer:sampleBuffer toRecordSession:recordSession duration:duration connection:connection]) {
                                     _lastAppendedVideoBuffer.sampleBuffer = sampleBuffer;
                                     
                                     if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBuffer:)]) {
@@ -798,6 +880,9 @@
         NSError *videoError = nil;
         if (shouldConfigureVideo) {
             [self configureDevice:[self videoDevice] mediaType:AVMediaTypeVideo error:&videoError];
+            @synchronized(self) {
+                _transformFilter = nil;
+            }
             dispatch_sync(_recordSessionQueue, ^{
                 [self updateVideoOrientation];
             });
@@ -834,7 +919,10 @@
 }
 
 - (void)previewViewFrameChanged {
+    _previewLayer.affineTransform = CGAffineTransformIdentity;
     _previewLayer.frame = _previewView.bounds;
+    // We update the previewLayer transform again
+    self.videoZoomFactor = _videoZoomFactor;
 }
 
 #pragma mark - FOCUS
@@ -1068,8 +1156,9 @@
     _previewView = previewView;
     
     if (_previewView != nil) {
-        _previewLayer.frame = _previewView.bounds;
         [_previewView.layer insertSublayer:_previewLayer atIndex:0];
+        
+        [self previewViewFrameChanged];
     }
 }
 
@@ -1087,6 +1176,9 @@
 
 - (void)setDevice:(AVCaptureDevicePosition)device {
     _device = device;
+    if (_resetZoomOnChangeDevice) {
+        self.videoZoomFactor = 1;
+    }
     if (_captureSession != nil) {
         [self reconfigureVideoInput:self.videoConfiguration.enabled audioInput:NO];
     }
@@ -1212,18 +1304,6 @@
 	}
 	
 	return nil;
-}
-
-- (CGFloat)videoZoomFactor {
-    return [self videoConnection].videoScaleAndCropFactor;
-}
-
-- (CGFloat)maxVideoZoomFactor {
-    return [self videoConnection].videoMaxScaleAndCropFactor;
-}
-
-- (void)videoZoomFactor:(CGFloat)scale {
-    [self videoConnection].videoScaleAndCropFactor = scale;
 }
 
 - (CMTimeScale)frameRate {
@@ -1375,6 +1455,21 @@
 
 - (BOOL)videoEnabledAndReady {
     return _videoOutputAdded && _videoInputAdded && !_videoConfiguration.shouldIgnore;
+}
+
+- (void)setKeepMirroringOnWrite:(BOOL)keepMirroringOnWrite {
+    @synchronized(self) {
+        _keepMirroringOnWrite = keepMirroringOnWrite;
+        _transformFilter = nil;
+    }
+}
+
+- (void)setVideoZoomFactor:(CGFloat)videoZoomFactor {
+    @synchronized(self) {
+        _videoZoomFactor = videoZoomFactor;
+        _transformFilter = nil;
+    }
+    self.previewLayer.affineTransform = CGAffineTransformMakeScale(videoZoomFactor, videoZoomFactor);
 }
 
 + (SCRecorder *)sharedRecorder {

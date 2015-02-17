@@ -35,6 +35,8 @@
 
 + (SCFilter *)filterWithName:(NSString *)name;
 
++ (SCFilter *)filterWithAffineTransform:(CGAffineTransform)affineTransform;
+
 - (id)initWithCIFilter:(CIFilter *)filter;
 
 - (id)initWithName:(NSString *)name;
@@ -44,5 +46,7 @@
 - (void)setParameterValue:(id)value forKey:(NSString *)key;
 
 - (void)resetToDefaults;
+
+- (CIImage *)imageByProcessingImage:(CIImage *)image;
 
 @end

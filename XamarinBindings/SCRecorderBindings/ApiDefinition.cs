@@ -394,6 +394,9 @@ namespace SCorsin {
 		[Export("maxRecordDuration")]
 		CMTime MaxRecordDuration { get; set; }
 
+		[Export("keepMirroringOnWrite")]
+		bool KeepMirroringOnWrite { get; set; }
+
 	}
 
 	delegate void CompletionHandler(NSError error);
@@ -538,7 +541,7 @@ namespace SCorsin {
 	}
 
 	[BaseType(typeof(UIView))]
-	interface SCRecorderFocusView {
+	interface SCRecorderToolsView {
 
 		[Export("recorder")]
 		SCRecorder Recorder { get; set; }
@@ -557,6 +560,24 @@ namespace SCorsin {
 
 		[Export("hideFocusAnimation")]
 		void HideFocusAnimation();
+
+		[Export("minZoomFactor")]
+		float MinZoomFactor { get; set; }
+
+		[Export("maxZoomFactor")]
+		float MaxZoomFactor { get; set; }
+
+		[Export("tapToFocusEnabled")]
+		bool TapToFocusEnabled { get; set; }
+
+		[Export("doubleTapToResetFocusEnabled")]
+		bool DoubleTapToResetFocusEnabled { get; set; } 
+
+		[Export("pinchToZoomEnabled")]
+		bool PinchToZoomEnabled { get; set; }
+
+		[Export("showsFocusAnimationAutomatically")]
+		bool ShowsFocusAnimationAutomatically { get; set; }
 
 	}
 

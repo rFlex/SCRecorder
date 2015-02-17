@@ -26,8 +26,6 @@
     SCVideoConfiguration *_videoConfiguration;
     SCAudioConfiguration *_audioConfiguration;
     
-    // Used when SCFilterGroup is non-nil
-    CIContext *_CIContext;
     AVAssetWriterInputPixelBufferAdaptor *_videoPixelBufferAdaptor;
     CMTime _lastTimeVideo;
     
@@ -49,7 +47,10 @@
 - (void)initializeVideo:(NSDictionary *)videoOptions formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError **)error;
 - (void)initializeAudio:(NSDictionary *)audioOptions formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError **)error;
 
-- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer duration:(CMTime)duration;
+- (CVPixelBufferRef)createPixelBuffer;
+
+- (BOOL)appendVideoPixelBuffer:(CVPixelBufferRef)videoSampleBuffer atTime:(CMTime)time duration:(CMTime)duration;
+
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
 - (void)beginRecordSegmentUsingMovieFileOutput:(AVCaptureMovieFileOutput *)movieFileOutput error:(NSError **)error delegate:(id<AVCaptureFileOutputRecordingDelegate>)delegate;
 

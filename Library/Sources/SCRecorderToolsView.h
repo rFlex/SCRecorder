@@ -34,6 +34,19 @@
 @property (assign, nonatomic) CGSize focusTargetSize;
 
 /**
+ The minimum zoom allowed for the pinch to zoom.
+ Default is 1
+ */
+@property (assign, nonatomic) CGFloat minZoomFactor;
+
+/**
+ The maximum zoom allowed for the pinch to zoom.
+ Default is 4
+ */
+@property (assign, nonatomic) CGFloat maxZoomFactor;
+
+
+/**
  Whether the tap to focus should be enabled.
  */
 @property (assign, nonatomic) BOOL tapToFocusEnabled;
@@ -42,6 +55,11 @@
  Whether the double tap to reset the focus should be enabled.
  */
 @property (assign, nonatomic) BOOL doubleTapToResetFocusEnabled;
+
+/**
+ Whether the pinch to zoom should be enabled.
+ */
+@property (assign, nonatomic) BOOL pinchToZoomEnabled;
 
 /**
  Whether the SCRecorderToolsView should show the focus animation automatically

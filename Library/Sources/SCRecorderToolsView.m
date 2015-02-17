@@ -11,12 +11,16 @@
 
 #define BASE_FOCUS_TARGET_WIDTH 60
 #define BASE_FOCUS_TARGET_HEIGHT 60
+#define kDefaultMinZoomFactor 1
+#define kDefaultMaxZoomFactor 4
 
 @interface SCRecorderToolsView()
 {
     CGPoint _currentFocusPoint;
     UITapGestureRecognizer *_tapToFocusGesture;
     UITapGestureRecognizer *_doubleTapToResetFocusGesture;
+    UIPinchGestureRecognizer *_pinchZoomGesture;
+    CGFloat _zoomAtStart;
 }
 
 @property (strong, nonatomic) SCRecorderFocusTargetView *cameraFocusTargetView;
@@ -52,6 +56,8 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
 }
 
 - (void)commonInit {
+    _minZoomFactor = kDefaultMinZoomFactor;
+    _maxZoomFactor = kDefaultMaxZoomFactor;
     self.showsFocusAnimationAutomatically = YES;
     _currentFocusPoint = CGPointMake(0.5, 0.5);
     self.cameraFocusTargetView = [[SCRecorderFocusTargetView alloc] init];
@@ -68,6 +74,10 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
     [_tapToFocusGesture requireGestureRecognizerToFail:_doubleTapToResetFocusGesture];
     
     [self addGestureRecognizer:_doubleTapToResetFocusGesture];
+    
+    _pinchZoomGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchToZoom:)];
+    
+    [self addGestureRecognizer:_pinchZoomGesture];
 }
 
 - (void)showFocusAnimation {
@@ -123,6 +133,24 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
     }
 }
 
+- (void)pinchToZoom:(UIPinchGestureRecognizer *)gestureRecognizer {
+    SCRecorder *strongRecorder = self.recorder;
+    
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        _zoomAtStart = strongRecorder.videoZoomFactor;
+    }
+    
+    CGFloat newZoom = gestureRecognizer.scale * _zoomAtStart;
+    
+    if (newZoom > _maxZoomFactor) {
+        newZoom = _maxZoomFactor;
+    } else if (newZoom < _minZoomFactor) {
+        newZoom = _minZoomFactor;
+    }
+        
+    strongRecorder.videoZoomFactor = newZoom;
+}
+
 - (void)setFocusTargetSize:(CGSize)focusTargetSize {
     CGRect rect = self.cameraFocusTargetView.frame;
     rect.size = focusTargetSize;
@@ -164,6 +192,14 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
 
 - (void)setDoubleTapToResetFocusEnabled:(BOOL)doubleTapToResetFocusEnabled {
     _doubleTapToResetFocusGesture.enabled = doubleTapToResetFocusEnabled;
+}
+
+- (BOOL)pinchToZoomEnabled {
+    return _pinchZoomGesture.enabled;
+}
+
+- (void)setPinchToZoomEnabled:(BOOL)pinchToZoomEnabled {
+    _pinchZoomGesture.enabled = pinchToZoomEnabled;
 }
 
 - (void)setRecorder:(SCRecorder *)recorder {

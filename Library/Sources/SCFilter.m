@@ -233,6 +233,18 @@
     return [self.coreImageFilter.attributes objectForKey:kCIAttributeFilterDisplayName];
 }
 
+- (CIImage *)imageByProcessingImage:(CIImage *)image {
+    CIFilter *ciFilter = self.coreImageFilter;
+    [ciFilter setValue:image forKey:kCIInputImageKey];
+    return [ciFilter valueForKey:kCIOutputImageKey];
+}
+
++ (SCFilter *)filterWithAffineTransform:(CGAffineTransform)affineTransform {
+    CIFilter *filter = [CIFilter filterWithName:@"CIAffineTransform"];
+    [filter setValue:[NSValue valueWithBytes:&affineTransform objCType:@encode(CGAffineTransform)] forKey:@"inputTransform"];
+    
+    return [SCFilter filterWithCIFilter:filter];
+}
 
 static UInt32 MagicPNG = 0x474e5089;
 static UInt32 MagicJPG = 0xe0ffd8ff;

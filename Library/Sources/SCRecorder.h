@@ -106,14 +106,14 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @property (assign, nonatomic) AVCaptureDevicePosition device;
 
 /**
- The zoom factor applied to the current video device.
+ The zoom factor applied to the video.
  */
 @property (assign, nonatomic) CGFloat videoZoomFactor;
 
 /**
- The maximum zoom factor that can be applied to the current video device.
+ Whether the zoom should be reset whenever the device changes.
  */
-@property (readonly, nonatomic) CGFloat maxVideoZoomFactor;
+@property (assign, nonatomic) BOOL resetZoomOnChangeDevice;
 
 /**
  Get the current focus mode used by the camera device
@@ -218,9 +218,16 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @property (assign, nonatomic) BOOL initializeRecordSessionLazily;
 
 /**
+ If enabled, mirrored video buffers like when using a front camera
+ will be written also as mirrored.
+ */
+@property (assign, nonatomic) BOOL keepMirroringOnWrite;
+
+/**
  Whether the focus is supported on the current camera device
  */
 @property (readonly, nonatomic) BOOL focusSupported;
+
 
 /**
  The current focus point of interest
