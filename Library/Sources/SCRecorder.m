@@ -35,6 +35,7 @@
     BOOL _videoOutputAdded;
     BOOL _shouldAutoresumeRecording;
     BOOL _needsSwitchBackToContinuousFocus;
+    BOOL _adjustingFocus;
     int _beginSessionConfigurationCount;
     double _lastAppendedTime;
     NSTimer *_movieOutputProgressTimer;
@@ -677,10 +678,14 @@
     if (context == SCRecorderFocusContext) {
         BOOL isFocusing = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
         if (isFocusing) {
+            [self setAdjustingFocus:YES];
+            
             if ([delegate respondsToSelector:@selector(recorderDidStartFocus:)]) {
                 [delegate recorderDidStartFocus:self];
             }
         } else {
+            [self setAdjustingFocus:NO];
+            
             if ([delegate respondsToSelector:@selector(recorderDidEndFocus:)]) {
                 [delegate recorderDidEndFocus:self];
             }
@@ -956,6 +961,8 @@
                     if ([delegate respondsToSelector:@selector(recorderWillStartFocus:)]) {
                         [delegate recorderWillStartFocus:self];
                     }
+                    
+                    [self setAdjustingFocus:YES];
                 }
             }
         }
@@ -1181,6 +1188,20 @@
     return [self currentVideoDeviceInput].device.focusMode;
 }
 
+- (BOOL)isAdjustingFocus {
+    return _adjustingFocus;
+}
+
+- (void)setAdjustingFocus:(BOOL)adjustingFocus {
+    if (_adjustingFocus != adjustingFocus) {
+        [self willChangeValueForKey:@"isAdjustingFocus"];
+        
+        _adjustingFocus = adjustingFocus;
+        
+        [self didChangeValueForKey:@"isAdjustingFocus"];
+    }
+}
+
 - (AVCaptureConnection*)videoConnection {
 	for (AVCaptureConnection * connection in _videoOutput.connections) {
 		for (AVCaptureInputPort * port in connection.inputPorts) {
@@ -1191,6 +1212,18 @@
 	}
 	
 	return nil;
+}
+
+- (CGFloat)videoZoomFactor {
+    return [self videoConnection].videoScaleAndCropFactor;
+}
+
+- (CGFloat)maxVideoZoomFactor {
+    return [self videoConnection].videoMaxScaleAndCropFactor;
+}
+
+- (void)videoZoomFactor:(CGFloat)scale {
+    [self videoConnection].videoScaleAndCropFactor = scale;
 }
 
 - (CMTimeScale)frameRate {

@@ -16,7 +16,7 @@
 #import "SCAssetExportSession.h"
 #import "SCImageView.h"
 #import "SCSwipeableFilterView.h"
-#import "SCRecorderFocusView.h"
+#import "SCRecorderToolsView.h"
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
 #import "SCPhotoConfiguration.h"
@@ -98,7 +98,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 /**
  Determine whether the device has flash
  */
-@property (assign, nonatomic, readonly) BOOL deviceHasFlash;
+@property (nonatomic, readonly) BOOL deviceHasFlash;
 
 /**
  Change the current used device
@@ -106,9 +106,25 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @property (assign, nonatomic) AVCaptureDevicePosition device;
 
 /**
+ The zoom factor applied to the current video device.
+ */
+@property (assign, nonatomic) CGFloat videoZoomFactor;
+
+/**
+ The maximum zoom factor that can be applied to the current video device.
+ */
+@property (readonly, nonatomic) CGFloat maxVideoZoomFactor;
+
+/**
  Get the current focus mode used by the camera device
  */
 @property (readonly, nonatomic) AVCaptureFocusMode focusMode;
+
+/**
+ Will be true if the camera is adjusting the focus.
+ This property is KVO observable.
+ */
+@property (readonly, nonatomic) BOOL isAdjustingFocus;
 
 /**
  The session preset used for the AVCaptureSession
