@@ -334,26 +334,16 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         _videoInput.expectsMediaDataInRealTime = YES;
         _videoInput.transform = _videoConfiguration.affineTransform;
         
-        SCFilterGroup *filterGroup = _videoConfiguration.filterGroup;
-        if (filterGroup != nil) {
-            NSDictionary *pixelBufferAttributes = @{
-                                                    (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
-                                                    (id)kCVPixelBufferWidthKey : videoSettings[AVVideoWidthKey],
-                                                    (id)kCVPixelBufferHeightKey : videoSettings[AVVideoHeightKey]
+        CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
+        
+        NSDictionary *pixelBufferAttributes = @{
+                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
+                                                (id)kCVPixelBufferWidthKey : [NSNumber numberWithInt:dimensions.width],
+                                                (id)kCVPixelBufferHeightKey : [NSNumber numberWithInt:dimensions.height]
                                                     };
-            
-            _videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
-            
-            if (_CIContext == nil) {
-                NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
-                
-                _CIContext = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] options:options];
-            }
-        } else {
-            _CIContext = nil;
-        }
-    }
-    @catch (NSException *exception) {
+        
+        _videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
+    } @catch (NSException *exception) {
         theError = [SCRecordSession createError:exception.reason];
     }
     
@@ -655,9 +645,18 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     }
 }
 
-- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer duration:(CMTime)duration {
-    CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
+- (CVPixelBufferRef)createPixelBuffer {
+    CVPixelBufferRef outputPixelBuffer = nil;
+    CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelBufferAdaptor pixelBufferPool], &outputPixelBuffer);
     
+    if (ret != kCVReturnSuccess) {
+        NSLog(@"UNABLE TO CREATE PIXEL BUFFER (CVReturnError: %d)", ret);
+    }
+    
+    return outputPixelBuffer;
+}
+
+- (BOOL)appendVideoPixelBuffer:(CVPixelBufferRef)videoPixelBuffer atTime:(CMTime)actualBufferTime duration:(CMTime)duration {
     if ([_videoInput isReadyForMoreMediaData]) {
         if (CMTIME_IS_INVALID(_timeOffset)) {
             _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
@@ -684,39 +683,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         //        }
         //    }
         
-        if (_videoPixelBufferAdaptor != nil) {
-            CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
-            
-            CIImage *result = [_videoConfiguration.filterGroup imageByProcessingImage:image];
-            
-            CVPixelBufferRef outputPixelBuffer = nil;
-            CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelBufferAdaptor pixelBufferPool], &outputPixelBuffer);
-            
-            CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
-            
-            [_CIContext render:result toCVPixelBuffer:outputPixelBuffer];
-            
-            [_videoPixelBufferAdaptor appendPixelBuffer:outputPixelBuffer withPresentationTime:bufferTimestamp];
-            
-            CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
-            
-            CVPixelBufferRelease(outputPixelBuffer);
-        } else {
-            CMSampleTimingInfo timingInfo = {0,};
-            timingInfo.duration = kCMTimeInvalid;
-            timingInfo.decodeTimeStamp = kCMTimeInvalid;
-            timingInfo.presentationTimeStamp = bufferTimestamp;
-
-            CMSampleBufferRef adjustedBuffer = nil;
-            
-            CMSampleBufferCreateCopyWithNewTiming(kCFAllocatorDefault, videoSampleBuffer, 1, &timingInfo, &adjustedBuffer);
-            
-//            NSLog(@"Appending video at %fs (since last time: %fs)", CMTimeGetSeconds(bufferTimestamp), CMTimeGetSeconds(CMTimeSubtract(actualBufferTime, _lastTimeVideo)));
-            if (![_videoInput appendSampleBuffer:adjustedBuffer]) {
-                NSLog(@"Failed to append video sample buffer at %fs: %@", CMTimeGetSeconds(bufferTimestamp), _assetWriter.error);
-            }
-            CFRelease(adjustedBuffer);
-        }
+        [_videoPixelBufferAdaptor appendPixelBuffer:videoPixelBuffer withPresentationTime:bufferTimestamp];
 
         _currentSegmentDuration = CMTimeAdd(bufferTimestamp, duration);
         _lastTimeVideo = actualBufferTime;
