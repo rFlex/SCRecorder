@@ -540,7 +540,9 @@
 
     CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     SCFilterGroup *filterGroup = _videoConfiguration.filterGroup;
-    SCFilter *transformFilter = [self _transformFilterUsingBufferWidth:bufferWidth bufferHeight:bufferHeight mirrored:connection.videoMirrored];
+    SCFilter *transformFilter = [self _transformFilterUsingBufferWidth:bufferWidth bufferHeight:bufferHeight mirrored:
+                                 _device == AVCaptureDevicePositionFront
+                                 ];
 
     if (filterGroup == nil && transformFilter == nil) {
         return [recordSession appendVideoPixelBuffer:sampleBufferImage atTime:time duration:duration];
