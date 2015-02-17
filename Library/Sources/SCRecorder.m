@@ -1214,6 +1214,18 @@
 	return nil;
 }
 
+- (CGFloat)videoZoomFactor {
+    return [self videoConnection].videoScaleAndCropFactor;
+}
+
+- (CGFloat)maxVideoZoomFactor {
+    return [self videoConnection].videoMaxScaleAndCropFactor;
+}
+
+- (void)videoZoomFactor:(CGFloat)scale {
+    [self videoConnection].videoScaleAndCropFactor = scale;
+}
+
 - (CMTimeScale)frameRate {
     AVCaptureDeviceInput * deviceInput = [self currentVideoDeviceInput];
     
