@@ -8,6 +8,7 @@ A Vine/Instagram like audio/video recorder and filter framework in Objective-C.
 
 In short, here is a short list of the cool things you can do:
 - Record multiple video segments
+- Zoom/Focus easily
 - Remove any record segment that you don't want
 - Display the result into a convenient video player
 - Save the record session for later somewhere using a serializable NSDictionary (works in NSUserDefaults)
