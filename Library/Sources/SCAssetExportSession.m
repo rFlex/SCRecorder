@@ -374,9 +374,8 @@
     
     EnsureSuccess(error, completionHandler);
     
-    if ([self setupCoreImage:videoTrack]) {
-        [self setupPixelBufferAdaptor:videoTrack.naturalSize];        
-    }
+    [self setupCoreImage:videoTrack];
+    [self setupPixelBufferAdaptor:videoTrack.naturalSize];
     
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);
