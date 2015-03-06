@@ -34,6 +34,11 @@
  */
 - (void)player:(SCPlayer *)player didReachEndForItem:(AVPlayerItem *)item;
 
+/**
+ Called when the item is ready to play
+ */
+- (void)player:(SCPlayer *)player itemReadyToPlay:(AVPlayerItem *)item;
+
 @end
 
 /**

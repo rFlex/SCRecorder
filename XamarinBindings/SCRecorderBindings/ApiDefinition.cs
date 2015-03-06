@@ -466,6 +466,10 @@ namespace SCorsin {
 		[Export("player:didChangeItem:"), EventArgs("PlayerChangedItem")]
         void DidChangeItem(SCPlayer player, [NullAllowed] AVPlayerItem item);
 
+		[Abstract]
+		[Export("player:itemReadyToPlay:"), EventArgs("PlayerChangedItem")]
+		void ItemReadyToPlay(SCPlayer player, [NullAllowed] AVPlayerItem item);
+
 	}
 
 	[BaseType(typeof(AVPlayer), Delegates = new string [] { "Delegate" }, Events = new Type [] { typeof(SCPlayerDelegate) })]
