@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 #import "SCFilterGroup.h"
+#import "SCRecordSessionSegment.h"
 
 #define kRecordSessionDefaultVideoCodec AVVideoCodecH264
 #define kRecordSessionDefaultVideoScalingMode AVVideoScalingModeResizeAspectFill
@@ -69,12 +70,9 @@ extern const NSString *SCRecordSessionCacheDirectory;
 @property (readonly, nonatomic) NSURL *outputUrl;
 
 /**
- Contains every record segment as NSURL.
- If shouldTrackRecordSegments is true, every pause/record actions
- will result in a new entry in this array.
- If shouldTrackRecordSegments is false, it will contains at most one segment
+ Contains every record segment as SCRecordSessionSegment.
  */
-@property (readonly, nonatomic) NSArray *recordSegments;
+@property (readonly, nonatomic) NSArray *segments;
 
 /**
  The current record duration including the duration of
@@ -121,38 +119,37 @@ extern const NSString *SCRecordSessionCacheDirectory;
 + (instancetype)recordSession:(NSDictionary *)dictionaryRepresentation;
 
 /**
- Start a new record segment.
- This method is automatically called by the SCRecorder
+ Calling any method of SCRecordSession is thread safe. However,
+ if the record session is inside an SCRecorder instance, its state
+ might change between 2 calls you are making. Making any modification
+ within this block will ensure that you are the only one who has
+ access to any modification on this SCRecordSession.
  */
-- (void)beginRecordSegment:(NSError**)error;
+- (void)dispatchSyncOnSessionQueue:(void(^)())block;
+
+//////////////////////
+/////// SEGMENTS
+////
 
 /**
- End the current record segment.
- This method is automatically called by the SCRecorder
- when calling [SCRecorder pause] if necessary.
- segmentIndex contains the index of the segment recorded accessible
- in the recordSegments array. If error is not null, if will be -1
- If you don't remove the SCRecordSession from the SCRecorder while calling this method,
- The SCRecorder might create a new recordSegment right after automatically if it is not paused.
+ Remove the record segment. Does not delete the associated file.
  */
-- (void)endRecordSegment:(void(^)(NSInteger segmentIndex, NSError *error))completionHandler;
+- (void)removeSegment:(SCRecordSessionSegment *)segment;
 
 /**
- Remove the record segment at the given index and delete the associated file if asked
- Unexpected behavior can occur if you call this method if
- recordSegmentBegan is true
+ Remove the record segment at the given index.
  */
 - (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile;
 
 /**
- Manually add a record segment.
+ Add a recorded segment.
  */
-- (void)addSegment:(NSURL *)fileUrl;
+- (void)addSegment:(SCRecordSessionSegment *)segment;
 
 /**
- Manually insert a record segment.
+ Insert a record segment.
  */
-- (void)insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex;
+- (void)insertSegment:(SCRecordSessionSegment *)segment atIndex:(NSInteger)segmentIndex;
 
 /**
  Remove all the record segments and their associated files.
@@ -165,7 +162,7 @@ extern const NSString *SCRecordSessionCacheDirectory;
 - (void)removeAllSegments:(BOOL)deleteFiles;
 
 /**
- Remove the last segment safely. Does not do anything if no segments were recorded.
+ Remove the last segment safely. Does nothing if no segment were recorded.
  */
 - (void)removeLastSegment;
 
@@ -180,24 +177,18 @@ extern const NSString *SCRecordSessionCacheDirectory;
 /**
  Merge the recorded record segments using the given AVAssetExportSessionPreset.
  */
-- (void)mergeRecordSegmentsUsingPreset:(NSString *)exportSessionPreset completionHandler:(void(^)(NSURL *outputUrl, NSError *error))completionHandler;
+- (void)mergeSegmentsUsingPreset:(NSString *)exportSessionPreset completionHandler:(void(^)(NSURL *outputUrl, NSError *error))completionHandler;
 
 /**
  Returns an asset representing all the record segments
  from this record session. This can be called anytime.
  */
-- (AVAsset *)assetRepresentingRecordSegments;
+- (AVAsset *)assetRepresentingSegments;
 
 /**
  Append all the record segments to a given AVMutableComposition.
  */
-- (void)appendRecordSegmentsToComposition:(AVMutableComposition *)composition;
-
-/**
- Stop the current segment and deinitialize the video and the audio.
- This can be usefull if the input video or audio profile changed.
- */
-- (void)deinitialize;
+- (void)appendSegmentsToComposition:(AVMutableComposition *)composition;
 
 /**
  Returns a dictionary that represents this SCRecordSession
@@ -209,6 +200,29 @@ extern const NSString *SCRecordSessionCacheDirectory;
 /**
  Returns a record segment URL for a filename and a directory.
  */
-+ (NSURL *)recordSegmentURLForFilename:(NSString *)filename andDirectory:(NSString *)directory;
++ (NSURL *)segmentURLForFilename:(NSString *)filename andDirectory:(NSString *)directory;
+
+/**
+ Stop the current segment and deinitialize the video and the audio.
+ This can be usefull if the input video or audio profile changed.
+ */
+- (void)deinitialize;
+
+/**
+ Start a new record segment.
+ This method is automatically called by the SCRecorder.
+ */
+- (void)beginSegment:(NSError**)error;
+
+/**
+ End the current record segment.
+ This method is automatically called by the SCRecorder
+ when calling [SCRecorder pause] if necessary.
+ segmentIndex contains the index of the segment recorded accessible
+ in the recordSegments array. If error is not null, if will be -1
+ If you don't remove the SCRecordSession from the SCRecorder while calling this method,
+ The SCRecorder might create a new recordSegment right after automatically if it is not paused.
+ */
+- (void)endSegment:(void(^)(SCRecordSessionSegment *segment, NSError *error))completionHandler;
 
 @end

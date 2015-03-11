@@ -15,7 +15,7 @@
  devices (front and back camera). It will ensure that buffer output from
  both camera has the same resolution.
  */
-+ (NSString *)bestSessionPresetCompatibleWithAllDevices;
++ (NSString *)bestCaptureSessionPresetCompatibleWithAllDevices;
 
 + (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate;
 

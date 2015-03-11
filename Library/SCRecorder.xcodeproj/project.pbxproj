@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		DC1949C019C07F1600E92A95 /* SCSampleBufferHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */; };
 		DC1949C119C07F1600E92A95 /* SCSampleBufferHolder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC1949BF19C07F1600E92A95 /* SCSampleBufferHolder.m */; };
+		DC23C1C71AAF95600013E14C /* SCRecordSessionSegment.h in Headers */ = {isa = PBXBuildFile; fileRef = DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */; };
+		DC23C1C81AAF95600013E14C /* SCRecordSessionSegment.m in Sources */ = {isa = PBXBuildFile; fileRef = DC23C1C61AAF95600013E14C /* SCRecordSessionSegment.m */; };
 		DC23FE1217B4200800389EDA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4917ADD66000E37F8F /* Foundation.framework */; };
 		DC23FE2117B4519100389EDA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */; };
 		DC23FE2217B4519A00389EDA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */; };
@@ -70,6 +72,8 @@
 		ABCC89F51829AAB6000D3886 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSampleBufferHolder.h; sourceTree = "<group>"; };
 		DC1949BF19C07F1600E92A95 /* SCSampleBufferHolder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCSampleBufferHolder.m; sourceTree = "<group>"; };
+		DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRecordSessionSegment.h; sourceTree = "<group>"; };
+		DC23C1C61AAF95600013E14C /* SCRecordSessionSegment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRecordSessionSegment.m; sourceTree = "<group>"; };
 		DC23FE1117B4200700389EDA /* libSCRecorder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSCRecorder.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC264DEA17BAC67300A5EF98 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
 		DC264DEC17BACA3E00A5EF98 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -343,6 +347,8 @@
 				DC50285518E4FA5E004E833F /* SCRecorder.h */,
 				DC50285618E4FA5E004E833F /* SCRecorder.m */,
 				DCA163A01A23BA3600505966 /* SCRecordSession_Internal.h */,
+				DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */,
+				DC23C1C61AAF95600013E14C /* SCRecordSessionSegment.m */,
 			);
 			name = Recorder;
 			sourceTree = "<group>";
@@ -358,6 +364,7 @@
 				DCA163991A2028C400505966 /* SCAudioConfiguration.h in Headers */,
 				DCA163951A2028B800505966 /* SCVideoConfiguration.h in Headers */,
 				DC8B89C819C4A47A0048FBF9 /* CIImageRenderer.h in Headers */,
+				DC23C1C71AAF95600013E14C /* SCRecordSessionSegment.h in Headers */,
 				DC50285918E51FC9004E833F /* SCRecorder.h in Headers */,
 				DC4CBA531863118E00532F1F /* SCVideoPlayerView.h in Headers */,
 				DC633E2F192BCE0D00050796 /* SCFilter.h in Headers */,
@@ -471,6 +478,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC50285A18E52023004E833F /* SCRecordSession.m in Sources */,
+				DC23C1C81AAF95600013E14C /* SCRecordSessionSegment.m in Sources */,
 				DCB041681924663700D945D2 /* SCAssetExportSession.m in Sources */,
 				DCA163961A2028B800505966 /* SCVideoConfiguration.m in Sources */,
 				DC50285818E51FC0004E833F /* SCRecorder.m in Sources */,

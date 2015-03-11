@@ -13,7 +13,7 @@
     AVAssetWriter *_assetWriter;
     AVAssetWriterInput *_videoInput;
     AVAssetWriterInput *_audioInput;
-    NSMutableArray *_recordSegments;
+    NSMutableArray *_segments;
     BOOL _audioInitializationFailed;
     BOOL _videoInitializationFailed;
     BOOL _recordSegmentReady;
@@ -54,6 +54,6 @@
 - (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer;
 - (void)beginRecordSegmentUsingMovieFileOutput:(AVCaptureMovieFileOutput *)movieFileOutput error:(NSError **)error delegate:(id<AVCaptureFileOutputRecordingDelegate>)delegate;
 
-- (void)appendRecordSegment:(void(^)(NSInteger segmentNumber, NSError* error))completionHandler error:(NSError *)error url:(NSURL *)url duration:(CMTime)duration;
+- (void)appendRecordSegment:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler error:(NSError *)error url:(NSURL *)url duration:(CMTime)duration;
 
 @end

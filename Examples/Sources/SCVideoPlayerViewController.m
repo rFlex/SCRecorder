@@ -64,7 +64,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
         
-    [_player setItemByAsset:_recordSession.assetRepresentingRecordSegments];
+    [_player setItemByAsset:_recordSession.assetRepresentingSegments];
 	[_player play];
 }
 
@@ -106,9 +106,9 @@
     };
     
     if (currentFilter == nil) {
-        [self.recordSession mergeRecordSegmentsUsingPreset:AVAssetExportPresetHighestQuality completionHandler:completionHandler];
+        [self.recordSession mergeSegmentsUsingPreset:AVAssetExportPresetHighestQuality completionHandler:completionHandler];
     } else {
-        SCAssetExportSession *exportSession = [[SCAssetExportSession alloc] initWithAsset:self.recordSession.assetRepresentingRecordSegments];
+        SCAssetExportSession *exportSession = [[SCAssetExportSession alloc] initWithAsset:self.recordSession.assetRepresentingSegments];
         exportSession.videoConfiguration.filterGroup = currentFilter;
         exportSession.videoConfiguration.preset = SCPresetHighestQuality;
         exportSession.audioConfiguration.preset = SCPresetHighestQuality;
