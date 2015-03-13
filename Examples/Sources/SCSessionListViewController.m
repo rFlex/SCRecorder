@@ -26,16 +26,16 @@
 }
 
 - (void)saveCurrentRecordSession {
-    [[SCRecordSessionManager sharedInstance] saveRecordSession:_recorder.recordSession];
+    [[SCRecordSessionManager sharedInstance] saveRecordSession:_recorder.session];
     [self.tableView reloadData];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [[SCRecordSessionManager sharedInstance] saveRecordSession:_recorder.recordSession];
+    [[SCRecordSessionManager sharedInstance] saveRecordSession:_recorder.session];
     NSDictionary *recordSessionMetadata = [[SCRecordSessionManager sharedInstance].savedRecordSessions objectAtIndex:indexPath.row];
     
     SCRecordSession *newRecordSession = [SCRecordSession recordSession:recordSessionMetadata];
-    _recorder.recordSession = newRecordSession;
+    _recorder.session = newRecordSession;
     
     [self.navigationController popViewControllerAnimated:YES];
 }
@@ -58,7 +58,7 @@
     if (recordSegments.count > 0) {
         NSString *filename = recordSegments.firstObject;
         NSString *directory = recordSession[SCRecordSessionDirectoryKey];
-        NSURL *url = [SCRecordSession recordSegmentURLForFilename:filename andDirectory:directory];
+        NSURL *url = [SCRecordSession segmentURLForFilename:filename andDirectory:directory];
         
         [cell.videoPlayerView.player setItemByUrl:url];
     }
@@ -78,8 +78,8 @@
     
     [[SCRecordSessionManager sharedInstance] removeRecordSessionAtIndex:indexPath.row];
     
-    if ([_recorder.recordSession.identifier isEqualToString:[recordSession objectForKey:SCRecordSessionIdentifierKey]]) {
-        _recorder.recordSession = nil;
+    if ([_recorder.session.identifier isEqualToString:[recordSession objectForKey:SCRecordSessionIdentifierKey]]) {
+        _recorder.session = nil;
     }
     
     [tableView beginUpdates];

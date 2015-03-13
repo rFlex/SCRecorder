@@ -33,15 +33,32 @@
     _recorder.photoConfiguration.enabled = NO;
     _recorder.videoConfiguration.enabled = NO;
     
-    [_recorder openSession:^(NSError *sessionError, NSError *audioError, NSError *videoError, NSError *photoError) {
-        if (audioError != nil) {
-            [self showError:audioError];
-        } else {
-            [_recorder startRunningSession];
+    if (![_recorder prepare]) {
+        if (_recorder.audioError != nil) {
+            [self showError:_recorder.videoError];
+        } else if (_recorder.sessionError != nil) {
+            [self showError:_recorder.sessionError];
+        } else if (_recorder.photoError != nil) {
+            [self showError:_recorder.photoError];
+        } else if (_recorder.audioError != nil) {
+            [self showError:_recorder.audioError];
         }
-    }];
+    }
+    
     [self hidePlayControl:NO];
     [self createSession];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    [_recorder startRunning];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    
+    [_recorder stopRunning];
 }
 
 - (void)dealloc {
@@ -57,7 +74,7 @@
     session.fileType = AVFileTypeAppleM4A;
     [self updateRecordTimeLabel:kCMTimeZero];
     
-    _recorder.recordSession = session;
+    _recorder.session = session;
 }
 
 - (void)updateRecordTimeLabel:(CMTime)time {
@@ -106,9 +123,9 @@
     [_recorder pause:^{
         [self deleteRecordSession];
         [self showPlayControl:YES];
-        _recordSession = _recorder.recordSession;
+        _recordSession = _recorder.session;
         
-        AVAsset *asset = _recordSession.assetRepresentingRecordSegments;
+        AVAsset *asset = _recordSession.assetRepresentingSegments;
         self.playSlider.maximumValue = CMTimeGetSeconds(asset.duration);
         [self.player setItemByAsset:asset];
         

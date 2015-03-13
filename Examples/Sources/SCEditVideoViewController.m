@@ -30,21 +30,10 @@
     NSMutableArray *thumbnails = [NSMutableArray new];
     NSInteger i = 0;
     
-    for (NSURL *url in self.recordSession.recordSegments) {
-        AVURLAsset *asset = [AVURLAsset assetWithURL:url];
-        
-        NSInteger currentIndex = i;
-        AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
-        [imageGenerator generateCGImagesAsynchronouslyForTimes:@[[NSValue valueWithCMTime:kCMTimeZero]] completionHandler:^(CMTime requestedTime, CGImageRef image, CMTime actualTime, AVAssetImageGeneratorResult result, NSError *error) {
-            if (image != nil) {
-                UIImage *uiImage = [UIImage imageWithCGImage:image];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    UIImageView *imageView = [thumbnails objectAtIndex:currentIndex];
-                    imageView.image = uiImage;
-                });
-            }
-        }];
+    for (SCRecordSessionSegment *segment in self.recordSession.segments) {
         UIImageView *imageView = [[UIImageView alloc] init];
+        imageView.contentMode = UIViewContentModeScaleAspectFill;
+        imageView.image = segment.thumbnail;
         UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchedVideo:)];
         imageView.userInteractionEnabled = YES;
         
@@ -80,9 +69,9 @@
         idx = 0;
     }
     
-    if (idx < _recordSession.recordSegments.count) {
-        NSURL *url = [_recordSession.recordSegments objectAtIndex:idx];
-        [self.videoPlayerView.player setItemByUrl:url];
+    if (idx < _recordSession.segments.count) {
+        SCRecordSessionSegment *segment = [_recordSession.segments objectAtIndex:idx];
+        [self.videoPlayerView.player setItemByAsset:segment.asset];
         [self.videoPlayerView.player play];
     }
     
@@ -106,7 +95,7 @@
 }
 
 - (IBAction)deletePressed:(id)sender {
-    if (_currentSelected < _recordSession.recordSegments.count) {
+    if (_currentSelected < _recordSession.segments.count) {
         [_recordSession removeSegmentAtIndex:_currentSelected deleteFile:YES];
         UIImageView *imageView = [_thumbnails objectAtIndex:_currentSelected];
         [_thumbnails removeObjectAtIndex:_currentSelected];
@@ -117,7 +106,7 @@
             [imageView removeFromSuperview];
         }];
         
-        [self showVideo:_currentSelected % _recordSession.recordSegments.count];
+        [self showVideo:_currentSelected % _recordSession.segments.count];
     }
 }
 @end
