@@ -89,7 +89,7 @@
     self.focusView.outsideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
     self.focusView.insideFocusTargetImage = [UIImage imageNamed:@"capture_flip"];
 
-    _recorder.initializeSessionLazily = YES;
+    _recorder.initializeSessionLazily = NO;
     
     if (![_recorder prepare]) {
         NSLog(@"Session error: %@", _recorder.sessionError.description);

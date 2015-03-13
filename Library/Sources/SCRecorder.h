@@ -400,11 +400,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (UIImage *)snapshotOfLastVideoBuffer;
 
 /**
- Get an image representing the last appended video buffer
- */
-- (UIImage *)snapshotOfLastAppendedVideoBuffer;
-
-/**
  Returns a shared recorder if you want to use the same instance throughout your app.
  */
 + (SCRecorder *)sharedRecorder;

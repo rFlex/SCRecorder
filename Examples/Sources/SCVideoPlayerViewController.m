@@ -39,24 +39,32 @@
 {
     [super viewDidLoad];
     
-    self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
-    self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFit;
-    
-    self.filterSwitcherView.filterGroups = @[
-                                             [NSNull null],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectNoir"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectChrome"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectTonal"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectFade"]],
-                                             // Adding a filter created using CoreImageShop
-                                             [SCFilterGroup filterGroupWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]]
-                                             ];
-    
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleBordered target:self action:@selector(saveToCameraRoll)];
     
 	_player = [SCPlayer player];
-    _player.CIImageRenderer = self.filterSwitcherView;
+    
+    if ([[NSProcessInfo processInfo] activeProcessorCount] > 1) {
+        self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
+        self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFit;
+        
+        self.filterSwitcherView.filterGroups = @[
+                                                 [NSNull null],
+                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectNoir"]],
+                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectChrome"]],
+                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]],
+                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectTonal"]],
+                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectFade"]],
+                                                 // Adding a filter created using CoreImageShop
+                                                 [SCFilterGroup filterGroupWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]]
+                                                 ];
+        _player.CIImageRenderer = self.filterSwitcherView;
+    } else {
+        SCVideoPlayerView *playerView = [[SCVideoPlayerView alloc] initWithPlayer:_player];
+        playerView.frame = self.filterSwitcherView.frame;
+        playerView.autoresizingMask = self.filterSwitcherView.autoresizingMask;
+        [self.filterSwitcherView.superview insertSubview:playerView aboveSubview:self.filterSwitcherView];
+        [self.filterSwitcherView removeFromSuperview];
+    }
     
 	_player.loopEnabled = YES;
 }
