@@ -55,6 +55,8 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (void)recorder:(SCRecorder *)recorder didSkipVideoSampleBufferInSession:(SCRecordSession *)session;
 - (void)recorder:(SCRecorder *)recorder didCompleteSession:(SCRecordSession *)session;
 
+- (NSDictionary *)createSegmentInfoForRecorder:(SCRecorder *)recorder;
+
 @end
 
 
@@ -234,13 +236,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  */
 @property (readonly, nonatomic) CGPoint focusPointOfInterest;
 
-@property (readonly, nonatomic) NSError *videoError;
-
-@property (readonly, nonatomic) NSError *audioError;
-
-@property (readonly, nonatomic) NSError *photoError;
-
-@property (readonly, nonatomic) NSError *sessionError;
+@property (readonly, nonatomic) NSError *error;
 
 /**
  The underlying AVCaptureVideoDataOutput
@@ -273,9 +269,8 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Create the AVCaptureSession
  Calling this method will set the captureSesion and configure it properly.
  If an error occured during the creation of the captureSession, this methods will return NO.
- The errors can be found on the videoError, audioError, photoError and sessionError properties
  */
-- (BOOL)prepare;
+- (BOOL)prepare:(NSError **)error;
 
 /**
  Close and destroy the AVCaptureSession.

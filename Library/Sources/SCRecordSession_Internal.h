@@ -22,6 +22,7 @@
     int _currentSegmentCount;
     CMTime _timeOffset;
     CMTime _lastTimeAudio;
+    CMTime _currentSegmentDuration;
     
     SCVideoConfiguration *_videoConfiguration;
     SCAudioConfiguration *_audioConfiguration;
@@ -29,7 +30,6 @@
     AVAssetWriterInputPixelBufferAdaptor *_videoPixelBufferAdaptor;
     CMTime _lastTimeVideo;
     
-    dispatch_queue_t _videoQueue;
     dispatch_queue_t _audioQueue;
     
     // Used when the fastRecordMethod is enabled
@@ -59,6 +59,6 @@
 
 - (void)beginRecordSegmentUsingMovieFileOutput:(AVCaptureMovieFileOutput *)movieFileOutput error:(NSError **)error delegate:(id<AVCaptureFileOutputRecordingDelegate>)delegate;
 
-- (void)appendRecordSegment:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler error:(NSError *)error url:(NSURL *)url duration:(CMTime)duration;
+- (void)appendRecordSegmentUrl:(NSURL *)url info:(NSDictionary *)info duration:(CMTime)duration error:(NSError *)error completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler;
 
 @end

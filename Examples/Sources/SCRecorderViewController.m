@@ -91,11 +91,9 @@
 
     _recorder.initializeSessionLazily = NO;
     
-    if (![_recorder prepare]) {
-        NSLog(@"Session error: %@", _recorder.sessionError.description);
-        NSLog(@"Audio error : %@", _recorder.audioError.description);
-        NSLog(@"Video error: %@", _recorder.videoError.description);
-        NSLog(@"Photo error: %@", _recorder.photoError.description);
+    NSError *error;
+    if (![_recorder prepare:&error]) {
+        NSLog(@"Prepare error: %@", error.localizedDescription);
     }
 }
 

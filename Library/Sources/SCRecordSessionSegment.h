@@ -18,11 +18,12 @@
 @property (readonly, nonatomic) UIImage *thumbnail;
 @property (readonly, nonatomic) UIImage *lastImage;
 @property (readonly, nonatomic) float frameRate;
+@property (readonly, nonatomic) NSDictionary *info;
 
-- (instancetype)initWithURL:(NSURL *)url;
+- (instancetype)initWithURL:(NSURL *)url info:(NSDictionary *)info;
 
 - (void)deleteFile;
 
-+ (SCRecordSessionSegment *)segmentWithURL:(NSURL *)url;
++ (SCRecordSessionSegment *)segmentWithURL:(NSURL *)url info:(NSDictionary *)info;
 
 @end

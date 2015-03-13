@@ -18,11 +18,12 @@
 
 @implementation SCRecordSessionSegment
 
-- (instancetype)initWithURL:(NSURL *)url {
+- (instancetype)initWithURL:(NSURL *)url info:(NSDictionary *)info {
     self = [self init];
     
     if (self) {
         _url = url;
+        _info = info;
     }
     
     return self;
@@ -50,6 +51,8 @@
 - (UIImage *)thumbnail {
     if (_thumbnail == nil) {
         AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:self.asset];
+        imageGenerator.appliesPreferredTrackTransform = YES;
+        
         NSError *error = nil;
         CGImageRef thumbnailImage = [imageGenerator copyCGImageAtTime:kCMTimeZero actualTime:nil error:&error];
         
@@ -66,6 +69,8 @@
 - (UIImage *)lastImage {
     if (_lastImage == nil) {
         AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:self.asset];
+        imageGenerator.appliesPreferredTrackTransform = YES;
+        
         NSError *error = nil;
         CGImageRef lastImage = [imageGenerator copyCGImageAtTime:self.duration actualTime:nil error:&error];
         
@@ -91,8 +96,8 @@
     return videoTrack.nominalFrameRate;
 }
 
-+ (SCRecordSessionSegment *)segmentWithURL:(NSURL *)url {
-    return [[SCRecordSessionSegment alloc] initWithURL:url];
++ (SCRecordSessionSegment *)segmentWithURL:(NSURL *)url info:(NSDictionary *)info {
+    return [[SCRecordSessionSegment alloc] initWithURL:url info:info];
 }
 
 @end

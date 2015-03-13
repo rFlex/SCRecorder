@@ -223,6 +223,6 @@ extern const NSString *SCRecordSessionCacheDirectory;
  If you don't remove the SCRecordSession from the SCRecorder while calling this method,
  The SCRecorder might create a new recordSegment right after automatically if it is not paused.
  */
-- (void)endSegment:(void(^)(SCRecordSessionSegment *segment, NSError *error))completionHandler;
+- (void)endSegmentWithInfo:(NSDictionary *)info completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError *error))completionHandler;
 
 @end
