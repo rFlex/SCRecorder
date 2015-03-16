@@ -15,8 +15,6 @@
 		DC23FE2117B4519100389EDA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C6A17ADDA4400E37F8F /* AVFoundation.framework */; };
 		DC23FE2217B4519A00389EDA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4B17ADD66000E37F8F /* CoreGraphics.framework */; };
 		DC23FE2317B451A100389EDA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC551C4717ADD66000E37F8F /* UIKit.framework */; };
-		DC4A878F1A362A0E00BF4213 /* EvAssetExportSession.h in Headers */ = {isa = PBXBuildFile; fileRef = DC4A878D1A362A0E00BF4213 /* EvAssetExportSession.h */; };
-		DC4A87901A362A0E00BF4213 /* EvAssetExportSession.m in Sources */ = {isa = PBXBuildFile; fileRef = DC4A878E1A362A0E00BF4213 /* EvAssetExportSession.m */; };
 		DC4CBA4D1863118E00532F1F /* SCAudioTools.h in Headers */ = {isa = PBXBuildFile; fileRef = DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */; };
 		DC4CBA4E1863118E00532F1F /* SCAudioTools.m in Sources */ = {isa = PBXBuildFile; fileRef = DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */; };
 		DC4CBA511863118E00532F1F /* SCPlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = DCF6142717D14A3700341EC2 /* SCPlayer.h */; };
@@ -86,8 +84,6 @@
 		DC3528AC17B963830077F039 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		DC3528AD17B963830077F039 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		DC36981F17AF132600F5012B /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
-		DC4A878D1A362A0E00BF4213 /* EvAssetExportSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EvAssetExportSession.h; sourceTree = "<group>"; };
-		DC4A878E1A362A0E00BF4213 /* EvAssetExportSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EvAssetExportSession.m; sourceTree = "<group>"; };
 		DC50285218E4F23F004E833F /* SCRecordSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRecordSession.h; sourceTree = "<group>"; };
 		DC50285318E4F23F004E833F /* SCRecordSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRecordSession.m; sourceTree = "<group>"; };
 		DC50285518E4FA5E004E833F /* SCRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRecorder.h; sourceTree = "<group>"; };
@@ -292,8 +288,6 @@
 		DCAA1F1E19C8FEBE002065CA /* Tools */ = {
 			isa = PBXGroup;
 			children = (
-				DC4A878D1A362A0E00BF4213 /* EvAssetExportSession.h */,
-				DC4A878E1A362A0E00BF4213 /* EvAssetExportSession.m */,
 				DC8B89C919C4A9410048FBF9 /* CIImageRendererUtils.h */,
 				DC8B89CA19C4A9410048FBF9 /* CIImageRendererUtils.m */,
 				DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */,
@@ -366,7 +360,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC4A878F1A362A0E00BF4213 /* EvAssetExportSession.h in Headers */,
 				DCA163A31A23C7C300505966 /* SCPhotoConfiguration.h in Headers */,
 				DCA163991A2028C400505966 /* SCAudioConfiguration.h in Headers */,
 				DCA163951A2028B800505966 /* SCVideoConfiguration.h in Headers */,
@@ -485,7 +478,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC50285A18E52023004E833F /* SCRecordSession.m in Sources */,
-				DC4A87901A362A0E00BF4213 /* EvAssetExportSession.m in Sources */,
 				DC23C1C81AAF95600013E14C /* SCRecordSessionSegment.m in Sources */,
 				DCB041681924663700D945D2 /* SCAssetExportSession.m in Sources */,
 				DCA163961A2028B800505966 /* SCVideoConfiguration.m in Sources */,

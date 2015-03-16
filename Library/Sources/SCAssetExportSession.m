@@ -127,6 +127,12 @@
 
 - (void)beginReadWriteOnInput:(AVAssetWriterInput *)input fromOutput:(AVAssetReaderOutput *)output {
     if (input != nil) {
+        id<SCAssetExportSessionDelegate> delegate = self.delegate;
+        
+        if ([delegate respondsToSelector:@selector(assetExportSession:shouldReginReadWriteOnInput:fromOutput:)] && ![delegate assetExportSession:self shouldReginReadWriteOnInput:input fromOutput:output]) {
+            return;
+        }
+        
         dispatch_group_enter(_dispatchGroup);
         [input requestMediaDataWhenReadyOnQueue:_dispatchQueue usingBlock:^{
             BOOL shouldReadNextBuffer = YES;
@@ -198,6 +204,12 @@
 }
 
 - (BOOL)needsInputPixelBufferAdaptor {
+    id<SCAssetExportSessionDelegate> delegate = self.delegate;
+
+    if ([delegate respondsToSelector:@selector(assetExportSessionNeedsInputPixelBufferAdaptor:)] && [delegate assetExportSessionNeedsInputPixelBufferAdaptor:self]) {
+        return YES;
+    }
+    
     return _ciContext != nil;
 }
 

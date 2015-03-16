@@ -12,6 +12,15 @@
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
 
+@class SCAssetExportSession;
+@protocol SCAssetExportSessionDelegate <NSObject>
+
+- (BOOL)assetExportSession:(SCAssetExportSession *)assetExportSession shouldReginReadWriteOnInput:(AVAssetWriterInput *)writerInput fromOutput:(AVAssetReaderOutput *)output;
+
+- (BOOL)assetExportSessionNeedsInputPixelBufferAdaptor:(SCAssetExportSession *)assetExportSession;
+
+@end
+
 @interface SCAssetExportSession : NSObject
 
 /**
@@ -46,6 +55,8 @@
 
 // If an error occured during the export, this will contain that error
 @property (readonly, nonatomic) NSError *error;
+
+@property (weak, nonatomic) id<SCAssetExportSessionDelegate> delegate;
 
 - (id)init;
 
