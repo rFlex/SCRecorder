@@ -124,6 +124,10 @@
     return [[SCFilterGroup alloc] initWithFilters:[NSArray new]];
 }
 
++ (SCFilterGroup *)filterGroupWithFilterName:(NSString *)filterName {
+    return [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:filterName]];
+}
+
 + (SCFilterGroup *)filterGroupWithFilter:(SCFilter *)filter {
     return [[SCFilterGroup alloc] initWithFilter:filter];
 }

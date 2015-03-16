@@ -232,7 +232,6 @@ static char* ItemChanged = "CurrentItemContext";
                     }
                 }
                 
-                
                 [renderer setPreferredCIImageTransform:transform];
             }
         }

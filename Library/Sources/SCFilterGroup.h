@@ -54,6 +54,8 @@
 
 + (SCFilterGroup *)emptyFilterGroup;
 
++ (SCFilterGroup *)filterGroupWithFilterName:(NSString *)filterName;
+
 + (SCFilterGroup *)filterGroupWithFilter:(SCFilter *)filter;
 
 + (SCFilterGroup *)filterGroupWithFilters:(NSArray *)filters;
