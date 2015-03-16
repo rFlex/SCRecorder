@@ -180,7 +180,7 @@
     NSURL *url = info[UIImagePickerControllerMediaURL];
     [picker dismissViewControllerAnimated:YES completion:nil];
     
-    SCRecordSessionSegment *segment = [SCRecordSessionSegment segmentWithURL:url];
+    SCRecordSessionSegment *segment = [SCRecordSessionSegment segmentWithURL:url info:nil];
     
     [_recorder.session addSegment:segment];
     _recordSession = [SCRecordSession recordSession];
@@ -209,7 +209,7 @@
         
         // If the recordSession was saved, we don't want to completely destroy it
         if ([[SCRecordSessionManager sharedInstance] isSaved:recordSession]) {
-            [recordSession endSegment:nil];
+            [recordSession endSegmentWithInfo:nil completionHandler:nil];
         } else {
             [recordSession cancelSession:nil];
         }

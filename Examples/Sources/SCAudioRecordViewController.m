@@ -33,16 +33,9 @@
     _recorder.photoConfiguration.enabled = NO;
     _recorder.videoConfiguration.enabled = NO;
     
-    if (![_recorder prepare]) {
-        if (_recorder.audioError != nil) {
-            [self showError:_recorder.videoError];
-        } else if (_recorder.sessionError != nil) {
-            [self showError:_recorder.sessionError];
-        } else if (_recorder.photoError != nil) {
-            [self showError:_recorder.photoError];
-        } else if (_recorder.audioError != nil) {
-            [self showError:_recorder.audioError];
-        }
+    NSError *error;
+    if (![_recorder prepare:&error]) {
+        [self showError:error];
     }
     
     [self hidePlayControl:NO];
