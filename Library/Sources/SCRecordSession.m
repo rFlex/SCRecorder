@@ -845,10 +845,16 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     NSMutableArray *recordSegments = [NSMutableArray array];
     
     for (SCRecordSessionSegment *recordSegment in self.segments) {
-        [recordSegments addObject:@{
-                                    SCRecordSessionSegmentFilenameKey : recordSegment.url.lastPathComponent,
-                                    SCRecordSessionSegmentInfoKey : recordSegment.info
-                                    }];
+        if (recordSegment.info == nil) {
+            [recordSegments addObject:@{
+                                        SCRecordSessionSegmentFilenameKey : recordSegment.url.lastPathComponent
+                                        }];
+        } else {
+            [recordSegments addObject:@{
+                                        SCRecordSessionSegmentFilenameKey : recordSegment.url.lastPathComponent,
+                                        SCRecordSessionSegmentInfoKey : recordSegment.info
+                                        }];
+        }
     }
     
     return @{

@@ -90,8 +90,6 @@
         NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
         
         _context = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] options:options];
-        
-        _videoZoomFactor = 1;
     }
     
     return self;
@@ -545,24 +543,14 @@
 
 - (SCFilter *)_transformFilterUsingBufferWidth:(size_t)bufferWidth bufferHeight:(size_t)bufferHeight mirrored:(BOOL)mirrored {
     if (_transformFilter == nil || _transformFilterBufferWidth != bufferWidth || _transformFilterBufferHeight != bufferHeight) {
-        CGFloat zoomFactor = _videoZoomFactor;
-        BOOL zoomFactoryIsOne = zoomFactor == 1.0;
         BOOL shouldMirrorBuffer = _keepMirroringOnWrite && mirrored;
         
-        CGAffineTransform tx = CGAffineTransformIdentity;
-        
-        if (zoomFactoryIsOne && !shouldMirrorBuffer) {
+        if (!shouldMirrorBuffer) {
             _transformFilter = nil;
         } else {
-            if (shouldMirrorBuffer) {
-                tx = CGAffineTransformTranslate(CGAffineTransformScale(tx, -1, 1), -(CGFloat)bufferWidth, 0);
-            }
-            
-            if (!zoomFactoryIsOne) {
-                tx = CGAffineTransformTranslate(tx, ((bufferWidth * zoomFactor) - bufferWidth) / -2, ((bufferHeight * zoomFactor) - bufferHeight) / -2);
-                tx = CGAffineTransformScale(tx, zoomFactor, zoomFactor);
-            }
-            _transformFilter = [SCFilter filterWithAffineTransform:tx];
+            CGAffineTransform tx = CGAffineTransformIdentity;
+
+            _transformFilter = [SCFilter filterWithAffineTransform:CGAffineTransformTranslate(CGAffineTransformScale(tx, -1, 1), -(CGFloat)bufferWidth, 0)];
         }
         
         _transformFilterBufferWidth = bufferWidth;
@@ -976,8 +964,6 @@
 - (void)previewViewFrameChanged {
     _previewLayer.affineTransform = CGAffineTransformIdentity;
     _previewLayer.frame = _previewView.bounds;
-    // We update the previewLayer transform again
-    self.videoZoomFactor = _videoZoomFactor;
 }
 
 #pragma mark - FOCUS
@@ -1504,12 +1490,35 @@
     });
 }
 
+- (CGFloat)videoZoomFactor {
+    AVCaptureDevice *device = [self videoDevice];
+    
+    if ([device respondsToSelector:@selector(videoZoomFactor)]) {
+        return device.videoZoomFactor;
+    }
+    
+    return 1;
+}
+
 - (void)setVideoZoomFactor:(CGFloat)videoZoomFactor {
-    dispatch_sync(_sessionQueue, ^{
-        _videoZoomFactor = videoZoomFactor;
-        _transformFilter = nil;
-    });
-    self.previewLayer.affineTransform = CGAffineTransformMakeScale(videoZoomFactor, videoZoomFactor);
+    AVCaptureDevice *device = [self videoDevice];
+    
+    if ([device respondsToSelector:@selector(videoZoomFactor)]) {
+        NSError *error;
+        if ([device lockForConfiguration:&error]) {
+            if (videoZoomFactor <= device.activeFormat.videoMaxZoomFactor) {
+                device.videoZoomFactor = videoZoomFactor;
+            } else {
+                NSLog(@"Unable to set videoZoom: (max %f, asked %f)", device.activeFormat.videoMaxZoomFactor, videoZoomFactor);
+            }
+            
+            [device unlockForConfiguration];
+        } else {
+            NSLog(@"Unable to set videoZoom: %@", error.localizedDescription);
+        }
+    } else {
+        NSLog(@"Current device does not support zoom");
+    }
 }
 
 - (void)setFastRecordMethodEnabled:(BOOL)fastRecordMethodEnabled {
