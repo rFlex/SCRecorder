@@ -452,9 +452,9 @@
 }
 
 - (void)pause:(void(^)())completionHandler {
-    dispatch_async(_sessionQueue, ^{
-        _isRecording = NO;
+    _isRecording = NO;
 
+    dispatch_async(_sessionQueue, ^{
         SCRecordSession *recordSession = _session;
         
         if (recordSession != nil) {
