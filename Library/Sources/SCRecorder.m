@@ -466,10 +466,13 @@
             if (recordSession.recordSegmentReady) {
                 NSDictionary *info = [self _createSegmentInfo];
                 if (recordSession.isUsingMovieFileOutput) {
-                    _pauseCompletionHandler = completionHandler;
                     [_movieOutputProgressTimer invalidate];
                     _movieOutputProgressTimer = nil;
-                    [recordSession endSegmentWithInfo:info completionHandler:nil];
+                    if ([recordSession endSegmentWithInfo:info completionHandler:nil]) {
+                        _pauseCompletionHandler = completionHandler;
+                    } else {
+                        dispatch_handler(completionHandler);
+                    }
                 } else {
                     [recordSession endSegmentWithInfo:info completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
                         id<SCRecorderDelegate> delegate = self.delegate;
@@ -628,7 +631,7 @@
         [_session notifyMovieFileOutputIsReady];
         
         if (!_isRecording) {
-            [self pause];
+            [self pause:_pauseCompletionHandler];
         }
     });
 }
@@ -641,9 +644,7 @@
             actualError = nil;
             hasComplete = YES;
         }
-        
-        [_session notifyMovieFileOutputIsReady];
-        
+                
         [_session appendRecordSegmentUrl:outputFileURL info:[self _createSegmentInfo] error:actualError completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
             void (^pauseCompletionHandler)() = _pauseCompletionHandler;
             _pauseCompletionHandler = nil;

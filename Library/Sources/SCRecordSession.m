@@ -466,11 +466,14 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     }];
 }
 
-- (void)endSegmentWithInfo:(NSDictionary *)info completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler {
+- (BOOL)endSegmentWithInfo:(NSDictionary *)info completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler {
+    __block BOOL success = NO;
+    
     [self dispatchSyncOnSessionQueue:^{
         dispatch_sync(_audioQueue, ^{
             if (_recordSegmentReady) {
                 _recordSegmentReady = NO;
+                success = YES;
                 
                 AVAssetWriter *writer = _assetWriter;
                 
@@ -493,7 +496,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
                     } else {
                         //                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_currentSegmentDuration));
                         [writer endSessionAtSourceTime:_currentSegmentDuration];
-                        
+
                         [writer finishWritingWithCompletionHandler: ^{
                             [self appendRecordSegmentUrl:writer.outputURL info:info error:writer.error completionHandler:completionHandler];
                         }];
@@ -510,6 +513,8 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             }
         });
     }];
+    
+    return success;
 }
 
 - (void)notifyMovieFileOutputIsReady {
