@@ -38,7 +38,6 @@
     NSTimer *_movieOutputProgressTimer;
     CMTime _lastMovieFileOutputTime;
     void(^_pauseCompletionHandler)();
-    
     SCFilter *_transformFilter;
     size_t _transformFilterBufferWidth;
     size_t _transformFilterBufferHeight;
@@ -435,16 +434,22 @@
 }
 
 - (void)record {
-    dispatch_sync(_sessionQueue, ^{
+    void (^block)() = ^{
         _isRecording = YES;
         if (_movieOutput != nil && _session != nil) {
             _movieOutput.maxRecordedDuration = self.maxRecordDuration;
             [self beginRecordSegmentIfNeeded:_session];
             if (_movieOutputProgressTimer == nil) {
-                [NSTimer scheduledTimerWithTimeInterval:1.0 / 60.0 target:self selector:@selector(_progressTimerFired:) userInfo:nil repeats:YES];
+                _movieOutputProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 / 60.0 target:self selector:@selector(_progressTimerFired:) userInfo:nil repeats:YES];
             }
         }
-    });
+    };
+    
+    if ([SCRecorder isSessionQueue]) {
+        block();
+    } else {
+        dispatch_sync(_sessionQueue, block);
+    }
 }
 
 - (void)pause {
@@ -453,8 +458,8 @@
 
 - (void)pause:(void(^)())completionHandler {
     _isRecording = NO;
-
-    dispatch_async(_sessionQueue, ^{
+    
+    void (^block)() = ^{
         SCRecordSession *recordSession = _session;
         
         if (recordSession != nil) {
@@ -482,24 +487,35 @@
         } else {
             dispatch_handler(completionHandler);
         }
-    });
+    };
+    
+    if ([SCRecorder isSessionQueue]) {
+        block();
+    } else {
+        dispatch_async(_sessionQueue, block);
+    }
 }
 
 + (NSError*)createError:(NSString*)errorDescription {
-    return [NSError errorWithDomain:@"SCRecorder" code:200 userInfo:@{NSLocalizedDescriptionKey : errorDescription}];
+    return [NSError errorWithDomain:@"SCRecorder" code:200 userInfo:@{ NSLocalizedDescriptionKey : errorDescription }];
 }
 
 - (void)beginRecordSegmentIfNeeded:(SCRecordSession *)recordSession {
     if (!recordSession.recordSegmentBegan) {
         NSError *error = nil;
+        BOOL beginSegment = YES;
         if (_movieOutput != nil && self.fastRecordMethodEnabled) {
-            [recordSession beginRecordSegmentUsingMovieFileOutput:_movieOutput error:&error delegate:self];
+            if (recordSession.recordSegmentReady || !recordSession.isUsingMovieFileOutput) {
+                [recordSession beginRecordSegmentUsingMovieFileOutput:_movieOutput error:&error delegate:self];
+            } else {
+                beginSegment = NO;
+            }
         } else {
             [recordSession beginSegment:&error];
         }
         
         id<SCRecorderDelegate> delegate = self.delegate;
-        if ([delegate respondsToSelector:@selector(recorder:didBeginRecordSegment:error:)]) {
+        if (beginSegment && [delegate respondsToSelector:@selector(recorder:didBeginSegmentInSession:error:)]) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [delegate recorder:self didBeginSegmentInSession:recordSession error:error];
             });
@@ -605,6 +621,57 @@
 
         completion(success);
     }];
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput didStartRecordingToOutputFileAtURL:(NSURL *)fileURL fromConnections:(NSArray *)connections {
+    dispatch_async(_sessionQueue, ^{
+        [_session notifyMovieFileOutputIsReady];
+        
+        if (!_isRecording) {
+            [self pause];
+        }
+    });
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray *)connections error:(NSError *)error {
+    dispatch_async(_sessionQueue, ^{
+        BOOL hasComplete = NO;
+        NSError *actualError = error;
+        if ([actualError.localizedDescription isEqualToString:@"Recording Stopped"]) {
+            actualError = nil;
+            hasComplete = YES;
+        }
+        
+        [_session notifyMovieFileOutputIsReady];
+        
+        [_session appendRecordSegmentUrl:outputFileURL info:[self _createSegmentInfo] error:actualError completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
+            void (^pauseCompletionHandler)() = _pauseCompletionHandler;
+            _pauseCompletionHandler = nil;
+            
+            SCRecordSession *recordSession = _session;
+            
+            if (recordSession != nil) {
+                id<SCRecorderDelegate> delegate = self.delegate;
+                if ([delegate respondsToSelector:@selector(recorder:didCompleteSegment:inSession:error:)]) {
+                    [delegate recorder:self didCompleteSegment:segment inSession:recordSession error:error];
+                }
+                
+                if (hasComplete || (CMTIME_IS_VALID(_maxRecordDuration) && CMTIME_COMPARE_INLINE(recordSession.currentRecordDuration, >=, _maxRecordDuration))) {
+                    if ([delegate respondsToSelector:@selector(recorder:didCompleteSession:)]) {
+                        [delegate recorder:self didCompleteSession:recordSession];
+                    }
+                }
+            }
+            
+            if (pauseCompletionHandler != nil) {
+                pauseCompletionHandler();
+            }
+        }];
+        
+        if (_isRecording) {
+            [self record];
+        }
+    });
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -762,41 +829,6 @@
     }
     
     return segmentInfo;
-}
-
-- (void)captureOutput:(AVCaptureFileOutput *)captureOutput didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray *)connections error:(NSError *)error {
-    CMTime recordedDuration = captureOutput.recordedDuration;
-    BOOL hasComplete = NO;
-    if ([error.localizedDescription isEqualToString:@"Recording Stopped"]) {
-        error = nil;
-        hasComplete = YES;
-    }
-    
-    dispatch_sync(_sessionQueue, ^{
-        [_session appendRecordSegmentUrl:outputFileURL info:[self _createSegmentInfo] duration:recordedDuration error:error completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
-            void (^pauseCompletionHandler)() = _pauseCompletionHandler;
-            _pauseCompletionHandler = nil;
-            
-            SCRecordSession *recordSession = _session;
-            
-            if (recordSession != nil) {
-                id<SCRecorderDelegate> delegate = self.delegate;
-                if ([delegate respondsToSelector:@selector(recorder:didCompleteSegment:inSession:error:)]) {
-                    [delegate recorder:self didCompleteSegment:segment inSession:recordSession error:error];
-                }
-                
-                if (hasComplete || (CMTIME_IS_VALID(_maxRecordDuration) && CMTIME_COMPARE_INLINE(recordedDuration, >=, _maxRecordDuration))) {
-                    if ([delegate respondsToSelector:@selector(recorder:didCompleteSession:)]) {
-                        [delegate recorder:self didCompleteSession:recordSession];
-                    }
-                }
-            }
-            
-            if (pauseCompletionHandler != nil) {
-                pauseCompletionHandler();
-            }
-        }];
-    });
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -1516,8 +1548,6 @@
         } else {
             NSLog(@"Unable to set videoZoom: %@", error.localizedDescription);
         }
-    } else {
-        NSLog(@"Current device does not support zoom");
     }
 }
 

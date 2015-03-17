@@ -19,6 +19,7 @@
     BOOL _recordSegmentReady;
     BOOL _currentSegmentHasVideo;
     BOOL _currentSegmentHasAudio;
+    
     int _currentSegmentCount;
     CMTime _timeOffset;
     CMTime _lastTimeAudio;
@@ -59,6 +60,8 @@
 
 - (void)beginRecordSegmentUsingMovieFileOutput:(AVCaptureMovieFileOutput *)movieFileOutput error:(NSError **)error delegate:(id<AVCaptureFileOutputRecordingDelegate>)delegate;
 
-- (void)appendRecordSegmentUrl:(NSURL *)url info:(NSDictionary *)info duration:(CMTime)duration error:(NSError *)error completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler;
+- (void)notifyMovieFileOutputIsReady;
+
+- (void)appendRecordSegmentUrl:(NSURL *)url info:(NSDictionary *)info error:(NSError *)error completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler;
 
 @end

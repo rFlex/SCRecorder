@@ -154,7 +154,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     }];
 }
 
-
 - (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile {
     [self dispatchSyncOnSessionQueue:^{
         SCRecordSessionSegment *segment = [_segments objectAtIndex:segmentIndex];
@@ -166,8 +165,13 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 //            NSLog(@"Removed duration of %fs", CMTimeGetSeconds(segmentDuration));
             _segmentsDuration = CMTimeSubtract(_segmentsDuration, segmentDuration);
         } else {
-            NSLog(@"Removed invalid segment index %d. Recomputing duration manually", (int)segmentIndex);
-            _segmentsDuration = self.assetRepresentingSegments.duration;
+            CMTime newDuration = kCMTimeZero;
+            for (SCRecordSessionSegment *segment in _segments) {
+                if (CMTIME_IS_VALID(segment.duration)) {
+                    newDuration = CMTimeAdd(newDuration, segment.duration);
+                }
+            }
+            _segmentsDuration = newDuration;
         }
         
         if (deleteFile) {
@@ -384,36 +388,16 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 }
 
 - (void)addSegment:(SCRecordSessionSegment *)segment {
-    CMTime duration = segment.duration;
-    
-    if (CMTIME_IS_VALID(duration)) {
-        [self _addSegment:segment duration:duration];
-    } else {
-        NSLog(@"Unable to read asset at url %@", segment.url);
-    }
-}
-
-- (void)insertSegment:(SCRecordSessionSegment *)segment atIndex:(NSInteger)segmentIndex {
-    CMTime duration = segment.duration;
-    
-    if (CMTIME_IS_VALID(duration)) {
-        [self _insertSegment:segment atIndex:segmentIndex duration:duration];
-    } else {
-        NSLog(@"Unable to read asset at url %@", segment.url);
-    }
-}
-
-- (void)_addSegment:(SCRecordSessionSegment *)segment duration:(CMTime)duration {
     [self dispatchSyncOnSessionQueue:^{
         [_segments addObject:segment];
-        _segmentsDuration = CMTimeAdd(_segmentsDuration, duration);
+        _segmentsDuration = CMTimeAdd(_segmentsDuration, segment.duration);
     }];
 }
 
-- (void)_insertSegment:(SCRecordSessionSegment *)segment atIndex:(NSInteger)segmentIndex duration:(CMTime)duration {
+- (void)insertSegment:(SCRecordSessionSegment *)segment atIndex:(NSInteger)segmentIndex {
     [self dispatchSyncOnSessionQueue:^{
         [_segments insertObject:segment atIndex:segmentIndex];
-        _segmentsDuration = CMTimeAdd(_segmentsDuration, duration);
+        _segmentsDuration = CMTimeAdd(_segmentsDuration, segment.duration);
     }];
 }
 
@@ -463,13 +447,13 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     _movieFileOutput = nil;
 }
 
-- (void)appendRecordSegmentUrl:(NSURL *)url info:(NSDictionary *)info duration:(CMTime)duration error:(NSError *)error completionHandler:(void (^)(SCRecordSessionSegment *, NSError *))completionHandler {
+- (void)appendRecordSegmentUrl:(NSURL *)url info:(NSDictionary *)info error:(NSError *)error completionHandler:(void (^)(SCRecordSessionSegment *, NSError *))completionHandler {
     [self dispatchSyncOnSessionQueue:^{
         SCRecordSessionSegment *segment = nil;
         
         if (error == nil) {
             segment = [SCRecordSessionSegment segmentWithURL:url info:info];
-            [self _addSegment:segment duration:duration];
+            [self addSegment:segment];
         }
         
         [self _destroyAssetWriter];
@@ -511,7 +495,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
                         [writer endSessionAtSourceTime:_currentSegmentDuration];
                         
                         [writer finishWritingWithCompletionHandler: ^{
-                            [self appendRecordSegmentUrl:writer.outputURL info:info duration:_currentSegmentDuration error:writer.error completionHandler:completionHandler];
+                            [self appendRecordSegmentUrl:writer.outputURL info:info error:writer.error completionHandler:completionHandler];
                         }];
                     }
                 } else {
@@ -528,12 +512,21 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     }];
 }
 
+- (void)notifyMovieFileOutputIsReady {
+    _recordSegmentReady = YES;
+}
+
 - (void)beginRecordSegmentUsingMovieFileOutput:(AVCaptureMovieFileOutput *)movieFileOutput error:(NSError *__autoreleasing *)error delegate:(id<AVCaptureFileOutputRecordingDelegate>)delegate {
     NSURL *url = [self nextFileURL:error];
     
     if (url != nil) {
         _movieFileOutput = movieFileOutput;
-        _recordSegmentReady = YES;
+                
+        if (movieFileOutput.isRecording) {
+            [NSException raise:@"AlreadyRecordingException" format:@"The MovieFileOutput is already recording"];
+        }
+        
+        _recordSegmentReady = NO;
         [movieFileOutput startRecordingToOutputFileURL:url recordingDelegate:delegate];
     }
 }
@@ -834,7 +827,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 }
 
 - (CMTime)currentSegmentDuration {
-    return _movieFileOutput == nil ? _currentSegmentDuration : _movieFileOutput.recordedDuration;
+    return _movieFileOutput.isRecording ? _movieFileOutput.recordedDuration : _currentSegmentDuration;
 }
 
 - (CMTime)currentRecordDuration {
