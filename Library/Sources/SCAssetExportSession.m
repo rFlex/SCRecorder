@@ -332,15 +332,13 @@
     }
     
     NSArray *videoTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeVideo];
-    CGSize videoSize = CGSizeZero;
+    CGSize outputBufferSize = CGSizeZero;
     AVAssetTrack *videoTrack = nil;
     if (videoTracks.count > 0 && self.videoConfiguration.enabled && !self.videoConfiguration.shouldIgnore) {
         videoTrack = [videoTracks objectAtIndex:0];
 
         // Input
         NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:videoTrack.naturalSize];
-        videoSize.width = [videoSettings[AVVideoWidthKey] doubleValue];
-        videoSize.height = [videoSettings[AVVideoHeightKey] doubleValue];
         
         _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];
         if (_videoConfiguration.keepInputAffineTransform) {
@@ -365,11 +363,13 @@
         AVAssetReaderOutput *reader = nil;
         
         if (videoComposition == nil) {
+            outputBufferSize = videoTrack.naturalSize;
             reader = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:settings];
         } else {
             AVAssetReaderVideoCompositionOutput *videoCompositionOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:settings];
             videoCompositionOutput.videoComposition = videoComposition;
             reader = videoCompositionOutput;
+            outputBufferSize = videoComposition.renderSize;
         }
         
         reader.alwaysCopiesSampleData = NO;
@@ -387,7 +387,7 @@
     EnsureSuccess(error, completionHandler);
     
     [self setupCoreImage:videoTrack];
-    [self setupPixelBufferAdaptor:videoTrack.naturalSize];
+    [self setupPixelBufferAdaptor:outputBufferSize];
     
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);
