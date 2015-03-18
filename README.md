@@ -122,12 +122,56 @@ photo.enabled = NO;
 Playing back your recording
 ----------------
 
+SCRecorder provides two easy classes to play a video/audio asset: [SCPlayer](Library/Sources/SCPlayer.h) and [SCVideoPlayerView](Library/Sources/SCVideoPlayerView.h).
+
+SCPlayer is a subclass of AVPlayer that adds some methods to make it easier to use. Plus, it also adds the ability to use a filter renderer, to apply a live filter on a video. 
+
 ```objective-c
-	SCVideoPlayerView *playerView = ... // Some instance of an SCVideoPlayerView
 	SCRecordSession *recordSession = ... // Some instance of a record session
 	
+	// Create an instance of SCPlayer
+	SCPlayer *player = [SCPlayer player];
+	
+	// Set the current playerItem using an asset representing the segments
+	// of an SCRecordSession
+	[player setItemByAsset:recordSession.assetRepresentingSegments];
+	
+	UIView *view = ... // Some view that will get the video
+	
+	// Create and add an AVPlayerLayer
+	AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:player];
+	playerLayer.frame = view.bounds;
+	[view.layer.addSublayer:playerLayer];
+	
+	// Start playing the asset and render it into the view
+	[player play];
+	
+	// Render the video directly through a filter
+	SCImageView *SCImageView = [[SCImageView alloc] initWithFrame:view.bounds];
+	SCImageView.filterGroup = [SCFilterGroup filterGroupWithName:@"CIPhotoEffectInstant"];
+	
+	player.CIImageRenderer = SCImageView;
+	
+	[view addSubview:SCImageView];
+```
+
+SCVideoPlayerView is a subclass of UIView that holds an SCPlayer. The video buffers are rendered directly in this view. It removes the need to handle the creation of an AVPlayerLayer and makes it really easy to play a video in your app.
+
+```objective-c
+	SCRecordSession *recordSession = ... // Some instance of a record session
+	
+	SCVideoPlayerView *playerView = // Your instance somewhere
+	
+	// Set the current playerItem using an asset representing the segments
+	// of an SCRecordSession
 	[playerView.player setItemByAsset:recordSession.assetRepresentingSegments];
+	
+	// Start playing the asset and render it into the view
 	[playerView.player play];
+	
+	// Render the video directly through a filter
+	playerView.SCImageViewEnabled = YES;
+	playerView.SCImageView.filterGroup = [SCFilterGroup filterGroupWithName:@"CIPhotoEffectInstant"];
 ```
 
 Editing your recording
