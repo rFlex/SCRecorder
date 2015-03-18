@@ -79,14 +79,6 @@
     [CIImageRendererUtils putUIImage:image toRenderer:self];
 }
 
-- (void)setImage:(CIImage *)image {
-    self.CIImage = image;
-}
-
-- (CIImage *)image {
-    return self.CIImage;
-}
-
 - (void)setCIImage:(CIImage *)CIImage {
     _CIImage = CIImage;
     
