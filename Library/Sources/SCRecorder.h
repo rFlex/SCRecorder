@@ -21,44 +21,7 @@
 #import "SCAudioConfiguration.h"
 #import "SCPhotoConfiguration.h"
 #import "SCRecorderTools.h"
-
-typedef NS_ENUM(NSInteger, SCFlashMode) {
-    SCFlashModeOff  = AVCaptureFlashModeOff,
-    SCFlashModeOn   = AVCaptureFlashModeOn,
-    SCFlashModeAuto = AVCaptureFlashModeAuto,
-    SCFlashModeLight
-};
-
-@class SCRecorder;
-
-@protocol SCRecorderDelegate <NSObject>
-
-@optional
-
-// Camera stuffs
-- (void)recorder:(SCRecorder *)recorder didReconfigureVideoInput:(NSError *)videoInputError;
-- (void)recorder:(SCRecorder *)recorder didReconfigureAudioInput:(NSError *)audioInputError;
-- (void)recorder:(SCRecorder *)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError *)error;
-- (void)recorderWillStartFocus:(SCRecorder *)recorder;
-- (void)recorderDidStartFocus:(SCRecorder *)recorder;
-- (void)recorderDidEndFocus:(SCRecorder *)recorder;
-
-// session stuffs
-- (void)recorder:(SCRecorder *)recorder didInitializeAudioInSession:(SCRecordSession *)session error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didInitializeVideoInSession:(SCRecordSession *)session error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didBeginSegmentInSession:(SCRecordSession *)session error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didCompleteSegment:(SCRecordSessionSegment *)segment inSession:(SCRecordSession *)session error:(NSError *)error;
-
-- (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBufferInSession:(SCRecordSession *)session;
-- (void)recorder:(SCRecorder *)recorder didAppendAudioSampleBufferInSession:(SCRecordSession *)session;
-- (void)recorder:(SCRecorder *)recorder didSkipAudioSampleBufferInSession:(SCRecordSession *)session;
-- (void)recorder:(SCRecorder *)recorder didSkipVideoSampleBufferInSession:(SCRecordSession *)session;
-- (void)recorder:(SCRecorder *)recorder didCompleteSession:(SCRecordSession *)session;
-
-- (NSDictionary *)createSegmentInfoForRecorder:(SCRecorder *)recorder;
-
-@end
-
+#import "SCRecorderDelegate.h"
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 
@@ -283,7 +246,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Calling this method will block until it's done.
  If it returns NO, an error will be set in the "error" property.
  */
-- (BOOL)startRunning;
+- (BOOL)startRunning;
 
 /**
  End the flow of inputs in the AVCaptureSession
