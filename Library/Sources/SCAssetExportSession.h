@@ -53,8 +53,16 @@
  */
 @property (readonly, nonatomic) SCAudioConfiguration *audioConfiguration;
 
-// If an error occured during the export, this will contain that error
+/**
+ If an error occured during the export, this will contain that error
+ */
 @property (readonly, nonatomic) NSError *error;
+
+/**
+ The timeRange to read from the inputAsset
+ */
+@property (assign, nonatomic) CMTimeRange timeRange;
+
 
 @property (weak, nonatomic) id<SCAssetExportSessionDelegate> delegate;
 
@@ -63,10 +71,10 @@
 // Init with the inputAsset
 - (id)initWithAsset:(AVAsset*)inputAsset;
 
-// Starts the asynchronous execution of the export session
+/**
+ Starts the asynchronous execution of the export session
+ */
 - (void)exportAsynchronouslyWithCompletionHandler:(void(^)())completionHandler;
-
-
 
 
 //////////////////

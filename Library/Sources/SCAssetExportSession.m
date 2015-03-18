@@ -45,6 +45,7 @@
         _useGPUForRenderingFilters = YES;
         _audioConfiguration = [SCAudioConfiguration new];
         _videoConfiguration = [SCVideoConfiguration new];
+        _timeRange = CMTimeRangeMake(kCMTimeZero, kCMTimePositiveInfinity);
     }
     
     return self;
@@ -299,6 +300,7 @@
     EnsureSuccess(error, completionHandler);
     
     _reader = [AVAssetReader assetReaderWithAsset:self.inputAsset error:&error];
+    _reader.timeRange = _timeRange;
     EnsureSuccess(error, completionHandler);
     
     NSArray *audioTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeAudio];
