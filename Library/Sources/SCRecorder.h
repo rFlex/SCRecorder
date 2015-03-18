@@ -278,11 +278,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (void)unprepare;
 
 /**
- Start the flow of inputs in the AVCaptureSession.
+ Start the flow of inputs in the AVCaptureSession.
  prepare will be called if it wasn't prepared before.
  Calling this method will block until it's done.
+ If it returns NO, an error will be set in the "error" property.
  */
-- (void)startRunning;
+- (BOOL)startRunning;
 
 /**
  End the flow of inputs in the AVCaptureSession

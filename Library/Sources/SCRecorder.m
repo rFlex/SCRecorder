@@ -310,14 +310,17 @@
     return success;
 }
 
-- (void)startRunning {
+- (BOOL)startRunning {
+    BOOL success = YES;
     if (!self.isPrepared) {
-        [self prepare:nil];
+        success = [self prepare:nil];
     }
     
     if (!_captureSession.isRunning) {
         [_captureSession startRunning];
     }
+    
+    return success;
 }
 
 - (void)stopRunning {
