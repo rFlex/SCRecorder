@@ -334,7 +334,7 @@
     CMTime currentTime = kCMTimeZero;
     
     if (_recorder.session != nil) {
-        currentTime = _recorder.session.currentRecordDuration;
+        currentTime = _recorder.session.duration;
     }
     
     self.timeRecordedLabel.text = [NSString stringWithFormat:@"Recorded - %.2f sec", CMTimeGetSeconds(currentTime)];

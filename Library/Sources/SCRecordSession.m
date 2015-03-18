@@ -835,7 +835,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return _movieFileOutput.isRecording ? _movieFileOutput.recordedDuration : _currentSegmentDuration;
 }
 
-- (CMTime)currentRecordDuration {
+- (CMTime)duration {
     return CMTimeAdd(_segmentsDuration, [self currentSegmentDuration]);
 }
 

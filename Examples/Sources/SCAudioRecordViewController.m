@@ -103,7 +103,7 @@
 }
 
 - (void)recorder:(SCRecorder *)recorder didAppendAudioSampleBuffer:(SCRecordSession *)recordSession {
-    [self updateRecordTimeLabel:recordSession.currentRecordDuration];
+    [self updateRecordTimeLabel:recordSession.duration];
 }
 
 - (void)deleteRecordSession {

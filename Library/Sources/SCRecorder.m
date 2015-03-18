@@ -531,7 +531,7 @@
 }
 
 - (void)checkRecordSessionDuration:(SCRecordSession *)recordSession {
-    CMTime currentRecordDuration = recordSession.currentRecordDuration;
+    CMTime currentRecordDuration = recordSession.duration;
     CMTime suggestedMaxRecordDuration = _maxRecordDuration;
     
     if (CMTIME_IS_VALID(suggestedMaxRecordDuration)) {
@@ -661,7 +661,7 @@
                     [delegate recorder:self didCompleteSegment:segment inSession:recordSession error:error];
                 }
                 
-                if (hasComplete || (CMTIME_IS_VALID(_maxRecordDuration) && CMTIME_COMPARE_INLINE(recordSession.currentRecordDuration, >=, _maxRecordDuration))) {
+                if (hasComplete || (CMTIME_IS_VALID(_maxRecordDuration) && CMTIME_COMPARE_INLINE(recordSession.duration, >=, _maxRecordDuration))) {
                     if ([delegate respondsToSelector:@selector(recorder:didCompleteSession:)]) {
                         [delegate recorder:self didCompleteSession:recordSession];
                     }
@@ -1492,7 +1492,7 @@
     
     if (CMTIME_IS_VALID(_maxRecordDuration)) {
         Float64 maxRecordDuration = CMTimeGetSeconds(_maxRecordDuration);
-        Float64 recordedTime = CMTimeGetSeconds(_session.currentRecordDuration);
+        Float64 recordedTime = CMTimeGetSeconds(_session.duration);
         
         ratio = (CGFloat)(recordedTime / maxRecordDuration);
     }

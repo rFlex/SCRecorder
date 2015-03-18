@@ -174,8 +174,8 @@ namespace SCorsin {
 		[Export("segments")]
 		SCRecordSessionSegment[] Segments { get; }
 
-		[Export("currentRecordDuration")]
-		CMTime CurrentRecordDuration { get; }
+		[Export("duration")]
+		CMTime Duration { get; }
 
 		[Export("segmentsDuration")]
 		CMTime SegmentsDuration { get; }

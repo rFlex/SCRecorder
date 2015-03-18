@@ -193,12 +193,15 @@
  */
 @property (readonly, nonatomic) BOOL focusSupported;
 
-
 /**
  The current focus point of interest
  */
 @property (readonly, nonatomic) CGPoint focusPointOfInterest;
 
+/**
+ Will contains an error if an error occured while reconfiguring
+ the underlying AVCaptureSession.
+ */
 @property (readonly, nonatomic) NSError *error;
 
 /**
@@ -218,7 +221,7 @@
 
 /**
  The dispatch queue that the SCRecorder uses for sending messages to the attached
- SCSession.
+ SCRecordSession.
  */
 @property (readonly, nonatomic) dispatch_queue_t sessionQueue;
 

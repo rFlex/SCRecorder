@@ -75,10 +75,10 @@ extern const NSString *SCRecordSessionCacheDirectory;
 @property (readonly, nonatomic) NSArray *segments;
 
 /**
- The current record duration including the duration of
- the current recording segment, if any.
+ The duration of the whole recordSession including the current recording segment
+ and the previously added record segments.
  */
-@property (readonly, nonatomic) CMTime currentRecordDuration;
+@property (readonly, nonatomic) CMTime duration;
 
 /**
  The duration of the recorded record segments.
