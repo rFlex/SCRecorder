@@ -40,13 +40,13 @@
     
     self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFit;
     
-    self.filterSwitcherView.filterGroups = @[
-                                             [NSNull null],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectNoir"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectChrome"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectTonal"]],
-                                             [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectFade"]]
+    self.filterSwitcherView.filters = @[
+                                             [SCFilter emptyFilter],
+                                             [SCFilter filterWithCIFilterName:@"CIPhotoEffectNoir"],
+                                             [SCFilter filterWithCIFilterName:@"CIPhotoEffectChrome"],
+                                             [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"],
+                                             [SCFilter filterWithCIFilterName:@"CIPhotoEffectTonal"],
+                                             [SCFilter filterWithCIFilterName:@"CIPhotoEffectFade"]
                                              ];
 
 	// Do any additional setup after loading the view.

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
-#import "SCFilterGroup.h"
+#import "SCFilter.h"
 #import "CIImageRenderer.h"
 
 /**
@@ -25,7 +25,7 @@
  If you want to show an empty filter (no processing), just add a [NSNull null]
  entry instead of an instance of SCFilterGroup
  */
-@property (strong, nonatomic) NSArray *filterGroups;
+@property (strong, nonatomic) NSArray *filters;
 
 /**
  The CIImage to render.
@@ -37,7 +37,7 @@
  This changes when scrolling in the underlying UIScrollView.
  This value is Key-Value observable.
  */
-@property (readonly, nonatomic) SCFilterGroup *selectedFilterGroup;
+@property (readonly, nonatomic) SCFilter *selectedFilter;
 
 /**
  The preferred transform for rendering the CIImage

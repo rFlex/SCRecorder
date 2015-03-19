@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "SCFilterGroup.h"
 #import "SCRecordSessionSegment.h"
 
 #define kRecordSessionDefaultVideoCodec AVVideoCodecH264

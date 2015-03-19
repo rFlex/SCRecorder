@@ -64,8 +64,8 @@
 - (void)render:(CIImage *)image toContext:(CIContext *)context inRect:(CGRect)rect {
     CGRect extent = [image extent];
     
-    if (_selectedFilterGroup != nil) {
-        image = [_selectedFilterGroup imageByProcessingImage:image];
+    if (_selectedFilter != nil) {
+        image = [_selectedFilter imageByProcessingImage:image];
     }
     
     CGRect outputRect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
@@ -101,25 +101,20 @@
     [_glkView setNeedsDisplay];
 }
 
-- (void)setSelectedFilterGroup:(id)selectedFilterGroup {
-    if (selectedFilterGroup == [NSNull null]) {
-        selectedFilterGroup = nil;
-    }
-    
-    if (_selectedFilterGroup != selectedFilterGroup) {
-        [self willChangeValueForKey:@"selectedFilterGroup"]
+- (void)setSelectedFilter:(SCFilter *)selectedFilter {
+    if (_selectedFilter != selectedFilter) {
+        [self willChangeValueForKey:@"selectedFilter"]
         ;
-        _selectedFilterGroup = selectedFilterGroup;
+        _selectedFilter = selectedFilter;
         
-        [self didChangeValueForKey:@"selectedFilterGroup"];
+        [self didChangeValueForKey:@"selectedFilter"];
     }
 }
-
 
 - (UIImage *)currentlyDisplayedImageWithScale:(CGFloat)scale orientation:(UIImageOrientation)imageOrientation {
     CIImage *inputImage = self.CIImage;
     
-    CIImage *processedImage = [self.selectedFilterGroup imageByProcessingImage:inputImage];
+    CIImage *processedImage = [self.selectedFilter imageByProcessingImage:inputImage];
     
     if (processedImage == nil) {
         processedImage = inputImage;

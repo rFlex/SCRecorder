@@ -47,15 +47,15 @@
         self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
         self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFit;
         
-        self.filterSwitcherView.filterGroups = @[
-                                                 [NSNull null],
-                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectNoir"]],
-                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectChrome"]],
-                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]],
-                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectTonal"]],
-                                                 [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectFade"]],
+        self.filterSwitcherView.filters = @[
+                                                 [SCFilter emptyFilter],
+                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectNoir"],
+                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectChrome"],
+                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"],
+                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectTonal"],
+                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectFade"]//,
                                                  // Adding a filter created using CoreImageShop
-                                                 [SCFilterGroup filterGroupWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]]
+//                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]]
                                                  ];
         _player.CIImageRenderer = self.filterSwitcherView;
     } else {
@@ -101,7 +101,7 @@
 
 - (void)saveToCameraRoll {
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-    SCFilterGroup *currentFilter = self.filterSwitcherView.selectedFilterGroup;
+    SCFilter *currentFilter = self.filterSwitcherView.selectedFilter;
     
     void(^completionHandler)(NSURL *url, NSError *error) = ^(NSURL *url, NSError *error) {
         if (error == nil) {
@@ -113,11 +113,11 @@
         }
     };
     
-    if (currentFilter == nil) {
+    if (currentFilter == nil || currentFilter.isEmpty) {
         [self.recordSession mergeSegmentsUsingPreset:AVAssetExportPresetHighestQuality completionHandler:completionHandler];
     } else {
         SCAssetExportSession *exportSession = [[SCAssetExportSession alloc] initWithAsset:self.recordSession.assetRepresentingSegments];
-        exportSession.videoConfiguration.filterGroup = currentFilter;
+        exportSession.videoConfiguration.filter = currentFilter;
         exportSession.videoConfiguration.preset = SCPresetHighestQuality;
         exportSession.audioConfiguration.preset = SCPresetHighestQuality;
         exportSession.videoConfiguration.maxFrameRate = 35;

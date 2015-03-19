@@ -590,7 +590,7 @@
     size_t bufferHeight = (CGFloat)CVPixelBufferGetHeight(sampleBufferImage);
 
     CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-    SCFilterGroup *filterGroup = _videoConfiguration.filterGroup;
+    SCFilter *filterGroup = _videoConfiguration.filter;
     SCFilter *transformFilter = [self _transformFilterUsingBufferWidth:bufferWidth bufferHeight:bufferHeight mirrored:
                                  _device == AVCaptureDevicePositionFront
                                  ];

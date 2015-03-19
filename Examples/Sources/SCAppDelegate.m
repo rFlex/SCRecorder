@@ -7,8 +7,6 @@
 //
 
 #import "SCAppDelegate.h"
-#import "SCFilterGroup.h"
-#import "SCVideoPlayerView.h"
 
 @implementation SCAppDelegate
 

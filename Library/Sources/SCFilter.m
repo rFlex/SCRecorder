@@ -7,10 +7,10 @@
 //
 
 #import "SCFilter.h"
-#import "SCArchivedVector.h"
 
 @interface SCFilter() {
     NSMutableDictionary *_unwrappedValues;
+    NSMutableArray *_subFilters;
 }
 
 @end
@@ -22,18 +22,11 @@
     
     if (self) {
         _unwrappedValues = [NSMutableDictionary new];
-        _coreImageFilter = [aDecoder decodeObjectForKey:@"CoreImageFilter"];
+        _CIFilter = [aDecoder decodeObjectForKey:@"CoreImageFilter"];
         self.enabled = [aDecoder decodeBoolForKey:@"Enabled"];
         
-        if ([aDecoder containsValueForKey:@"vectors"]) {
-            NSArray *vectors = [aDecoder decodeObjectForKey:@"vectors"];
-            for (SCArchivedVector *archivedVector in vectors) {
-                [_coreImageFilter setValue:archivedVector.vector forKey:archivedVector.name];
-            }
-        }
-        
-        if ([aDecoder containsValueForKey:@"vectors_data"]) {
-            NSArray *vectors = [aDecoder decodeObjectForKey:@"vectors_data"];
+        if ([aDecoder containsValueForKey:@"VectorsData"]) {
+            NSArray *vectors = [aDecoder decodeObjectForKey:@"VectorsData"];
             for (NSArray *vectorData in vectors) {
                 CGFloat *vectorValue = malloc(sizeof(CGFloat) * (vectorData.count - 1));
                 
@@ -44,7 +37,7 @@
                     }
                     NSString *key = vectorData.firstObject;
                     
-                    [_coreImageFilter setValue:[CIVector vectorWithValues:vectorValue count:vectorData.count - 1] forKey:key];
+                    [_CIFilter setValue:[CIVector vectorWithValues:vectorValue count:vectorData.count - 1] forKey:key];
                     free(vectorValue);
                 }
             }
@@ -57,46 +50,36 @@
                 [self setParameterValue:[unwrappedValues objectForKey:key] forKey:key];
             }
         }
+        
+        if ([aDecoder containsValueForKey:@"SubFilters"]) {
+            _subFilters = [[aDecoder decodeObjectForKey:@"SubFilters"] mutableCopy];
+        } else {
+            _subFilters = [NSMutableArray new];
+        }
+        
+        if ([aDecoder containsValueForKey:@"Name"]) {
+            _name = [aDecoder decodeObjectForKey:@"Name"];
+        } else {
+            _name = [_CIFilter.attributes objectForKey:kCIAttributeFilterName];
+        }
     }
     
     return self;
-}
-
-- (id)initWithName:(NSString *)name {
-    CIFilter *filter = [CIFilter filterWithName:name];
-    [filter setDefaults];
-    return [self initWithCIFilter:filter];
 }
 
 - (id)initWithCIFilter:(CIFilter *)filter {
     self = [super init];
     
     if (self) {
-        _coreImageFilter = filter;
+        _CIFilter = filter;
         _unwrappedValues = [NSMutableDictionary new];
+        _name = [filter.attributes objectForKey:kCIAttributeFilterName];
+        _subFilters = [NSMutableArray new];
+
         self.enabled = YES;
     }
     
     return self;
-}
-
-- (id)copyWithZone:(NSZone *)zone {
-    SCFilter *filter = [SCFilter filterWithCIFilter:[self.coreImageFilter copy]];
-    filter.enabled = self.enabled;
-    filter.delegate = self.delegate;
-    
-    return filter;
-}
-
-+ (SCFilter *)filterWithCIFilter:(CIFilter *)filterDescription {
-    return [[SCFilter alloc] initWithCIFilter:filterDescription];
-}
-
-+ (SCFilter *)filterWithName:(NSString *)name {
-    CIFilter *coreImageFilter = [CIFilter filterWithName:name];
-    [coreImageFilter setDefaults];
-
-    return coreImageFilter != nil ? [SCFilter filterWithCIFilter:coreImageFilter] : nil;
 }
 
 - (id)_unwrappedValue:(id)value forKey:(NSString *)key {
@@ -139,7 +122,7 @@
                 
                 CGDataProviderRelease(source);
                 
-                NSInteger dimension = [[_coreImageFilter valueForKey:@"inputCubeDimension"] integerValue];
+                NSInteger dimension = [[_CIFilter valueForKey:@"inputCubeDimension"] integerValue];
                 
                 [_unwrappedValues setObject:data forKey:key];
                 
@@ -165,13 +148,13 @@
 }
 
 - (id)parameterValueForKey:(NSString *)key {
-    return [self _unwrappedValue:[_coreImageFilter valueForKey:key] forKey:key];
+    return [self _unwrappedValue:[_CIFilter valueForKey:key] forKey:key];
 }
 
 - (void)setParameterValue:(id)value forKey:(NSString *)key {
     value = [self _wrappedValue:value forKey:key];
     
-    [_coreImageFilter setValue:value forKey:key];
+    [_CIFilter setValue:value forKey:key];
     
     [self _didChangeParameter:key];
     
@@ -182,21 +165,24 @@
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
-    CIFilter *copiedFilter = self.coreImageFilter.copy;
+    CIFilter *copiedFilter = _CIFilter.copy;
     
     for (NSString *key in _unwrappedValues) {
         [copiedFilter setValue:nil forKey:key];
     }
     
-    [aCoder encodeObject:copiedFilter forKey:@"CoreImageFilter"];
+    if (copiedFilter != nil) {
+        [aCoder encodeObject:copiedFilter forKey:@"CoreImageFilter"];
+    }
+    
     [aCoder encodeBool:self.enabled forKey:@"Enabled"];
     
     [aCoder encodeObject:_unwrappedValues forKey:@"UnwrappedValues"];
     
     NSMutableArray *vectors = [NSMutableArray new];
     
-    for (NSString *key in _coreImageFilter.inputKeys) {
-        id value = [_coreImageFilter valueForKey:key];
+    for (NSString *key in _CIFilter.inputKeys) {
+        id value = [_CIFilter valueForKey:key];
         
         if ([value isKindOfClass:[CIVector class]]) {
             CIVector *vector = value;
@@ -211,13 +197,19 @@
         }
     }
     
-    [aCoder encodeObject:vectors forKey:@"vectors_data"];
+    [aCoder encodeObject:vectors forKey:@"VectorsData"];
     
+    [aCoder encodeObject:_subFilters forKey:@"SubFilters"];
+    [aCoder encodeObject:_name forKey:@"Name"];
 }
 
 - (void)resetToDefaults {
-    [_coreImageFilter setDefaults];
+    [_CIFilter setDefaults];
     [_unwrappedValues removeAllObjects];
+    
+    for (SCFilter *subFilter in _subFilters) {
+        [subFilter resetToDefaults];
+    }
     
     id<SCFilterDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(filterDidResetToDefaults:)]) {
@@ -225,18 +217,58 @@
     }
 }
 
-- (NSString *)name {
-    return [self.coreImageFilter.attributes objectForKey:kCIAttributeFilterName];
+- (void)addSubFilter:(SCFilter *)subFilter {
+    [_subFilters addObject:subFilter];
 }
 
-- (NSString *)displayName {
-    return [self.coreImageFilter.attributes objectForKey:kCIAttributeFilterDisplayName];
+- (void)removeSubFilter:(SCFilter *)subFilter {
+    [_subFilters removeObject:subFilter];
+}
+
+- (NSArray *)subFilters {
+    return _subFilters;
 }
 
 - (CIImage *)imageByProcessingImage:(CIImage *)image {
-    CIFilter *ciFilter = self.coreImageFilter;
+    if (!self.enabled) {
+        return image;
+    }
+    
+    for (SCFilter *filter in _subFilters) {
+        image = [filter imageByProcessingImage:image];
+    }
+    
+    CIFilter *ciFilter = _CIFilter;
+    
+    if (ciFilter == nil) {
+        return image;
+    }
+    
     [ciFilter setValue:image forKey:kCIInputImageKey];
     return [ciFilter valueForKey:kCIOutputImageKey];
+}
+
+- (void)writeToFile:(NSURL *)fileUrl error:(NSError *__autoreleasing *)error {
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self];
+    [data writeToURL:fileUrl options:NSDataWritingAtomic error:error];
+}
+
+- (BOOL)isEmpty {
+    BOOL isEmpty = YES;
+    
+    if (_CIFilter != nil) {
+        return NO;
+    }
+    
+    for (SCFilter *filter in _subFilters) {
+        isEmpty &= filter.isEmpty;
+    }
+    
+    return isEmpty;
+}
+
++ (SCFilter *)emptyFilter {
+    return [SCFilter filterWithCIFilter:nil];
 }
 
 + (SCFilter *)filterWithAffineTransform:(CGAffineTransform)affineTransform {
@@ -244,6 +276,56 @@
     [filter setValue:[NSValue valueWithBytes:&affineTransform objCType:@encode(CGAffineTransform)] forKey:@"inputTransform"];
     
     return [SCFilter filterWithCIFilter:filter];
+}
+
++ (SCFilter *)filterWithCIFilter:(CIFilter *)filterDescription {
+    return [[SCFilter alloc] initWithCIFilter:filterDescription];
+}
+
++ (SCFilter *)filterWithCIFilterName:(NSString *)name {
+    CIFilter *coreImageFilter = [CIFilter filterWithName:name];
+    [coreImageFilter setDefaults];
+    
+    return coreImageFilter != nil ? [SCFilter filterWithCIFilter:coreImageFilter] : nil;
+}
+
++ (SCFilter *)filterWithData:(NSData *)data error:(NSError *__autoreleasing *)error {
+    id obj = nil;
+    @try {
+        obj = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    } @catch (NSException *exception) {
+        if (error != nil) {
+            *error = [NSError errorWithDomain:@"SCFilterGroup" code:200 userInfo:@{
+                                                                                   NSLocalizedDescriptionKey : exception.reason
+                                                                                   }];
+            return nil;
+        }
+    }
+    
+    if (![obj isKindOfClass:[SCFilter class]]) {
+        obj = nil;
+        if (error != nil) {
+            *error = [NSError errorWithDomain:@"FilterDomain" code:200 userInfo:@{
+                                                                      NSLocalizedDescriptionKey : @"Invalid serialized class type"
+                                                                      }];
+        }
+    }
+    
+    return obj;
+}
+
++ (SCFilter *)filterWithData:(NSData *)data {
+    return [SCFilter filterWithData:data error:nil];
+}
+
++ (SCFilter *)filterWithContentsOfURL:(NSURL *)url {
+    NSData *data = [NSData dataWithContentsOfURL:url];
+    
+    if (data != nil) {
+        return [SCFilter filterWithData:data];
+    }
+    
+    return nil;
 }
 
 static UInt32 MagicPNG = 0x474e5089;

@@ -25,21 +25,18 @@
 @interface SCFilter : NSObject<NSCoding>
 
 @property (weak, nonatomic) id<SCFilterDelegate> delegate;
-@property (readonly, nonatomic) NSString *name;
-@property (readonly, nonatomic) NSString *displayName;
-@property (readonly, nonatomic) CIFilter *coreImageFilter;
+
+@property (readonly, nonatomic) CIFilter *CIFilter;
+
+@property (strong, nonatomic) NSString *name;
 
 @property (assign, nonatomic) BOOL enabled;
 
-+ (SCFilter *)filterWithCIFilter:(CIFilter *)filterDescription;
+@property (readonly, nonatomic) BOOL isEmpty;
 
-+ (SCFilter *)filterWithName:(NSString *)name;
-
-+ (SCFilter *)filterWithAffineTransform:(CGAffineTransform)affineTransform;
+@property (readonly, nonatomic) NSArray *subFilters;
 
 - (id)initWithCIFilter:(CIFilter *)filter;
-
-- (id)initWithName:(NSString *)name;
 
 - (id)parameterValueForKey:(NSString *)key;
 
@@ -47,6 +44,39 @@
 
 - (void)resetToDefaults;
 
+- (void)addSubFilter:(SCFilter *)subFilter;
+
+- (void)removeSubFilter:(SCFilter *)subFilter;
+
+/**
+ Write this filter to a specific file.
+ This filter can then be restored from this file
+ */
+- (void)writeToFile:(NSURL *)fileUrl error:(NSError **)error;
+
 - (CIImage *)imageByProcessingImage:(CIImage *)image;
+
++ (SCFilter *)emptyFilter;
+
++ (SCFilter *)filterWithCIFilter:(CIFilter *)filterDescription;
+
++ (SCFilter *)filterWithCIFilterName:(NSString *)name;
+
++ (SCFilter *)filterWithAffineTransform:(CGAffineTransform)affineTransform;
+
+/**
+ Create a filterGroup with a serialized filterGroup data
+ */
++ (SCFilter *)filterWithData:(NSData *)data;
+
+/**
+ Create a filterGroup with a serialized filterGroup data
+ */
++ (SCFilter *)filterWithData:(NSData *)data error:(NSError **)error;
+
+/**
+ Create a filterGroup with an URL containing a serialized filterGroup data.
+ */
++ (SCFilter *)filterWithContentsOfURL:(NSURL *)url;
 
 @end

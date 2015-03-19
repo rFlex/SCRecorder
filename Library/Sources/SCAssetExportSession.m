@@ -84,7 +84,7 @@
         }
 
         CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
-        CIImage *result = [_videoConfiguration.filterGroup imageByProcessingImage:image];
+        CIImage *result = [_videoConfiguration.filter imageByProcessingImage:image];
 
         CVPixelBufferRef outputPixelBuffer = nil;
         CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
@@ -219,7 +219,7 @@
 }
 
 - (BOOL)needsCIContext {
-    return _videoConfiguration.filterGroup.filters.count > 0;
+    return _videoConfiguration.filter != nil;
 }
 
 - (void)setupPixelBufferAdaptor:(CGSize)videoSize {

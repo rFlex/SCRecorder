@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
-#import "SCFilterGroup.h"
+#import "SCFilter.h"
 #import "CIImageRenderer.h"
 
 /**
@@ -21,9 +21,9 @@
 @interface SCImageView : GLKView<CIImageRenderer>
 
 /**
- The filterGroup to apply when rendering. If nil is set, no filter will be applied
+ The filter to apply when rendering. If nil is set, no filter will be applied
  */
-@property (strong, nonatomic) SCFilterGroup *filterGroup;
+@property (strong, nonatomic) SCFilter *filter;
 
 /**
  The CIImage to render.

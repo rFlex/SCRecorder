@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "SCMediaTypeConfiguration.h"
-#import "SCFilterGroup.h"
+#import "SCFilter.h"
 
 #define kSCVideoConfigurationDefaultCodec AVVideoCodecH264
 #define kSCVideoConfigurationDefaultScalingMode AVVideoScalingModeResizeAspectFill
@@ -85,16 +85,16 @@ typedef enum : NSUInteger {
 @property (assign, nonatomic) BOOL shouldKeepOnlyKeyFrames;
 
 /**
- If not nil, each appended frame will be processed by this SCFilterGroup.
+ If not nil, each appended frame will be processed by this SCFilter.
  While it seems convenient, this removes the possibility to change the
  filter after the segment has been added.
- Setting a new filterGroup will cause the SCRecordSession to stop the
- current record segment if the previous filterGroup was NIL and the
- new filterGroup is NOT NIL or vice versa. If you want to have a smooth
+ Setting a new filter will cause the SCRecordSession to stop the
+ current record segment if the previous filter was NIL and the
+ new filter is NOT NIL or vice versa. If you want to have a smooth
  transition between filters in the same record segment, make sure to set
  an empty SCFilterGroup instead of setting this property to nil.
  */
-@property (strong, nonatomic) SCFilterGroup *filterGroup;
+@property (strong, nonatomic) SCFilter *filter;
 
 /**
  If YES, the affineTransform will be ignored and the output affineTransform

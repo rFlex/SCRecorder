@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "SCFilterGroup.h"
+#import "SCFilter.h"
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
 

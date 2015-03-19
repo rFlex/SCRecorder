@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-#import "SCFilterGroup.h"
 #import "SCImageView.h"
 #import "CIImageRenderer.h"
 
