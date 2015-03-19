@@ -426,7 +426,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = VR;
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0620;
 				ORGANIZATIONNAME = rFlex;
 			};
 			buildConfigurationList = DC551C3F17ADD66000E37F8F /* Build configuration list for PBXProject "SCRecorder" */;
@@ -631,7 +631,7 @@
 				LD_DYLIB_INSTALL_NAME = "@rpath/${EXECUTABLE_PATH}";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx10.9;
+				SDKROOT = macosx;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Debug;
@@ -665,7 +665,7 @@
 				LD_DYLIB_INSTALL_NAME = "@rpath/${EXECUTABLE_PATH}";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx10.9;
+				SDKROOT = macosx;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;

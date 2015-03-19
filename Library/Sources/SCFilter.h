@@ -48,6 +48,10 @@
 
 - (void)removeSubFilter:(SCFilter *)subFilter;
 
+- (void)removeSubFilterAtIndex:(NSInteger)index;
+
+- (void)insertSubFilter:(SCFilter *)subFilter atIndex:(NSInteger)index;
+
 /**
  Write this filter to a specific file.
  This filter can then be restored from this file

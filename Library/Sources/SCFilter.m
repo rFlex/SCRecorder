@@ -225,6 +225,14 @@
     [_subFilters removeObject:subFilter];
 }
 
+- (void)insertSubFilter:(SCFilter *)subFilter atIndex:(NSInteger)index {
+    [_subFilters insertObject:subFilter atIndex:index];
+}
+
+- (void)removeSubFilterAtIndex:(NSInteger)index {
+    [_subFilters removeObjectAtIndex:index];
+}
+
 - (NSArray *)subFilters {
     return _subFilters;
 }
@@ -425,7 +433,7 @@ static UInt32 MagicJPG = 0xe0ffd8ff;
         return nil;
     }
     
-    CGContextRef context = CGBitmapContextCreate (bitmap,
+    CGContextRef context = CGBitmapContextCreate(bitmap,
                                      width,
                                      height,
                                      8,
