@@ -289,9 +289,9 @@ SCFilterGroup can be either used in a view to render a filtered image in real ti
 Some details about the other provided classes
 ---------------------
 
-#### [SCRecorderFocusView](Library/Sources/SCRecorderFocusView.h)
+#### [SCRecorderToolsView](Library/Sources/SCRecorderToolsView.h)
 
-Simple view that can have an SCRecorder instance. It will handle the tap to focus. SCRecorder delegate can call -[SCRecorderFocusView showFocusAnimation] and -[SCRecorder hideFocusAnimation] to show and hide the animation when needed.
+Configurable view that can have an SCRecorder instance and handle tap to focus, pinch to zoom.
 
 #### [CIImageRenderer](Library/Sources/CIImageRenderer.h) (protocol)
 
@@ -303,7 +303,7 @@ A simple CIImageRenderer view that can have a SCFilterGroup. It renders the inpu
 
 #### [SCSwipeableFilterView<CIImageRenderer>](Library/Sources/SCSwipeableFilterView.h)
 
-A CIImageRenderer view that has a scroll and a list of SCFilterGroup. It let the user scrolls between the filters so he can chose one. The selected filter can be retrieved using -[SCSwipeableFilterView selectedFilterGroup]. This basically works the same as the Snapchat composition page.
+A CIImageRenderer view that has a scrollview and a list of SCFilterGroup. It let the user scrolls between the filters so he can chose one. The selected filter can be retrieved using -[SCSwipeableFilterView selectedFilterGroup]. This basically works the same as the Snapchat composition page.
 
 #### [SCPlayer](Library/Sources/SCPlayer.h)
 
