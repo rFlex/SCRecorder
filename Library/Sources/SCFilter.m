@@ -431,8 +431,8 @@ static UInt32 MagicJPG = 0xe0ffd8ff;
                                      8,
                                      bytesPerRow,
                                      colorSpace,
-                                     kCGImageAlphaPremultipliedLast);
-    
+                                     (CGBitmapInfo)kCGImageAlphaPremultipliedLast);
+   
     CGColorSpaceRelease(colorSpace);
     
     if (context == nil) {

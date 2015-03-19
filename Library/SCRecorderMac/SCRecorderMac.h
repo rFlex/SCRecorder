@@ -8,4 +8,3 @@
 
 #import <Foundation/Foundation.h>
 #import "SCFilter.h"
-#import "SCFilterGroup.h"
