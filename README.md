@@ -98,7 +98,7 @@ video.timeScale = 1;
 // Whether the output video size should be infered so it creates a square video
 video.sizeAsSquare = NO;
 // The filter to apply to each output video buffer (this do not affect the presentation layer)
-video.filterGroup = [SCFilterGroup filterGroupWithFilter:[SCFilter filterWithName:@"CIPhotoEffectInstant"]];
+video.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
 
 // Get the audio configuration object
 SCAudioConfiguration *audio = recorder.audioConfiguration;
@@ -148,7 +148,7 @@ SCPlayer is a subclass of AVPlayer that adds some methods to make it easier to u
 	
 	// Render the video directly through a filter
 	SCImageView *SCImageView = [[SCImageView alloc] initWithFrame:view.bounds];
-	SCImageView.filterGroup = [SCFilterGroup filterGroupWithName:@"CIPhotoEffectInstant"];
+	SCImageView.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
 	
 	player.CIImageRenderer = SCImageView;
 	
@@ -171,7 +171,7 @@ SCVideoPlayerView is a subclass of UIView that holds an SCPlayer. The video buff
 	
 	// Render the video directly through a filter
 	playerView.SCImageViewEnabled = YES;
-	playerView.SCImageView.filterGroup = [SCFilterGroup filterGroupWithName:@"CIPhotoEffectInstant"];
+	playerView.SCImageView.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
 ```
 
 Editing your recording
@@ -234,7 +234,7 @@ AVAsset *asset = session.assetRepresentingSegments;
 SCAssetExportSession assetExportSession = [[SCAssetExportSession alloc] initWithAsset:asset];
 assetExportSession.outputUrl = recordSession.outputUrl;
 assetExportSession.outputFileType = AVFileTypeMPEG4;
-assetExportSession.videoConfiguration.filterGroup = [SCFilterGroup filterGroupWithFilterName:@"CIPhotoEffectInstant"];
+assetExportSession.videoConfiguration.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
 assetExportSession.videoConfiguration.preset = SCPresetHighestQuality;
 assetExportSession.audioConfiguration.preset = SCPresetMediumQuality;
 [assetExportSession exportAsynchronouslyWithCompletionHandler: ^{
@@ -250,36 +250,45 @@ assetExportSession.audioConfiguration.preset = SCPresetMediumQuality;
 Creating/manipulating filters
 ---------------------
 
-SCRecorder comes with a filter API built on top of Core Image. [SCFilter](Library/Sources/SCFilter.h) is the class that wraps a CIFilter. It can have a delegate to know when a filter parameter has changed and is compliant to NSCoding. Even though CIFilter is also NSCoding compliant, SCFilter was needed because it fixed some incompatibility issue while trying to deserialise a CIFilter on iOS that was serialised on OS X. [SCFilterGroup](Library/Sources/SCFilterGroup.h) is a class that contains a list of SCFilter. SCFilterGroup can be saved directly into a file and restored from this file.
+SCRecorder comes with a filter API built on top of Core Image. [SCFilter](Library/Sources/SCFilter.h) is the class that wraps a CIFilter. Each filter can also have a chain of sub filters. When processing an image through a filter, first all its sub filters will process the image then the filter itself. An SCFilter can be saved directly into a file and restored from this file.
 
 ```objective-c
 
-// Manually creating a filter chain
+
 SCFilter *blackAndWhite = [SCFilter filterWithName:@"CIColorControls"];
 [blackAndWhite setParameterValue:@0 forKey:@"inputSaturation"];
 
 SCFilter *exposure = [SCFilter filterWithName:@"CIExposureAdjust"];
 [exposure setParameterValue:@0.7 forKey:@"inputEV"];
 
-SCFilterGroup *filterGroup = [SCFilterGroup filterGroupWithFilters:@[blackAndWhite, exposure]];
+// Manually creating a filter chain
+SCFilter *filter = [SCFilter emptyFilter];
+[filter addSubFilter:blackAndWhite];
+[filter addSubFilter:exposure];
+
+SCVideoConfiguration *videoConfiguration = ... // A video configuration
+
+videoConfiguration.filter = blackAndWhite; // Will render a black and white video
+videoConfiguration.filter = exposure; // Will render a video with less exposure
+videoConfiguration.filter = filter; // Will render a video with both black and white and less exposure
 
 // Saving to a file
 NSError *error = nil;
-[filterGroup writeToFile:[NSURL fileUrlWithPath:@"some-url.cisf"] error:&error];
+[filter writeToFile:[NSURL fileUrlWithPath:@"some-url.cisf"] error:&error];
 if (error == nil) {
 
 }
 
 // Restoring the filter group
-SCFilterGroup *restoredFilterGroup = [SCFilterGroup filterGroupWithContentsOfUrl:[NSURL fileUrlWithPath:@"some-url.cisf"]];
+SCFilter *restoredFilter = [SCFilter filterWithContentsOfUrl:[NSURL fileUrlWithPath:@"some-url.cisf"]];
 ```
 
-If you want to create your own filters easily, you can also check out [CoreImageShop](https://github.com/rFlex/CoreImageShop) which is a Mac application that will generate serialized SCFilterGroup directly useable by the filter classes in this project.
+If you want to create your own filters easily, you can also check out [CoreImageShop](https://github.com/rFlex/CoreImageShop) which is a Mac application that will generate serialized SCFilter directly useable by the filter classes in this project.
 
 Using the filters
 ---------------------
 
-SCFilterGroup can be either used in a view to render a filtered image in real time, or in a processing object to render the filter to a file. You can use an SCFilterGroup in one of the following classes:
+SCFilter can be either used in a view to render a filtered image in real time, or in a processing object to render the filter to a file. You can use an SCFilter in one of the following classes:
 
 - [SCVideoConfiguration](Library/Sources/SCVideoConfiguration.h) (processing)
 - [SCImageView](Library/Sources/SCImageView.h) (live rendering)
