@@ -336,6 +336,16 @@
     return nil;
 }
 
++ (SCFilter *)filterWithFilters:(NSArray *)filters {
+    SCFilter *filter = [SCFilter emptyFilter];
+    
+    for (SCFilter *subFilter in filters) {
+        [filter addSubFilter:subFilter];
+    }
+    
+    return filter;
+}
+
 static UInt32 MagicPNG = 0x474e5089;
 static UInt32 MagicJPG = 0xe0ffd8ff;
 

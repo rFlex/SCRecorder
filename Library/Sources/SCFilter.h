@@ -155,4 +155,9 @@
  */
 + (SCFilter *)filterWithContentsOfURL:(NSURL *)url;
 
+/**
+ Creates and returns a filter containg the given sub SCFilters.
+ */
++ (SCFilter *)filterWithFilters:(NSArray *)filters;
+
 @end
