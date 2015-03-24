@@ -29,7 +29,7 @@
     
     Float64 sampleRate = self.sampleRate;
     int channels = self.channelsCount;
-    UInt64 bitrate = self.bitrate;
+    UInt64 bitrate = (unsigned long)self.bitrate;
     
     if (self.preset != nil) {
         if ([self.preset isEqualToString:SCPresetLowQuality]) {

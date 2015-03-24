@@ -43,7 +43,7 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
     }
     
     CGSize outputSize = self.size;
-    unsigned long bitrate = self.bitrate;
+    unsigned long bitrate = (unsigned long)self.bitrate;
     
     if (self.preset != nil) {
         if ([self.preset isEqualToString:SCPresetLowQuality]) {
