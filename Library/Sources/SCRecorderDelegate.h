@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 #import "SCRecorder.h"
 
 typedef NS_ENUM(NSInteger, SCFlashMode) {
