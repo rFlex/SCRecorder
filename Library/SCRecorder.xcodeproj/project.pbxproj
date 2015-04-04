@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC10CF281ACFD458009880C4 /* SCWeakSelectorTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = DC10CF261ACFD458009880C4 /* SCWeakSelectorTarget.h */; };
+		DC10CF291ACFD458009880C4 /* SCWeakSelectorTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = DC10CF271ACFD458009880C4 /* SCWeakSelectorTarget.m */; };
 		DC1949C019C07F1600E92A95 /* SCSampleBufferHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC1949C119C07F1600E92A95 /* SCSampleBufferHolder.m in Sources */ = {isa = PBXBuildFile; fileRef = DC1949BF19C07F1600E92A95 /* SCSampleBufferHolder.m */; };
 		DC23C1C71AAF95600013E14C /* SCRecordSessionSegment.h in Headers */ = {isa = PBXBuildFile; fileRef = DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -112,6 +114,8 @@
 		AB2BA4021833B4A700B7CFA2 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		ABCB9420184BAC2C00BB5927 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		ABCC89F51829AAB6000D3886 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		DC10CF261ACFD458009880C4 /* SCWeakSelectorTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCWeakSelectorTarget.h; sourceTree = "<group>"; };
+		DC10CF271ACFD458009880C4 /* SCWeakSelectorTarget.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCWeakSelectorTarget.m; sourceTree = "<group>"; };
 		DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSampleBufferHolder.h; sourceTree = "<group>"; };
 		DC1949BF19C07F1600E92A95 /* SCSampleBufferHolder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCSampleBufferHolder.m; sourceTree = "<group>"; };
 		DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRecordSessionSegment.h; sourceTree = "<group>"; };
@@ -352,6 +356,8 @@
 				DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */,
 				DCC1FC471A4AF1DD00F1C653 /* SCRecorderTools.h */,
 				DCC1FC481A4AF1DD00F1C653 /* SCRecorderTools.m */,
+				DC10CF261ACFD458009880C4 /* SCWeakSelectorTarget.h */,
+				DC10CF271ACFD458009880C4 /* SCWeakSelectorTarget.m */,
 			);
 			name = Tools;
 			sourceTree = "<group>";
@@ -467,6 +473,7 @@
 				DCB04159192458C800D945D2 /* SCImageView.h in Headers */,
 				DC8B89CB19C4A9410048FBF9 /* CIImageRendererUtils.h in Headers */,
 				DCBA8FE61A92B2FF00DD1A79 /* SCRecorderToolsView.h in Headers */,
+				DC10CF281ACFD458009880C4 /* SCWeakSelectorTarget.h in Headers */,
 				DCC1FC491A4AF1DD00F1C653 /* SCRecorderTools.h in Headers */,
 				DC4CBA4D1863118E00532F1F /* SCAudioTools.h in Headers */,
 				DC1949C019C07F1600E92A95 /* SCSampleBufferHolder.h in Headers */,
@@ -633,6 +640,7 @@
 				DC50285818E51FC0004E833F /* SCRecorder.m in Sources */,
 				DCB0415A192458C800D945D2 /* SCImageView.m in Sources */,
 				DCA163A41A23C7C300505966 /* SCPhotoConfiguration.m in Sources */,
+				DC10CF291ACFD458009880C4 /* SCWeakSelectorTarget.m in Sources */,
 				DC8B89CC19C4A9410048FBF9 /* CIImageRendererUtils.m in Sources */,
 				DC4CBA541863118E00532F1F /* SCVideoPlayerView.m in Sources */,
 				DCA836ED18FC2C910058FE13 /* SCRecorderFocusTargetView.m in Sources */,

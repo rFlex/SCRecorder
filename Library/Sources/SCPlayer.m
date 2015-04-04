@@ -7,6 +7,7 @@
 //
 
 #import "SCPlayer.h"
+#import "SCWeakSelectorTarget.h"
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -45,7 +46,8 @@ static char* ItemChanged = "CurrentItemContext";
 
 - (void)dealloc {
     [self endSendingPlayMessages];
-
+    
+    [self unsetupDisplayLink];
     [self unsetupVideoOutputToItem:self.currentItem];
     [self removeObserver:self forKeyPath:@"currentItem"];
     [self removeOldObservers];
@@ -169,7 +171,9 @@ static char* ItemChanged = "CurrentItemContext";
 
 - (void)setupDisplayLink {
     if (_displayLink == nil) {
-        _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
+        SCWeakSelectorTarget *target = [[SCWeakSelectorTarget alloc] initWithTarget:self targetSelector:@selector(willRenderFrame:)];
+
+        _displayLink = [CADisplayLink displayLinkWithTarget:target selector:target.handleSelector];
         _displayLink.frameInterval = 1;
         
         [self setupVideoOutputToItem:self.currentItem];
