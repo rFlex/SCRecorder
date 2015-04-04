@@ -36,6 +36,19 @@ If you are using cocoapods, you can use this project with the following Podfile
 	pod 'SCRecorder'
 ```
 
+Manual install
+----------------
+
+Drag and drop the [SCRecorder.xcodeproject](Library/SCRecorder.xcodeproject) in your project. In your project, add the libSCRecorder.a dependency in the Build Phases into the "Link Binary with Librairies" section (as done in the example).
+
+Swift
+---------------
+
+For using the project in Swift, follow either the Podfile or Manual install instructions (they both work on Swift too). Then, to allow SCRecorder to be accessible from Swift, just add the following line in your bridge header:
+```objective-c
+	#import <SCRecorder/SCRecorder.h>
+```
+
 Easy and quick
 ----------------
 
@@ -255,10 +268,10 @@ SCRecorder comes with a filter API built on top of Core Image. [SCFilter](Librar
 ```objective-c
 
 
-SCFilter *blackAndWhite = [SCFilter filterWithName:@"CIColorControls"];
+SCFilter *blackAndWhite = [SCFilter filterWithCIFilterName:@"CIColorControls"];
 [blackAndWhite setParameterValue:@0 forKey:@"inputSaturation"];
 
-SCFilter *exposure = [SCFilter filterWithName:@"CIExposureAdjust"];
+SCFilter *exposure = [SCFilter filterWithCIFilterName:@"CIExposureAdjust"];
 [exposure setParameterValue:@0.7 forKey:@"inputEV"];
 
 // Manually creating a filter chain
