@@ -26,4 +26,14 @@
 
 + (AVCaptureDevice *)videoDeviceForPosition:(AVCaptureDevicePosition)position;
 
++ (NSArray *)assetWriterMetadata;
+
+@end
+
+@interface NSDate (SCRecorderTools)
+
+- (NSString *)toISO8601;
+
++ (NSDate *)fromISO8601:(NSString *)iso8601;
+
 @end

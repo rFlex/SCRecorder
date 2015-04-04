@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "SCAssetExportSession.h"
+#import "SCRecorderTools.h"
 
 #define EnsureSuccess(error, x) if (error != nil) { _error = error; if (x != nil) x(); return; }
 #define kVideoPixelFormatTypeForCI kCVPixelFormatType_32BGRA
@@ -296,6 +297,7 @@
     [[NSFileManager defaultManager] removeItemAtURL:self.outputUrl error:nil];
     
     _writer = [AVAssetWriter assetWriterWithURL:self.outputUrl fileType:self.outputFileType error:&error];
+    _writer.metadata = [SCRecorderTools assetWriterMetadata];
 
     EnsureSuccess(error, completionHandler);
     

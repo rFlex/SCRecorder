@@ -284,6 +284,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         
         if (file != nil) {
             writer = [[AVAssetWriter alloc] initWithURL:file fileType:fileType error:&theError];
+            writer.metadata = [SCRecorderTools assetWriterMetadata];
         }
     } else {
         theError = [SCRecordSession createError:@"No fileType has been set in the SCRecordSession"];
@@ -526,6 +527,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     
     if (url != nil) {
         _movieFileOutput = movieFileOutput;
+        _movieFileOutput.metadata = [SCRecorderTools assetWriterMetadata];
                 
         if (movieFileOutput.isRecording) {
             [NSException raise:@"AlreadyRecordingException" format:@"The MovieFileOutput is already recording"];
