@@ -39,9 +39,15 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         
         int i = 0;
         BOOL shouldRecomputeDuration = NO;
-        for (NSDictionary *recordSegment in recordSegments) {
-            NSString *filename = recordSegment[SCRecordSessionSegmentFilenameKey];
-            NSDictionary *info = recordSegment[SCRecordSessionSegmentInfoKey];
+        for (NSObject *recordSegment in recordSegments) {
+            NSString *filename = nil;
+            NSDictionary *info = nil;
+            if ([recordSegment isKindOfClass:[NSDictionary class]]) {
+                filename = ((NSDictionary *)recordSegment)[SCRecordSessionSegmentFilenameKey];
+                info = ((NSDictionary *)recordSegment)[SCRecordSessionSegmentInfoKey];
+            } else if ([recordSegment isKindOfClass:[NSString class]]) {
+                filename = (NSString *)recordSegment;
+            }
             
             NSURL *url = [SCRecordSession segmentURLForFilename:filename andDirectory:_recordSegmentsDirectory];
             
