@@ -8,7 +8,6 @@
 
 #import "SCVideoPlayerViewController.h"
 #import "SCEditVideoViewController.h"
-#import "SCAssetExportSession.h"
 
 @interface SCVideoPlayerViewController () {
     SCPlayer *_player;

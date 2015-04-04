@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SCRecorder.h"
+#import <SCRecorder/SCRecorder.h>
 
 @interface SCRecorderViewController : UIViewController<SCRecorderDelegate, UIImagePickerControllerDelegate>
 

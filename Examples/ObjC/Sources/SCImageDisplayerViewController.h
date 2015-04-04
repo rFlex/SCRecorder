@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <SCSwipeableFilterView.h>
+#import <SCRecorder/SCRecorder.h>
 
 @interface SCImageDisplayerViewController : UIViewController
 

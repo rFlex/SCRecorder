@@ -10,10 +10,8 @@
 #import <AVFoundation/AVFoundation.h>
 #import "SCTouchDetector.h"
 #import "SCRecorderViewController.h"
-#import "SCAudioTools.h"
 #import "SCVideoPlayerViewController.h"
 #import "SCImageDisplayerViewController.h"
-#import "SCRecorder.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "SCSessionListViewController.h"
 #import "SCRecordSessionManager.h"

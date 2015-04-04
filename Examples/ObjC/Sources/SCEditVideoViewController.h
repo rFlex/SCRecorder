@@ -7,8 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SCVideoPlayerView.h"
-#import "SCRecordSession.h"
+#import <SCRecorder/SCRecorder.h>
 
 @interface SCEditVideoViewController : UIViewController
 

@@ -7,7 +7,6 @@
 //
 
 #import "SCAudioRecordViewController.h"
-#import "SCPlayer.h"
 
 @interface SCAudioRecordViewController () {
     SCRecorder *_recorder;
