@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <SCRecorder/SCRecorder.h>
+#import "SCRecorder.h"
 
 @interface SCSessionTableViewCell : UITableViewCell
 @property (weak, nonatomic) IBOutlet SCVideoPlayerView *videoPlayerView;

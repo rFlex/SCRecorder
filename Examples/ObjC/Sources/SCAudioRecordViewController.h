@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <SCRecorder/SCRecorder.h>
+#import "SCRecorder.h"
 
 @interface SCAudioRecordViewController : UIViewController<SCRecorderDelegate, SCPlayerDelegate>
 

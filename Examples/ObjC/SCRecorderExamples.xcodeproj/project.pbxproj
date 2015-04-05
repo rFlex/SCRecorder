@@ -496,7 +496,7 @@
 				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					../Library/Sources/,
+					../../Library/Sources/,
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
 				INFOPLIST_FILE = "Sources/SCRecorderExamples-Info.plist";
@@ -521,7 +521,7 @@
 				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					../Library/Sources/,
+					../../Library/Sources/,
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
 				INFOPLIST_FILE = "Sources/SCRecorderExamples-Info.plist";
