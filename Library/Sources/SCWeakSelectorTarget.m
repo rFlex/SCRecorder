@@ -25,7 +25,10 @@
     id strongTarget = _target;
     
     if (strongTarget != nil) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         [strongTarget performSelector:_targetSelector withObject:param];
+#pragma clang diagnostic pop
         
         return YES;
     }
