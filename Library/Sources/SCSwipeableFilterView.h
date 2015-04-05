@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 #import "SCPlayer.h"
-#import "SCFilterGroup.h"
 #import "CIImageRendererUtils.h"
 #import "SCFilterSelectorView.h"
 

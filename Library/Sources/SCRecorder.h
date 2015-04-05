@@ -16,47 +16,12 @@
 #import "SCAssetExportSession.h"
 #import "SCImageView.h"
 #import "SCSwipeableFilterView.h"
-#import "SCRecorderFocusView.h"
+#import "SCRecorderToolsView.h"
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
 #import "SCPhotoConfiguration.h"
 #import "SCRecorderTools.h"
-
-typedef NS_ENUM(NSInteger, SCFlashMode) {
-    SCFlashModeOff  = AVCaptureFlashModeOff,
-    SCFlashModeOn   = AVCaptureFlashModeOn,
-    SCFlashModeAuto = AVCaptureFlashModeAuto,
-    SCFlashModeLight
-};
-
-@class SCRecorder;
-
-@protocol SCRecorderDelegate <NSObject>
-
-@optional
-
-// Camera stuffs
-- (void)recorder:(SCRecorder *)recorder didReconfigureVideoInput:(NSError *)videoInputError;
-- (void)recorder:(SCRecorder *)recorder didReconfigureAudioInput:(NSError *)audioInputError;
-- (void)recorder:(SCRecorder *)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didChangeSessionPreset:(NSString *)sessionPreset error:(NSError *)error;
-- (void)recorderWillStartFocus:(SCRecorder *)recorder;
-- (void)recorderDidStartFocus:(SCRecorder *)recorder;
-- (void)recorderDidEndFocus:(SCRecorder *)recorder;
-
-// RecordSession stuffs
-- (void)recorder:(SCRecorder *)recorder didInitializeAudioInRecordSession:(SCRecordSession *)recordSession error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didInitializeVideoInRecordSession:(SCRecordSession *)recordSession error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didBeginRecordSegment:(SCRecordSession *)recordSession error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didEndRecordSegment:(SCRecordSession *)recordSession segmentIndex:(NSInteger)segmentIndex error:(NSError *)error;
-- (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBuffer:(SCRecordSession *)recordSession;
-- (void)recorder:(SCRecorder *)recorder didAppendAudioSampleBuffer:(SCRecordSession *)recordSession;
-- (void)recorder:(SCRecorder *)recorder didSkipAudioSampleBuffer:(SCRecordSession *)recordSession;
-- (void)recorder:(SCRecorder *)recorder didSkipVideoSampleBuffer:(SCRecordSession *)recordSession;
-- (void)recorder:(SCRecorder *)recorder didCompleteRecordSession:(SCRecordSession *)recordSession;
-
-@end
-
+#import "SCRecorderDelegate.h"
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 
@@ -98,7 +63,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 /**
  Determine whether the device has flash
  */
-@property (assign, nonatomic, readonly) BOOL deviceHasFlash;
+@property (nonatomic, readonly) BOOL deviceHasFlash;
 
 /**
  Change the current used device
@@ -106,25 +71,41 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @property (assign, nonatomic) AVCaptureDevicePosition device;
 
 /**
+ The zoom factor applied to the video.
+ */
+@property (assign, nonatomic) CGFloat videoZoomFactor;
+
+/**
+ Whether the zoom should be reset whenever the device changes.
+ */
+@property (assign, nonatomic) BOOL resetZoomOnChangeDevice;
+
+/**
  Get the current focus mode used by the camera device
  */
 @property (readonly, nonatomic) AVCaptureFocusMode focusMode;
 
 /**
- The session preset used for the AVCaptureSession
+ Will be true if the camera is adjusting the focus.
+ This property is KVO observable.
  */
-@property (copy, nonatomic) NSString *sessionPreset;
+@property (readonly, nonatomic) BOOL isAdjustingFocus;
 
 /**
- The captureSession. This will be null until openSession: has
- been called. Calling closeSession will set this property to null again.
+ The session preset used for the AVCaptureSession
+ */
+@property (copy, nonatomic) NSString *captureSessionPreset;
+
+/**
+ The captureSession. This will be null until prepare or startRunning has
+ been called. Calling unprepare will set this property to null again.
  */
 @property (readonly, nonatomic) AVCaptureSession *captureSession;
 
 /**
- Whether the captureSession has been opened.
+ Whether the recorder has been prepared.
  */
-@property (readonly, nonatomic) BOOL isCaptureSessionOpened;
+@property (readonly, nonatomic) BOOL isPrepared;
 
 /**
  The preview layer used for the video preview
@@ -150,7 +131,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 /**
  The record session to which the recorder will flow the camera/microphone buffers
  */
-@property (strong, nonatomic) SCRecordSession *recordSession;
+@property (strong, nonatomic) SCRecordSession *session;
 
 /**
  The video orientation. This is automatically set if autoSetVideoOrientation is enabled
@@ -172,7 +153,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 /**
  The maximum record duration. When the record session record duration
  reaches this bound, the recorder will automatically pause the recording,
- end the current record segment and send recorder:didCompleteRecordSession: on the 
+ end the current record segment and send recorder:didCompletesession: on the 
  delegate.
  */
 @property (assign, nonatomic) CMTime maxRecordDuration;
@@ -195,11 +176,17 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 @property (readonly, nonatomic) CGFloat ratioRecorded;
 
 /**
- If enabled, the recorder will initialize the recordSession and create the record segments
+ If enabled, the recorder will initialize the session and create the record segments
  when asking to record. Otherwise it will do it as soon as possible.
  Default is YES
  */
-@property (assign, nonatomic) BOOL initializeRecordSessionLazily;
+@property (assign, nonatomic) BOOL initializeSessionLazily;
+
+/**
+ If enabled, mirrored video buffers like when using a front camera
+ will be written also as mirrored.
+ */
+@property (assign, nonatomic) BOOL keepMirroringOnWrite;
 
 /**
  Whether the focus is supported on the current camera device
@@ -210,6 +197,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  The current focus point of interest
  */
 @property (readonly, nonatomic) CGPoint focusPointOfInterest;
+
+/**
+ Will contains an error if an error occured while reconfiguring
+ the underlying AVCaptureSession.
+ */
+@property (readonly, nonatomic) NSError *error;
 
 /**
  The underlying AVCaptureVideoDataOutput
@@ -230,7 +223,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  The dispatch queue that the SCRecorder uses for sending messages to the attached
  SCRecordSession.
  */
-@property (readonly, nonatomic) dispatch_queue_t recordSessionQueue;
+@property (readonly, nonatomic) dispatch_queue_t sessionQueue;
 
 /**
  Create a recorder
@@ -240,30 +233,29 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 
 /**
  Create the AVCaptureSession
- Calling this method will the captureSesion and configure it properly.
- This takes a completion block as a convenience for all the errors that can happen,
- but the method is actually called synchronously
- @param completionHandler Called when completed before this method returns
+ Calling this method will set the captureSesion and configure it properly.
+ If an error occured during the creation of the captureSession, this methods will return NO.
  */
-- (void)openSession:(void(^)(NSError *sessionError, NSError * audioError, NSError * videoError, NSError *photoError))completionHandler;
+- (BOOL)prepare:(NSError **)error;
 
 /**
  Close and destroy the AVCaptureSession.
  */
-- (void)closeSession;
+- (void)unprepare;
 
 /**
- Start the flow of inputs in the AVCaptureSession.
- openSession: must has been called before.
- Calling this method will block until it's done
+ Start the flow of inputs in the AVCaptureSession.
+ prepare will be called if it wasn't prepared before.
+ Calling this method will block until it's done.
+ If it returns NO, an error will be set in the "error" property.
  */
-- (void)startRunningSession;
+- (BOOL)startRunning;
 
 /**
  End the flow of inputs in the AVCaptureSession
  This wont destroy the AVCaptureSession.
  */
-- (void)endRunningSession;
+- (void)stopRunning;
 
 /**
  Offer a way to configure multiple things at once.
@@ -271,12 +263,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Only the latest most outer commitSessionConfiguration will effectively commit
  the configuration
  */
-- (void)beginSessionConfiguration;
+- (void)beginConfiguration;
 
 /**
  Commit the session configuration after beginSessionConfiguration has been called
  */
-- (void)commitSessionConfiguration;
+- (void)commitConfiguration;
 
 /**
  Switch between the camera devices
@@ -334,19 +326,19 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError**)error;
 
 /**
- Allow the recorder to append the sample buffers inside the current setted recordSession
+ Allow the recorder to append the sample buffers inside the current setted session
  */
 - (void)record;
 
 /**
- Disallow the recorder to append the sample buffers inside the current setted recordSession.
+ Disallow the recorder to append the sample buffers inside the current setted session.
  If a record segment has started, this will be either canceled or completed depending on
  if it is empty or not.
  */
 - (void)pause;
 
 /**
- Disallow the recorder to append the sample buffers inside the current setted recordSession.
+ Disallow the recorder to append the sample buffers inside the current setted session.
  If a record segment has started, this will be either canceled or completed depending on
  if it is empty or not.
  @param completionHandler called on the main queue when the recorder is ready to record again.
@@ -371,11 +363,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (UIImage *)snapshotOfLastVideoBuffer;
 
 /**
- Get an image representing the last appended video buffer
- */
-- (UIImage *)snapshotOfLastAppendedVideoBuffer;
-
-/**
  Returns a shared recorder if you want to use the same instance throughout your app.
  */
 + (SCRecorder *)sharedRecorder;
@@ -383,6 +370,6 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 /**
  Returns whether the current queue is the record session queue.
  */
-+ (BOOL)isRecordSessionQueue;
++ (BOOL)isSessionQueue;
 
 @end

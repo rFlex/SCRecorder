@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 
 @interface SCRecorderTools : NSObject
 
@@ -15,7 +16,7 @@
  devices (front and back camera). It will ensure that buffer output from
  both camera has the same resolution.
  */
-+ (NSString *)bestSessionPresetCompatibleWithAllDevices;
++ (NSString *)bestCaptureSessionPresetCompatibleWithAllDevices;
 
 + (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate;
 
@@ -24,5 +25,15 @@
 + (CMTimeScale)maxFrameRateForFormat:(AVCaptureDeviceFormat *)format minFrameRate:(CMTimeScale)minFrameRate;
 
 + (AVCaptureDevice *)videoDeviceForPosition:(AVCaptureDevicePosition)position;
+
++ (NSArray *)assetWriterMetadata;
+
+@end
+
+@interface NSDate (SCRecorderTools)
+
+- (NSString *)toISO8601;
+
++ (NSDate *)fromISO8601:(NSString *)iso8601;
 
 @end

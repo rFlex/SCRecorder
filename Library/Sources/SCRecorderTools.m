@@ -58,7 +58,7 @@
     return nil;
 }
 
-+ (NSString *)bestSessionPresetCompatibleWithAllDevices {
++ (NSString *)bestCaptureSessionPresetCompatibleWithAllDevices {
     NSArray *videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 
     CMVideoDimensions highestCompatibleDimension;
@@ -103,4 +103,44 @@
     return AVCaptureSessionPresetLow;
 }
 
++ (NSArray *)assetWriterMetadata {
+    AVMutableMetadataItem *creationDate = [AVMutableMetadataItem new];
+    creationDate.keySpace = AVMetadataKeySpaceCommon;
+    creationDate.key = AVMetadataCommonKeyCreationDate;
+    creationDate.value = [[NSDate date] toISO8601];
+    
+    AVMutableMetadataItem *software = [AVMutableMetadataItem new];
+    software.keySpace = AVMetadataKeySpaceCommon;
+    software.key = AVMetadataCommonKeySoftware;
+    software.value = @"SCRecorder";
+    
+    return @[software, creationDate];
+}
+
 @end
+
+@implementation NSDate (SCRecorderTools)
+
++ (NSDateFormatter *)_getFormatter {
+    static NSDateFormatter *dateFormatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dateFormatter = [[NSDateFormatter alloc] init];
+        NSLocale *enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+        [dateFormatter setLocale:enUSPOSIXLocale];
+        [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssZZZZZ"];
+    });
+
+    return dateFormatter;
+}
+
+- (NSString*)toISO8601 {
+    return [[NSDate _getFormatter] stringFromDate:self];
+}
+
++ (NSDate *)fromISO8601:(NSString *)iso8601 {
+    return [[NSDate _getFormatter] dateFromString:iso8601];
+}
+
+@end
+

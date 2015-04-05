@@ -8,9 +8,18 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "SCFilterGroup.h"
+#import "SCFilter.h"
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
+
+@class SCAssetExportSession;
+@protocol SCAssetExportSessionDelegate <NSObject>
+
+- (BOOL)assetExportSession:(SCAssetExportSession *)assetExportSession shouldReginReadWriteOnInput:(AVAssetWriterInput *)writerInput fromOutput:(AVAssetReaderOutput *)output;
+
+- (BOOL)assetExportSessionNeedsInputPixelBufferAdaptor:(SCAssetExportSession *)assetExportSession;
+
+@end
 
 @interface SCAssetExportSession : NSObject
 
@@ -44,18 +53,28 @@
  */
 @property (readonly, nonatomic) SCAudioConfiguration *audioConfiguration;
 
-// If an error occured during the export, this will contain that error
+/**
+ If an error occured during the export, this will contain that error
+ */
 @property (readonly, nonatomic) NSError *error;
+
+/**
+ The timeRange to read from the inputAsset
+ */
+@property (assign, nonatomic) CMTimeRange timeRange;
+
+
+@property (weak, nonatomic) id<SCAssetExportSessionDelegate> delegate;
 
 - (id)init;
 
 // Init with the inputAsset
 - (id)initWithAsset:(AVAsset*)inputAsset;
 
-// Starts the asynchronous execution of the export session
+/**
+ Starts the asynchronous execution of the export session
+ */
 - (void)exportAsynchronouslyWithCompletionHandler:(void(^)())completionHandler;
-
-
 
 
 //////////////////

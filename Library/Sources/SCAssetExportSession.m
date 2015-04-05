@@ -8,12 +8,12 @@
 
 #import <UIKit/UIKit.h>
 #import "SCAssetExportSession.h"
+#import "SCRecorderTools.h"
 
 #define EnsureSuccess(error, x) if (error != nil) { _error = error; if (x != nil) x(); return; }
 #define kVideoPixelFormatTypeForCI kCVPixelFormatType_32BGRA
 #define kVideoPixelFormatTypeDefault kCVPixelFormatType_422YpCbCr8
 #define kAudioFormatType kAudioFormatLinearPCM
-#define k *1000.0
 
 @interface SCAssetExportSession() {
     AVAssetWriter *_writer;
@@ -46,6 +46,7 @@
         _useGPUForRenderingFilters = YES;
         _audioConfiguration = [SCAudioConfiguration new];
         _videoConfiguration = [SCVideoConfiguration new];
+        _timeRange = CMTimeRangeMake(kCMTimeZero, kCMTimePositiveInfinity);
     }
     
     return self;
@@ -84,7 +85,7 @@
         }
 
         CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
-        CIImage *result = [_videoConfiguration.filterGroup imageByProcessingImage:image];
+        CIImage *result = [_videoConfiguration.filter imageByProcessingImage:image];
 
         CVPixelBufferRef outputPixelBuffer = nil;
         CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
@@ -128,6 +129,12 @@
 
 - (void)beginReadWriteOnInput:(AVAssetWriterInput *)input fromOutput:(AVAssetReaderOutput *)output {
     if (input != nil) {
+        id<SCAssetExportSessionDelegate> delegate = self.delegate;
+        
+        if ([delegate respondsToSelector:@selector(assetExportSession:shouldReginReadWriteOnInput:fromOutput:)] && ![delegate assetExportSession:self shouldReginReadWriteOnInput:input fromOutput:output]) {
+            return;
+        }
+        
         dispatch_group_enter(_dispatchGroup);
         [input requestMediaDataWhenReadyOnQueue:_dispatchQueue usingBlock:^{
             BOOL shouldReadNextBuffer = YES;
@@ -174,7 +181,7 @@
     }
 }
 
-- (void)setupCoreImage:(AVAssetTrack *)videoTrack {
+- (BOOL)setupCoreImage:(AVAssetTrack *)videoTrack {
     if ([self needsCIContext] && _videoInput != nil) {
         if (self.useGPUForRenderingFilters) {
             _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
@@ -189,13 +196,22 @@
             _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:options];
         }
         
+        return YES;
     } else {
         _ciContext = nil;
         _eaglContext = nil;
+        
+        return NO;
     }
 }
 
 - (BOOL)needsInputPixelBufferAdaptor {
+    id<SCAssetExportSessionDelegate> delegate = self.delegate;
+
+    if ([delegate respondsToSelector:@selector(assetExportSessionNeedsInputPixelBufferAdaptor:)] && [delegate assetExportSessionNeedsInputPixelBufferAdaptor:self]) {
+        return YES;
+    }
+    
     return _ciContext != nil;
 }
 
@@ -204,7 +220,7 @@
 }
 
 - (BOOL)needsCIContext {
-    return _videoConfiguration.filterGroup.filters.count > 0;
+    return _videoConfiguration.filter != nil;
 }
 
 - (void)setupPixelBufferAdaptor:(CGSize)videoSize {
@@ -219,10 +235,11 @@
     }
 }
 
-- (AVVideoComposition *)_buildVideoCompositionWithOutputSize:(CGSize)videoSize videoTrack:(AVAssetTrack *)videoTrack {
+- (AVVideoComposition *)_buildVideoCompositionOfVideoTrack:(AVAssetTrack *)videoTrack {
     UIImage *watermarkImage = self.videoConfiguration.watermarkImage;
     
     if (watermarkImage != nil) {
+        CGSize videoSize = videoTrack.naturalSize;
         CALayer *aLayer = [CALayer layer];
         aLayer.contents = (id)watermarkImage.CGImage;
         
@@ -280,10 +297,12 @@
     [[NSFileManager defaultManager] removeItemAtURL:self.outputUrl error:nil];
     
     _writer = [AVAssetWriter assetWriterWithURL:self.outputUrl fileType:self.outputFileType error:&error];
+    _writer.metadata = [SCRecorderTools assetWriterMetadata];
 
     EnsureSuccess(error, completionHandler);
     
     _reader = [AVAssetReader assetReaderWithAsset:self.inputAsset error:&error];
+    _reader.timeRange = _timeRange;
     EnsureSuccess(error, completionHandler);
     
     NSArray *audioTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeAudio];
@@ -317,15 +336,13 @@
     }
     
     NSArray *videoTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeVideo];
-    CGSize videoSize = CGSizeZero;
+    CGSize outputBufferSize = CGSizeZero;
     AVAssetTrack *videoTrack = nil;
     if (videoTracks.count > 0 && self.videoConfiguration.enabled && !self.videoConfiguration.shouldIgnore) {
         videoTrack = [videoTracks objectAtIndex:0];
 
         // Input
         NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:videoTrack.naturalSize];
-        videoSize.width = [videoSettings[AVVideoWidthKey] doubleValue];
-        videoSize.height = [videoSettings[AVVideoHeightKey] doubleValue];
         
         _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];
         if (_videoConfiguration.keepInputAffineTransform) {
@@ -344,17 +361,19 @@
         AVVideoComposition *videoComposition = self.videoConfiguration.composition;
         
         if (videoComposition == nil) {
-            videoComposition = [self _buildVideoCompositionWithOutputSize:CGSizeMake([videoSettings[AVVideoWidthKey] floatValue], [videoSettings[AVVideoHeightKey] floatValue]) videoTrack:videoTrack];
+            videoComposition = [self _buildVideoCompositionOfVideoTrack:videoTrack];
         }
         
         AVAssetReaderOutput *reader = nil;
         
         if (videoComposition == nil) {
+            outputBufferSize = videoTrack.naturalSize;
             reader = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:settings];
         } else {
             AVAssetReaderVideoCompositionOutput *videoCompositionOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:settings];
             videoCompositionOutput.videoComposition = videoComposition;
             reader = videoCompositionOutput;
+            outputBufferSize = videoComposition.renderSize;
         }
         
         reader.alwaysCopiesSampleData = NO;
@@ -372,8 +391,7 @@
     EnsureSuccess(error, completionHandler);
     
     [self setupCoreImage:videoTrack];
-    
-    [self setupPixelBufferAdaptor:videoSize];
+    [self setupPixelBufferAdaptor:outputBufferSize];
     
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);

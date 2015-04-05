@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-#import "SCFilterGroup.h"
 #import "SCImageView.h"
 #import "CIImageRenderer.h"
 
@@ -33,6 +32,11 @@
  Called when the item has reached end
  */
 - (void)player:(SCPlayer *)player didReachEndForItem:(AVPlayerItem *)item;
+
+/**
+ Called when the item is ready to play
+ */
+- (void)player:(SCPlayer *)player itemReadyToPlay:(AVPlayerItem *)item;
 
 @end
 

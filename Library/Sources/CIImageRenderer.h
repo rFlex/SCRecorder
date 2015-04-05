@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreImage/CoreImage.h>
+#import <AVFoundation/AVFoundation.h>
 
 @protocol CIImageRenderer <NSObject>
 

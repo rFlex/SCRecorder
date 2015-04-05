@@ -61,8 +61,8 @@
     if (image != nil) {
         CGRect extent = [image extent];
         
-        if (_filterGroup != nil) {
-            image = [_filterGroup imageByProcessingImage:image];
+        if (_filter != nil) {
+            image = [_filter imageByProcessingImage:image];
         }
         CGRect outputRect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
         
@@ -79,22 +79,14 @@
     [CIImageRendererUtils putUIImage:image toRenderer:self];
 }
 
-- (void)setImage:(CIImage *)image {
-    self.CIImage = image;
-}
-
-- (CIImage *)image {
-    return self.CIImage;
-}
-
 - (void)setCIImage:(CIImage *)CIImage {
     _CIImage = CIImage;
     
     [self setNeedsDisplay];
 }
 
-- (void)setFilterGroup:(SCFilterGroup *)filterGroup {
-    _filterGroup = filterGroup;
+- (void)setFilter:(SCFilter *)filter {
+    _filter = filter;
     
     [self setNeedsDisplay];
 }

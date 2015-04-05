@@ -7,6 +7,7 @@
 //
 
 #import "SCPlayer.h"
+#import "SCWeakSelectorTarget.h"
 
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
@@ -29,12 +30,15 @@
 
 @implementation SCPlayer
 
+static char* StatusChanged = "StatusContext";
+static char* ItemChanged = "CurrentItemContext";
+
 - (id)init {
 	self = [super init];
 	
 	if (self) {
 
-		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:nil];
+		[self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:ItemChanged];
 	}
 	
 	return self;
@@ -42,7 +46,8 @@
 
 - (void)dealloc {
     [self endSendingPlayMessages];
-
+    
+    [self unsetupDisplayLink];
     [self unsetupVideoOutputToItem:self.currentItem];
     [self removeObserver:self forKeyPath:@"currentItem"];
     [self removeOldObservers];
@@ -96,16 +101,28 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-	if ([keyPath isEqualToString:@"currentItem"]) {
-		[self initObserver];
-	} else {
-		
-	}
+    if (context == ItemChanged) {
+        [self initObserver];
+    } else if (context == StatusChanged) {
+        void (^block)() = ^{
+            id<SCPlayerDelegate> delegate = self.delegate;
+
+            if ([delegate respondsToSelector:@selector(player:itemReadyToPlay:)]) {
+                [delegate player:self itemReadyToPlay:self.currentItem];
+            }
+        };
+        if ([NSThread isMainThread]) {
+            block();
+        } else {
+            dispatch_async(dispatch_get_main_queue(), block);
+        }
+    }
 }
 
 - (void)removeOldObservers {
     if (_oldItem != nil) {
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:_oldItem];
+        [_oldItem removeObserver:self forKeyPath:@"status"];
         
         [self unsetupVideoOutputToItem:_oldItem];
         
@@ -154,7 +171,9 @@
 
 - (void)setupDisplayLink {
     if (_displayLink == nil) {
-        _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(willRenderFrame:)];
+        SCWeakSelectorTarget *target = [[SCWeakSelectorTarget alloc] initWithTarget:self targetSelector:@selector(willRenderFrame:)];
+
+        _displayLink = [CADisplayLink displayLinkWithTarget:target selector:target.handleSelector];
         _displayLink.frameInterval = 1;
         
         [self setupVideoOutputToItem:self.currentItem];
@@ -217,7 +236,6 @@
                     }
                 }
                 
-                
                 [renderer setPreferredCIImageTransform:transform];
             }
         }
@@ -239,6 +257,7 @@
 	if (self.currentItem != nil) {
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
         _oldItem = self.currentItem;
+        [self.currentItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:StatusChanged];
 
         [self setupVideoOutputToItem:self.currentItem];
 	}

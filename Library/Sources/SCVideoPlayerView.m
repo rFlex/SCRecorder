@@ -8,7 +8,6 @@
 
 #import "SCVideoPlayerView.h"
 
-
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
 /////////////////////
@@ -30,7 +29,7 @@
 	self = [super init];
 	
 	if (self) {
-		[self commonInit];
+        [self _commonInit:nil];
 	}
 	
 	return self;
@@ -40,8 +39,7 @@
     self = [super init];
     
     if (self) {
-        _player = thePlayer;
-        [self commonInit];
+        [self _commonInit:thePlayer];
     }
     
     return self;
@@ -58,19 +56,22 @@
 	self = [super initWithCoder:aDecoder];
 	
 	if (self) {
-		[self commonInit];
+        [self _commonInit:nil];
 	}
 	
 	return self;
 }
 
-- (void)commonInit {
+- (void)_commonInit:(SCPlayer *)player {
     self.SCImageViewEnabled = NO;
     
-    if (_player == nil && [SCVideoPlayerView autoCreatePlayerWhenNeeded]) {
-        self.player = [SCPlayer player];
-        _holdPlayer = YES;
+    BOOL holdPlayer = NO;
+    if (player == nil && [SCVideoPlayerView autoCreatePlayerWhenNeeded]) {
+        player = [SCPlayer player];
+        holdPlayer = YES;
     }
+    self.player = player;
+    _holdPlayer = holdPlayer;
     
 	self.clipsToBounds = YES;
 }
@@ -93,7 +94,7 @@
     }
 }
 
-- (void) layoutSubviews {
+- (void)layoutSubviews {
 	[super layoutSubviews];
 	
     _playerLayer.frame = self.bounds;
