@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <SCRecorder/SCRecorder.h>
+#import "SCRecorder.h"
 
 @interface SCRecordSessionManager : NSObject
 
