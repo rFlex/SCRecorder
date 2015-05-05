@@ -504,7 +504,7 @@
 }
 
 + (NSError*)createError:(NSString*)errorDescription {
-    return [NSError errorWithDomain:@"SCRecorder" code:200 userInfo:@{ NSLocalizedDescriptionKey : errorDescription }];
+    return [NSError errorWithDomain:@"SCRecorder" code:200 userInfo:@{NSLocalizedDescriptionKey : errorDescription}];
 }
 
 - (void)beginRecordSegmentIfNeeded:(SCRecordSession *)recordSession {
@@ -641,6 +641,8 @@
 }
 
 - (void)captureOutput:(AVCaptureFileOutput *)captureOutput didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray *)connections error:(NSError *)error {
+    _isRecording = NO;
+    
     dispatch_async(_sessionQueue, ^{
         BOOL hasComplete = NO;
         NSError *actualError = error;
