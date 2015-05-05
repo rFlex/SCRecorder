@@ -23,6 +23,8 @@
 @property (weak, nonatomic) IBOutlet UIButton *flashModeButton;
 @property (weak, nonatomic) IBOutlet UIButton *capturePhotoButton;
 @property (weak, nonatomic) IBOutlet UIButton *ghostModeButton;
+@property (weak, nonatomic) IBOutlet UIView *toolsContainerView;
+@property (weak, nonatomic) IBOutlet UIButton *openToolsButton;
 
 - (IBAction)switchCameraMode:(id)sender;
 - (IBAction)switchFlash:(id)sender;

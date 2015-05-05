@@ -16,7 +16,7 @@
 /**
  The instance of the SCRecorder to use.
  */
-@property (weak, nonatomic) SCRecorder *recorder;
+@property (strong, nonatomic) SCRecorder *recorder;
 
 /**
  The outside image used when focusing.
