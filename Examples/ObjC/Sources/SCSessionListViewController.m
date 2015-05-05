@@ -56,9 +56,9 @@
     cell.durationLabel.text = [NSString stringWithFormat:@"%fs", [recordSession[SCRecordSessionDurationKey] doubleValue]];
     
     if (recordSegments.count > 0) {
-        NSString *filename = recordSegments.firstObject;
+        NSDictionary *filename = recordSegments.firstObject;
         NSString *directory = recordSession[SCRecordSessionDirectoryKey];
-        NSURL *url = [SCRecordSession segmentURLForFilename:filename andDirectory:directory];
+        NSURL *url = [SCRecordSession segmentURLForFilename:filename[@"Filename"] andDirectory:directory];
         
         [cell.videoPlayerView.player setItemByUrl:url];
     }
