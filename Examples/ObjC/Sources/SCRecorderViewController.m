@@ -31,6 +31,7 @@
 }
 
 @property (strong, nonatomic) SCRecorderToolsView *focusView;
+
 @end
 
 ////////////////////////////////////////////////////////////
@@ -50,6 +51,10 @@
 #endif
 
 #pragma mark - Left cycle
+
+- (void)dealloc {
+    _recorder.previewView = nil;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
