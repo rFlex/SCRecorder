@@ -274,6 +274,9 @@ SCFilter *blackAndWhite = [SCFilter filterWithCIFilterName:@"CIColorControls"];
 SCFilter *exposure = [SCFilter filterWithCIFilterName:@"CIExposureAdjust"];
 [exposure setParameterValue:@0.7 forKey:@"inputEV"];
 
+// Do it as a animation
+[exposure addAnimation[SCFilterAnimation filterAnimationForParameterKey:@"inputEv" startValue:@0 endValue:@0.7 startTime:0 duration:1]];
+
 // Manually creating a filter chain
 SCFilter *filter = [SCFilter emptyFilter];
 [filter addSubFilter:blackAndWhite];
