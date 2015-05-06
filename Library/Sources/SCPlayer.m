@@ -144,7 +144,9 @@ static char* ItemChanged = "CurrentItemContext";
         if (pixelBuffer != nil) {
             CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
             
-            self.CIImageRenderer.CIImage = inputImage;
+            id<CIImageRenderer> renderer = self.CIImageRenderer;
+            renderer.CIImageTime = CMTimeGetSeconds(outputItemTime);
+            renderer.CIImage = inputImage;
             
             CFRelease(pixelBuffer);
         }

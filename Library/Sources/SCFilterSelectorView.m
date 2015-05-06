@@ -65,7 +65,7 @@
     CGRect extent = [image extent];
     
     if (_selectedFilter != nil) {
-        image = [_selectedFilter imageByProcessingImage:image];
+        image = [_selectedFilter imageByProcessingImage:image atTime:_CIImageTime];
     }
     
     CGRect outputRect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
@@ -114,7 +114,7 @@
 - (UIImage *)currentlyDisplayedImageWithScale:(CGFloat)scale orientation:(UIImageOrientation)imageOrientation {
     CIImage *inputImage = self.CIImage;
     
-    CIImage *processedImage = [self.selectedFilter imageByProcessingImage:inputImage];
+    CIImage *processedImage = [self.selectedFilter imageByProcessingImage:inputImage atTime:_CIImageTime];
     
     if (processedImage == nil) {
         processedImage = inputImage;

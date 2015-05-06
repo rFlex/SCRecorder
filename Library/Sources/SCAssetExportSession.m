@@ -85,7 +85,8 @@
         }
 
         CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
-        CIImage *result = [_videoConfiguration.filter imageByProcessingImage:image];
+        CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+        CIImage *result = [_videoConfiguration.filter imageByProcessingImage:image atTime:CMTimeGetSeconds(time)];
 
         CVPixelBufferRef outputPixelBuffer = nil;
         CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);

@@ -135,6 +135,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     
     CGFloat xOutputRect = rect.size.width * -remainingRatio;
     CGFloat xImage = extent.size.width * -remainingRatio;
+    CFTimeInterval imageTime = self.CIImageTime;
     
     while (index <= upIndex) {
         NSInteger currentIndex = index % filterGroups.count;
@@ -142,7 +143,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
         CIImage *imageToUse = image;
         
         if ([obj isKindOfClass:[SCFilter class]]) {
-            imageToUse = [((SCFilter *)obj) imageByProcessingImage:imageToUse];
+            imageToUse = [((SCFilter *)obj) imageByProcessingImage:imageToUse atTime:imageTime];
         }
         
         CGRect outputRect = CGRectTranslate(rect, xOutputRect, rect.size.width);

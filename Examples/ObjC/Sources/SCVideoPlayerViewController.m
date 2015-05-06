@@ -34,6 +34,33 @@
     _player = nil;
 }
 
+- (SCFilter *)createAnimatedFilter {
+    SCFilter *filter = [SCFilter filterWithCIFilterName:@"CIGaussianBlur"];
+    double duration = 0.5;
+    double currentTime = 0;
+    BOOL isAscending = NO;
+    
+    for (int i = 0; i < 10; i++) {
+        NSNumber *startValue = [NSNumber numberWithDouble:0];
+        NSNumber *endValue = [NSNumber numberWithDouble:20];
+        
+        if (isAscending) {
+            NSNumber *tmp = startValue;
+            startValue = endValue;
+            endValue = tmp;
+        }
+        
+        SCFilterAnimation *filterAnimation = [SCFilterAnimation filterAnimationForParameterKey:kCIInputRadiusKey startValue:startValue endValue:endValue startTime:currentTime duration:duration];
+        
+        [filter addAnimation:filterAnimation];
+        
+        currentTime += duration;
+        isAscending = !isAscending;
+    }
+    
+    return filter;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -52,9 +79,10 @@
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectChrome"],
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"],
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectTonal"],
-                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectFade"]//,
+                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectFade"],
                                                  // Adding a filter created using CoreImageShop
-//                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]]
+//                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]],
+                                                 [self createAnimatedFilter]
                                                  ];
         _player.CIImageRenderer = self.filterSwitcherView;
     } else {

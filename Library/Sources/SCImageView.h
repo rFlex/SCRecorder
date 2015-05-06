@@ -31,6 +31,11 @@
 @property (strong, nonatomic) CIImage *CIImage;
 
 /**
+ The timestamp of the CIImage
+ */
+@property (assign, nonatomic) CFTimeInterval CIImageTime;
+
+/**
  Set the CIImage using a sampleBuffer. The CIImage will be automatically generated
  when needed. This avoids creating multiple CIImage if the SCImageView can't render them
  as fast.

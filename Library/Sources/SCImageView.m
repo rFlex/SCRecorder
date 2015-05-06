@@ -62,7 +62,7 @@
         CGRect extent = [image extent];
         
         if (_filter != nil) {
-            image = [_filter imageByProcessingImage:image];
+            image = [_filter imageByProcessingImage:image atTime:_CIImageTime];
         }
         CGRect outputRect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
         

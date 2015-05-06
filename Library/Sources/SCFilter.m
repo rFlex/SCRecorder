@@ -11,6 +11,7 @@
 @interface SCFilter() {
     NSMutableDictionary *_unwrappedValues;
     NSMutableArray *_subFilters;
+    NSMutableArray *_animations;
 }
 
 @end
@@ -18,10 +19,9 @@
 @implementation SCFilter
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
-    self = [super init];
+    self = [self init];
     
     if (self) {
-        _unwrappedValues = [NSMutableDictionary new];
         _CIFilter = [aDecoder decodeObjectForKey:@"CoreImageFilter"];
         self.enabled = [aDecoder decodeBoolForKey:@"Enabled"];
         
@@ -53,8 +53,6 @@
         
         if ([aDecoder containsValueForKey:@"SubFilters"]) {
             _subFilters = [[aDecoder decodeObjectForKey:@"SubFilters"] mutableCopy];
-        } else {
-            _subFilters = [NSMutableArray new];
         }
         
         if ([aDecoder containsValueForKey:@"Name"]) {
@@ -62,21 +60,35 @@
         } else {
             _name = [_CIFilter.attributes objectForKey:kCIAttributeFilterName];
         }
+        
+        if ([aDecoder containsValueForKey:@"Animations"]) {
+            _animations = [[aDecoder decodeObjectForKey:@"Animations"] mutableCopy];
+        }
     }
     
     return self;
 }
 
-- (id)initWithCIFilter:(CIFilter *)filter {
+- (instancetype)init {
     self = [super init];
     
     if (self) {
-        _CIFilter = filter;
         _unwrappedValues = [NSMutableDictionary new];
-        _name = [filter.attributes objectForKey:kCIAttributeFilterName];
         _subFilters = [NSMutableArray new];
-
+        _animations = [NSMutableArray new];
+        
         self.enabled = YES;
+    }
+    
+    return self;
+}
+
+- (instancetype)initWithCIFilter:(CIFilter *)filter {
+    self = [self init];
+    
+    if (self) {
+        _name = [filter.attributes objectForKey:kCIAttributeFilterName];
+        _CIFilter = filter;
     }
     
     return self;
@@ -201,6 +213,7 @@
     
     [aCoder encodeObject:_subFilters forKey:@"SubFilters"];
     [aCoder encodeObject:_name forKey:@"Name"];
+    [aCoder encodeObject:_animations forKey:@"Animations"];
 }
 
 - (void)resetToDefaults {
@@ -233,23 +246,48 @@
     [_subFilters removeObjectAtIndex:index];
 }
 
+- (void)addAnimation:(SCFilterAnimation *)animation {
+    [_animations addObject:animation];
+}
+
+- (void)removeAnimation:(SCFilterAnimation *)animation {
+    [_animations removeObject:animation];
+}
+
 - (NSArray *)subFilters {
     return _subFilters;
 }
 
 - (CIImage *)imageByProcessingImage:(CIImage *)image {
+    return [self imageByProcessingImage:image atTime:0];
+}
+
+- (CIImage *)imageByProcessingImage:(CIImage *)image atTime:(CFTimeInterval)time {
     if (!self.enabled) {
         return image;
     }
     
+    id<SCFilterDelegate> delegate = self.delegate;
+    
+    if ([delegate respondsToSelector:@selector(filter:willProcessImage:atTime:)]) {
+        [delegate filter:self willProcessImage:image atTime:time];
+    }
+    
     for (SCFilter *filter in _subFilters) {
-        image = [filter imageByProcessingImage:image];
+        image = [filter imageByProcessingImage:image atTime:time];
     }
     
     CIFilter *ciFilter = _CIFilter;
     
     if (ciFilter == nil) {
         return image;
+    }
+    
+    for (SCFilterAnimation *animation in _animations) {
+        if ([animation hasValueAtTime:time]) {
+            id value = [animation valueAtTime:time];
+            [self setParameterValue:value forKey:animation.key];
+        }
     }
     
     [ciFilter setValue:image forKey:kCIInputImageKey];
@@ -273,6 +311,10 @@
     }
     
     return isEmpty;
+}
+
+- (NSArray *)animations {
+    return _animations;
 }
 
 + (SCFilter *)emptyFilter {

@@ -25,7 +25,7 @@
 
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     if (self.enabled) {
-        self.State = UIGestureRecognizerStateEnded;
+        self.state = UIGestureRecognizerStateEnded;
     }
 }
 

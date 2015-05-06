@@ -608,13 +608,14 @@
     }
     
     CIImage *image = [CIImage imageWithCVPixelBuffer:sampleBufferImage];
+    CFTimeInterval seconds = CMTimeGetSeconds(time);
     
     if (transformFilter != nil) {
-        image = [transformFilter imageByProcessingImage:image];
+        image = [transformFilter imageByProcessingImage:image atTime:seconds];
     }
     
     if (filterGroup != nil) {
-        image = [filterGroup imageByProcessingImage:image];
+        image = [filterGroup imageByProcessingImage:image atTime:seconds];
     }
     
     CVPixelBufferLockBaseAddress(pixelBuffer, 0);

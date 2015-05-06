@@ -17,6 +17,11 @@
  */
 @property (strong, nonatomic) CIImage *CIImage;
 
+/**
+ The timestamp of the CIImage
+ */
+@property (assign, nonatomic) CFTimeInterval CIImageTime;
+
 @optional
 
 /**

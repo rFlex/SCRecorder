@@ -28,6 +28,8 @@
 		DC50285A18E52023004E833F /* SCRecordSession.m in Sources */ = {isa = PBXBuildFile; fileRef = DC50285318E4F23F004E833F /* SCRecordSession.m */; };
 		DC633E2F192BCE0D00050796 /* SCFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E25192BCE0D00050796 /* SCFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC633E30192BCE0D00050796 /* SCFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = DC633E26192BCE0D00050796 /* SCFilter.m */; };
+		DC7A62BF1AFA47EC00EAB60C /* SCFilterAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = DC7A62BD1AFA47EC00EAB60C /* SCFilterAnimation.h */; };
+		DC7A62C01AFA47EC00EAB60C /* SCFilterAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7A62BE1AFA47EC00EAB60C /* SCFilterAnimation.m */; };
 		DC8B89C819C4A47A0048FBF9 /* CIImageRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8B89C719C4A47A0048FBF9 /* CIImageRenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8B89CB19C4A9410048FBF9 /* CIImageRendererUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8B89C919C4A9410048FBF9 /* CIImageRendererUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8B89CC19C4A9410048FBF9 /* CIImageRendererUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = DC8B89CA19C4A9410048FBF9 /* CIImageRendererUtils.m */; };
@@ -144,6 +146,8 @@
 		DC599B6517B481BB00500F05 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		DC633E25192BCE0D00050796 /* SCFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilter.h; sourceTree = "<group>"; };
 		DC633E26192BCE0D00050796 /* SCFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilter.m; sourceTree = "<group>"; };
+		DC7A62BD1AFA47EC00EAB60C /* SCFilterAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterAnimation.h; sourceTree = "<group>"; };
+		DC7A62BE1AFA47EC00EAB60C /* SCFilterAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterAnimation.m; sourceTree = "<group>"; };
 		DC8B89C719C4A47A0048FBF9 /* CIImageRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CIImageRenderer.h; sourceTree = "<group>"; };
 		DC8B89C919C4A9410048FBF9 /* CIImageRendererUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CIImageRendererUtils.h; sourceTree = "<group>"; };
 		DC8B89CA19C4A9410048FBF9 /* CIImageRendererUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CIImageRendererUtils.m; sourceTree = "<group>"; };
@@ -305,6 +309,8 @@
 			children = (
 				DC633E25192BCE0D00050796 /* SCFilter.h */,
 				DC633E26192BCE0D00050796 /* SCFilter.m */,
+				DC7A62BD1AFA47EC00EAB60C /* SCFilterAnimation.h */,
+				DC7A62BE1AFA47EC00EAB60C /* SCFilterAnimation.m */,
 			);
 			name = Filters;
 			sourceTree = "<group>";
@@ -467,6 +473,7 @@
 				DC933E8B193814D1007E2E88 /* SCSwipeableFilterView.h in Headers */,
 				DCA836EC18FC2C910058FE13 /* SCRecorderFocusTargetView.h in Headers */,
 				DC4CBA511863118E00532F1F /* SCPlayer.h in Headers */,
+				DC7A62BF1AFA47EC00EAB60C /* SCFilterAnimation.h in Headers */,
 				DCA1639D1A2028D100505966 /* SCMediaTypeConfiguration.h in Headers */,
 				DCF3A68F1AB9F4760034CF5C /* SCRecorderDelegate.h in Headers */,
 				DCB041671924663700D945D2 /* SCAssetExportSession.h in Headers */,
@@ -638,6 +645,7 @@
 				DCB041681924663700D945D2 /* SCAssetExportSession.m in Sources */,
 				DCA163961A2028B800505966 /* SCVideoConfiguration.m in Sources */,
 				DC50285818E51FC0004E833F /* SCRecorder.m in Sources */,
+				DC7A62C01AFA47EC00EAB60C /* SCFilterAnimation.m in Sources */,
 				DCB0415A192458C800D945D2 /* SCImageView.m in Sources */,
 				DCA163A41A23C7C300505966 /* SCPhotoConfiguration.m in Sources */,
 				DC10CF291ACFD458009880C4 /* SCWeakSelectorTarget.m in Sources */,

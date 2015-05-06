@@ -14,6 +14,8 @@
 #import <QuartzCore/QuartzCore.h>
 #endif
 
+#import "SCFilterAnimation.h"
+
 @class SCFilter;
 @protocol SCFilterDelegate <NSObject>
 
@@ -21,6 +23,11 @@
  Called when a parameter changed from the SCFilter instance.
  */
 - (void)filter:(SCFilter *)filter didChangeParameter:(NSString *)parameterKey;
+
+/**
+ Called before the filter start processing an image.
+ */
+- (void)filter:(SCFilter *)filter willProcessImage:(CIImage *)image atTime:(CFTimeInterval)time;
 
 /**
  Called when the parameter values has been reset to defaults.
@@ -60,6 +67,11 @@
 @property (readonly, nonatomic) NSArray *subFilters;
 
 /**
+ Contains every added SCFilterAnimations
+ */
+@property (readonly, nonatomic) NSArray *animations;
+
+/**
  Set a delegate that will receive messages when some parameters change
  */
 @property (weak, nonatomic) id<SCFilterDelegate> delegate;
@@ -79,6 +91,16 @@
  Set the attached CIFilter parameter value for the given key.
  */
 - (void)setParameterValue:(id)value forKey:(NSString *)key;
+
+/**
+ Add a SCFilterAnimation that can animate parameter values.
+ */
+- (void)addAnimation:(SCFilterAnimation *)animation;
+
+/**
+ Remove an already added SCFilterAnimation.
+ */
+- (void)removeAnimation:(SCFilterAnimation *)animation;
 
 /**
  Reset the attached CIFilter parameter values to default for this instance
@@ -118,6 +140,11 @@
  Returns the CIImage by processing the given CIImage.
  */
 - (CIImage *)imageByProcessingImage:(CIImage *)image;
+
+/**
+ Returns the CIImage by processing the given CIImage with the given time.
+ */
+- (CIImage *)imageByProcessingImage:(CIImage *)image atTime:(CFTimeInterval)time;
 
 /**
  Creates and returns an empty SCFilter that has no CIFilter attached to it.
