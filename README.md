@@ -275,9 +275,6 @@ SCFilter *blackAndWhite = [SCFilter filterWithCIFilterName:@"CIColorControls"];
 SCFilter *exposure = [SCFilter filterWithCIFilterName:@"CIExposureAdjust"];
 [exposure setParameterValue:@0.7 forKey:@"inputEV"];
 
-// Do it as a animation
-[exposure addAnimation[SCFilterAnimation filterAnimationForParameterKey:@"inputEv" startValue:@0 endValue:@0.7 startTime:0 duration:1]];
-
 // Manually creating a filter chain
 SCFilter *filter = [SCFilter emptyFilter];
 [filter addSubFilter:blackAndWhite];
@@ -311,6 +308,24 @@ SCFilter can be either used in a view to render a filtered image in real time, o
 - [SCImageView](Library/Sources/SCImageView.h) (live rendering)
 - [SCSwipeableFilterView](Library/Sources/SCSwipeableFilterView.h) (live rendering)
 
+Animating the filters
+----------------------
+
+Parameters of SCFilter can be animated. You can for instance, progressively blur your video. To do so, you need to add an animation within an SCFilter. Animations are represented as SCFilterAnimation which is a model object that represents a ramp from a start value to an end value and start applying at a given time and duration.
+
+Some examples:
+
+```objective-c
+// Fade from completely blurred to sharp at the beginning of the video
+SCFilter *blurFadeFilter = [SCFilter filterWithCIFilterName:@"CIFilterGaussianBlur"];
+[blurFadeFilter addAnimationForPameterKey:kCIInputRadiusKey startValue:@100 endValue:@0 startTime:0 duration:0.5];
+
+// Make the video instantly become black and white at 2 seconds for 1 second
+SCFilter *blackAndWhite = [SCFilter filterWithCIFilterName:@"CIColorControls"];
+[blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@1 endValue:@1 startTime:0 duration:2];
+[blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@0 endValue:@0 startTime:2 duration:1];
+[blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@1 endValue:@1 startTime:3 duration:1];
+```
 
 Some details about the other provided classes
 ---------------------
