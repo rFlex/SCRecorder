@@ -71,7 +71,7 @@
     
     if ([[NSProcessInfo processInfo] activeProcessorCount] > 1) {
         self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
-        self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFit;
+        self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFill;
         
         self.filterSwitcherView.filters = @[
                                                  [SCFilter emptyFilter],
