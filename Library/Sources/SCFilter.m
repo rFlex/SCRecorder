@@ -246,6 +246,14 @@
     [_subFilters removeObjectAtIndex:index];
 }
 
+- (SCFilterAnimation *)addAnimationForParameterKey:(NSString *)key startValue:(id)startValue endValue:(id)endValue startTime:(CFTimeInterval)startTime duration:(CFTimeInterval)duration {
+    SCFilterAnimation *animation = [SCFilterAnimation filterAnimationForParameterKey:key startValue:startValue endValue:endValue startTime:startTime duration:duration];
+    
+    [self addAnimation:animation];
+    
+    return animation;
+}
+
 - (void)addAnimation:(SCFilterAnimation *)animation {
     [_animations addObject:animation];
 }

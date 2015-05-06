@@ -41,8 +41,8 @@
     BOOL isAscending = NO;
     
     for (int i = 0; i < 10; i++) {
-        NSNumber *startValue = [NSNumber numberWithDouble:0];
-        NSNumber *endValue = [NSNumber numberWithDouble:20];
+        NSNumber *startValue = @0;
+        NSNumber *endValue = @20;
         
         if (isAscending) {
             NSNumber *tmp = startValue;
@@ -50,9 +50,7 @@
             endValue = tmp;
         }
         
-        SCFilterAnimation *filterAnimation = [SCFilterAnimation filterAnimationForParameterKey:kCIInputRadiusKey startValue:startValue endValue:endValue startTime:currentTime duration:duration];
-        
-        [filter addAnimation:filterAnimation];
+        [filter addAnimationForParameterKey:kCIInputRadiusKey startValue:startValue endValue:endValue startTime:currentTime duration:duration];
         
         currentTime += duration;
         isAscending = !isAscending;

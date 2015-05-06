@@ -98,6 +98,11 @@
 - (void)addAnimation:(SCFilterAnimation *)animation;
 
 /**
+ Convenience method to create and add an SCFilterAnimation that can animate parameter values.
+ */
+- (SCFilterAnimation *)addAnimationForParameterKey:(NSString *)key startValue:(id)startValue endValue:(id)endValue startTime:(CFTimeInterval)startTime duration:(CFTimeInterval)duration;
+
+/**
  Remove an already added SCFilterAnimation.
  */
 - (void)removeAnimation:(SCFilterAnimation *)animation;
