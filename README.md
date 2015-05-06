@@ -3,6 +3,7 @@ SCRecorder
 
 <img src="filters.gif" width="256" height="454" />
 <img src="screenshot_2.png" width="256" height="454" />
+<img src="animated_filters.gif" width="256" height="454" />
 
 A Vine/Instagram like audio/video recorder and filter framework in Objective-C.
 
