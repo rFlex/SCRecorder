@@ -262,6 +262,10 @@
     [_animations removeObject:animation];
 }
 
+- (void)removeAllAnimations {
+    [_animations removeAllObjects];
+}
+
 - (NSArray *)subFilters {
     return _subFilters;
 }

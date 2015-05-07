@@ -36,29 +36,35 @@
 }
 
 - (SCFilter *)createAnimatedFilter {
-    SCFilter *filter = [SCFilter filterWithCIFilterName:@"CIGaussianBlur"];
-    filter.name = @"Animated Filter";
+    SCFilter *animatedFilter = [SCFilter emptyFilter];
+    animatedFilter.name = @"Animated Filter";
+    
+    SCFilter *gaussian = [SCFilter filterWithCIFilterName:@"CIGaussianBlur"];
+    SCFilter *blackAndWhite = [SCFilter filterWithCIFilterName:@"CIColorControls"];
+    
+    [animatedFilter addSubFilter:gaussian];
+    [animatedFilter addSubFilter:blackAndWhite];
+    
     double duration = 0.5;
     double currentTime = 0;
-    BOOL isAscending = NO;
+    BOOL isAscending = YES;
     
-    for (int i = 0; i < 10; i++) {
-        NSNumber *startValue = @0;
-        NSNumber *endValue = @20;
-        
+    Float64 assetDuration = CMTimeGetSeconds(_recordSession.assetRepresentingSegments.duration);
+    
+    while (currentTime < assetDuration) {
         if (isAscending) {
-            NSNumber *tmp = startValue;
-            startValue = endValue;
-            endValue = tmp;
+            [blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@1 endValue:@0 startTime:currentTime duration:duration];
+            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@0 endValue:@5 startTime:currentTime duration:duration];
+        } else {
+            [blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@0 endValue:@1 startTime:currentTime duration:duration];
+            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@5 endValue:@0 startTime:currentTime duration:duration];
         }
-        
-        [filter addAnimationForParameterKey:kCIInputRadiusKey startValue:startValue endValue:endValue startTime:currentTime duration:duration];
         
         currentTime += duration;
         isAscending = !isAscending;
     }
     
-    return filter;
+    return animatedFilter;
 }
 
 - (void)viewDidLoad
@@ -73,8 +79,11 @@
         self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
         self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFill;
         
+        SCFilter *emptyFilter = [SCFilter emptyFilter];
+        emptyFilter.name = @"#nofilter";
+        
         self.filterSwitcherView.filters = @[
-                                                 [SCFilter emptyFilter],
+                                                 emptyFilter,
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectNoir"],
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectChrome"],
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"],

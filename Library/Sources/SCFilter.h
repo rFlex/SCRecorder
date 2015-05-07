@@ -108,6 +108,11 @@
 - (void)removeAnimation:(SCFilterAnimation *)animation;
 
 /**
+ Remove all added SCFilterAnimation animations
+ */
+- (void)removeAllAnimations;
+
+/**
  Reset the attached CIFilter parameter values to default for this instance
  and all the sub filters.
  */
