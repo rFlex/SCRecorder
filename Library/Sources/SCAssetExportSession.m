@@ -32,6 +32,7 @@
     uint32_t _pixelFormat;
     CMTime _nextAllowedVideoFrame;
     Float64 _totalDuration;
+    SCFilter *_watermarkFilter;
 }
 
 @end
@@ -84,11 +85,18 @@
         if (_eaglContext == nil) {
             CVPixelBufferLockBaseAddress(pixelBuffer, 0);
         }
-
+        
         CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+        
+        
         CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
         CIImage *result = [_videoConfiguration.filter imageByProcessingImage:image atTime:CMTimeGetSeconds(time)];
-
+        
+        if (_watermarkFilter != nil) {
+            [_watermarkFilter setParameterValue:result forKey:kCIInputBackgroundImageKey];
+            result = [_watermarkFilter parameterValueForKey:kCIOutputImageKey];
+        }
+    
         CVPixelBufferRef outputPixelBuffer = nil;
         CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
 
@@ -244,7 +252,7 @@
 }
 
 - (BOOL)needsCIContext {
-    return _videoConfiguration.filter != nil;
+    return _videoConfiguration.filter != nil || _videoConfiguration.watermarkImage != nil;
 }
 
 - (void)setupPixelBufferAdaptor:(CGSize)videoSize {
@@ -259,56 +267,44 @@
     }
 }
 
-- (AVVideoComposition *)_buildVideoCompositionOfVideoTrack:(AVAssetTrack *)videoTrack {
+- (SCFilter *)_buildWatermarkFilterForVideoTrack:(AVAssetTrack *)videoTrack {
     UIImage *watermarkImage = self.videoConfiguration.watermarkImage;
     
     if (watermarkImage != nil) {
         CGSize videoSize = videoTrack.naturalSize;
-        CALayer *aLayer = [CALayer layer];
-        aLayer.contents = (id)watermarkImage.CGImage;
         
         CGRect watermarkFrame = self.videoConfiguration.watermarkFrame;
         
         switch (self.videoConfiguration.watermarkAnchorLocation) {
             case SCWatermarkAnchorLocationTopLeft:
-                watermarkFrame.origin.y += videoSize.height - watermarkFrame.size.height;
+
                 break;
             case SCWatermarkAnchorLocationTopRight:
-                watermarkFrame.origin.y += videoSize.height - watermarkFrame.size.height;
                 watermarkFrame.origin.x = videoSize.width - watermarkFrame.size.width - watermarkFrame.origin.x;
                 break;
             case SCWatermarkAnchorLocationBottomLeft:
+                watermarkFrame.origin.y = videoSize.height - watermarkFrame.size.height - watermarkFrame.origin.y;
                 
                 break;
             case SCWatermarkAnchorLocationBottomRight:
+                watermarkFrame.origin.y = videoSize.height - watermarkFrame.size.height - watermarkFrame.origin.y;
                 watermarkFrame.origin.x = videoSize.width - watermarkFrame.size.width - watermarkFrame.origin.x;
                 break;
         }
         
-        aLayer.frame = watermarkFrame;
+        UIGraphicsBeginImageContextWithOptions(videoSize, NO, 1);
         
-        CALayer *parentLayer = [CALayer layer];
-        CALayer *videoLayer = [CALayer layer];
-        parentLayer.frame = CGRectMake(0, 0, videoSize.width, videoSize.height);
-        videoLayer.frame = CGRectMake(0, 0, videoSize.width, videoSize.height);
-        [parentLayer addSublayer:videoLayer];
-        [parentLayer addSublayer:aLayer];
+        [watermarkImage drawInRect:watermarkFrame];
         
-        AVMutableVideoComposition* videoComp = [AVMutableVideoComposition videoComposition];
-        videoComp.renderSize = videoSize;
-        videoComp.frameDuration = CMTimeMake(1, (int)videoTrack.nominalFrameRate);
+        UIImage *generatedWatermarkImage = UIGraphicsGetImageFromCurrentImageContext();
         
-        videoComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:parentLayer];
+        UIGraphicsEndImageContext();
         
-        /// instruction
-        AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
-        instruction.timeRange = CMTimeRangeMake(kCMTimeZero, [self.inputAsset duration]);
-        AVMutableVideoCompositionLayerInstruction *layerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+        SCFilter *watermarkFilter = [SCFilter filterWithCIFilterName:@"CISourceOverCompositing"];
+        CIImage *watermarkCIImage = [CIImage imageWithCGImage:generatedWatermarkImage.CGImage];
+        [watermarkFilter setParameterValue:watermarkCIImage forKey:kCIInputImageKey];
         
-        instruction.layerInstructions = [NSArray arrayWithObject:layerInstruction];
-        videoComp.instructions = [NSArray arrayWithObject:instruction];
-                
-        return videoComp;
+        return watermarkFilter;
     }
     
     return nil;
@@ -384,9 +380,7 @@
         
         AVVideoComposition *videoComposition = self.videoConfiguration.composition;
         
-        if (videoComposition == nil) {
-            videoComposition = [self _buildVideoCompositionOfVideoTrack:videoTrack];
-        }
+        _watermarkFilter = [self _buildWatermarkFilterForVideoTrack:videoTrack];
         
         AVAssetReaderOutput *reader = nil;
         

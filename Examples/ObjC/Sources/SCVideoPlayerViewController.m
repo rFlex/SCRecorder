@@ -54,10 +54,10 @@
     while (currentTime < assetDuration) {
         if (isAscending) {
             [blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@1 endValue:@0 startTime:currentTime duration:duration];
-            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@0 endValue:@5 startTime:currentTime duration:duration];
+            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@0 endValue:@10 startTime:currentTime duration:duration];
         } else {
             [blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@0 endValue:@1 startTime:currentTime duration:duration];
-            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@5 endValue:@0 startTime:currentTime duration:duration];
+            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@10 endValue:@0 startTime:currentTime duration:duration];
         }
         
         currentTime += duration;
