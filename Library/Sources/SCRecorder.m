@@ -557,11 +557,7 @@
 - (CMTime)frameDurationFromConnection:(AVCaptureConnection *)connection {
     AVCaptureDevice *device = [self currentVideoDeviceInput].device;
     
-    if ([device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
-        return device.activeVideoMinFrameDuration;
-    }
-    
-    return connection.videoMinFrameDuration;
+    return device.activeVideoMinFrameDuration;
 }
 
 - (SCFilter *)_transformFilterUsingBufferWidth:(size_t)bufferWidth bufferHeight:(size_t)bufferHeight mirrored:(BOOL)mirrored {
@@ -941,11 +937,7 @@
                         
                         AVCaptureConnection *videoConnection = [self videoConnection];
                         if ([videoConnection isVideoStabilizationSupported]) {
-                            if ([videoConnection respondsToSelector:@selector(setPreferredVideoStabilizationMode:)]) {
-                                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
-                            } else {
-                                videoConnection.enablesVideoStabilizationWhenAvailable = YES;
-                            }
+                            videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
                         }
                     } else {
                         _audioInputAdded = YES;
@@ -1378,12 +1370,7 @@
     CMTimeScale framerate = 0;
     
     if (deviceInput != nil) {
-        if ([deviceInput.device respondsToSelector:@selector(activeVideoMaxFrameDuration)]) {
-            framerate = deviceInput.device.activeVideoMaxFrameDuration.timescale;
-        } else {
-            AVCaptureConnection *videoConnection = [self videoConnection];
-            framerate = videoConnection.videoMaxFrameDuration.timescale;
-        }
+        framerate = deviceInput.device.activeVideoMaxFrameDuration.timescale;
     }
     
     return framerate;
@@ -1399,26 +1386,12 @@
         BOOL formatSupported = [SCRecorderTools formatInRange:device.activeFormat frameRate:framePerSeconds];
         
         if (formatSupported) {
-            if ([device respondsToSelector:@selector(activeVideoMinFrameDuration)]) {
-                if ([device lockForConfiguration:&error]) {
-                    device.activeVideoMaxFrameDuration = fps;
-                    device.activeVideoMinFrameDuration = fps;
-                    [device unlockForConfiguration];
-                } else {
-                    NSLog(@"Failed to set FramePerSeconds into camera device: %@", error.description);
-                }
+            if ([device lockForConfiguration:&error]) {
+                device.activeVideoMaxFrameDuration = fps;
+                device.activeVideoMinFrameDuration = fps;
+                [device unlockForConfiguration];
             } else {
-                AVCaptureConnection *connection = [self videoConnection];
-                if (connection.isVideoMaxFrameDurationSupported) {
-                    connection.videoMaxFrameDuration = fps;
-                } else {
-                    NSLog(@"Failed to set FrameRate into camera device");
-                }
-                if (connection.isVideoMinFrameDurationSupported) {
-                    connection.videoMinFrameDuration = fps;
-                } else {
-                    NSLog(@"Failed to set FrameRate into camera device");
-                }
+                NSLog(@"Failed to set FramePerSeconds into camera device: %@", error.description);
             }
         } else {
             NSLog(@"Unsupported frame rate %ld on current device format.", (long)framePerSeconds);

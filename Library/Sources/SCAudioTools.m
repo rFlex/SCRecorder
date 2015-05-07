@@ -16,10 +16,15 @@
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 + (void)overrideCategoryMixWithOthers {
-	
-    UInt32 doSetProperty = 1;
     
-    AudioSessionSetProperty (kAudioSessionProperty_OverrideCategoryMixWithOthers, sizeof(doSetProperty), &doSetProperty);
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    
+    NSError *setCategoryError = nil;
+    if (![session setCategory:AVAudioSessionCategoryPlayback
+                  withOptions:AVAudioSessionCategoryOptionMixWithOthers
+                        error:&setCategoryError]) {
+        NSLog(@"Failed to override audio category playback with error: %@", setCategoryError.localizedDescription);
+    }
 }
 #endif
 
