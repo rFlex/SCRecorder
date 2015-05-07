@@ -13,5 +13,6 @@
 
 @property (strong, nonatomic) SCRecordSession *recordSession;
 @property (weak, nonatomic) IBOutlet SCSwipeableFilterView *filterSwitcherView;
+@property (weak, nonatomic) IBOutlet UILabel *filterNameLabel;
 
 @end

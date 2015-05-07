@@ -29,6 +29,7 @@
 }
 
 - (void)dealloc {
+    [self.filterSwitcherView removeObserver:self forKeyPath:@"selectedFilter"];
     self.filterSwitcherView = nil;
     [_player pause];
     _player = nil;
@@ -36,6 +37,7 @@
 
 - (SCFilter *)createAnimatedFilter {
     SCFilter *filter = [SCFilter filterWithCIFilterName:@"CIGaussianBlur"];
+    filter.name = @"Animated Filter";
     double duration = 0.5;
     double currentTime = 0;
     BOOL isAscending = NO;
@@ -79,7 +81,7 @@
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectTonal"],
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectFade"],
                                                  // Adding a filter created using CoreImageShop
-//                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]],
+                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]],
                                                  [self createAnimatedFilter]
                                                  ];
         _player.CIImageRenderer = self.filterSwitcherView;
@@ -90,6 +92,7 @@
         [self.filterSwitcherView.superview insertSubview:playerView aboveSubview:self.filterSwitcherView];
         [self.filterSwitcherView removeFromSuperview];
     }
+    [self.filterSwitcherView addObserver:self forKeyPath:@"selectedFilter" options:NSKeyValueObservingOptionNew context:nil];
     
 	_player.loopEnabled = YES;
 }
@@ -105,6 +108,25 @@
     [super viewWillDisappear:animated];
     
     [_player pause];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if (object == self.filterSwitcherView) {
+        self.filterNameLabel.hidden = NO;
+        self.filterNameLabel.text = self.filterSwitcherView.selectedFilter.name;
+        self.filterNameLabel.alpha = 0;
+        [UIView animateWithDuration:0.3 animations:^{
+            self.filterNameLabel.alpha = 1;
+        } completion:^(BOOL finished) {
+            if (finished) {
+                [UIView animateWithDuration:0.3 delay:1 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+                    self.filterNameLabel.alpha = 0;
+                } completion:^(BOOL finished) {
+                    
+                }];
+            }
+        }];
+    }
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

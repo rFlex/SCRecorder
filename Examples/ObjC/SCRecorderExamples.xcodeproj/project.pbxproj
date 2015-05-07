@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DC10CF251ACFD082009880C4 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC10CF1E1ACFCF6E009880C4 /* libSCRecorder.a */; };
+		DC1485DD1AFB78F2004896E9 /* a_filter.cisf in Resources */ = {isa = PBXBuildFile; fileRef = DC1485DC1AFB78F2004896E9 /* a_filter.cisf */; };
 		DC1C8E9F18FD24C9005A342D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC1C8E9E18FD24C9005A342D /* Main.storyboard */; };
 		DC34A7D2199D66FA0001BD08 /* SCSessionListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC34A7D1199D66FA0001BD08 /* SCSessionListViewController.m */; };
 		DC34A7D5199D67C80001BD08 /* SCSessionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = DC34A7D4199D67C80001BD08 /* SCSessionTableViewCell.m */; };
@@ -38,7 +39,6 @@
 		DC7F376F18FC2B0300D54901 /* Stop-Normal-Red-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */; };
 		DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCB0416C19253FB800D945D2 /* GLKit.framework */; };
 		DCB69AB5197EE31300AF667A /* SCEditVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */; };
-		DCBF83CF19DE1560006547EE /* a_filter.cisf in Resources */ = {isa = PBXBuildFile; fileRef = DCBF83CE19DE1560006547EE /* a_filter.cisf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +66,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DC1485DC1AFB78F2004896E9 /* a_filter.cisf */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = a_filter.cisf; sourceTree = "<group>"; };
 		DC1C8E9E18FD24C9005A342D /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		DC34A7D0199D66FA0001BD08 /* SCSessionListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSessionListViewController.h; sourceTree = "<group>"; };
 		DC34A7D1199D66FA0001BD08 /* SCSessionListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCSessionListViewController.m; sourceTree = "<group>"; };
@@ -111,7 +112,6 @@
 		DCB0416C19253FB800D945D2 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		DCB69AB3197EE31300AF667A /* SCEditVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCEditVideoViewController.h; sourceTree = "<group>"; };
 		DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCEditVideoViewController.m; sourceTree = "<group>"; };
-		DCBF83CE19DE1560006547EE /* a_filter.cisf */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = a_filter.cisf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -211,7 +211,7 @@
 		DC7F371218FC2A0D00D54901 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				DCBF83CE19DE1560006547EE /* a_filter.cisf */,
+				DC1485DC1AFB78F2004896E9 /* a_filter.cisf */,
 				DC1C8E9E18FD24C9005A342D /* Main.storyboard */,
 				DC7F375818FC2B0300D54901 /* capture_flip@2x.png */,
 				DC7F375918FC2B0300D54901 /* capture_onion_selected@2x.png */,
@@ -365,10 +365,10 @@
 				DC7F376C18FC2B0300D54901 /* Play-Pressed-icon.png in Resources */,
 				DC7F376918FC2B0300D54901 /* Default@2x.png in Resources */,
 				DC7F376A18FC2B0300D54901 /* Pause-Normal-icon.png in Resources */,
-				DCBF83CF19DE1560006547EE /* a_filter.cisf in Resources */,
 				DC7F376618FC2B0300D54901 /* capture_onion@2x.png in Resources */,
 				DC7F376E18FC2B0300D54901 /* Record-Pressed-icon.png in Resources */,
 				DC7F376518FC2B0300D54901 /* capture_onion_selected@2x.png in Resources */,
+				DC1485DD1AFB78F2004896E9 /* a_filter.cisf in Resources */,
 				DC1C8E9F18FD24C9005A342D /* Main.storyboard in Resources */,
 				DC7F376418FC2B0300D54901 /* capture_flip@2x.png in Resources */,
 				DC7F372418FC2A0D00D54901 /* Images.xcassets in Resources */,

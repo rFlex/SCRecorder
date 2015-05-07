@@ -87,7 +87,7 @@
     self = [self init];
     
     if (self) {
-        _name = [filter.attributes objectForKey:kCIAttributeFilterName];
+        _name = [filter.attributes objectForKey:kCIAttributeFilterDisplayName];
         _CIFilter = filter;
     }
     
