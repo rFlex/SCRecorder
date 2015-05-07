@@ -71,6 +71,8 @@
 {
     [super viewDidLoad];
     
+    self.exportView.clipsToBounds = YES;
+    self.exportView.layer.cornerRadius = 20;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleBordered target:self action:@selector(saveToCameraRoll)];
     
 	_player = [SCPlayer player];
@@ -155,6 +157,18 @@
     }
 }
 
+- (void)assetExportSessionDidProgress:(SCAssetExportSession *)assetExportSession {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        float progress = assetExportSession.progress;
+        
+        [UIView animateWithDuration:0.1 animations:^{
+            CGRect frame =  self.progressView.frame;
+            frame.size.width = self.progressView.superview.frame.size.width * progress;
+            self.progressView.frame = frame;
+        }];
+    });
+}
+
 - (void)saveToCameraRoll {
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     SCFilter *currentFilter = self.filterSwitcherView.selectedFilter;
@@ -169,40 +183,55 @@
         }
     };
     
-    if (currentFilter == nil || currentFilter.isEmpty) {
-        [self.recordSession mergeSegmentsUsingPreset:AVAssetExportPresetHighestQuality completionHandler:completionHandler];
-    } else {
-        SCAssetExportSession *exportSession = [[SCAssetExportSession alloc] initWithAsset:self.recordSession.assetRepresentingSegments];
-        exportSession.videoConfiguration.filter = currentFilter;
-        exportSession.videoConfiguration.preset = SCPresetHighestQuality;
-        exportSession.audioConfiguration.preset = SCPresetHighestQuality;
-        exportSession.videoConfiguration.maxFrameRate = 35;
-        exportSession.outputUrl = self.recordSession.outputUrl;
-        exportSession.outputFileType = AVFileTypeMPEG4;
+    [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+
+    SCAssetExportSession *exportSession = [[SCAssetExportSession alloc] initWithAsset:self.recordSession.assetRepresentingSegments];
+    exportSession.videoConfiguration.filter = currentFilter;
+    exportSession.videoConfiguration.preset = SCPresetHighestQuality;
+    exportSession.audioConfiguration.preset = SCPresetHighestQuality;
+    exportSession.videoConfiguration.maxFrameRate = 35;
+    exportSession.outputUrl = self.recordSession.outputUrl;
+    exportSession.outputFileType = AVFileTypeMPEG4;
+    exportSession.delegate = self;
+    
+    self.exportView.hidden = NO;
+    self.exportView.alpha = 0;
+    CGRect frame =  self.progressView.frame;
+    frame.size.width = 0;
+    self.progressView.frame = frame;
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        self.exportView.alpha = 1;
+    }];
+    
+    // Adding our "fancy" watermark
+    UILabel *label = [UILabel new];
+    label.textColor = [UIColor whiteColor];
+    label.font = [UIFont boldSystemFontOfSize:40];
+    label.text = @"SCRecorder ©";
+    [label sizeToFit];
+    
+    UIGraphicsBeginImageContext(label.frame.size);
+    
+    [label.layer renderInContext:UIGraphicsGetCurrentContext()];
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    exportSession.videoConfiguration.watermarkImage = image;
+    exportSession.videoConfiguration.watermarkFrame = CGRectMake(10, 10, label.frame.size.width, label.frame.size.height);
+    exportSession.videoConfiguration.watermarkAnchorLocation = SCWatermarkAnchorLocationBottomRight;
+    
+    [exportSession exportAsynchronouslyWithCompletionHandler:^{
+        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
         
-        // Adding our "fancy" watermark
-        UILabel *label = [UILabel new];
-        label.textColor = [UIColor whiteColor];
-        label.font = [UIFont boldSystemFontOfSize:40];
-        label.text = @"SCRecorder ©";
-        [label sizeToFit];
-        
-        UIGraphicsBeginImageContext(label.frame.size);
-        
-        [label.layer renderInContext:UIGraphicsGetCurrentContext()];
-        
-        UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-        
-        UIGraphicsEndImageContext();
-        
-        exportSession.videoConfiguration.watermarkImage = image;
-        exportSession.videoConfiguration.watermarkFrame = CGRectMake(10, 10, label.frame.size.width, label.frame.size.height);
-        exportSession.videoConfiguration.watermarkAnchorLocation = SCWatermarkAnchorLocationBottomRight;
-        
-        [exportSession exportAsynchronouslyWithCompletionHandler:^{
-            completionHandler(exportSession.outputUrl, exportSession.error);
+        [UIView animateWithDuration:0.3 animations:^{
+            self.exportView.alpha = 0;
         }];
-    }
+        
+        completionHandler(exportSession.outputUrl, exportSession.error);
+    }];
 }
 
 @end

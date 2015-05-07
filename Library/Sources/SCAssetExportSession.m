@@ -31,6 +31,7 @@
     BOOL _animationsWereEnabled;
     uint32_t _pixelFormat;
     CMTime _nextAllowedVideoFrame;
+    Float64 _totalDuration;
 }
 
 @end
@@ -136,6 +137,8 @@
             return;
         }
         
+        BOOL shouldNotifyProgress = input == _videoInput || _videoInput == nil;
+        
         dispatch_group_enter(_dispatchGroup);
         [input requestMediaDataWhenReadyOnQueue:_dispatchQueue usingBlock:^{
             BOOL shouldReadNextBuffer = YES;
@@ -143,20 +146,25 @@
                 CMSampleBufferRef buffer = [output copyNextSampleBuffer];
                 
                 if (buffer != nil) {
+                    CMTime currentTime = CMSampleBufferGetPresentationTimeStamp(buffer);
                     if (input == _videoInput) {
-                        CMTime currentVideoTime = CMSampleBufferGetPresentationTimeStamp(buffer);
-                        if (CMTIME_COMPARE_INLINE(currentVideoTime, >=, _nextAllowedVideoFrame)) {
+                        if (CMTIME_COMPARE_INLINE(currentTime, >=, _nextAllowedVideoFrame)) {
 //                            NSLog(@"Appending at %fs (%fs)", CMTimeGetSeconds(currentVideoTime), CMTimeGetSeconds(CMSampleBufferGetOutputDuration(buffer)));
                             shouldReadNextBuffer = [self processSampleBuffer:buffer];
                             
                             if (_videoConfiguration.maxFrameRate > 0) {
-                                _nextAllowedVideoFrame = CMTimeAdd(currentVideoTime, CMTimeMake(1, _videoConfiguration.maxFrameRate));
+                                _nextAllowedVideoFrame = CMTimeAdd(currentTime, CMTimeMake(1, _videoConfiguration.maxFrameRate));
                             }
                         } else {
 //                            NSLog(@"Skipping at %fs (%fs)", CMTimeGetSeconds(currentVideoTime), CMTimeGetSeconds(CMSampleBufferGetOutputDuration(buffer)));
                         }
                     } else {
                         shouldReadNextBuffer = [input appendSampleBuffer:buffer];
+                    }
+                    
+                    if (shouldNotifyProgress) {
+                        float progress = CMTimeGetSeconds(currentTime) / _totalDuration;
+                        [self _setProgress:progress];
                     }
                     
                     CFRelease(buffer);
@@ -174,7 +182,22 @@
     }
 }
 
+- (void)_setProgress:(float)progress {
+    [self willChangeValueForKey:@"progress"];
+    
+    _progress = progress;
+    
+    [self didChangeValueForKey:@"progress"];
+    
+    id<SCAssetExportSessionDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(assetExportSessionDidProgress:)]) {
+        [delegate assetExportSessionDidProgress:self];
+    }
+}
+
 - (void)callCompletionHandler:(void (^)())completionHandler {
+    [self _setProgress:1];
+    
     if (completionHandler != nil) {
         dispatch_async(dispatch_get_main_queue(), ^{
             completionHandler();
@@ -403,6 +426,8 @@
     }
     
     [_writer startSessionAtSourceTime:kCMTimeZero];
+    
+    _totalDuration = CMTimeGetSeconds(_inputAsset.duration);
     
     [self beginReadWriteOnInput:_videoInput fromOutput:_videoOutput];
     [self beginReadWriteOnInput:_audioInput fromOutput:_audioOutput];

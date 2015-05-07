@@ -9,10 +9,12 @@
 #import <UIKit/UIKit.h>
 #import "SCRecorder.h"
 
-@interface SCVideoPlayerViewController : UIViewController<SCPlayerDelegate>
+@interface SCVideoPlayerViewController : UIViewController<SCPlayerDelegate, SCAssetExportSessionDelegate>
 
 @property (strong, nonatomic) SCRecordSession *recordSession;
 @property (weak, nonatomic) IBOutlet SCSwipeableFilterView *filterSwitcherView;
 @property (weak, nonatomic) IBOutlet UILabel *filterNameLabel;
+@property (weak, nonatomic) IBOutlet UIView *exportView;
+@property (weak, nonatomic) IBOutlet UIView *progressView;
 
 @end

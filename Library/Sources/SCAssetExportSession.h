@@ -15,6 +15,10 @@
 @class SCAssetExportSession;
 @protocol SCAssetExportSessionDelegate <NSObject>
 
+@optional
+
+- (void)assetExportSessionDidProgress:(SCAssetExportSession *)assetExportSession;
+
 - (BOOL)assetExportSession:(SCAssetExportSession *)assetExportSession shouldReginReadWriteOnInput:(AVAssetWriterInput *)writerInput fromOutput:(AVAssetReaderOutput *)output;
 
 - (BOOL)assetExportSessionNeedsInputPixelBufferAdaptor:(SCAssetExportSession *)assetExportSession;
@@ -62,6 +66,11 @@
  The timeRange to read from the inputAsset
  */
 @property (assign, nonatomic) CMTimeRange timeRange;
+
+/**
+ The current progress
+ */
+@property (readonly, nonatomic) float progress;
 
 
 @property (weak, nonatomic) id<SCAssetExportSessionDelegate> delegate;
