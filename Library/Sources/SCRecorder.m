@@ -946,8 +946,11 @@
                         if ([videoConnection isVideoStabilizationSupported]) {
                             if ([videoConnection respondsToSelector:@selector(setPreferredVideoStabilizationMode:)]) {
                                 videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
-                            } else {
+                            } else {                                
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                                 videoConnection.enablesVideoStabilizationWhenAvailable = YES;
+#pragma clang diagnostic pop
                             }
                         }
                     } else {
