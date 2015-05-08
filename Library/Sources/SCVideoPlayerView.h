@@ -22,8 +22,14 @@
 
 @interface SCVideoPlayerView : UIView
 
-@property (weak, nonatomic) id<SCVideoPlayerViewDelegate> delegate;
+/**
+ The delegate
+ */
+@property (weak, nonatomic) IBOutlet id<SCVideoPlayerViewDelegate> delegate;
 
+/**
+ The player this SCVideoPlayerView show
+ */
 @property (strong, nonatomic) SCPlayer *player;
 
 /**
