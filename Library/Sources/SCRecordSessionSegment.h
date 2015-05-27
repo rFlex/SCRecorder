@@ -15,7 +15,7 @@
 /**
  The url containing the segment data
  */
-@property (readonly, nonatomic) NSURL *url;
+@property (strong, nonatomic) NSURL *url;
 
 /**
  The AVAsset created from the url.

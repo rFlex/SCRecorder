@@ -16,14 +16,15 @@
 #define kRecordSessionDefaultAudioBitrate 128000
 #define kRecordSessionDefaultAudioFormat kAudioFormatMPEG4AAC
 
-extern const NSString *SCRecordSessionSegmentFilenamesKey;
-extern const NSString *SCRecordSessionDurationKey;
-extern const NSString *SCRecordSessionIdentifierKey;
-extern const NSString *SCRecordSessionDateKey;
-extern const NSString *SCRecordSessionDirectoryKey;
+extern NSString * const SCRecordSessionSegmentFilenamesKey;
+extern NSString * const SCRecordSessionDurationKey;
+extern NSString * const SCRecordSessionIdentifierKey;
+extern NSString * const SCRecordSessionDateKey;
+extern NSString * const SCRecordSessionDirectoryKey;
 
-extern const NSString *SCRecordSessionTemporaryDirectory;
-extern const NSString *SCRecordSessionCacheDirectory;
+extern NSString * const SCRecordSessionTemporaryDirectory;
+extern NSString * const SCRecordSessionCacheDirectory;
+extern NSString * const SCRecordSessionDocumentDirectory;
 
 @class SCRecordSession;
 @class SCRecorder;
@@ -49,7 +50,7 @@ extern const NSString *SCRecordSessionCacheDirectory;
  Can be either SCRecordSessionTemporaryDirectory or an arbritary directory.
  Default is SCRecordSessionTemporaryDirectory.
  */
-@property (copy, nonatomic) NSString *recordSegmentsDirectory;
+@property (copy, nonatomic) NSString *segmentsDirectory;
 
 /**
  The output file type used for the AVAssetWriter.

@@ -96,6 +96,11 @@
     return videoTrack.nominalFrameRate;
 }
 
+- (void)setUrl:(NSURL *)url {
+    _url = url;
+    _asset = nil;
+}
+
 + (SCRecordSessionSegment *)segmentWithURL:(NSURL *)url info:(NSDictionary *)info {
     return [[SCRecordSessionSegment alloc] initWithURL:url info:info];
 }
