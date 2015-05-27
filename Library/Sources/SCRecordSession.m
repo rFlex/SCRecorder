@@ -777,6 +777,10 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
             
             CMTime videoTime = currentTime;
             for (AVAssetTrack *videoAssetTrack in videoAssetTracks) {
+	        if (videoTrack == nil) {
+		    videoTrack = [composition mutableTrackCompatibleWithTrack:videoAssetTrack];
+	        }
+
                 if (videoTrack == nil) {
                     videoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
                     videoTrack.preferredTransform = videoAssetTrack.preferredTransform;
@@ -788,6 +792,10 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
             
             CMTime audioTime = currentTime;
             for (AVAssetTrack *audioAssetTrack in audioAssetTracks) {
+	        if (audioTrack == nil) {
+		    audioTrack = [composition mutableTrackCompatibleWithTrack:audioAssetTrack];
+	        }
+                
                 if (audioTrack == nil) {
                     audioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
                 }
