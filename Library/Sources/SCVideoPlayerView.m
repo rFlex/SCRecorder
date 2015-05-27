@@ -98,6 +98,7 @@
 	[super layoutSubviews];
 	
     _playerLayer.frame = self.bounds;
+    _SCImageView.frame = self.bounds;
 }
 
 - (BOOL)tapToPauseEnabled {
