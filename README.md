@@ -33,8 +33,8 @@ Podfile
 If you are using cocoapods, you can use this project with the following Podfile
 
 ```ruby
-	platform :ios, '7.0'
-	pod 'SCRecorder'
+platform :ios, '7.0'
+pod 'SCRecorder'
 ```
 
 Manual install
@@ -47,7 +47,7 @@ Swift
 
 For using the project in Swift, follow either the Podfile or Manual install instructions (they both work on Swift too). Then, to allow SCRecorder to be accessible from Swift, just add the following line in your bridge header:
 ```objective-c
-	#import <SCRecorder/SCRecorder.h>
+#import <SCRecorder/SCRecorder.h>
 ```
 
 Easy and quick
@@ -141,51 +141,51 @@ SCRecorder provides two easy classes to play a video/audio asset: [SCPlayer](Lib
 SCPlayer is a subclass of AVPlayer that adds some methods to make it easier to use. Plus, it also adds the ability to use a filter renderer, to apply a live filter on a video. 
 
 ```objective-c
-	SCRecordSession *recordSession = ... // Some instance of a record session
+SCRecordSession *recordSession = ... // Some instance of a record session
 	
-	// Create an instance of SCPlayer
-	SCPlayer *player = [SCPlayer player];
+// Create an instance of SCPlayer
+SCPlayer *player = [SCPlayer player];
 	
-	// Set the current playerItem using an asset representing the segments
-	// of an SCRecordSession
-	[player setItemByAsset:recordSession.assetRepresentingSegments];
+// Set the current playerItem using an asset representing the segments
+// of an SCRecordSession
+[player setItemByAsset:recordSession.assetRepresentingSegments];
 	
-	UIView *view = ... // Some view that will get the video
+UIView *view = ... // Some view that will get the video
 	
-	// Create and add an AVPlayerLayer
-	AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:player];
-	playerLayer.frame = view.bounds;
-	[view.layer.addSublayer:playerLayer];
+// Create and add an AVPlayerLayer
+AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:player];
+playerLayer.frame = view.bounds;
+[view.layer.addSublayer:playerLayer];
 	
-	// Start playing the asset and render it into the view
-	[player play];
+// Start playing the asset and render it into the view
+[player play];
 	
-	// Render the video directly through a filter
-	SCImageView *SCImageView = [[SCImageView alloc] initWithFrame:view.bounds];
-	SCImageView.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
+// Render the video directly through a filter
+SCImageView *SCImageView = [[SCImageView alloc] initWithFrame:view.bounds];
+SCImageView.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
 	
-	player.CIImageRenderer = SCImageView;
+player.CIImageRenderer = SCImageView;
 	
-	[view addSubview:SCImageView];
+[view addSubview:SCImageView];
 ```
 
 SCVideoPlayerView is a subclass of UIView that holds an SCPlayer. The video buffers are rendered directly in this view. It removes the need to handle the creation of an AVPlayerLayer and makes it really easy to play a video in your app.
 
 ```objective-c
-	SCRecordSession *recordSession = ... // Some instance of a record session
+SCRecordSession *recordSession = ... // Some instance of a record session
 	
-	SCVideoPlayerView *playerView = // Your instance somewhere
+SCVideoPlayerView *playerView = // Your instance somewhere
 	
-	// Set the current playerItem using an asset representing the segments
-	// of an SCRecordSession
-	[playerView.player setItemByAsset:recordSession.assetRepresentingSegments];
+// Set the current playerItem using an asset representing the segments
+// of an SCRecordSession
+[playerView.player setItemByAsset:recordSession.assetRepresentingSegments];
 	
-	// Start playing the asset and render it into the view
-	[playerView.player play];
+// Start playing the asset and render it into the view
+[playerView.player play];
 	
-	// Render the video directly through a filter
-	playerView.SCImageViewEnabled = YES;
-	playerView.SCImageView.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
+// Render the video directly through a filter
+playerView.SCImageViewEnabled = YES;
+playerView.SCImageView.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
 ```
 
 Editing your recording
