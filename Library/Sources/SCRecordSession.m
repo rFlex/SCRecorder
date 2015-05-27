@@ -766,7 +766,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         AVMutableCompositionTrack *videoTrack = nil;
         
         int currentSegment = 0;
-        CMTime currentTime = kCMTimeZero;
+        CMTime currentTime = composition.duration;
         for (SCRecordSessionSegment *recordSegment in _segments) {
             AVAsset *asset = recordSegment.asset;
             
@@ -777,13 +777,15 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
             
             CMTime videoTime = currentTime;
             for (AVAssetTrack *videoAssetTrack in videoAssetTracks) {
-	        if (videoTrack == nil) {
-		    videoTrack = [composition mutableTrackCompatibleWithTrack:videoAssetTrack];
-	        }
-
                 if (videoTrack == nil) {
-                    videoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-                    videoTrack.preferredTransform = videoAssetTrack.preferredTransform;
+                    NSArray *videoTracks = [composition tracksWithMediaType:AVMediaTypeVideo];
+                    
+                    if (videoTracks.count > 0) {
+                        videoTrack = [videoTracks firstObject];
+                    } else {
+                        videoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+                        videoTrack.preferredTransform = videoAssetTrack.preferredTransform;
+                    }
                 }
                 
                 videoTime = [self _appendTrack:videoAssetTrack toCompositionTrack:videoTrack atTime:videoTime withBounds:maxBounds];
@@ -792,12 +794,14 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
             
             CMTime audioTime = currentTime;
             for (AVAssetTrack *audioAssetTrack in audioAssetTracks) {
-	        if (audioTrack == nil) {
-		    audioTrack = [composition mutableTrackCompatibleWithTrack:audioAssetTrack];
-	        }
-                
                 if (audioTrack == nil) {
-                    audioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+                    NSArray *audioTracks = [composition tracksWithMediaType:AVMediaTypeAudio];
+                    
+                    if (audioTracks.count > 0) {
+                        audioTrack = [audioTracks firstObject];
+                    } else {
+                        audioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+                    }
                 }
                 
                 audioTime = [self _appendTrack:audioAssetTrack toCompositionTrack:audioTrack atTime:audioTime withBounds:maxBounds];
