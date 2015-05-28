@@ -75,6 +75,17 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     return rect;
 }
 
+- (void)scrollToFilter:(SCFilter *)filter animated:(BOOL)animated {
+    NSInteger index = [self.filters indexOfObject:filter];
+    if (index >= 0) {
+        CGPoint contentOffset = CGPointMake(_selectFilterScrollView.frame.size.width * index, 0);
+        [_selectFilterScrollView setContentOffset:contentOffset animated:animated];
+        [self updateCurrentSelected];
+    } else {
+        [NSException raise:@"InvalidFilterException" format:@"This filter is not present in the filters array"];
+    }
+}
+
 - (void)updateCurrentSelected {
     NSUInteger filterGroupsCount = self.filters.count;
     NSInteger selectedIndex = (NSInteger)((_selectFilterScrollView.contentOffset.x + _selectFilterScrollView.frame.size.width / 2) / _selectFilterScrollView.frame.size.width) % filterGroupsCount;

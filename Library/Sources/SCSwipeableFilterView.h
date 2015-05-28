@@ -33,4 +33,9 @@
  */
 @property (assign, nonatomic) BOOL refreshAutomaticallyWhenScrolling;
 
+/**
+ Scrolls to a specific filter
+ */
+- (void)scrollToFilter:(SCFilter *)filter animated:(BOOL)animated;
+
 @end
