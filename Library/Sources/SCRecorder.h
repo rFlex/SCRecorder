@@ -22,6 +22,7 @@
 #import "SCPhotoConfiguration.h"
 #import "SCRecorderTools.h"
 #import "SCRecorderDelegate.h"
+#import "SCContext.h"
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 

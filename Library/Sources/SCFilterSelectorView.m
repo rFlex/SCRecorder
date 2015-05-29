@@ -8,6 +8,7 @@
 
 #import "CIImageRendererUtils.h"
 #import "SCFilterSelectorViewInternal.h"
+#import "SCContext.h"
 
 @implementation SCFilterSelectorView
 
@@ -32,12 +33,11 @@
 }
 
 - (void)commonInit {
-    EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    EAGLContext *context = [SCContext sharedContext].EAGLContext;
     _glkView = [[GLKView alloc] initWithFrame:self.bounds context:context];
     _glkView.backgroundColor = [UIColor clearColor];
     
-    NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
-    _CIContext = [CIContext contextWithEAGLContext:context options:options];
+    _CIContext = [SCContext sharedContext].CIContext;
     
     _glkView.delegate = self;
     

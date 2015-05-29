@@ -9,6 +9,7 @@
 #import "SCImageView.h"
 #import "CIImageRendererUtils.h"
 #import "SCSampleBufferHolder.h"
+#import "SCContext.h"
 
 @interface SCImageView() {
     CIContext *_CIContext;
@@ -41,12 +42,9 @@
 
 - (void)commonInit {
     self.preferredCIImageTransform = CGAffineTransformIdentity;
-    EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     
-    NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
-    _CIContext = [CIContext contextWithEAGLContext:context options:options];
-    
-    self.context = context;
+    _CIContext = [SCContext sharedContext].CIContext;
+    self.context = [SCContext sharedContext].EAGLContext;
     
     _sampleBufferHolder = [SCSampleBufferHolder new];
 }
