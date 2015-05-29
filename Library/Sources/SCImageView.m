@@ -43,8 +43,9 @@
 - (void)commonInit {
     self.preferredCIImageTransform = CGAffineTransformIdentity;
     
-    _CIContext = [SCContext sharedContext].CIContext;
-    self.context = [SCContext sharedContext].EAGLContext;
+    SCContext *context = [SCContext new];
+    _CIContext = context.CIContext;
+    self.context = context.EAGLContext;
     
     _sampleBufferHolder = [SCSampleBufferHolder new];
 }

@@ -111,6 +111,9 @@
 		DCDC1E441AC799CF001DC3D9 /* SCFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DC633E25192BCE0D00050796 /* SCFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCEE378A1B17E6480019C7B5 /* SCContext.h in Headers */ = {isa = PBXBuildFile; fileRef = DCEE37881B17E6480019C7B5 /* SCContext.h */; };
 		DCEE378B1B17E6480019C7B5 /* SCContext.m in Sources */ = {isa = PBXBuildFile; fileRef = DCEE37891B17E6480019C7B5 /* SCContext.m */; };
+		DCEE378D1B17F3CA0019C7B5 /* SCContext.m in Sources */ = {isa = PBXBuildFile; fileRef = DCEE37891B17E6480019C7B5 /* SCContext.m */; };
+		DCEE378E1B17F3D50019C7B5 /* SCWeakSelectorTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = DC10CF271ACFD458009880C4 /* SCWeakSelectorTarget.m */; };
+		DCEE378F1B17F3D50019C7B5 /* SCFilterAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = DC7A62BE1AFA47EC00EAB60C /* SCFilterAnimation.m */; };
 		DCF3A68F1AB9F4760034CF5C /* SCRecorderDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = DCF3A68E1AB9F4760034CF5C /* SCRecorderDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
@@ -685,6 +688,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCEE378E1B17F3D50019C7B5 /* SCWeakSelectorTarget.m in Sources */,
+				DCEE378F1B17F3D50019C7B5 /* SCFilterAnimation.m in Sources */,
+				DCEE378D1B17F3CA0019C7B5 /* SCContext.m in Sources */,
 				DCDC1E161AC797EF001DC3D9 /* SCVideoConfiguration.m in Sources */,
 				DCDC1E171AC797EF001DC3D9 /* SCAudioConfiguration.m in Sources */,
 				DCDC1E181AC797EF001DC3D9 /* SCMediaTypeConfiguration.m in Sources */,

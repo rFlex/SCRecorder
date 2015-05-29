@@ -33,11 +33,12 @@
 }
 
 - (void)commonInit {
-    EAGLContext *context = [SCContext sharedContext].EAGLContext;
-    _glkView = [[GLKView alloc] initWithFrame:self.bounds context:context];
+    SCContext *context = [SCContext new];
+    EAGLContext *EAGLContext = context.EAGLContext;
+    _glkView = [[GLKView alloc] initWithFrame:self.bounds context:EAGLContext];
     _glkView.backgroundColor = [UIColor clearColor];
     
-    _CIContext = [SCContext sharedContext].CIContext;
+    _CIContext = context.CIContext;
     
     _glkView.delegate = self;
     
@@ -87,10 +88,10 @@
             [_imageTransformFilter setValue:outputImage forKey:kCIInputImageKey];
             outputImage = [_imageTransformFilter valueForKey:kCIOutputImageKey];
         }
-
+        
         rect = [CIImageRendererUtils processRect:rect withImageSize:outputImage.extent.size contentScale:_glkView.contentScaleFactor contentMode:self.contentMode];
-
-
+        
+        
         [self render:outputImage toContext:_CIContext inRect:rect];
     }
 }
@@ -145,8 +146,8 @@
 - (void)setPreferredCIImageTransform:(CGAffineTransform)preferredCIImageTransform {
     _imageTransformFilter = [CIFilter filterWithName:@"CIAffineTransform"];
     [_imageTransformFilter setValue:[NSValue valueWithBytes:&preferredCIImageTransform
-                                      objCType:@encode(CGAffineTransform)]
-                forKey:@"inputTransform"];
+                                                   objCType:@encode(CGAffineTransform)]
+                             forKey:@"inputTransform"];
 }
 
 @end

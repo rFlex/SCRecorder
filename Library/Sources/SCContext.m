@@ -24,15 +24,4 @@
     return self;
 }
 
-+ (SCContext *)sharedContext {
-    static dispatch_once_t onceToken;
-    static SCContext *context;
-    
-    dispatch_once(&onceToken, ^{
-        context = [SCContext new];
-    });
-    
-    return context;
-}
-
 @end
