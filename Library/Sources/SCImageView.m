@@ -40,6 +40,7 @@
 }
 
 - (void)commonInit {
+    self.preferredCIImageTransform = CGAffineTransformIdentity;
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     
     NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null] };
@@ -51,6 +52,9 @@
 }
 
 - (void)drawRect:(CGRect)rect {
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
     CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
     
     if (newImage != nil) {
@@ -59,11 +63,14 @@
     
     CIImage *image = _CIImage;
     if (image != nil) {
+        image = [image imageByApplyingTransform:self.preferredCIImageTransform];
+        
         CGRect extent = [image extent];
         
         if (_filter != nil) {
             image = [_filter imageByProcessingImage:image atTime:_CIImageTime];
         }
+        
         CGRect outputRect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
         
         [_CIContext drawImage:image inRect:outputRect fromRect:extent];
@@ -89,10 +96,6 @@
     _filter = filter;
     
     [self setNeedsDisplay];
-}
-
-- (void)setPreferredCIImageTransform:(CGAffineTransform)preferredCIImageTransform {
-    self.transform = preferredCIImageTransform;
 }
 
 @end

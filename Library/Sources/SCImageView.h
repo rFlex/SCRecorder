@@ -36,6 +36,11 @@
 @property (assign, nonatomic) CFTimeInterval CIImageTime;
 
 /**
+ The preferred transform for rendering the CIImage
+ */
+@property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
+
+/**
  Set the CIImage using a sampleBuffer. The CIImage will be automatically generated
  when needed. This avoids creating multiple CIImage if the SCImageView can't render them
  as fast.
