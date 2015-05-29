@@ -43,11 +43,15 @@
 - (void)commonInit {
     self.preferredCIImageTransform = CGAffineTransformIdentity;
     
-    SCContext *context = [SCContext new];
-    _CIContext = context.CIContext;
-    self.context = context.EAGLContext;
-    
     _sampleBufferHolder = [SCSampleBufferHolder new];
+}
+
+- (void)_loadContext {
+    if (_CIContext == nil) {
+        SCContext *context = [SCContext context];
+        _CIContext = context.CIContext;
+        self.context = context.EAGLContext;
+    }
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -78,6 +82,7 @@
 
 - (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer {
     _sampleBufferHolder.sampleBuffer = sampleBuffer;
+    
     [self setNeedsDisplay];
 }
 
@@ -87,6 +92,10 @@
 
 - (void)setCIImage:(CIImage *)CIImage {
     _CIImage = CIImage;
+    
+    if (CIImage != nil) {
+        [self _loadContext];
+    }
     
     [self setNeedsDisplay];
 }

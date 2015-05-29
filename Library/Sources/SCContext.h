@@ -14,4 +14,6 @@
 @property (readonly, nonatomic) CIContext *CIContext;
 @property (readonly, nonatomic) EAGLContext *EAGLContext;
 
++ (SCContext *)context;
+
 @end

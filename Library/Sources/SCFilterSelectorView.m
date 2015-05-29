@@ -33,18 +33,22 @@
 }
 
 - (void)commonInit {
-    SCContext *context = [SCContext new];
-    EAGLContext *EAGLContext = context.EAGLContext;
-    _glkView = [[GLKView alloc] initWithFrame:self.bounds context:EAGLContext];
+    _glkView = [[GLKView alloc] initWithFrame:self.bounds context:nil];
     _glkView.backgroundColor = [UIColor clearColor];
-    
-    _CIContext = context.CIContext;
     
     _glkView.delegate = self;
     
     _sampleBufferHolder = [SCSampleBufferHolder new];
     
     [self addSubview:_glkView];
+}
+
+- (void)_loadContext {
+    if (_CIContext == nil) {
+        SCContext *context = [SCContext context];
+        _CIContext = context.CIContext;
+        _glkView.context = context.EAGLContext;
+    }
 }
 
 - (void)layoutSubviews {
@@ -138,6 +142,10 @@
 
 - (void)setCIImage:(CIImage *)CIImage {
     _CIImage = CIImage;
+    
+    if (CIImage != nil) {
+        [self _loadContext];
+    }
     [_glkView setNeedsDisplay];
 }
 
