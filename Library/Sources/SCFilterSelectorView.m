@@ -109,6 +109,8 @@
         _selectedFilter = selectedFilter;
         
         [self didChangeValueForKey:@"selectedFilter"];
+        
+        [self setNeedsLayout];
     }
 }
 

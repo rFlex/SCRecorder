@@ -17,8 +17,6 @@
     CIFilter *_imageTransformFilter;
 }
 
-@property (strong, nonatomic) SCFilter *selectedFilter;
-
 /**
  Called when init. Don't forget to call super
  */
