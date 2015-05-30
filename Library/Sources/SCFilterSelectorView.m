@@ -33,6 +33,7 @@
 }
 
 - (void)commonInit {
+    _preferredCIImageTransform = CGAffineTransformIdentity;
     _glkView = [[GLKView alloc] initWithFrame:self.bounds context:nil];
     _glkView.backgroundColor = [UIColor clearColor];
     
@@ -88,13 +89,13 @@
     CIImage *outputImage = _CIImage;
     
     if (outputImage != nil) {
-        if (_imageTransformFilter != nil) {
-            [_imageTransformFilter setValue:outputImage forKey:kCIInputImageKey];
-            outputImage = [_imageTransformFilter valueForKey:kCIOutputImageKey];
+        outputImage = [outputImage imageByApplyingTransform:self.preferredCIImageTransform];
+        
+        if (self.preprocessingFilter != nil) {
+            outputImage = [self.preprocessingFilter imageByProcessingImage:outputImage atTime:self.CIImageTime];
         }
         
         rect = [CIImageRendererUtils processRect:rect withImageSize:outputImage.extent.size contentScale:_glkView.contentScaleFactor contentMode:self.contentMode];
-        
         
         [self render:outputImage toContext:_CIContext inRect:rect];
     }
@@ -151,13 +152,6 @@
 
 - (void)setImageByUIImage:(UIImage *)image {
     [CIImageRendererUtils putUIImage:image toRenderer:self];
-}
-
-- (void)setPreferredCIImageTransform:(CGAffineTransform)preferredCIImageTransform {
-    _imageTransformFilter = [CIFilter filterWithName:@"CIAffineTransform"];
-    [_imageTransformFilter setValue:[NSValue valueWithBytes:&preferredCIImageTransform
-                                                   objCType:@encode(CGAffineTransform)]
-                             forKey:@"inputTransform"];
 }
 
 @end

@@ -50,6 +50,11 @@
 @property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
 
 /**
+ A filter that is applied before applying the selected filter
+ */
+@property (strong, nonatomic) SCFilter *preprocessingFilter;
+
+/**
  Generates an UIImage from the currently displayed CIImage. The current selected
  filterGroup will be applied to this image if applicable.
  */

@@ -14,7 +14,6 @@
     EAGLContext *_EAGLContext;
     GLKView *_glkView;
     SCSampleBufferHolder *_sampleBufferHolder;
-    CIFilter *_imageTransformFilter;
 }
 
 /**
