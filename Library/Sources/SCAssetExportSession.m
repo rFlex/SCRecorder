@@ -90,7 +90,11 @@
         
         
         CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-        CIImage *result = [_videoConfiguration.filter imageByProcessingImage:image atTime:CMTimeGetSeconds(time)];
+        CIImage *result = image;
+        
+        if (_videoConfiguration.filter != nil) {
+            result = [_videoConfiguration.filter imageByProcessingImage:result atTime:CMTimeGetSeconds(time)];
+        }
         
         if (_watermarkFilter != nil) {
             [_watermarkFilter setParameterValue:result forKey:kCIInputBackgroundImageKey];

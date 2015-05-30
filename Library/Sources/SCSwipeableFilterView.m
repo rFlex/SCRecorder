@@ -70,6 +70,8 @@
     
     if (self.selectedFilter != nil) {
         [self scrollToFilter:self.selectedFilter animated:NO];
+    } else {
+        [self updateCurrentSelected];
     }
 }
 
