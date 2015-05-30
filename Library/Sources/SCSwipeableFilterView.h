@@ -11,11 +11,23 @@
 #import "CIImageRendererUtils.h"
 #import "SCFilterSelectorView.h"
 
+@class SCSwipeableFilterView;
+@protocol SCSwipeableFilterViewDelegate <NSObject>
+
+- (void)swipeableFilterView:(SCSwipeableFilterView *)swipeableFilterView didScrollToFilter:(SCFilter *)filter;
+
+@end
+
 /**
  A filter selector view that works like the Snapchat presentation of the available filters.
  Filters are swipeable from horizontally.
  */
 @interface SCSwipeableFilterView : SCFilterSelectorView<UIScrollViewDelegate>
+
+/**
+ The delegate that will receive messages
+ */
+@property (weak, nonatomic) id<SCSwipeableFilterViewDelegate> delegate;
 
 /**
  The underlying scrollView used for scrolling between filterGroups.
