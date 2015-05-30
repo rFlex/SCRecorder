@@ -37,7 +37,7 @@ static char* ItemChanged = "CurrentItemContext";
     self = [super init];
     
     if (self) {
-        
+        _shouldSuppressPlayerRendering = YES;
         [self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:ItemChanged];
     }
     
@@ -202,7 +202,7 @@ static char* ItemChanged = "CurrentItemContext";
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
         _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
-        _videoOutput.suppressesPlayerRendering = YES;
+        _videoOutput.suppressesPlayerRendering = self.shouldSuppressPlayerRendering;
         
         [item addOutput:_videoOutput];
         
@@ -282,6 +282,13 @@ static char* ItemChanged = "CurrentItemContext";
     }
     
     return playableDuration;
+}
+
+- (void)setShouldSuppressPlayerRendering:(BOOL)shouldSuppressPlayerRendering
+{
+    _shouldSuppressPlayerRendering = shouldSuppressPlayerRendering;
+    
+    _videoOutput.suppressesPlayerRendering = shouldSuppressPlayerRendering;
 }
 
 - (void)setItemByStringPath:(NSString *)stringPath {

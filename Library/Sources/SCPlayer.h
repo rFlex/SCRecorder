@@ -67,6 +67,11 @@
 @property (readonly, nonatomic) BOOL isPlaying;
 
 /**
+ Whether this instance displays default rendered video
+ */
+@property (assign, nonatomic) BOOL shouldSuppressPlayerRendering;
+
+/**
  The actual item duration.
  */
 @property (readonly, nonatomic) CMTime itemDuration;
