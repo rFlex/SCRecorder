@@ -127,6 +127,15 @@ typedef enum : NSUInteger {
 @property (assign, nonatomic) CGRect watermarkFrame;
 
 /**
+ Specify a buffer size to use. If you are using a filter that modifies
+ the image size, you should the output size here.
+ 
+ Only used in SCAssetExportSession.
+ Default is CGSizeZero
+ */
+@property (assign, nonatomic) CGSize bufferSize;
+
+/**
  Set a specific key to the video profile
  */
 @property (assign, nonatomic) NSString *profileLevel;

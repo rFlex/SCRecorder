@@ -68,11 +68,11 @@
     if (image != nil) {
         image = [image imageByApplyingTransform:self.preferredCIImageTransform];
         
-        CGRect extent = [image extent];
-        
         if (_filter != nil) {
             image = [_filter imageByProcessingImage:image atTime:_CIImageTime];
         }
+        
+        CGRect extent = [image extent];
         
         CGRect outputRect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
         

@@ -103,7 +103,7 @@
         if (ret == kCVReturnSuccess) {
             CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
             
-            [_ciContext render:result toCVPixelBuffer:outputPixelBuffer];
+            [_ciContext render:result toCVPixelBuffer:outputPixelBuffer bounds:result.extent colorSpace:CGColorSpaceCreateDeviceRGB()];
             
             BOOL success = [self processPixelBuffer:outputPixelBuffer presentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
             
@@ -257,6 +257,10 @@
 
 - (void)setupPixelBufferAdaptor:(CGSize)videoSize {
     if ([self needsInputPixelBufferAdaptor] && _videoInput != nil) {
+        if (!CGSizeEqualToSize(self.videoConfiguration.bufferSize, CGSizeZero)) {
+            videoSize = self.videoConfiguration.bufferSize;
+        }
+        
         NSDictionary *pixelBufferAttributes = @{
                                                 (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:_pixelFormat],
                                                 (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
@@ -374,9 +378,9 @@
         // Output
         _pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
         NSDictionary *settings = @{
-                               (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
-                               (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
-                               };
+                                   (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
+                                   (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
+                                   };
         
         AVVideoComposition *videoComposition = self.videoConfiguration.composition;
         
