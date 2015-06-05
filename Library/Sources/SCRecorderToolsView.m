@@ -16,7 +16,6 @@
 
 @interface SCRecorderToolsView()
 {
-    CGPoint _currentFocusPoint;
     UITapGestureRecognizer *_tapToFocusGesture;
     UITapGestureRecognizer *_doubleTapToResetFocusGesture;
     UIPinchGestureRecognizer *_pinchZoomGesture;
@@ -59,7 +58,6 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
     _minZoomFactor = kDefaultMinZoomFactor;
     _maxZoomFactor = kDefaultMaxZoomFactor;
     self.showsFocusAnimationAutomatically = YES;
-    _currentFocusPoint = CGPointMake(0.5, 0.5);
     self.cameraFocusTargetView = [[SCRecorderFocusTargetView alloc] init];
     self.cameraFocusTargetView.hidden = YES;
     [self addSubview:self.cameraFocusTargetView];
@@ -96,13 +94,16 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
 }
 
 - (void)adjustFocusView {
-    self.cameraFocusTargetView.center = CGPointMake(self.frame.size.width * _currentFocusPoint.x, self.frame.size.height * _currentFocusPoint.y);
+    CGPoint currentFocusPoint = [self.recorder convertPointOfInterestToViewCoordinates:self.recorder.focusPointOfInterest];
+    currentFocusPoint = [self convertPoint:currentFocusPoint fromView:self.recorder.previewView];
+    self.cameraFocusTargetView.center = currentFocusPoint;
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if (context == ContextAdjustingFocus) {
         if (self.showsFocusAnimationAutomatically) {
             if (self.recorder.isAdjustingFocus) {
+                [self adjustFocusView];
                 [self showFocusAnimation];
             } else {
                 [self hideFocusAnimation];
@@ -116,11 +117,10 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
     SCRecorder *recorder = self.recorder;
     
     if (recorder.focusSupported) {
-        CGPoint tapPoint = [gestureRecognizer locationInView:self];
+        CGPoint tapPoint = [gestureRecognizer locationInView:recorder.previewView];
         CGPoint convertedFocusPoint = [recorder convertToPointOfInterestFromViewCoordinates:tapPoint];
         self.cameraFocusTargetView.center = tapPoint;
         [recorder autoFocusAtPoint:convertedFocusPoint];
-        _currentFocusPoint = convertedFocusPoint;
     }
 }
 

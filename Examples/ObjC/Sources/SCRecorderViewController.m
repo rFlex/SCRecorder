@@ -87,6 +87,7 @@
     self.loadingView.hidden = YES;
     
     self.focusView = [[SCRecorderToolsView alloc] initWithFrame:previewView.bounds];
+    self.focusView.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
     self.focusView.recorder = _recorder;
     [previewView addSubview:self.focusView];
     

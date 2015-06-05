@@ -277,10 +277,15 @@
 - (void)switchCaptureDevices;
 
 /**
- Convert the view coordinates to a point usable by the focus methods
+ Convert a point from the previewView coordinates into a point of interest
  @return a point of interest usable in the focus methods
  */
 - (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates;
+
+/**
+ Convert the point of interest into a point from the previewView coordinates
+ */
+- (CGPoint)convertPointOfInterestToViewCoordinates:(CGPoint)pointOfInterest;
 
 /**
  Focus automatically at the given point of interest.
