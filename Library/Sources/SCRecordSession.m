@@ -103,11 +103,24 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         _segmentsDuration = kCMTimeZero;
         _date = [NSDate date];
         _segmentsDirectory = SCRecordSessionTemporaryDirectory;
-        _identifier = [NSString stringWithFormat:@"%ld", (long)[_date timeIntervalSince1970]];
+        _identifier = [NSString stringWithFormat:@"%@-", [SCRecordSession newIdentifier:12]];
         _audioQueue = dispatch_queue_create("me.corsin.SCRecorder.Audio", nil);
     }
     
     return self;
+}
+
+
++ (NSString *)newIdentifier:(NSUInteger)length {
+    static NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    
+    NSMutableString *randomString = [NSMutableString stringWithCapacity:length];
+    
+    for (int i = 0; i < length; i++) {
+        [randomString appendFormat: @"%C", [letters characterAtIndex: arc4random_uniform([letters length])]];
+    }
+    
+    return randomString;
 }
 
 + (NSURL *)segmentURLForFilename:(NSString *)filename andDirectory:(NSString *)directory {
