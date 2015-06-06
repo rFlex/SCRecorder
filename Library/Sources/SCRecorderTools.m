@@ -58,6 +58,46 @@
     return nil;
 }
 
++ (NSString *)captureSessionPresetForDimension:(CMVideoDimensions)videoDimension {
+    if (videoDimension.width >= 1920 && videoDimension.height >= 1080) {
+        return AVCaptureSessionPreset1920x1080;
+    }
+    if (videoDimension.width >= 1280 && videoDimension.height >= 720) {
+        return AVCaptureSessionPreset1280x720;
+    }
+    if (videoDimension.width >= 960 && videoDimension.height >= 540) {
+        return AVCaptureSessionPresetiFrame960x540;
+    }
+    if (videoDimension.width >= 640 && videoDimension.height >= 480) {
+        return AVCaptureSessionPreset640x480;
+    }
+    if (videoDimension.width >= 352 && videoDimension.height >= 288) {
+        return AVCaptureSessionPreset352x288;
+    }
+    
+    return AVCaptureSessionPresetLow;
+}
+
++ (NSString *)bestCaptureSessionPresetForDevicePosition:(AVCaptureDevicePosition)devicePosition withMaxSize:(CGSize)maxSize {
+    return [SCRecorderTools bestCaptureSessionPresetForDevice:[SCRecorderTools videoDeviceForPosition:devicePosition] withMaxSize:maxSize];
+}
+
++ (NSString *)bestCaptureSessionPresetForDevice:(AVCaptureDevice *)device withMaxSize:(CGSize)maxSize {
+    CMVideoDimensions highestDeviceDimension;
+    highestDeviceDimension.width = 0;
+    highestDeviceDimension.height = 0;
+    
+    for (AVCaptureDeviceFormat *format in device.formats) {
+        CMVideoDimensions dimension = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
+        
+        if (dimension.width <= (int)maxSize.width && dimension.height <= (int)maxSize.height && dimension.width * dimension.height > highestDeviceDimension.width * highestDeviceDimension.height) {
+            highestDeviceDimension = dimension;
+        }
+    }
+    
+    return [SCRecorderTools captureSessionPresetForDimension:highestDeviceDimension];
+}
+
 + (NSString *)bestCaptureSessionPresetCompatibleWithAllDevices {
     NSArray *videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 
@@ -84,23 +124,7 @@
         
     }
 
-    if (highestCompatibleDimension.width >= 1920 && highestCompatibleDimension.height >= 1080) {
-        return AVCaptureSessionPreset1920x1080;
-    }
-    if (highestCompatibleDimension.width >= 1280 && highestCompatibleDimension.height >= 720) {
-        return AVCaptureSessionPreset1280x720;
-    }
-    if (highestCompatibleDimension.width >= 960 && highestCompatibleDimension.height >= 540) {
-        return AVCaptureSessionPresetiFrame960x540;
-    }
-    if (highestCompatibleDimension.width >= 640 && highestCompatibleDimension.height >= 480) {
-        return AVCaptureSessionPreset640x480;
-    }
-    if (highestCompatibleDimension.width >= 352 && highestCompatibleDimension.height >= 288) {
-        return AVCaptureSessionPreset352x288;
-    }
-    
-    return AVCaptureSessionPresetLow;
+    return [SCRecorderTools captureSessionPresetForDimension:highestCompatibleDimension];
 }
 
 + (NSArray *)assetWriterMetadata {

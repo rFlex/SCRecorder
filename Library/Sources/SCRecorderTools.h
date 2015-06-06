@@ -18,6 +18,16 @@
  */
 + (NSString *)bestCaptureSessionPresetCompatibleWithAllDevices;
 
+/**
+ Returns the best captureSessionPreset for a device that is equal or under the max specified size
+ */
++ (NSString *)bestCaptureSessionPresetForDevice:(AVCaptureDevice *)device withMaxSize:(CGSize)maxSize;
+
+/**
+ Returns the best captureSessionPreset for a device position that is equal or under the max specified size
+ */
++ (NSString *)bestCaptureSessionPresetForDevicePosition:(AVCaptureDevicePosition)devicePosition withMaxSize:(CGSize)maxSize;
+
 + (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate;
 
 + (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate dimensions:(CMVideoDimensions)videoDimensions;
