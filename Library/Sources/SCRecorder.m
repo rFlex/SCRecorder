@@ -151,6 +151,11 @@
     if ([photoConnection isVideoOrientationSupported]) {
         photoConnection.videoOrientation = videoOrientation;
     }
+    
+    AVCaptureConnection *movieOutputConnection = [_movieOutput connectionWithMediaType:AVMediaTypeVideo];
+    if (movieOutputConnection.isVideoOrientationSupported) {
+        movieOutputConnection.videoOrientation = videoOrientation;
+    }
 }
 
 - (void)beginConfiguration {
