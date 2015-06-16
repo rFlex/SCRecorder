@@ -33,6 +33,8 @@
     CMTime _nextAllowedVideoFrame;
     Float64 _totalDuration;
     SCFilter *_watermarkFilter;
+    CGSize _outputBufferSize;
+    BOOL _outputBufferDiffersFromInput;
 }
 
 @end
@@ -79,53 +81,84 @@
 }
 
 - (BOOL)processSampleBuffer:(CMSampleBufferRef)sampleBuffer {
-    if (_ciContext != nil) {
-        CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-        
-        if (_eaglContext == nil) {
-            CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-        }
-        
-        CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
-        
-        
+    if (_videoPixelAdaptor != nil) {
+        CVPixelBufferRef inputPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
         CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-        CIImage *result = image;
+        NSTimeInterval timeSeconds = CMTimeGetSeconds(time);
         
-        if (_videoConfiguration.filter != nil) {
-            result = [_videoConfiguration.filter imageByProcessingImage:result atTime:CMTimeGetSeconds(time)];
-        }
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
         
-        if (_watermarkFilter != nil) {
-            [_watermarkFilter setParameterValue:result forKey:kCIInputBackgroundImageKey];
-            result = [_watermarkFilter parameterValueForKey:kCIOutputImageKey];
-        }
-    
         CVPixelBufferRef outputPixelBuffer = nil;
-        CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelAdaptor pixelBufferPool], &outputPixelBuffer);
-
-        if (ret == kCVReturnSuccess) {
-            CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
+        
+        if (_outputBufferDiffersFromInput) {
+            CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, _videoPixelAdaptor.pixelBufferPool, &outputPixelBuffer);
             
-            [_ciContext render:result toCVPixelBuffer:outputPixelBuffer bounds:result.extent colorSpace:CGColorSpaceCreateDeviceRGB()];
-            
-            BOOL success = [self processPixelBuffer:outputPixelBuffer presentationTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
-            
-            CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
-            
-            if (_eaglContext == nil) {
-                CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+            if (ret != kCVReturnSuccess) {
+                NSLog(@"Unable to allocate pixelBuffer: %d", ret);
+                return NO;
             }
             
-            CVPixelBufferRelease(outputPixelBuffer);
-            outputPixelBuffer = nil;
-            
-            return success;
+            CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
         } else {
-            NSLog(@"Unable to allocate pixelBuffer: %d", ret);
-            return NO;
+            outputPixelBuffer = inputPixelBuffer;
         }
         
+
+        CVPixelBufferLockBaseAddress(inputPixelBuffer, 0);
+        
+        if (_ciContext != nil) {
+            CIImage *image = [CIImage imageWithCVPixelBuffer:inputPixelBuffer];
+            
+            CIImage *result = image;
+            
+            if (_videoConfiguration.filter != nil) {
+                result = [_videoConfiguration.filter imageByProcessingImage:result atTime:timeSeconds];
+            }
+            
+            if (_watermarkFilter != nil) {
+                [_watermarkFilter setParameterValue:result forKey:kCIInputBackgroundImageKey];
+                result = [_watermarkFilter parameterValueForKey:kCIOutputImageKey];
+            }
+            
+            if (!CGSizeEqualToSize(result.extent.size, _outputBufferSize)) {
+                result = [result imageByCroppingToRect:CGRectMake(0, 0, _outputBufferSize.width, _outputBufferSize.height)];
+            }
+            
+            [_ciContext render:result toCVPixelBuffer:outputPixelBuffer bounds:result.extent colorSpace:colorSpace];
+        }
+        
+        UIView<SCVideoOverlay> *overlay = self.videoConfiguration.overlay;
+        
+        if (overlay != nil) {
+            if ([overlay respondsToSelector:@selector(updateWithVideoTime:)]) {
+                [overlay updateWithVideoTime:timeSeconds];
+            }
+            
+            CGContextRef ctx = CGBitmapContextCreate(CVPixelBufferGetBaseAddress(outputPixelBuffer), CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer), 8, CVPixelBufferGetBytesPerRow(outputPixelBuffer), colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
+
+            CGContextTranslateCTM(ctx, 1, CGBitmapContextGetHeight(ctx));
+            CGContextScaleCTM(ctx, 1, -1);
+            
+            overlay.frame = CGRectMake(0, 0, CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer));
+            [overlay layoutIfNeeded];
+            
+            [overlay.layer renderInContext:ctx];
+            
+            CGContextRelease(ctx);
+        }
+        
+        BOOL success = [self processPixelBuffer:outputPixelBuffer presentationTime:time];
+        
+        CVPixelBufferUnlockBaseAddress(inputPixelBuffer, 0);
+        
+        if (inputPixelBuffer != outputPixelBuffer) {
+            CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
+            CVPixelBufferRelease(outputPixelBuffer);
+        }
+        
+        CGColorSpaceRelease(colorSpace);
+        
+        return success;
     } else {
         return [_videoInput appendSampleBuffer:sampleBuffer];
     }
@@ -248,7 +281,7 @@
         return YES;
     }
     
-    return _ciContext != nil;
+    return _ciContext != nil || self.videoConfiguration.overlay != nil;
 }
 
 + (NSError*)createError:(NSString*)errorDescription {
@@ -256,15 +289,11 @@
 }
 
 - (BOOL)needsCIContext {
-    return _videoConfiguration.filter != nil || _videoConfiguration.watermarkImage != nil;
+    return (_videoConfiguration.filter != nil && !_videoConfiguration.filter.isEmpty) || _videoConfiguration.watermarkImage != nil;
 }
 
 - (void)setupPixelBufferAdaptor:(CGSize)videoSize {
     if ([self needsInputPixelBufferAdaptor] && _videoInput != nil) {
-        if (!CGSizeEqualToSize(self.videoConfiguration.bufferSize, CGSizeZero)) {
-            videoSize = self.videoConfiguration.bufferSize;
-        }
-        
         NSDictionary *pixelBufferAttributes = @{
                                                 (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:_pixelFormat],
                                                 (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
@@ -364,7 +393,7 @@
     }
     
     NSArray *videoTracks = [self.inputAsset tracksWithMediaType:AVMediaTypeVideo];
-    CGSize outputBufferSize = CGSizeZero;
+    CGSize inputBufferSize = CGSizeZero;
     AVAssetTrack *videoTrack = nil;
     if (videoTracks.count > 0 && self.videoConfiguration.enabled && !self.videoConfiguration.shouldIgnore) {
         videoTrack = [videoTracks objectAtIndex:0];
@@ -380,7 +409,7 @@
         }
         
         // Output
-        _pixelFormat = [self needsCIContext] ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
+        _pixelFormat = [self needsCIContext] || self.videoConfiguration.overlay ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
         NSDictionary *settings = @{
                                    (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
                                    (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
@@ -393,13 +422,13 @@
         AVAssetReaderOutput *reader = nil;
         
         if (videoComposition == nil) {
-            outputBufferSize = videoTrack.naturalSize;
+            inputBufferSize = videoTrack.naturalSize;
             reader = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:settings];
         } else {
             AVAssetReaderVideoCompositionOutput *videoCompositionOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:videoTracks videoSettings:settings];
             videoCompositionOutput.videoComposition = videoComposition;
             reader = videoCompositionOutput;
-            outputBufferSize = videoComposition.renderSize;
+            inputBufferSize = videoComposition.renderSize;
         }
         
         reader.alwaysCopiesSampleData = NO;
@@ -415,6 +444,14 @@
     }
     
     EnsureSuccess(error, completionHandler);
+    
+    CGSize outputBufferSize = inputBufferSize;
+    if (!CGSizeEqualToSize(self.videoConfiguration.bufferSize, CGSizeZero)) {
+        outputBufferSize = self.videoConfiguration.bufferSize;
+    }
+    
+    _outputBufferSize = outputBufferSize;
+    _outputBufferDiffersFromInput = !CGSizeEqualToSize(inputBufferSize, outputBufferSize);
     
     [self setupCoreImage:videoTrack];
     [self setupPixelBufferAdaptor:outputBufferSize];

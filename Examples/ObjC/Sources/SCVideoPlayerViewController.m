@@ -8,6 +8,7 @@
 
 #import "SCVideoPlayerViewController.h"
 #import "SCEditVideoViewController.h"
+#import "SCWatermarkOverlayView.h"
 
 @interface SCVideoPlayerViewController () {
     SCPlayer *_player;
@@ -203,25 +204,22 @@
     [UIView animateWithDuration:0.3 animations:^{
         self.exportView.alpha = 1;
     }];
+
+    SCWatermarkOverlayView *overlay = [SCWatermarkOverlayView new];
+    overlay.date = self.recordSession.date;
+    exportSession.videoConfiguration.overlay = overlay;
     
-    // Adding our "fancy" watermark
-    UILabel *label = [UILabel new];
-    label.textColor = [UIColor whiteColor];
-    label.font = [UIFont boldSystemFontOfSize:40];
-    label.text = @"SCRecorder ©";
-    [label sizeToFit];
-    
-    UIGraphicsBeginImageContext(label.frame.size);
-    
-    [label.layer renderInContext:UIGraphicsGetCurrentContext()];
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    
-    UIGraphicsEndImageContext();
-    
-    exportSession.videoConfiguration.watermarkImage = image;
-    exportSession.videoConfiguration.watermarkFrame = CGRectMake(10, 10, label.frame.size.width, label.frame.size.height);
-    exportSession.videoConfiguration.watermarkAnchorLocation = SCWatermarkAnchorLocationBottomRight;
+//    UIGraphicsBeginImageContext(label.frame.size);
+//    
+//    [label.layer renderInContext:UIGraphicsGetCurrentContext()];
+//    
+//    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+//    
+//    UIGraphicsEndImageContext();
+//    
+//    exportSession.videoConfiguration.watermarkImage = image;
+//    exportSession.videoConfiguration.watermarkFrame = CGRectMake(10, 10, label.frame.size.width, label.frame.size.height);
+//    exportSession.videoConfiguration.watermarkAnchorLocation = SCWatermarkAnchorLocationBottomRight;
     
     [exportSession exportAsynchronouslyWithCompletionHandler:^{
         [[UIApplication sharedApplication] endIgnoringInteractionEvents];

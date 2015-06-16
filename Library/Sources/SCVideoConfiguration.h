@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import "SCMediaTypeConfiguration.h"
 #import "SCFilter.h"
 
@@ -20,6 +21,14 @@ typedef enum : NSUInteger {
     SCWatermarkAnchorLocationBottomLeft,
     SCWatermarkAnchorLocationBottomRight
 } SCWatermarkAnchorLocation;
+
+@protocol SCVideoOverlay <NSObject>
+
+@optional
+
+- (void)updateWithVideoTime:(NSTimeInterval)time;
+
+@end
 
 @interface SCVideoConfiguration : SCMediaTypeConfiguration
 
@@ -127,8 +136,10 @@ typedef enum : NSUInteger {
 @property (assign, nonatomic) CGRect watermarkFrame;
 
 /**
- Specify a buffer size to use. If you are using a filter that modifies
- the image size, you should the output size here.
+ Specify a buffer size to use. By default the SCAssetExportSession tries
+ to figure out which size to use by looking at the composition and the natural
+ size of the inputAsset. If the filter you set return back an image with a different
+ size, you should put the output size here.
  
  Only used in SCAssetExportSession.
  Default is CGSizeZero
@@ -139,6 +150,13 @@ typedef enum : NSUInteger {
  Set a specific key to the video profile
  */
 @property (assign, nonatomic) NSString *profileLevel;
+
+/**
+ The overlay view that will be drawn on top of the video.
+ 
+ Only used in SCAssetExportSession.
+ */
+@property (strong, nonatomic) UIView<SCVideoOverlay> *overlay;
 
 /**
  The watermark anchor location.

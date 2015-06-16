@@ -156,6 +156,7 @@
     if (movieOutputConnection.isVideoOrientationSupported) {
         movieOutputConnection.videoOrientation = videoOrientation;
     }
+    
 }
 
 - (void)beginConfiguration {
