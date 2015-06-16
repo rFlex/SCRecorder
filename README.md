@@ -14,7 +14,7 @@ In short, here is a short list of the cool things you can do:
 - Display the result into a convenient video player
 - Save the record session for later somewhere using a serializable NSDictionary (works in NSUserDefaults)
 - Add a configurable and animatable video filter using Core Image
-- Add a watermark
+- Add a UIView as overlay, so you can render anything you want on top of your video
 - Merge and export the video using fine tunings that you choose
 
 
