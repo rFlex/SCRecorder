@@ -38,6 +38,12 @@
  */
 - (void)player:(SCPlayer *)player itemReadyToPlay:(AVPlayerItem *)item;
 
+/**
+ Called when the player has setup the renderer so it can receive the image in the
+ proper orientation.
+ */
+- (void)player:(SCPlayer *)player didSetupRenderer:(id<CIImageRenderer>)renderer;
+
 @end
 
 /**

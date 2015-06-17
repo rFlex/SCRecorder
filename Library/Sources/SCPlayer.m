@@ -19,6 +19,8 @@
     AVPlayerItem *_oldItem;
     Float64 _itemsLoopLength;
     id _timeObserver;
+    BOOL _rendererWasSetup;
+    CGAffineTransform _rendererTransform;
 }
 
 @end
@@ -138,18 +140,36 @@ static char* ItemChanged = "CurrentItemContext";
     CMTime outputItemTime = [_videoOutput itemTimeForHostTime:hostFrameTime];
     
     if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
-        CMTime time;
-        CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:&time];
         
-        if (pixelBuffer != nil) {
-            CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+        id<CIImageRenderer> renderer = self.CIImageRenderer;
+
+        if (renderer != nil) {
+            if (!_rendererWasSetup) {
+                if ([renderer respondsToSelector:@selector(setPreferredCIImageTransform:)]) {
+                    [renderer setPreferredCIImageTransform:_rendererTransform];
+                }
+                
+                id<SCPlayerDelegate> delegate = self.delegate;
+                if ([delegate respondsToSelector:@selector(player:didSetupRenderer:)]) {
+                    [delegate player:self didSetupRenderer:renderer];
+                }
+                
+                _rendererWasSetup = YES;
+            }
             
-            id<CIImageRenderer> renderer = self.CIImageRenderer;
-            renderer.CIImageTime = CMTimeGetSeconds(outputItemTime);
-            renderer.CIImage = inputImage;
+            CMTime time;
+            CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:&time];
             
-            CFRelease(pixelBuffer);
+            if (pixelBuffer != nil) {
+                CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+                
+                renderer.CIImageTime = CMTimeGetSeconds(outputItemTime);
+                renderer.CIImage = inputImage;
+                
+                CFRelease(pixelBuffer);
+            }
         }
+
     }
 }
 
@@ -184,6 +204,7 @@ static char* ItemChanged = "CurrentItemContext";
         
         [self suspendDisplay];
     }
+    _rendererWasSetup = NO;
 }
 
 - (void)unsetupDisplayLink {
@@ -208,15 +229,16 @@ static char* ItemChanged = "CurrentItemContext";
         
         _displayLink.paused = NO;
         
+        CGAffineTransform transform = CGAffineTransformIdentity;
         id<CIImageRenderer> renderer = self.CIImageRenderer;
         
-        if ([renderer respondsToSelector:@selector(frame)] && [renderer respondsToSelector:@selector(setPreferredCIImageTransform:)]) {
+        if ([renderer respondsToSelector:@selector(frame)]) {
             NSArray *videoTracks = [item.asset tracksWithMediaType:AVMediaTypeVideo];
             
             if (videoTracks.count > 0) {
                 AVAssetTrack *track = videoTracks.firstObject;
                 
-                CGAffineTransform transform = track.preferredTransform;
+                transform = track.preferredTransform;
                 
                 // Return the video if it is upside down
                 if (transform.b == 1 && transform.c == -1) {
@@ -235,10 +257,10 @@ static char* ItemChanged = "CurrentItemContext";
                         transform = CGAffineTransformRotate(transform, M_PI_2);
                     }
                 }
-                
-                [renderer setPreferredCIImageTransform:transform];
             }
         }
+        _rendererTransform = transform;
+        _rendererWasSetup = NO;
     }
 }
 
