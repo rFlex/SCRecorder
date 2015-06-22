@@ -11,8 +11,6 @@
 #import "SCRecorderTools.h"
 
 #define EnsureSuccess(error, x) if (error != nil) { _error = error; if (x != nil) x(); return; }
-#define kVideoPixelFormatTypeForCI kCVPixelFormatType_32BGRA
-#define kVideoPixelFormatTypeDefault kCVPixelFormatType_422YpCbCr8
 #define kAudioFormatType kAudioFormatLinearPCM
 
 @interface SCAssetExportSession() {
@@ -29,7 +27,6 @@
     EAGLContext *_eaglContext;
     CIContext *_ciContext;
     BOOL _animationsWereEnabled;
-    uint32_t _pixelFormat;
     CMTime _nextAllowedVideoFrame;
     Float64 _totalDuration;
     SCFilter *_watermarkFilter;
@@ -295,7 +292,7 @@
 - (void)setupPixelBufferAdaptor:(CGSize)videoSize {
     if ([self needsInputPixelBufferAdaptor] && _videoInput != nil) {
         NSDictionary *pixelBufferAttributes = @{
-                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:_pixelFormat],
+                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
                                                 (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:videoSize.width],
                                                 (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:videoSize.height]
                                                 };
@@ -409,11 +406,13 @@
         }
         
         // Output
-        _pixelFormat = [self needsCIContext] || self.videoConfiguration.overlay ? kVideoPixelFormatTypeForCI : kVideoPixelFormatTypeDefault;
-        NSDictionary *settings = @{
-                                   (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:_pixelFormat],
-                                   (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
-                                   };
+        NSDictionary *settings = nil;
+        if ([self needsCIContext] || self.videoConfiguration.overlay != nil) {
+            settings = @{
+                         (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA],
+                         (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
+                         };
+        }
         
         AVVideoComposition *videoComposition = self.videoConfiguration.composition;
         
