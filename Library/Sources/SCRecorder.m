@@ -846,6 +846,21 @@
     return segmentInfo;
 }
 
+- (void)_focusDidComplete {
+    id<SCRecorderDelegate> delegate = self.delegate;
+
+    [self setAdjustingFocus:NO];
+    
+    if ([delegate respondsToSelector:@selector(recorderDidEndFocus:)]) {
+        [delegate recorderDidEndFocus:self];
+    }
+    
+    if (_needsSwitchBackToContinuousFocus) {
+        _needsSwitchBackToContinuousFocus = NO;
+        [self continuousFocusAtPoint:self.focusPointOfInterest];
+    }
+}
+
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     id<SCRecorderDelegate> delegate = self.delegate;
     
@@ -858,17 +873,7 @@
                 [delegate recorderDidStartFocus:self];
             }
         } else {
-            [self setAdjustingFocus:NO];
-            
-            if ([delegate respondsToSelector:@selector(recorderDidEndFocus:)]) {
-                [delegate recorderDidEndFocus:self];
-            }
-            
-            if (_needsSwitchBackToContinuousFocus) {
-                _needsSwitchBackToContinuousFocus = NO;
-                [self continuousFocusAtPoint:self.focusPointOfInterest];
-            }
-            
+            [self _focusDidComplete];
         }
     } else if (context == SCRecorderAudioEnabledContext) {
         if ([NSThread isMainThread]) {
@@ -1217,6 +1222,8 @@
 }
 
 - (void)setDevice:(AVCaptureDevicePosition)device {
+    [self willChangeValueForKey:@"device"];
+    
     _device = device;
     if (_resetZoomOnChangeDevice) {
         self.videoZoomFactor = 1;
@@ -1224,6 +1231,8 @@
     if (_captureSession != nil) {
         [self reconfigureVideoInput:self.videoConfiguration.enabled audioInput:NO];
     }
+    
+    [self didChangeValueForKey:@"device"];
 }
 
 - (void)setFlashMode:(SCFlashMode)flashMode {

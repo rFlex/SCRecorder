@@ -29,6 +29,7 @@
 @implementation SCRecorderToolsView
 
 static char *ContextAdjustingFocus = "AdjustingFocus";
+static char *ContextDidChangeDevice = "DidChangeDevice";
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -109,6 +110,8 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
                 [self hideFocusAnimation];
             }
         }
+    } else if (context == ContextDidChangeDevice) {
+        [self hideFocusAnimation];
     }
 }
 
@@ -207,12 +210,14 @@ static char *ContextAdjustingFocus = "AdjustingFocus";
     
     if (oldRecorder != nil) {
         [oldRecorder removeObserver:self forKeyPath:@"isAdjustingFocus"];
+        [oldRecorder removeObserver:self forKeyPath:@"device"];
     }
     
     _recorder = recorder;
     
     if (recorder != nil) {
         [recorder addObserver:self forKeyPath:@"isAdjustingFocus" options:NSKeyValueObservingOptionNew context:ContextAdjustingFocus];
+        [recorder addObserver:self forKeyPath:@"device"  options:NSKeyValueObservingOptionNew context:ContextDidChangeDevice];
     }
 }
 
