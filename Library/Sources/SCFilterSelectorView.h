@@ -55,12 +55,6 @@
 @property (strong, nonatomic) SCFilter *preprocessingFilter;
 
 /**
- Generates an UIImage from the currently displayed CIImage. The current selected
- filterGroup will be applied to this image if applicable.
- */
-- (UIImage *)currentlyDisplayedImageWithScale:(CGFloat)scale orientation:(UIImageOrientation)orientation;
-
-/**
  Set the CIImage using a sampleBuffer. The CIImage will be automatically generated
  when needed. This avoids creating multiple CIImage if the SCImageView can't render them
  as fast.
@@ -71,5 +65,15 @@
  Set the CIImage using an UIImage
  */
 - (void)setImageByUIImage:(UIImage *)image;
+
+/**
+ Creates and returns the processed image as UIImage
+ */
+- (UIImage *)processedUIImage;
+
+/**
+ Creates and returns the processed image as CIImage
+ */
+- (CIImage *)processedCIImage;
 
 @end

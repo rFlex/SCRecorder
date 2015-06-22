@@ -52,4 +52,14 @@
  */
 - (void)setImageByUIImage:(UIImage *)image;
 
+/**
+ Creates and returns the processed image as UIImage
+ */
+- (UIImage *)processedUIImage;
+
+/**
+ Creates and returns the processed image as CIImage
+ */
+- (CIImage *)processedCIImage;
+
 @end

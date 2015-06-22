@@ -64,7 +64,20 @@
         _CIImage = newImage;
     }
     
+    CIImage *image = [self processedCIImage];
+    
+    if (image != nil) {
+        CGRect extent = [image extent];
+        
+        CGRect outputRect = [CIImageRendererUtils processRect:self.bounds withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
+        
+        [_CIContext drawImage:image inRect:outputRect fromRect:extent];
+    }
+}
+
+- (CIImage *)processedCIImage {
     CIImage *image = _CIImage;
+    
     if (image != nil) {
         image = [image imageByApplyingTransform:self.preferredCIImageTransform];
         
@@ -72,11 +85,25 @@
             image = [_filter imageByProcessingImage:image atTime:_CIImageTime];
         }
         
-        CGRect extent = [image extent];
+        return image;
+    }
+    
+    return image;
+}
+
+- (UIImage *)processedUIImage {
+    CIImage *image = [self processedCIImage];
+    
+    if (image != nil) {
+        CGImageRef CGImage = [_CIContext createCGImage:image fromRect:[image extent]];
         
-        CGRect outputRect = [CIImageRendererUtils processRect:rect withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
+        UIImage *uiImage = [UIImage imageWithCGImage:CGImage scale:self.contentScaleFactor orientation:UIImageOrientationUp];
         
-        [_CIContext drawImage:image inRect:outputRect fromRect:extent];
+        CGImageRelease(CGImage);
+        
+        return uiImage;
+    } else {
+        return nil;
     }
 }
 

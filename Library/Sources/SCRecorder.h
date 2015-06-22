@@ -200,6 +200,12 @@
 @property (readonly, nonatomic) CGPoint focusPointOfInterest;
 
 /**
+ Will be true if the recorder is currently performing a focus because
+ the subject area changed.
+ */
+@property (readonly, nonatomic) BOOL subjectAreaChanged;
+
+/**
  Will contains an error if an error occured while reconfiguring
  the underlying AVCaptureSession.
  */

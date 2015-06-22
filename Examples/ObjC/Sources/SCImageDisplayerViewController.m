@@ -62,7 +62,7 @@
 }
 
 - (void)saveToCameraRoll {
-    UIImage *image = [self.filterSwitcherView currentlyDisplayedImageWithScale:self.photo.scale orientation:self.photo.imageOrientation];
+    UIImage *image = [self.filterSwitcherView processedUIImage];
     
     UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
 }
