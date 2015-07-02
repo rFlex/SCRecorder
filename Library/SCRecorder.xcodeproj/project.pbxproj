@@ -61,6 +61,10 @@
 		DCBA8FE71A92B2FF00DD1A79 /* SCRecorderToolsView.m in Sources */ = {isa = PBXBuildFile; fileRef = DCBA8FE51A92B2FF00DD1A79 /* SCRecorderToolsView.m */; };
 		DCC1FC491A4AF1DD00F1C653 /* SCRecorderTools.h in Headers */ = {isa = PBXBuildFile; fileRef = DCC1FC471A4AF1DD00F1C653 /* SCRecorderTools.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCC1FC4A1A4AF1DD00F1C653 /* SCRecorderTools.m in Sources */ = {isa = PBXBuildFile; fileRef = DCC1FC481A4AF1DD00F1C653 /* SCRecorderTools.m */; };
+		DCD12A9F1B456C5E0064674D /* SCProcessingQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = DCD12A9D1B456C5E0064674D /* SCProcessingQueue.h */; };
+		DCD12AA01B456C5E0064674D /* SCProcessingQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD12A9E1B456C5E0064674D /* SCProcessingQueue.m */; };
+		DCD12AA41B45AA540064674D /* SCIOPixelBuffers.h in Headers */ = {isa = PBXBuildFile; fileRef = DCD12AA21B45AA540064674D /* SCIOPixelBuffers.h */; };
+		DCD12AA51B45AA540064674D /* SCIOPixelBuffers.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */; };
 		DCDC1DF81AC79592001DC3D9 /* SCRecorderFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = DCDC1DF71AC79592001DC3D9 /* SCRecorderFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCDC1E161AC797EF001DC3D9 /* SCVideoConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = DCA163941A2028B800505966 /* SCVideoConfiguration.m */; };
 		DCDC1E171AC797EF001DC3D9 /* SCAudioConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = DCA163981A2028C400505966 /* SCAudioConfiguration.m */; };
@@ -189,6 +193,10 @@
 		DCC1FC481A4AF1DD00F1C653 /* SCRecorderTools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRecorderTools.m; sourceTree = "<group>"; };
 		DCCAB6AB17B46C8900CEA47B /* SCAudioTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCAudioTools.h; sourceTree = "<group>"; };
 		DCCAB6AC17B46C8900CEA47B /* SCAudioTools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCAudioTools.m; sourceTree = "<group>"; };
+		DCD12A9D1B456C5E0064674D /* SCProcessingQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCProcessingQueue.h; sourceTree = "<group>"; };
+		DCD12A9E1B456C5E0064674D /* SCProcessingQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCProcessingQueue.m; sourceTree = "<group>"; };
+		DCD12AA21B45AA540064674D /* SCIOPixelBuffers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCIOPixelBuffers.h; sourceTree = "<group>"; };
+		DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCIOPixelBuffers.m; sourceTree = "<group>"; };
 		DCDC1DF31AC79592001DC3D9 /* SCRecorder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SCRecorder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCDC1DF61AC79592001DC3D9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DCDC1DF71AC79592001DC3D9 /* SCRecorderFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCRecorderFramework.h; sourceTree = "<group>"; };
@@ -371,6 +379,10 @@
 				DCC1FC481A4AF1DD00F1C653 /* SCRecorderTools.m */,
 				DC10CF261ACFD458009880C4 /* SCWeakSelectorTarget.h */,
 				DC10CF271ACFD458009880C4 /* SCWeakSelectorTarget.m */,
+				DCD12A9D1B456C5E0064674D /* SCProcessingQueue.h */,
+				DCD12A9E1B456C5E0064674D /* SCProcessingQueue.m */,
+				DCD12AA21B45AA540064674D /* SCIOPixelBuffers.h */,
+				DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */,
 			);
 			name = Tools;
 			sourceTree = "<group>";
@@ -492,7 +504,9 @@
 				DC10CF281ACFD458009880C4 /* SCWeakSelectorTarget.h in Headers */,
 				DCEE378A1B17E6480019C7B5 /* SCContext.h in Headers */,
 				DCC1FC491A4AF1DD00F1C653 /* SCRecorderTools.h in Headers */,
+				DCD12A9F1B456C5E0064674D /* SCProcessingQueue.h in Headers */,
 				DC4CBA4D1863118E00532F1F /* SCAudioTools.h in Headers */,
+				DCD12AA41B45AA540064674D /* SCIOPixelBuffers.h in Headers */,
 				DC1949C019C07F1600E92A95 /* SCSampleBufferHolder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -656,6 +670,8 @@
 				DCA163961A2028B800505966 /* SCVideoConfiguration.m in Sources */,
 				DCEE378B1B17E6480019C7B5 /* SCContext.m in Sources */,
 				DC50285818E51FC0004E833F /* SCRecorder.m in Sources */,
+				DCD12AA01B456C5E0064674D /* SCProcessingQueue.m in Sources */,
+				DCD12AA51B45AA540064674D /* SCIOPixelBuffers.m in Sources */,
 				DC7A62C01AFA47EC00EAB60C /* SCFilterAnimation.m in Sources */,
 				DCB0415A192458C800D945D2 /* SCImageView.m in Sources */,
 				DCA163A41A23C7C300505966 /* SCPhotoConfiguration.m in Sources */,

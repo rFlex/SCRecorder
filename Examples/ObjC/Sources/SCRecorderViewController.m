@@ -70,7 +70,7 @@
 
     _recorder = [SCRecorder recorder];
     _recorder.captureSessionPreset = [SCRecorderTools bestCaptureSessionPresetCompatibleWithAllDevices];
-    _recorder.maxRecordDuration = CMTimeMake(10, 1);
+//    _recorder.maxRecordDuration = CMTimeMake(10, 1);
 //    _recorder.fastRecordMethodEnabled = YES;
     
     _recorder.delegate = self;

@@ -85,21 +85,4 @@
  */
 - (void)exportAsynchronouslyWithCompletionHandler:(void(^__nullable)())completionHandler;
 
-
-//////////////////
-// PRIVATE API
-////
-
-// These are only exposed for inheritance purpose
-@property (readonly, nonatomic) __nonnull dispatch_queue_t dispatchQueue;
-@property (readonly, nonatomic) __nonnull dispatch_group_t dispatchGroup;
-@property (readonly, nonatomic) AVAssetWriterInput *__nullable audioInput;
-@property (readonly, nonatomic) AVAssetWriterInput *__nullable videoInput;
-
-- (void)markInputComplete:(AVAssetWriterInput *__nonnull)input error:(NSError *__nullable)error;
-- (BOOL)processSampleBuffer:(__nonnull CMSampleBufferRef)sampleBuffer;
-- (BOOL)processPixelBuffer:(__nonnull CVPixelBufferRef)pixelBuffer presentationTime:(CMTime)presentationTime;
-- (void)beginReadWriteOnInput:(AVAssetWriterInput *__nonnull)input fromOutput:(AVAssetReaderOutput *__nonnull)output;
-- (BOOL)needsInputPixelBufferAdaptor;
-
 @end
