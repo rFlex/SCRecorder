@@ -49,14 +49,31 @@
 @property (readonly, nonatomic) NSDictionary *__nullable info;
 
 /**
+ Whether the file at the url exists
+ */
+@property (readonly, nonatomic) BOOL fileUrlExists;
+
+/**
  Initialize with an URL and an info dictionary
  */
 - (nonnull instancetype)initWithURL:(NSURL *__nonnull)url info:(NSDictionary *__nullable)info;
 
 /**
+ Initialize from a dictionaryRepresentation
+ */
+- (nullable instancetype)initWithDictionaryRepresentation:(NSDictionary *__nonnull)dictionary directory:(NSString *__nonnull)directory;
+
+/**
  Delete the file at the url. This will make the segment unusable.
  */
 - (void)deleteFile;
+
+- (NSDictionary *__nonnull)dictionaryRepresentation;
+
+/**
+ Returns a record segment URL for a filename and a directory.
+ */
++ (NSURL *__nonnull)segmentURLForFilename:(NSString *__nonnull)filename andDirectory:(NSString *__nonnull)directory;
 
 /**
  Create and init a segment using an URL and an info dictionary

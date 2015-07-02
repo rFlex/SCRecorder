@@ -16,9 +16,12 @@
 #define kRecordSessionDefaultAudioBitrate 128000
 #define kRecordSessionDefaultAudioFormat kAudioFormatMPEG4AAC
 
+extern NSString *__nonnull const SCRecordSessionSegmentFilenameKey;
 extern NSString *__nonnull const SCRecordSessionSegmentFilenamesKey;
+extern NSString *__nonnull const SCRecordSessionSegmentsKey;
 extern NSString *__nonnull const SCRecordSessionDurationKey;
 extern NSString *__nonnull const SCRecordSessionIdentifierKey;
+extern NSString *__nonnull const SCRecordSessionSegmentInfoKey;
 extern NSString *__nonnull const SCRecordSessionDateKey;
 extern NSString *__nonnull const SCRecordSessionDirectoryKey;
 
@@ -196,11 +199,6 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
  in any text format
  */
 - (NSDictionary *__nonnull)dictionaryRepresentation;
-
-/**
- Returns a record segment URL for a filename and a directory.
- */
-+ (NSURL *__nonnull)segmentURLForFilename:(NSString *__nonnull)filename andDirectory:(NSString *__nonnull)directory;
 
 /**
  Stop the current segment and deinitialize the video and the audio.

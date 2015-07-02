@@ -31,7 +31,9 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [[SCRecordSessionManager sharedInstance] saveRecordSession:_recorder.session];
+    if (_recorder.session.segments.count > 0) {
+        [[SCRecordSessionManager sharedInstance] saveRecordSession:_recorder.session];
+    }
     NSDictionary *recordSessionMetadata = [[SCRecordSessionManager sharedInstance].savedRecordSessions objectAtIndex:indexPath.row];
     
     SCRecordSession *newRecordSession = [SCRecordSession recordSession:recordSessionMetadata];
@@ -49,18 +51,18 @@
     
     cell.dateLabel.text = [formatter stringFromDate:recordSession[SCRecordSessionDateKey]];
     
-    NSArray *recordSegments = recordSession[SCRecordSessionSegmentFilenamesKey];
+    NSArray *recordSegments = recordSession[SCRecordSessionSegmentsKey];
 
     cell.segmentsCountLabel.text = [NSString stringWithFormat:@"%d segments", (int)[recordSegments count]];
     
     cell.durationLabel.text = [NSString stringWithFormat:@"%fs", [recordSession[SCRecordSessionDurationKey] doubleValue]];
     
     if (recordSegments.count > 0) {
-        NSString *filename = recordSegments.firstObject;
+        NSDictionary *dictRepresentation = recordSegments.firstObject;
         NSString *directory = recordSession[SCRecordSessionDirectoryKey];
-        NSURL *url = [SCRecordSession segmentURLForFilename:filename andDirectory:directory];
+        SCRecordSessionSegment *segment = [[SCRecordSessionSegment alloc] initWithDictionaryRepresentation:dictRepresentation directory:directory];
         
-        [cell.videoPlayerView.player setItemByUrl:url];
+        [cell.videoPlayerView.player setItemByAsset:segment.asset];
     }
     
     return cell;

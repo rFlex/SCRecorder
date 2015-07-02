@@ -1067,39 +1067,39 @@
     AVCaptureExposureMode exposureMode = continuousMode ? AVCaptureExposureModeContinuousAutoExposure : AVCaptureExposureModeAutoExpose;
     AVCaptureWhiteBalanceMode whiteBalanceMode = continuousMode ? AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance : AVCaptureWhiteBalanceModeAutoWhiteBalance;
     
-    if ([device isFocusPointOfInterestSupported] && [device isFocusModeSupported:focusMode]) {
-        CGPoint currentPointOfInterest = device.focusPointOfInterest;
-        AVCaptureFocusMode currentFocusMode = device.focusMode;
+    NSError *error;
+    if ([device lockForConfiguration:&error]) {
+        BOOL focusing = NO;
         
-        NSError *error;
-        if (!CGPointEqualToPoint(point, currentPointOfInterest) || currentFocusMode != focusMode) {
-            if ([device lockForConfiguration:&error]) {
-                [device setFocusPointOfInterest:point];
-                [device setFocusMode:focusMode];
-                
-                if ([device isExposurePointOfInterestSupported]) {
-                    [device setExposurePointOfInterest:point];
-                }
-                
-                if ([device isExposureModeSupported:exposureMode]) {
-                    [device setExposureMode:exposureMode];
-                }
-                
-                if ([device isWhiteBalanceModeSupported:whiteBalanceMode]) {
-                    [device setWhiteBalanceMode:whiteBalanceMode];
-                }
-                
-                [device unlockForConfiguration];
-                
-                if (focusMode != AVCaptureFocusModeContinuousAutoFocus) {
-                    id<SCRecorderDelegate> delegate = self.delegate;
-                    if ([delegate respondsToSelector:@selector(recorderWillStartFocus:)]) {
-                        [delegate recorderWillStartFocus:self];
-                    }
-                    
-                    [self setAdjustingFocus:YES];
-                }
+        if (device.isFocusPointOfInterestSupported) {
+            device.focusPointOfInterest = point;
+        }
+        if ([device isFocusModeSupported:focusMode]) {
+            device.focusMode = focusMode;
+            focusing = YES;
+        }
+        
+        if (device.isExposurePointOfInterestSupported) {
+            device.exposurePointOfInterest = point;
+        }
+        
+        if ([device isExposureModeSupported:exposureMode]) {
+            device.exposureMode = exposureMode;
+        }
+        
+        if ([device isWhiteBalanceModeSupported:whiteBalanceMode]) {
+            device.whiteBalanceMode = whiteBalanceMode;
+        }
+        
+        [device unlockForConfiguration];
+        
+        if (focusMode != AVCaptureFocusModeContinuousAutoFocus && focusing) {
+            id<SCRecorderDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(recorderWillStartFocus:)]) {
+                [delegate recorderWillStartFocus:self];
             }
+            
+            [self setAdjustingFocus:YES];
         }
     }
 }

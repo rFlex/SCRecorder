@@ -80,6 +80,7 @@ static char *ContextDidChangeDevice = "DidChangeDevice";
 }
 
 - (void)showFocusAnimation {
+    [self adjustFocusView];
     self.cameraFocusTargetView.hidden = NO;
     [self.cameraFocusTargetView startTargeting];
 }
@@ -104,7 +105,6 @@ static char *ContextDidChangeDevice = "DidChangeDevice";
     if (context == ContextAdjustingFocus) {
         if (self.showsFocusAnimationAutomatically) {
             if (self.recorder.isAdjustingFocus) {
-                [self adjustFocusView];
                 [self showFocusAnimation];
             } else {
                 [self hideFocusAnimation];
