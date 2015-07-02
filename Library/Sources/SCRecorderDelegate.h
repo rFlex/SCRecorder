@@ -26,81 +26,81 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 /**
  Called when the recorder has reconfigured the videoInput
  */
-- (void)recorder:(SCRecorder *)recorder didReconfigureVideoInput:(NSError *)videoInputError;
+- (void)recorder:(SCRecorder *__nonnull)recorder didReconfigureVideoInput:(NSError *__nullable)videoInputError;
 
 /**
  Called when the recorder has reconfigured the audioInput
  */
-- (void)recorder:(SCRecorder *)recorder didReconfigureAudioInput:(NSError *)audioInputError;
+- (void)recorder:(SCRecorder *__nonnull)recorder didReconfigureAudioInput:(NSError *__nullable)audioInputError;
 
 /**
  Called when the flashMode has changed
  */
-- (void)recorder:(SCRecorder *)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError *)error;
+- (void)recorder:(SCRecorder *__nonnull)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError *__nullable)error;
 
 /**
  Called before the recorder will start focusing
  */
-- (void)recorderWillStartFocus:(SCRecorder *)recorder;
+- (void)recorderWillStartFocus:(SCRecorder *__nonnull)recorder;
 
 /**
  Called when the recorder has started focusing
  */
-- (void)recorderDidStartFocus:(SCRecorder *)recorder;
+- (void)recorderDidStartFocus:(SCRecorder *__nonnull)recorder;
 
 /**
  Called when the recorder has finished focusing
  */
-- (void)recorderDidEndFocus:(SCRecorder *)recorder;
+- (void)recorderDidEndFocus:(SCRecorder *__nonnull)recorder;
 
 /**
  Called when the recorder has initialized the audio in a session
  */
-- (void)recorder:(SCRecorder *)recorder didInitializeAudioInSession:(SCRecordSession *)session error:(NSError *)error;
+- (void)recorder:(SCRecorder *__nonnull)recorder didInitializeAudioInSession:(SCRecordSession *__nonnull)session error:(NSError *__nullable)error;
 
 /**
  Called when the recorder has initialized the video in a session
  */
-- (void)recorder:(SCRecorder *)recorder didInitializeVideoInSession:(SCRecordSession *)session error:(NSError *)error;
+- (void)recorder:(SCRecorder *__nonnull)recorder didInitializeVideoInSession:(SCRecordSession *__nonnull)session error:(NSError *__nullable)error;
 
 /**
  Called when the recorder has started a segment in a session
  */
-- (void)recorder:(SCRecorder *)recorder didBeginSegmentInSession:(SCRecordSession *)session error:(NSError *)error;
+- (void)recorder:(SCRecorder *__nonnull)recorder didBeginSegmentInSession:(SCRecordSession *__nonnull)session error:(NSError *__nullable)error;
 
 /**
  Called when the recorder has completed a segment in a session
  */
-- (void)recorder:(SCRecorder *)recorder didCompleteSegment:(SCRecordSessionSegment *)segment inSession:(SCRecordSession *)session error:(NSError *)error;
+- (void)recorder:(SCRecorder *__nonnull)recorder didCompleteSegment:(SCRecordSessionSegment *__nullable)segment inSession:(SCRecordSession *__nonnull)session error:(NSError *__nullable)error;
 
 /**
  Called when the recorder has appended a video buffer in a session
  */
-- (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBufferInSession:(SCRecordSession *)session;
+- (void)recorder:(SCRecorder *__nonnull)recorder didAppendVideoSampleBufferInSession:(SCRecordSession *__nonnull)session;
 
 /**
  Called when the recorder has appended an audio buffer in a session
  */
-- (void)recorder:(SCRecorder *)recorder didAppendAudioSampleBufferInSession:(SCRecordSession *)session;
+- (void)recorder:(SCRecorder *__nonnull)recorder didAppendAudioSampleBufferInSession:(SCRecordSession *__nonnull)session;
 
 /**
  Called when the recorder has skipped an audio buffer in a session
  */
-- (void)recorder:(SCRecorder *)recorder didSkipAudioSampleBufferInSession:(SCRecordSession *)session;
+- (void)recorder:(SCRecorder *__nonnull)recorder didSkipAudioSampleBufferInSession:(SCRecordSession *__nonnull)session;
 
 /**
  Called when the recorder has skipped a video buffer in a session
  */
-- (void)recorder:(SCRecorder *)recorder didSkipVideoSampleBufferInSession:(SCRecordSession *)session;
+- (void)recorder:(SCRecorder *__nonnull)recorder didSkipVideoSampleBufferInSession:(SCRecordSession *__nonnull)session;
 
 /**
  Called when a session has reached the maxRecordDuration
  */
-- (void)recorder:(SCRecorder *)recorder didCompleteSession:(SCRecordSession *)session;
+- (void)recorder:(SCRecorder *__nonnull)recorder didCompleteSession:(SCRecordSession *__nonnull)session;
 
 /**
  Gives an opportunity to the delegate to create an info dictionary for a record segment.
  */
-- (NSDictionary *)createSegmentInfoForRecorder:(SCRecorder *)recorder;
+- (NSDictionary *__nullable)createSegmentInfoForRecorder:(SCRecorder *__nonnull)recorder;
 
 @end

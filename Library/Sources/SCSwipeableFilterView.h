@@ -14,7 +14,7 @@
 @class SCSwipeableFilterView;
 @protocol SCSwipeableFilterViewDelegate <NSObject>
 
-- (void)swipeableFilterView:(SCSwipeableFilterView *)swipeableFilterView didScrollToFilter:(SCFilter *)filter;
+- (void)swipeableFilterView:(SCSwipeableFilterView *__nonnull)swipeableFilterView didScrollToFilter:(SCFilter *__nullable)filter;
 
 @end
 
@@ -27,13 +27,13 @@
 /**
  The delegate that will receive messages
  */
-@property (weak, nonatomic) id<SCSwipeableFilterViewDelegate> delegate;
+@property (weak, nonatomic) id<SCSwipeableFilterViewDelegate> __nullable delegate;
 
 /**
  The underlying scrollView used for scrolling between filterGroups.
  You can freely add your views inside.
  */
-@property (readonly, nonatomic) UIScrollView *selectFilterScrollView;
+@property (readonly, nonatomic) UIScrollView *__nonnull selectFilterScrollView;
 
 /**
  Whether the current image should be redraw with the new contentOffset
@@ -48,6 +48,6 @@
 /**
  Scrolls to a specific filter
  */
-- (void)scrollToFilter:(SCFilter *)filter animated:(BOOL)animated;
+- (void)scrollToFilter:(SCFilter *__nonnull)filter animated:(BOOL)animated;
 
 @end

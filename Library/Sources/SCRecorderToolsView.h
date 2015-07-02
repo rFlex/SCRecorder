@@ -22,17 +22,17 @@
 /**
  The instance of the SCRecorder to use.
  */
-@property (strong, nonatomic) SCRecorder *recorder;
+@property (strong, nonatomic) SCRecorder *__nullable recorder;
 
 /**
  The outside image used when focusing.
  */
-@property (strong, nonatomic) UIImage *outsideFocusTargetImage;
+@property (strong, nonatomic) UIImage *__nullable outsideFocusTargetImage;
 
 /**
  The inside image used when focusing.
  */
-@property (strong, nonatomic) UIImage *insideFocusTargetImage;
+@property (strong, nonatomic) UIImage *__nullable insideFocusTargetImage;
 
 /**
  The size of the focus target.

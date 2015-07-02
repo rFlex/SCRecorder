@@ -9,9 +9,9 @@
 #import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 
-extern NSString *SCPresetHighestQuality;
-extern NSString *SCPresetMediumQuality;
-extern NSString *SCPresetLowQuality;
+extern NSString *__nonnull SCPresetHighestQuality;
+extern NSString *__nonnull SCPresetMediumQuality;
+extern NSString *__nonnull SCPresetLowQuality;
 
 @interface SCMediaTypeConfiguration : NSObject
 
@@ -39,14 +39,14 @@ extern NSString *SCPresetLowQuality;
  If set, every other properties but "enabled" will be ignored
  and this options dictionary will be used instead.
  */
-@property (copy, nonatomic) NSDictionary *options;
+@property (copy, nonatomic) NSDictionary *__nullable options;
 
 /**
  Defines a preset to use. If set, most properties will be
  ignored to use values that reflect this preset.
  */
-@property (copy, nonatomic) NSString *preset;
+@property (copy, nonatomic) NSString *__nullable preset;
 
-- (NSDictionary *)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer;
+- (NSDictionary *__nonnull)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef __nullable)sampleBuffer;
 
 @end

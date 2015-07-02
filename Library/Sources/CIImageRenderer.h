@@ -15,7 +15,7 @@
 /**
  The CIImage to display
  */
-@property (strong, nonatomic) CIImage *CIImage;
+@property (strong, nonatomic) CIImage *__nullable CIImage;
 
 /**
  The timestamp of the CIImage
@@ -28,12 +28,12 @@
  Some objects may use this property to set a buffer instead of always creating
  a CIImage. This avoids creating multiple CIImage if it is not necesarry.
  */
-- (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
+- (void)setImageBySampleBuffer:(__nonnull CMSampleBufferRef)sampleBuffer;
 
 /**
  Set the CIImage using an UIImage
  */
-- (void)setImageByUIImage:(UIImage *)image;
+- (void)setImageByUIImage:(UIImage *__nullable)image;
 
 /**
  The preferred transform for rendering the CIImage

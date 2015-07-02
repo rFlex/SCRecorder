@@ -107,9 +107,12 @@
 }
 
 + (void)putUIImage:(UIImage *)image toRenderer:(id<CIImageRenderer>)renderer {
-    renderer.preferredCIImageTransform = [CIImageRendererUtils preferredCIImageTransformFromUIImage:image];
-    
-    renderer.CIImage = [CIImage imageWithCGImage:image.CGImage];
+    if (image == nil) {
+        renderer.CIImage = nil;
+    } else {
+        renderer.preferredCIImageTransform = [CIImageRendererUtils preferredCIImageTransformFromUIImage:image];
+        renderer.CIImage = [CIImage imageWithCGImage:image.CGImage];
+    }
 }
 
 @end

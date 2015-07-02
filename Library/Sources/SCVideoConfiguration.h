@@ -51,12 +51,12 @@ typedef enum : NSUInteger {
  Set the codec used for the video
  Default is AVVideoCodecH264
  */
-@property (copy, nonatomic) NSString *codec;
+@property (copy, nonatomic) NSString *__nonnull codec;
 
 /**
  Set the video scaling mode
  */
-@property (copy, nonatomic) NSString *scalingMode;
+@property (copy, nonatomic) NSString *__nonnull scalingMode;
 
 /**
  The maximum framerate that this SCRecordSession should handle
@@ -103,7 +103,7 @@ typedef enum : NSUInteger {
  transition between filters in the same record segment, make sure to set
  an empty SCFilterGroup instead of setting this property to nil.
  */
-@property (strong, nonatomic) SCFilter *filter;
+@property (strong, nonatomic) SCFilter *__nullable filter;
 
 /**
  If YES, the affineTransform will be ignored and the output affineTransform
@@ -118,7 +118,7 @@ typedef enum : NSUInteger {
  
  Only used in SCAssetExportSession.
  */
-@property (strong, nonatomic) AVVideoComposition *composition;
+@property (strong, nonatomic) AVVideoComposition *__nullable composition;
 
 /**
  The watermark to use. If the composition is not set, this watermark
@@ -126,7 +126,7 @@ typedef enum : NSUInteger {
  
  Only used in SCAssetExportSession.
  */
-@property (strong, nonatomic) UIImage *watermarkImage;
+@property (strong, nonatomic) UIImage *__nullable watermarkImage;
 
 /**
  The watermark image location and size in the input video frame coordinates.
@@ -149,14 +149,14 @@ typedef enum : NSUInteger {
 /**
  Set a specific key to the video profile
  */
-@property (assign, nonatomic) NSString *profileLevel;
+@property (assign, nonatomic) NSString *__nullable profileLevel;
 
 /**
  The overlay view that will be drawn on top of the video.
  
  Only used in SCAssetExportSession.
  */
-@property (strong, nonatomic) UIView<SCVideoOverlay> *overlay;
+@property (strong, nonatomic) UIView<SCVideoOverlay> *__nullable overlay;
 
 /**
  The watermark anchor location.
@@ -168,7 +168,6 @@ typedef enum : NSUInteger {
 @property (assign, nonatomic) SCWatermarkAnchorLocation watermarkAnchorLocation;
 
 
-
-- (NSDictionary *)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize;
+- (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize;
 
 @end

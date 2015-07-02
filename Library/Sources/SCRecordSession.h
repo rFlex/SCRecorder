@@ -16,15 +16,15 @@
 #define kRecordSessionDefaultAudioBitrate 128000
 #define kRecordSessionDefaultAudioFormat kAudioFormatMPEG4AAC
 
-extern NSString * const SCRecordSessionSegmentFilenamesKey;
-extern NSString * const SCRecordSessionDurationKey;
-extern NSString * const SCRecordSessionIdentifierKey;
-extern NSString * const SCRecordSessionDateKey;
-extern NSString * const SCRecordSessionDirectoryKey;
+extern NSString *__nonnull const SCRecordSessionSegmentFilenamesKey;
+extern NSString *__nonnull const SCRecordSessionDurationKey;
+extern NSString *__nonnull const SCRecordSessionIdentifierKey;
+extern NSString *__nonnull const SCRecordSessionDateKey;
+extern NSString *__nonnull const SCRecordSessionDirectoryKey;
 
-extern NSString * const SCRecordSessionTemporaryDirectory;
-extern NSString * const SCRecordSessionCacheDirectory;
-extern NSString * const SCRecordSessionDocumentDirectory;
+extern NSString *__nonnull const SCRecordSessionTemporaryDirectory;
+extern NSString *__nonnull const SCRecordSessionCacheDirectory;
+extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 
 @class SCRecordSession;
 @class SCRecorder;
@@ -38,41 +38,41 @@ extern NSString * const SCRecordSessionDocumentDirectory;
 /**
  An unique identifier generated when creating this record session.
  */
-@property (readonly, nonatomic) NSString *identifier;
+@property (readonly, nonatomic) NSString *__nonnull identifier;
 
 /**
  The date when this record session was created.
  */
-@property (readonly, nonatomic) NSDate *date;
+@property (readonly, nonatomic) NSDate *__nonnull date;
 
 /**
  The directory to which the record segments will be saved.
  Can be either SCRecordSessionTemporaryDirectory or an arbritary directory.
  Default is SCRecordSessionTemporaryDirectory.
  */
-@property (copy, nonatomic) NSString *segmentsDirectory;
+@property (copy, nonatomic) NSString *__nonnull segmentsDirectory;
 
 /**
  The output file type used for the AVAssetWriter.
  If null, AVFileTypeMPEG4 will be used for a video file, AVFileTypeAppleM4A for an audio file
  */
-@property (copy, nonatomic) NSString *fileType;
+@property (copy, nonatomic) NSString *__nullable fileType;
 
 /**
  The extension of every record segments.
  If null, the SCRecordSession will figure out one depending on the fileType.
  */
-@property (copy, nonatomic) NSString *fileExtension;
+@property (copy, nonatomic) NSString *__nullable fileExtension;
 
 /**
  The output url based on the identifier, the recordSegmentsDirectory and the fileExtension
  */
-@property (readonly, nonatomic) NSURL *outputUrl;
+@property (readonly, nonatomic) NSURL *__nonnull outputUrl;
 
 /**
  Contains every record segment as SCRecordSessionSegment.
  */
-@property (readonly, nonatomic) NSArray *segments;
+@property (readonly, nonatomic) NSArray *__nonnull segments;
 
 /**
  The duration of the whole recordSession including the current recording segment
@@ -98,25 +98,25 @@ extern NSString * const SCRecordSessionDocumentDirectory;
 /**
  The recorder that is managing this SCRecordSession
  */
-@property (readonly, nonatomic, weak) SCRecorder *recorder;
+@property (readonly, nonatomic, weak) SCRecorder *__nullable recorder;
 
 //////////////////
 // PUBLIC METHODS
 ////
 
-- (instancetype)init;
+- (nonnull instancetype)init;
 
-- (instancetype)initWithDictionaryRepresentation:(NSDictionary *)dictionaryRepresentation;
+- (nonnull instancetype)initWithDictionaryRepresentation:(nonnull NSDictionary *)dictionaryRepresentation;
 
 /**
  Create a SCRecordSession
  */
-+ (instancetype)recordSession;
++ (nonnull instancetype)recordSession;
 
 /**
  Create a SCRecordSession based on dictionary representation
  */
-+ (instancetype)recordSession:(NSDictionary *)dictionaryRepresentation;
++ (nonnull instancetype)recordSession:(nonnull NSDictionary *)dictionaryRepresentation;
 
 /**
  Calling any method of SCRecordSession is thread safe. However,
@@ -125,7 +125,7 @@ extern NSString * const SCRecordSessionDocumentDirectory;
  within this block will ensure that you are the only one who has
  access to any modification on this SCRecordSession.
  */
-- (void)dispatchSyncOnSessionQueue:(void(^)())block;
+- (void)dispatchSyncOnSessionQueue:(void(^__nonnull)())block;
 
 //////////////////////
 /////// SEGMENTS
@@ -134,7 +134,7 @@ extern NSString * const SCRecordSessionDocumentDirectory;
 /**
  Remove the record segment. Does not delete the associated file.
  */
-- (void)removeSegment:(SCRecordSessionSegment *)segment;
+- (void)removeSegment:(SCRecordSessionSegment *__nonnull)segment;
 
 /**
  Remove the record segment at the given index.
@@ -144,12 +144,12 @@ extern NSString * const SCRecordSessionDocumentDirectory;
 /**
  Add a recorded segment.
  */
-- (void)addSegment:(SCRecordSessionSegment *)segment;
+- (void)addSegment:(SCRecordSessionSegment *__nonnull)segment;
 
 /**
  Insert a record segment.
  */
-- (void)insertSegment:(SCRecordSessionSegment *)segment atIndex:(NSInteger)segmentIndex;
+- (void)insertSegment:(SCRecordSessionSegment *__nonnull)segment atIndex:(NSInteger)segmentIndex;
 
 /**
  Remove all the record segments and their associated files.
@@ -172,35 +172,35 @@ extern NSString * const SCRecordSessionDocumentDirectory;
  If you don't want a segment to be automatically added when calling this method,
  you should remove the SCRecordSession from the SCRecorder
  */
-- (void)cancelSession:(void(^)())completionHandler;
+- (void)cancelSession:(void(^ __nullable)())completionHandler;
 
 /**
  Merge the recorded record segments using the given AVAssetExportSessionPreset.
  */
-- (void)mergeSegmentsUsingPreset:(NSString *)exportSessionPreset completionHandler:(void(^)(NSURL *outputUrl, NSError *error))completionHandler;
+- (void)mergeSegmentsUsingPreset:(NSString *__nonnull)exportSessionPreset completionHandler:(void(^__nonnull)(NSURL *__nullable outputUrl, NSError *__nullable error))completionHandler;
 
 /**
  Returns an asset representing all the record segments
  from this record session. This can be called anytime.
  */
-- (AVAsset *)assetRepresentingSegments;
+- (AVAsset *__nonnull)assetRepresentingSegments;
 
 /**
  Append all the record segments to a given AVMutableComposition.
  */
-- (void)appendSegmentsToComposition:(AVMutableComposition *)composition;
+- (void)appendSegmentsToComposition:(AVMutableComposition *__nonnull)composition;
 
 /**
  Returns a dictionary that represents this SCRecordSession
  This will only contains strings and can be therefore safely serialized
  in any text format
  */
-- (NSDictionary *)dictionaryRepresentation;
+- (NSDictionary *__nonnull)dictionaryRepresentation;
 
 /**
  Returns a record segment URL for a filename and a directory.
  */
-+ (NSURL *)segmentURLForFilename:(NSString *)filename andDirectory:(NSString *)directory;
++ (NSURL *__nonnull)segmentURLForFilename:(NSString *__nonnull)filename andDirectory:(NSString *__nonnull)directory;
 
 /**
  Stop the current segment and deinitialize the video and the audio.
@@ -212,7 +212,7 @@ extern NSString * const SCRecordSessionDocumentDirectory;
  Start a new record segment.
  This method is automatically called by the SCRecorder.
  */
-- (void)beginSegment:(NSError**)error;
+- (void)beginSegment:(NSError*__nullable*__nullable)error;
 
 /**
  End the current record segment.
@@ -223,6 +223,6 @@ extern NSString * const SCRecordSessionDocumentDirectory;
  If you don't remove the SCRecordSession from the SCRecorder while calling this method,
  The SCRecorder might create a new recordSegment right after automatically if it is not paused.
  */
-- (BOOL)endSegmentWithInfo:(NSDictionary *)info completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError *error))completionHandler;
+- (BOOL)endSegmentWithInfo:(NSDictionary *__nullable)info completionHandler:(void(^__nullable)(SCRecordSessionSegment *__nullable segment, NSError *__nullable error))completionHandler;
 
 @end

@@ -14,9 +14,9 @@
 
 @protocol SCVideoPlayerViewDelegate <NSObject>
 
-- (void)videoPlayerViewTappedToPlay:(SCVideoPlayerView *)videoPlayerView;
+- (void)videoPlayerViewTappedToPlay:(SCVideoPlayerView *__nonnull)videoPlayerView;
 
-- (void)videoPlayerViewTappedToPause:(SCVideoPlayerView *)videoPlayerView;
+- (void)videoPlayerViewTappedToPause:(SCVideoPlayerView *__nonnull)videoPlayerView;
 
 @end
 
@@ -25,24 +25,24 @@
 /**
  The delegate
  */
-@property (weak, nonatomic) IBOutlet id<SCVideoPlayerViewDelegate> delegate;
+@property (weak, nonatomic) IBOutlet __nullable id<SCVideoPlayerViewDelegate> delegate;
 
 /**
  The player this SCVideoPlayerView show
  */
-@property (strong, nonatomic) SCPlayer *player;
+@property (strong, nonatomic) SCPlayer *__nullable player;
 
 /**
  The underlying AVPlayerLayer used for displaying the video. This property
  will be set only if SCImageViewEnabled if false.
  */
-@property (readonly, nonatomic) AVPlayerLayer *playerLayer;
+@property (readonly, nonatomic) AVPlayerLayer *__nullable playerLayer;
 
 /**
  The underlying SCImageView used for displaying the video. This property
  will be set only if SCImageViewEnabled is true.
  */
-@property (readonly, nonatomic) SCImageView *SCImageView;
+@property (readonly, nonatomic) SCImageView *__nullable SCImageView;
 
 /**
  If enabled, tapping on the view will pause/unpause the player.
@@ -59,7 +59,7 @@
 /**
  Init the SCVideoPlayerView with a provided SCPlayer.
  */
-- (id)initWithPlayer:(SCPlayer *)player;
+- (nonnull instancetype)initWithPlayer:(SCPlayer *__nonnull)player;
 
 /**
  Set whether every new instances of SCVideoPlayerView should automatically create

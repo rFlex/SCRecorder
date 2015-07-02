@@ -21,28 +21,28 @@
  Called when the player has played some frames. The loopsCount will contains the number of 
  loop if the curent item was set using setSmoothItem.
  */
-- (void)player:(SCPlayer*)player didPlay:(CMTime)currentTime loopsCount:(NSInteger)loopsCount;
+- (void)player:(SCPlayer *__nonnull)player didPlay:(CMTime)currentTime loopsCount:(NSInteger)loopsCount;
 
 /**
  Called when the item has been changed on the SCPlayer
  */
-- (void)player:(SCPlayer *)player didChangeItem:(AVPlayerItem*)item;
+- (void)player:(SCPlayer *__nonnull)player didChangeItem:(AVPlayerItem *__nullable)item;
 
 /**
  Called when the item has reached end
  */
-- (void)player:(SCPlayer *)player didReachEndForItem:(AVPlayerItem *)item;
+- (void)player:(SCPlayer *__nonnull)player didReachEndForItem:(AVPlayerItem *__nonnull)item;
 
 /**
  Called when the item is ready to play
  */
-- (void)player:(SCPlayer *)player itemReadyToPlay:(AVPlayerItem *)item;
+- (void)player:(SCPlayer *__nonnull)player itemReadyToPlay:(AVPlayerItem *__nonnull)item;
 
 /**
  Called when the player has setup the renderer so it can receive the image in the
  proper orientation.
  */
-- (void)player:(SCPlayer *)player didSetupRenderer:(id<CIImageRenderer>)renderer;
+- (void)player:(SCPlayer *__nonnull)player didSetupRenderer:(__nonnull id<CIImageRenderer>)renderer;
 
 @end
 
@@ -55,7 +55,7 @@
 /**
  The delegate that will receive the messages
  */
-@property (weak, nonatomic) id<SCPlayerDelegate> delegate;
+@property (weak, nonatomic) __nullable id<SCPlayerDelegate> delegate;
 
 /**
  Whether the video should start again from the beginning when its reaches the end
@@ -100,12 +100,12 @@
  The renderer for the CIImage. If this property is set, the player will set the CIImage
  property when the current frame changes.
  */
-@property (strong, nonatomic) id<CIImageRenderer> CIImageRenderer;
+@property (strong, nonatomic) __nullable id<CIImageRenderer> CIImageRenderer;
 
 /**
  Convenient method to return a new instance of a SCPlayer
  */
-+ (SCPlayer *)player;
++ (SCPlayer *__nonnull)player;
 
 /**
  Ask the SCPlayer to send didPlay messages during the playback
@@ -122,40 +122,40 @@
 /**
  Set the item using a file string path.
  */
-- (void)setItemByStringPath:(NSString*)stringPath;
+- (void)setItemByStringPath:(NSString *__nullable)stringPath;
 
 /**
  Set the item using an URL
  */
-- (void)setItemByUrl:(NSURL*)url;
+- (void)setItemByUrl:(NSURL *__nullable)url;
 
 /**
  Set the item using an Asset
  */
-- (void)setItemByAsset:(AVAsset*)asset;
+- (void)setItemByAsset:(AVAsset *__nullable)asset;
 
 /**
  Set the item using an AVPlayerItem
  */
-- (void)setItem:(AVPlayerItem*)item;
+- (void)setItem:(AVPlayerItem *__nullable)item;
 
 /**
  Set an item using a file string path. This will generate an AVComposition containing "loopCount"
  times the item. This avoids the hiccup when looping for up to "loopCount" times.
  */
-- (void)setSmoothLoopItemByStringPath:(NSString*)stringPath smoothLoopCount:(NSUInteger)loopCount;
+- (void)setSmoothLoopItemByStringPath:(NSString *__nullable)stringPath smoothLoopCount:(NSUInteger)loopCount;
 
 /**
  Set the item using an URL. This will generate an AVComposition containing "loopCount"
  times the item. This avoids the hiccup when looping for up to "loopCount" times.
  */
-- (void)setSmoothLoopItemByUrl:(NSURL*)url smoothLoopCount:(NSUInteger)loopCount;
+- (void)setSmoothLoopItemByUrl:(NSURL *__nullable)url smoothLoopCount:(NSUInteger)loopCount;
 
 /**
  Set the item using an Asset. This will generate an AVComposition containing "loopCount"
  times the item. This avoids the hiccup when looping for up to "loopCount" times.
  */
-- (void)setSmoothLoopItemByAsset:(AVAsset*)asset smoothLoopCount:(NSUInteger)loopCount;
+- (void)setSmoothLoopItemByAsset:(AVAsset *__nullable)asset smoothLoopCount:(NSUInteger)loopCount;
 
 
 @end

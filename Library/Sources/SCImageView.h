@@ -23,12 +23,12 @@
 /**
  The filter to apply when rendering. If nil is set, no filter will be applied
  */
-@property (strong, nonatomic) SCFilter *filter;
+@property (strong, nonatomic) SCFilter *__nullable filter;
 
 /**
  The CIImage to render.
  */
-@property (strong, nonatomic) CIImage *CIImage;
+@property (strong, nonatomic) CIImage *__nullable CIImage;
 
 /**
  The timestamp of the CIImage
@@ -45,21 +45,21 @@
  when needed. This avoids creating multiple CIImage if the SCImageView can't render them
  as fast.
  */
-- (void)setImageBySampleBuffer:(CMSampleBufferRef)sampleBuffer;
+- (void)setImageBySampleBuffer:(__nonnull CMSampleBufferRef)sampleBuffer;
 
 /**
  Set the CIImage using an UIImage
  */
-- (void)setImageByUIImage:(UIImage *)image;
+- (void)setImageByUIImage:(UIImage *__nullable)image;
 
 /**
  Creates and returns the processed image as UIImage
  */
-- (UIImage *)processedUIImage;
+- (UIImage *__nullable)processedUIImage;
 
 /**
  Creates and returns the processed image as CIImage
  */
-- (CIImage *)processedCIImage;
+- (CIImage *__nullable)processedCIImage;
 
 @end

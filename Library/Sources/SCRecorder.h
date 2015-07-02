@@ -29,17 +29,17 @@
 /**
  Access the configuration for the video.
  */
-@property (readonly, nonatomic) SCVideoConfiguration *videoConfiguration;
+@property (readonly, nonatomic) SCVideoConfiguration  * __nonnull videoConfiguration;
 
 /**
  Access the configuration for the audio.
  */
-@property (readonly, nonatomic) SCAudioConfiguration *audioConfiguration;
+@property (readonly, nonatomic) SCAudioConfiguration *__nonnull audioConfiguration;
 
 /**
  Access the configuration for the photo.
  */
-@property (readonly, nonatomic) SCPhotoConfiguration *photoConfiguration;
+@property (readonly, nonatomic) SCPhotoConfiguration *__nonnull photoConfiguration;
 
 /**
  Return whether the video is enabled and ready to use.
@@ -95,13 +95,13 @@
 /**
  The session preset used for the AVCaptureSession
  */
-@property (copy, nonatomic) NSString *captureSessionPreset;
+@property (copy, nonatomic) NSString *__nonnull captureSessionPreset;
 
 /**
  The captureSession. This will be null until prepare or startRunning has
  been called. Calling unprepare will set this property to null again.
  */
-@property (readonly, nonatomic) AVCaptureSession *captureSession;
+@property (readonly, nonatomic) AVCaptureSession *__nullable captureSession;
 
 /**
  Whether the recorder has been prepared.
@@ -111,28 +111,28 @@
 /**
  The preview layer used for the video preview
  */
-@property (readonly, nonatomic) AVCaptureVideoPreviewLayer *previewLayer;
+@property (readonly, nonatomic) AVCaptureVideoPreviewLayer *__nonnull previewLayer;
 
 /**
  Convenient way to set a view inside the preview layer
  */
-@property (strong, nonatomic) UIView *previewView;
+@property (strong, nonatomic) UIView *__nullable previewView;
 
 /**
  If set, this render will receive every received frames as CIImage.
  Can be useful for displaying a real time filter for example.
  */
-@property (strong, nonatomic) id<CIImageRenderer> CIImageRenderer;
+@property (strong, nonatomic) id<CIImageRenderer> __nullable CIImageRenderer;
 
 /**
  Set the delegate used to receive messages for the SCRecorder
  */
-@property (weak, nonatomic) id<SCRecorderDelegate> delegate;
+@property (weak, nonatomic) id<SCRecorderDelegate> __nullable delegate;
 
 /**
  The record session to which the recorder will flow the camera/microphone buffers
  */
-@property (strong, nonatomic) SCRecordSession *session;
+@property (strong, nonatomic) SCRecordSession *__nullable session;
 
 /**
  The video orientation. This is automatically set if autoSetVideoOrientation is enabled
@@ -209,41 +209,41 @@
  Will contains an error if an error occured while reconfiguring
  the underlying AVCaptureSession.
  */
-@property (readonly, nonatomic) NSError *error;
+@property (readonly, nonatomic) NSError *__nullable error;
 
 /**
  The underlying AVCaptureVideoDataOutput
  */
-@property (readonly, nonatomic) AVCaptureVideoDataOutput *videoOutput;
+@property (readonly, nonatomic) AVCaptureVideoDataOutput *__nullable videoOutput;
 
 /**
  The underlying AVCaptureAudioDataOutput
  */
-@property (readonly, nonatomic) AVCaptureAudioDataOutput *audioOutput;
+@property (readonly, nonatomic) AVCaptureAudioDataOutput *__nullable audioOutput;
 
 /**
  The underlying AVCaptureStillImageOutput
  */
-@property (readonly, nonatomic) AVCaptureStillImageOutput *photoOutput;
+@property (readonly, nonatomic) AVCaptureStillImageOutput *__nullable photoOutput;
 
 /**
  The dispatch queue that the SCRecorder uses for sending messages to the attached
  SCRecordSession.
  */
-@property (readonly, nonatomic) dispatch_queue_t sessionQueue;
+@property (readonly, nonatomic) dispatch_queue_t __nonnull sessionQueue;
 
 /**
  Create a recorder
  @return the newly created recorder
  */
-+ (SCRecorder*)recorder;
++ (SCRecorder *__nonnull)recorder;
 
 /**
  Create the AVCaptureSession
  Calling this method will set the captureSesion and configure it properly.
  If an error occured during the creation of the captureSession, this methods will return NO.
  */
-- (BOOL)prepare:(NSError **)error;
+- (BOOL)prepare:(NSError *__nullable *__nullable)error;
 
 /**
  Close and destroy the AVCaptureSession.
@@ -328,14 +328,14 @@
  This changes the frameRate.
  @return whether the method has succeeded or not
  */
-- (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate error:(NSError **)error;
+- (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate error:(NSError *__nullable*__nullable)error;
 
 /**
  Set an active device format that supports the request framerate and size
  This changes the frameRate.
  @return whether the method has succeeded or not
  */
-- (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError**)error;
+- (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError*__nullable*__nullable)error;
 
 /**
  Allow the recorder to append the sample buffers inside the current setted session
@@ -355,13 +355,13 @@
  if it is empty or not.
  @param completionHandler called on the main queue when the recorder is ready to record again.
  */
-- (void)pause:(void(^)())completionHandler;
+- (void)pause:( void(^ __nullable)()) completionHandler;
 
 /**
  Capture a photo from the camera
  @param completionHandler called on the main queue with the image taken or an error in case of a problem
  */
-- (void)capturePhoto:(void(^)(NSError *error, UIImage *image))completionHandler;
+- (void)capturePhoto:(void(^ __nonnull)(NSError *__nullable error, UIImage *__nullable image))completionHandler;
 
 /**
  Signal to the recorder that the previewView frame has changed.
@@ -372,12 +372,12 @@
 /**
  Get an image representing the last output video buffer.
  */
-- (UIImage *)snapshotOfLastVideoBuffer;
+- (UIImage *__nullable)snapshotOfLastVideoBuffer;
 
 /**
  Returns a shared recorder if you want to use the same instance throughout your app.
  */
-+ (SCRecorder *)sharedRecorder;
++ (SCRecorder *__nonnull)sharedRecorder;
 
 /**
  Returns whether the current queue is the record session queue.
