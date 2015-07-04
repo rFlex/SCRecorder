@@ -52,6 +52,9 @@
     _selectFilterScrollView.pagingEnabled = YES;
     _selectFilterScrollView.showsHorizontalScrollIndicator = NO;
     _selectFilterScrollView.showsVerticalScrollIndicator = NO;
+    _selectFilterScrollView.bounces = YES;
+    _selectFilterScrollView.alwaysBounceHorizontal = YES;
+    _selectFilterScrollView.alwaysBounceVertical = YES;
     _selectFilterScrollView.backgroundColor = [UIColor clearColor];
     
     [self addSubview:_selectFilterScrollView];
@@ -61,12 +64,12 @@
     [super layoutSubviews];
     
     _selectFilterScrollView.frame = self.bounds;
-
+    
     [self updateScrollViewContentSize];
 }
 
 - (void)updateScrollViewContentSize {
-    _selectFilterScrollView.contentSize = CGSizeMake(self.filters.count * self.frame.size.width * 2, self.frame.size.height);
+    _selectFilterScrollView.contentSize = CGSizeMake(self.filters.count * self.frame.size.width * 3, self.frame.size.height);
     
     if (self.selectedFilter != nil) {
         [self scrollToFilter:self.selectedFilter animated:NO];
@@ -75,14 +78,14 @@
 
 static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     rect.origin.x += width;
-
+    
     return rect;
 }
 
 - (void)scrollToFilter:(SCFilter *)filter animated:(BOOL)animated {
     NSInteger index = [self.filters indexOfObject:filter];
     if (index >= 0) {
-        CGPoint contentOffset = CGPointMake(_selectFilterScrollView.frame.size.width * index, 0);
+        CGPoint contentOffset = CGPointMake(_selectFilterScrollView.contentSize.width / 3 + _selectFilterScrollView.frame.size.width * index, 0);
         [_selectFilterScrollView setContentOffset:contentOffset animated:animated];
         [self updateCurrentSelected:NO];
     } else {
@@ -132,9 +135,9 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     CGFloat contentSizeWidth = scrollView.contentSize.width;
     CGFloat normalWidth = self.filters.count * width;
     
-    if (contentOffsetX < 0) {
+    if (contentOffsetX <= 0) {
         scrollView.contentOffset = CGPointMake(contentOffsetX + normalWidth, scrollView.contentOffset.y);
-    } else if (contentOffsetX + width > contentSizeWidth) {
+    } else if (contentOffsetX + width >= contentSizeWidth) {
         scrollView.contentOffset = CGPointMake(contentOffsetX - normalWidth, scrollView.contentOffset.y);
     }
     
@@ -184,7 +187,7 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 
 - (void)setFilters:(NSArray *)filters {
     [super setFilters:filters];
-
+    
     [self updateScrollViewContentSize];
 }
 
