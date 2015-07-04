@@ -93,6 +93,12 @@
 @property (readonly, nonatomic) BOOL isAdjustingFocus;
 
 /**
+ Will be true if the camera is adjusting exposure.
+ This property is KVO observable.
+ */
+@property (readonly, nonatomic) BOOL isAdjustingExposure;
+
+/**
  The session preset used for the AVCaptureSession
  */
 @property (copy, nonatomic) NSString *__nonnull captureSessionPreset;
@@ -188,6 +194,16 @@
  will be written also as mirrored.
  */
 @property (assign, nonatomic) BOOL keepMirroringOnWrite;
+
+/**
+ Whether adjusting exposure is supported on the current camera device
+ */
+@property (readonly, nonatomic) BOOL exposureSupported;
+
+/**
+ The current exposure point of interest
+ */
+@property (readonly, nonatomic) CGPoint exposurePointOfInterest;
 
 /**
  Whether the focus is supported on the current camera device

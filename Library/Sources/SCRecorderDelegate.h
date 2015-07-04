@@ -39,6 +39,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (void)recorder:(SCRecorder *__nonnull)recorder didChangeFlashMode:(SCFlashMode)flashMode error:(NSError *__nullable)error;
 
 /**
+ Called when the recorder has lost the focus. Returning true will make the recorder
+ automatically refocus at the center.
+ */
+- (BOOL)recorderShouldAutomaticallyRefocus:(SCRecorder *__nonnull)recorder;
+
+/**
  Called before the recorder will start focusing
  */
 - (void)recorderWillStartFocus:(SCRecorder *__nonnull)recorder;
@@ -52,6 +58,21 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Called when the recorder has finished focusing
  */
 - (void)recorderDidEndFocus:(SCRecorder *__nonnull)recorder;
+
+/**
+ Called before the recorder will start adjusting exposure
+ */
+- (void)recorderWillStartAdjustingExposure:(SCRecorder *__nonnull)recorder;
+
+/**
+ Called when the recorder has started adjusting exposure
+ */
+- (void)recorderDidStartAdjustingExposure:(SCRecorder *__nonnull)recorder;
+
+/**
+ Called when the recorder has finished adjusting exposure
+ */
+- (void)recorderDidEndAdjustingExposure:(SCRecorder *__nonnull)recorder;
 
 /**
  Called when the recorder has initialized the audio in a session

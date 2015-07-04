@@ -96,7 +96,15 @@ static char *ContextDidChangeDevice = "DidChangeDevice";
 }
 
 - (void)adjustFocusView {
-    CGPoint currentFocusPoint = [self.recorder convertPointOfInterestToViewCoordinates:self.recorder.focusPointOfInterest];
+    CGPoint currentFocusPoint = CGPointMake(0.5, 0.5);
+    
+    if (self.recorder.focusSupported) {
+        currentFocusPoint = self.recorder.focusPointOfInterest;
+    } else if (self.recorder.exposureSupported) {
+        currentFocusPoint = self.recorder.exposurePointOfInterest;
+    }
+    
+    [self.recorder convertPointOfInterestToViewCoordinates:currentFocusPoint];
     currentFocusPoint = [self convertPoint:currentFocusPoint fromView:self.recorder.previewView];
     self.cameraFocusTargetView.center = currentFocusPoint;
 }
