@@ -36,13 +36,14 @@
     return self;
 }
 
-- (void)setMaxQueueSize:(NSUInteger)maxQueueSize {
+- (void)setMaxQueueSize:(NSUInteger)maxQueueSize {    
     _availableItemsToEnqueue = dispatch_semaphore_create(maxQueueSize);
     _maxQueueSize = maxQueueSize;
 }
 
 - (void)startProcessingWithBlock:(id (^)())processingBlock {
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
+
         while (!_completed) {
             
             BOOL shouldProcess = NO;
@@ -50,6 +51,10 @@
             if (!_completed) {
                 dispatch_semaphore_wait(_availableItemsToEnqueue, DISPATCH_TIME_FOREVER);
                 shouldProcess = !_completed;
+                
+                if (!shouldProcess) {
+                    dispatch_semaphore_signal(_availableItemsToEnqueue);
+                }
             }
             
             
@@ -65,6 +70,7 @@
                     dispatch_semaphore_signal(_availableItemsToDequeue);
                 } else {
                     shouldStopProcessing = YES;
+                    dispatch_semaphore_signal(_availableItemsToEnqueue);
                 }
             }
             
@@ -76,7 +82,11 @@
 }
 
 - (void)stopProcessing {
+    dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
+
     _completed = YES;
+    
+    [_queue removeAllObjects];
     
     while (dispatch_semaphore_signal(_availableItemsToEnqueue) != 0) {
         
@@ -85,6 +95,8 @@
     while (dispatch_semaphore_signal(_availableItemsToDequeue) != 0) {
         
     }
+    
+    dispatch_semaphore_signal(_accessQueue);    
 }
 
 - (id)dequeue {
@@ -98,10 +110,14 @@
             obj = _queue.firstObject;
             [_queue removeObjectAtIndex:0];
             dispatch_semaphore_signal(_availableItemsToEnqueue);
+        } else {
+            // Reincrement the semaphore because we didn't actually dequeue
+            dispatch_semaphore_signal(_availableItemsToDequeue);
         }
+        
         dispatch_semaphore_signal(_accessQueue);
     }
-
+    
     return obj;
 }
 
