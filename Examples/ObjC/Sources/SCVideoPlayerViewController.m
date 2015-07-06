@@ -170,7 +170,7 @@
 }
 
 - (void)saveToCameraRoll {
-    SCFilter *currentFilter = self.filterSwitcherView.selectedFilter;
+    SCFilter *currentFilter = [self.filterSwitcherView.selectedFilter copy];
     [_player pause];
     
     void(^completionHandler)(NSURL *url, NSError *error) = ^(NSURL *url, NSError *error) {

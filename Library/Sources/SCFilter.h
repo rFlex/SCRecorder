@@ -17,7 +17,7 @@
 #import "SCFilterAnimation.h"
 
 @class SCFilter;
-@protocol SCFilterDelegate <NSObject>
+@protocol SCFilterDelegate <NSObject, NSCopying>
 
 /**
  Called when a parameter changed from the SCFilter instance.

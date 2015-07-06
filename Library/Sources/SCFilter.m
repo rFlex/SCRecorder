@@ -94,7 +94,21 @@
     return self;
 }
 
-- (id)_unwrappedValue:(id)value forKey:(NSString *)key {
+- (id)copyWithZone:(NSZone *)zone {
+    SCFilter *filter = [SCFilter emptyFilter];
+    
+    if (filter != nil) {
+        filter->_name = [_name copy];
+        filter->_CIFilter = [_CIFilter copy];
+        filter->_unwrappedValues = [_unwrappedValues mutableCopy];
+        filter->_subFilters = [_subFilters mutableCopy];
+        filter->_animations = [_animations mutableCopy];
+    }
+    
+    return filter;
+}
+
+- (id)_unwrappedValue:(id)value forKey:(NSString *)key {    
     id unwrappedValue = [_unwrappedValues objectForKey:key];
     
     return unwrappedValue == nil ? value : unwrappedValue;
