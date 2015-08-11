@@ -16,8 +16,19 @@
 //} SCRecorderToolsViewShowFocusMode;
 
 @class SCRecorder;
+@class SCRecorderToolsView;
+
+@protocol SCRecorderToolsViewDelegate <NSObject>
+
+@optional
+
+- (void)recorderToolsView:(SCRecorderToolsView *__nonnull)recorderToolsView didTapToFocusWithGestureRecognizer:(UIGestureRecognizer *__nonnull)gestureRecognizer;
+
+@end
 
 @interface SCRecorderToolsView : UIView
+
+@property (nonatomic, weak) __nullable id<SCRecorderToolsViewDelegate> delegate;
 
 /**
  The instance of the SCRecorder to use.

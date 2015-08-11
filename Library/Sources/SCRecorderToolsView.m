@@ -139,6 +139,11 @@ static char *ContextDidChangeDevice = "DidChangeDevice";
     CGPoint tapPoint = [gestureRecognizer locationInView:recorder.previewView];
     CGPoint convertedFocusPoint = [recorder convertToPointOfInterestFromViewCoordinates:tapPoint];
     [recorder autoFocusAtPoint:convertedFocusPoint];
+    
+    id<SCRecorderToolsViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(recorderToolsView:didTapToFocusWithGestureRecognizer:)]) {
+        [delegate recorderToolsView:self didTapToFocusWithGestureRecognizer:gestureRecognizer];
+    }
 }
 
 // Change to continuous auto focus. The camera will constantly focus at the point choosen.
