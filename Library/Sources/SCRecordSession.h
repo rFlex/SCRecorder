@@ -179,8 +179,10 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 
 /**
  Merge the recorded record segments using the given AVAssetExportSessionPreset.
+ Returns the AVAssetExportSession used for exporting.
+ Returns nil and call the completion handler block synchronously if an error happend while preparing the export session.
  */
-- (void)mergeSegmentsUsingPreset:(NSString *__nonnull)exportSessionPreset completionHandler:(void(^__nonnull)(NSURL *__nullable outputUrl, NSError *__nullable error))completionHandler;
+- (AVAssetExportSession __nullable*)mergeSegmentsUsingPreset:(NSString *__nonnull)exportSessionPreset completionHandler:(void(^__nonnull)(NSURL *__nullable outputUrl, NSError *__nullable error))completionHandler;
 
 /**
  Returns an asset representing all the record segments
@@ -189,9 +191,22 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 - (AVAsset *__nonnull)assetRepresentingSegments;
 
 /**
+ Returns a player item representing all the record segments
+ from this record session and containing an audio mix that smooth
+ the transition between the segments.
+ */
+- (AVPlayerItem *__nonnull)playerItemRepresentingSegments;
+
+/**
  Append all the record segments to a given AVMutableComposition.
  */
 - (void)appendSegmentsToComposition:(AVMutableComposition *__nonnull)composition;
+
+/**
+ Append all the record segments to a given AVMutableComposition and adds the audio mix instruction
+ if audioMix is provided
+ */
+- (void)appendSegmentsToComposition:(AVMutableComposition *__nonnull)composition audioMix:(AVMutableAudioMix *__nullable)audioMix;
 
 /**
  Returns a dictionary that represents this SCRecordSession
