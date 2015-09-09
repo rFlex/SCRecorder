@@ -156,7 +156,9 @@
         }
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
         
-        CGContextRef ctx = CGBitmapContextCreate(CVPixelBufferGetBaseAddress(outputPixelBuffer), CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer), 8, CVPixelBufferGetBytesPerRow(outputPixelBuffer), colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
+        CGBitmapInfo bitmapInfo = kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst;
+        
+        CGContextRef ctx = CGBitmapContextCreate(CVPixelBufferGetBaseAddress(outputPixelBuffer), CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer), 8, CVPixelBufferGetBytesPerRow(outputPixelBuffer), colorSpace, bitmapInfo);
         
         CGColorSpaceRelease(colorSpace);
         
