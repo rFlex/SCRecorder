@@ -36,6 +36,11 @@
     return self;
 }
 
+- (void)dealloc
+{
+    [self stopProcessing];
+}
+
 - (void)setMaxQueueSize:(NSUInteger)maxQueueSize {    
     _availableItemsToEnqueue = dispatch_semaphore_create(maxQueueSize);
     _maxQueueSize = maxQueueSize;

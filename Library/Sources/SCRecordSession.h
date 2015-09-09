@@ -182,7 +182,7 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
  Returns the AVAssetExportSession used for exporting.
  Returns nil and call the completion handler block synchronously if an error happend while preparing the export session.
  */
-- (AVAssetExportSession __nullable*)mergeSegmentsUsingPreset:(NSString *__nonnull)exportSessionPreset completionHandler:(void(^__nonnull)(NSURL *__nullable outputUrl, NSError *__nullable error))completionHandler;
+- (AVAssetExportSession *__nullable)mergeSegmentsUsingPreset:(NSString *__nonnull)exportSessionPreset completionHandler:(void(^__nonnull)(NSURL *__nullable outputUrl, NSError *__nullable error))completionHandler;
 
 /**
  Returns an asset representing all the record segments
