@@ -63,6 +63,11 @@
 @property (readonly, nonatomic) NSError *__nullable error;
 
 /**
+ Will be set to YES if cancelExport was called
+ */
+@property (readonly, atomic) BOOL cancelled;
+
+/**
  The timeRange to read from the inputAsset
  */
 @property (assign, nonatomic) CMTimeRange timeRange;
@@ -79,6 +84,11 @@
 
 // Init with the inputAsset
 - (nonnull instancetype)initWithAsset:(AVAsset *__nonnull)inputAsset;
+
+/**
+ Cancels exportAsynchronouslyWithCompletionHandler
+ */
+- (void)cancelExport;
 
 /**
  Starts the asynchronous execution of the export session

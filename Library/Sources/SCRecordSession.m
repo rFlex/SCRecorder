@@ -560,60 +560,61 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     }
 }
 
-- (void)mergeSegmentsUsingPreset:(NSString *)exportSessionPreset completionHandler:(void(^)(NSURL *outputUrl, NSError *error))completionHandler {
+- (AVAssetExportSession *)mergeSegmentsUsingPreset:(NSString *)exportSessionPreset completionHandler:(void(^)(NSURL *outputUrl, NSError *error))completionHandler {
+    __block AVAsset *asset = nil;
+    __block NSError *error = nil;
+    __block NSString *fileType = nil;
+    __block NSURL *outputUrl = nil;
+
     [self dispatchSyncOnSessionQueue:^{
-        NSString *fileType = [self _suggestedFileType];
+        fileType = [self _suggestedFileType];
         
         if (fileType == nil) {
-            if (completionHandler != nil) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(nil, [SCRecordSession createError:@"No output fileType was set"]);
-                });
-            }
+            error = [SCRecordSession createError:@"No output fileType was set"];
             return;
         }
         
         NSString *fileExtension = [self _suggestedFileExtension];
         if (fileExtension == nil) {
-            if (completionHandler != nil) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(nil, [SCRecordSession createError:@"Unable to figure out a file extension"]);
-                });
-            }
+            error = [SCRecordSession createError:@"Unable to figure out a file extension"];
             return;
         }
         
         NSString *filename = [NSString stringWithFormat:@"%@SCVideo-Merged.%@", _identifier, fileExtension];
-        NSURL *outputUrl = [SCRecordSessionSegment segmentURLForFilename:filename andDirectory:_segmentsDirectory];
+        outputUrl = [SCRecordSessionSegment segmentURLForFilename:filename andDirectory:_segmentsDirectory];
         [self removeFile:outputUrl];
 
         if (_segments.count == 0) {
-            if (completionHandler != nil) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(nil, [SCRecordSession createError:@"The session does not contains any record segment"]);
-                });
-            }
+            error = [SCRecordSession createError:@"The session does not contains any record segment"];
         } else {
-            AVAsset *asset = [self assetRepresentingSegments];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:asset presetName:exportSessionPreset];
-                exportSession.outputURL = outputUrl;
-                exportSession.outputFileType = fileType;
-                exportSession.shouldOptimizeForNetworkUse = YES;
-                [exportSession exportAsynchronouslyWithCompletionHandler:^{
-                    NSError *error = exportSession.error;
-                    
-                    if (completionHandler != nil) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            completionHandler(outputUrl, error);
-                        });
-                    }
-                }];
-            });
-
+            asset = [self assetRepresentingSegments];
         }
     }];
+
+    if (error != nil) {
+        if (completionHandler != nil) {
+            completionHandler(nil, error);
+        }
+
+        return nil;
+    } else {
+        AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:asset presetName:exportSessionPreset];
+        exportSession.outputURL = outputUrl;
+        exportSession.outputFileType = fileType;
+        exportSession.shouldOptimizeForNetworkUse = YES;
+        [exportSession exportAsynchronouslyWithCompletionHandler:^{
+            NSError *error = exportSession.error;
+
+            if (completionHandler != nil) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionHandler(outputUrl, error);
+                });
+            }
+        }];
+
+        return exportSession;
+
+    }
 }
 
 - (void)finishEndSession:(NSError*)mergeError completionHandler:(void (^)(NSError *))completionHandler {
@@ -772,7 +773,11 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     return time;
 }
 
-- (void)appendSegmentsToComposition:(AVMutableComposition *)composition {
+- (void)appendSegmentsToComposition:(AVMutableComposition * __nonnull)composition {
+    [self appendSegmentsToComposition:composition audioMix:nil];
+}
+
+- (void)appendSegmentsToComposition:(AVMutableComposition *)composition audioMix:(AVMutableAudioMix *)audioMix {
     [self dispatchSyncOnSessionQueue:^{
         AVMutableCompositionTrack *audioTrack = nil;
         AVMutableCompositionTrack *videoTrack = nil;
@@ -826,12 +831,28 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     }];
 }
 
+- (AVPlayerItem *)playerItemRepresentingSegments {
+    __block AVPlayerItem *playerItem = nil;
+    [self dispatchSyncOnSessionQueue:^{
+        if (_segments.count == 1) {
+            SCRecordSessionSegment *segment = _segments.firstObject;
+            playerItem = [AVPlayerItem playerItemWithAsset:segment.asset];
+        } else {
+            AVMutableComposition *composition = [AVMutableComposition composition];
+            [self appendSegmentsToComposition:composition];
+
+            playerItem = [AVPlayerItem playerItemWithAsset:composition];
+        }
+    }];
+
+    return playerItem;
+}
+
 - (AVAsset *)assetRepresentingSegments {
     __block AVAsset *asset = nil;
     [self dispatchSyncOnSessionQueue:^{
         if (_segments.count == 1) {
             SCRecordSessionSegment *segment = _segments.firstObject;
-            NSLog(@"URL: %@", segment.url);
             asset = segment.asset;
         } else {
             AVMutableComposition *composition = [AVMutableComposition composition];
