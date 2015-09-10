@@ -107,6 +107,11 @@ static char *ContextDidChangeDevice = "DidChangeDevice";
     
     CGPoint viewPoint = [self.recorder convertPointOfInterestToViewCoordinates:currentFocusPoint];
     viewPoint = [self convertPoint:viewPoint fromView:self.recorder.previewView];
+    
+    if (isnan(viewPoint.x) || isnan(viewPoint.y)) {
+        viewPoint=CGPointMake(0.5,0.5);
+    }
+    
     self.cameraFocusTargetView.center = viewPoint;
 }
 
