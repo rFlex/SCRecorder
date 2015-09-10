@@ -113,34 +113,35 @@
     SCIOPixelBuffers *outputPixelBuffers = pixelBuffers;
     
     if (_ciContext != nil) {
-        CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffers.inputPixelBuffer];
-        
-        CIImage *result = image;
-        NSTimeInterval timeSeconds = CMTimeGetSeconds(pixelBuffers.time);
-        
-        if (_videoConfiguration.filter != nil) {
-            result = [_videoConfiguration.filter imageByProcessingImage:result atTime:timeSeconds];
+        @autoreleasepool {
+            CIImage *result = [CIImage imageWithCVPixelBuffer:pixelBuffers.inputPixelBuffer];
+
+            NSTimeInterval timeSeconds = CMTimeGetSeconds(pixelBuffers.time);
+
+            if (_videoConfiguration.filter != nil) {
+                result = [_videoConfiguration.filter imageByProcessingImage:result atTime:timeSeconds];
+            }
+
+            if (_watermarkFilter != nil) {
+                [_watermarkFilter setParameterValue:result forKey:kCIInputBackgroundImageKey];
+                result = [_watermarkFilter parameterValueForKey:kCIOutputImageKey];
+            }
+
+            if (!CGSizeEqualToSize(result.extent.size, _outputBufferSize)) {
+                result = [result imageByCroppingToRect:CGRectMake(0, 0, _outputBufferSize.width, _outputBufferSize.height)];
+            }
+
+            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+
+            [_ciContext render:result toCVPixelBuffer:pixelBuffers.outputPixelBuffer bounds:result.extent colorSpace:colorSpace];
+
+            CGColorSpaceRelease(colorSpace);
+            
+            if (pixelBuffers.inputPixelBuffer != pixelBuffers.outputPixelBuffer) {
+                CVPixelBufferUnlockBaseAddress(pixelBuffers.inputPixelBuffer, 0);
+            }
         }
-        
-        if (_watermarkFilter != nil) {
-            [_watermarkFilter setParameterValue:result forKey:kCIInputBackgroundImageKey];
-            result = [_watermarkFilter parameterValueForKey:kCIOutputImageKey];
-        }
-        
-        if (!CGSizeEqualToSize(result.extent.size, _outputBufferSize)) {
-            result = [result imageByCroppingToRect:CGRectMake(0, 0, _outputBufferSize.width, _outputBufferSize.height)];
-        }
-        
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-        
-        [_ciContext render:result toCVPixelBuffer:pixelBuffers.outputPixelBuffer bounds:result.extent colorSpace:colorSpace];
-        
-        CGColorSpaceRelease(colorSpace);
-        
-        if (pixelBuffers.inputPixelBuffer != pixelBuffers.outputPixelBuffer) {
-            CVPixelBufferUnlockBaseAddress(pixelBuffers.inputPixelBuffer, 0);
-        }
-        
+
         outputPixelBuffers = [SCIOPixelBuffers IOPixelBuffersWithInputPixelBuffer:pixelBuffers.outputPixelBuffer outputPixelBuffer:pixelBuffers.outputPixelBuffer time:pixelBuffers.time];
     }
     
@@ -260,13 +261,13 @@
             while (strongSelf.videoInput.isReadyForMoreMediaData && shouldReadNextBuffer && !strongSelf.cancelled) {
                 SCIOPixelBuffers *videoBuffer = nil;
                 SCSampleBufferHolder *bufferHolder = nil;
-                
+
                 if (videoProcessingQueue != nil) {
                     videoBuffer = [videoProcessingQueue dequeue];
                 } else {
                     bufferHolder = [videoReadingQueue dequeue];
                 }
-                
+
                 if (videoBuffer != nil || bufferHolder != nil) {
                     if (CMTIME_COMPARE_INLINE(videoBuffer.time, >=, strongSelf.nextAllowedVideoFrame)) {
                         CMTime time;
@@ -277,14 +278,14 @@
                             time = videoBuffer.time;
                             shouldReadNextBuffer = [strongSelf encodePixelBuffer:videoBuffer.outputPixelBuffer presentationTime:videoBuffer.time];
                         }
-                        
+
                         if (strongSelf.videoConfiguration.maxFrameRate > 0) {
                             strongSelf.nextAllowedVideoFrame = CMTimeAdd(time, CMTimeMake(1, strongSelf.videoConfiguration.maxFrameRate));
                         }
-                        
+
                         [strongSelf _didAppendToInput:strongSelf.videoInput atTime:time];
                     }
-                    
+
                     if (videoBuffer != nil) {
                         CVPixelBufferUnlockBaseAddress(videoBuffer.outputPixelBuffer, 0);
                     }
