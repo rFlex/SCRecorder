@@ -34,21 +34,22 @@
 
 - (void)commonInit {
     _preferredCIImageTransform = CGAffineTransformIdentity;
-    _glkView = [[GLKView alloc] initWithFrame:self.bounds context:nil];
-    _glkView.backgroundColor = [UIColor clearColor];
-    
-    _glkView.delegate = self;
-    
+
     _sampleBufferHolder = [SCSampleBufferHolder new];
-    
-    [self addSubview:_glkView];
 }
 
-- (void)_loadContext {
+- (void)_loadContextIfNeeded {
     if (_CIContext == nil) {
         SCContext *context = [SCContext context];
         _CIContext = context.CIContext;
-        _glkView.context = context.EAGLContext;
+
+        _glkView = [[GLKView alloc] initWithFrame:self.bounds context:context.EAGLContext];
+        _glkView.backgroundColor = [UIColor clearColor];
+
+        _glkView.delegate = self;
+        [self insertSubview:_glkView atIndex:0];
+
+        [self setNeedsLayout];
     }
 }
 
@@ -81,22 +82,22 @@
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
     CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
-    
+
     if (newImage != nil) {
         _CIImage = newImage;
     }
-    
+
     CIImage *outputImage = _CIImage;
-    
+
     if (outputImage != nil) {
         outputImage = [outputImage imageByApplyingTransform:self.preferredCIImageTransform];
-        
+
         if (self.preprocessingFilter != nil) {
             outputImage = [self.preprocessingFilter imageByProcessingImage:outputImage atTime:self.CIImageTime];
         }
-        
+
         rect = [CIImageRendererUtils processRect:rect withImageSize:outputImage.extent.size contentScale:_glkView.contentScaleFactor contentMode:self.contentMode];
-        
+
         [self render:outputImage toContext:_CIContext inRect:rect];
     }
 }
@@ -149,7 +150,7 @@
     _CIImage = CIImage;
     
     if (CIImage != nil) {
-        [self _loadContext];
+        [self _loadContextIfNeeded];
     }
     [_glkView setNeedsDisplay];
 }
