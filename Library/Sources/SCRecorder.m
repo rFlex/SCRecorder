@@ -695,6 +695,37 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     });
 }
 
+- (CMSampleBufferRef)sampleBufferFromCIImage:(CIImage *)image originalSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    size_t width = image.extent.size.width;
+    size_t height = image.extent.size.height;
+    
+    CVPixelBufferRef pixelBuffer;
+    CVPixelBufferCreate(kCFAllocatorSystemDefault, width, height, kCVPixelFormatType_32BGRA, NULL, &pixelBuffer);
+    
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    
+    CIContext * ciContext = [CIContext contextWithOptions:nil];
+    [ciContext render:image toCVPixelBuffer:pixelBuffer];
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    
+    CMSampleTimingInfo sampleTime = {
+        .duration = CMSampleBufferGetDuration(sampleBuffer),
+        .presentationTimeStamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
+        .decodeTimeStamp = CMSampleBufferGetDecodeTimeStamp(sampleBuffer)
+    };
+    
+    CMVideoFormatDescriptionRef videoInfo = NULL;
+    CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, &videoInfo);
+    
+    CMSampleBufferRef oBuf;
+    CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, true, NULL, NULL, videoInfo, &sampleTime, &oBuf);
+    
+    CFRelease(videoInfo);
+    CVPixelBufferRelease(pixelBuffer);
+    
+    return oBuf;
+}
+
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     if (captureOutput == _videoOutput) {
         if (_videoConfiguration.shouldIgnore) {
@@ -761,6 +792,14 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                         if (_isRecording && recordSession.recordSegmentReady) {
                             id<SCRecorderDelegate> delegate = self.delegate;
                             CMTime duration = [self frameDurationFromConnection:connection];
+                            CMSampleBufferRef filteredSampleBuffer = NULL;
+                            
+                            if (_CIImageRenderer) {
+                                if ([_CIImageRenderer respondsToSelector:@selector(processedCIImage)]) {
+                                    CIImage * image = [_CIImageRenderer performSelector:@selector(processedCIImage)];
+                                    filteredSampleBuffer = [self sampleBufferFromCIImage:image originalSampleBuffer:sampleBuffer];
+                                }
+                            }
                             
                             double timeToWait = kMinTimeBetweenAppend - (CACurrentMediaTime() - _lastAppendedVideoTime);
                             
@@ -770,7 +809,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                                 [NSThread sleepForTimeInterval:timeToWait];
                             }
                             
-                            [self appendVideoSampleBuffer:sampleBuffer toRecordSession:recordSession duration:duration connection:connection completion:^(BOOL success) {
+                            [self appendVideoSampleBuffer:filteredSampleBuffer ? filteredSampleBuffer : sampleBuffer toRecordSession:recordSession duration:duration connection:connection completion:^(BOOL success) {
+                                if (filteredSampleBuffer) {
+                                    CFRelease(filteredSampleBuffer);
+                                }
+                                
                                 _lastAppendedVideoTime = CACurrentMediaTime();
                                 if (success) {
                                     if ([delegate respondsToSelector:@selector(recorder:didAppendVideoSampleBufferInSession:)]) {
