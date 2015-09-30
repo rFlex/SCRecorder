@@ -607,8 +607,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     SCFilter *transformFilter = [self _transformFilterUsingBufferWidth:bufferWidth bufferHeight:bufferHeight mirrored:
                                  _device == AVCaptureDevicePositionFront
                                  ];
+
+    id<SCRecorderDelegate> delegate = self.delegate;
+    BOOL preprocess = [delegate respondsToSelector:@selector(recorder:willAppendVideoSampleBuffer:inSession:)];
     
-    if (filterGroup == nil && transformFilter == nil) {
+    if (filterGroup == nil && transformFilter == nil && !preprocess) {
         [recordSession appendVideoPixelBuffer:sampleBufferImage atTime:time duration:duration completion:completion];
         return;
     }
@@ -634,6 +637,10 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     CVPixelBufferLockBaseAddress(pixelBuffer, 0);
     
     [_context render:image toCVPixelBuffer:pixelBuffer];
+    
+    if (preprocess) {
+        [delegate recorder:self willAppendVideoSampleBuffer:pixelBuffer inSession:recordSession];
+    }
     
     [recordSession appendVideoPixelBuffer:pixelBuffer atTime:time duration:duration completion:^(BOOL success) {
         CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
@@ -706,13 +713,27 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         if (imageRenderer != nil) {
             CFRetain(sampleBuffer);
             dispatch_async(dispatch_get_main_queue(), ^{
-                if ([imageRenderer respondsToSelector:@selector(setImageBySampleBuffer:)]) {
+                if ([imageRenderer respondsToSelector:@selector(setImageByPixelBuffer:)]) {
+                    CIImage * image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(sampleBuffer)];
+                    
+                    CVPixelBufferRef pixelBuffer = [_session createPixelBuffer];
+
+                    if (pixelBuffer) {
+                        CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+                        if (_device == AVCaptureDevicePositionFront) {
+                            image = [image imageByApplyingTransform:CGAffineTransformTranslate(CGAffineTransformScale(CGAffineTransformIdentity, -1, 1), -(CGFloat)CVPixelBufferGetWidth(pixelBuffer), 0)];
+                        }
+                        
+                        [_context render:image toCVPixelBuffer:pixelBuffer];
+                        [imageRenderer setImageByPixelBuffer:pixelBuffer];
+                        CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+                        CVPixelBufferRelease(pixelBuffer);
+                    }
+                } else if ([imageRenderer respondsToSelector:@selector(setImageBySampleBuffer:)]) {
                     [imageRenderer setImageBySampleBuffer:sampleBuffer];
                 } else {
-                    CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-                    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:buffer];
-                    
-                    imageRenderer.CIImage = ciImage;
+                    CIImage * image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(sampleBuffer)];
+                    imageRenderer.CIImage = image;
                 }
                 
                 CFRelease(sampleBuffer);

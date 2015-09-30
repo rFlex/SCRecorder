@@ -31,6 +31,11 @@
 - (void)setImageBySampleBuffer:(__nonnull CMSampleBufferRef)sampleBuffer;
 
 /**
+ Some objects may use this property to set a pixel buffer for further processing.
+ */
+- (void)setImageByPixelBuffer:(__nonnull CVPixelBufferRef)pixelBuffer;
+
+/**
  Set the CIImage using an UIImage
  */
 - (void)setImageByUIImage:(UIImage *__nullable)image;
