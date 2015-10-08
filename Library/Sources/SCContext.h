@@ -8,12 +8,73 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreImage/CoreImage.h>
+#import <Metal/Metal.h>
 
+typedef NS_ENUM(NSInteger, SCContextType) {
+    /**
+     Create a hardware accelerated SCContext with Metal
+     */
+    SCContextTypeMetal,
+
+    /**
+     Create a hardware accelerated SCContext with CoreGraphics
+     */
+    SCContextTypeCoreGraphics,
+
+    /**
+     Create a hardware accelerated SCContext with EAGL (OpenGL)
+     */
+    SCContextTypeEAGL,
+
+    /**
+     Create a software rendered SCContext (no hardware acceleration)
+     */
+    SCContextTypeCPU
+};
+
+extern NSString *__nonnull const SCContextOptionsCGContextKey;
+extern NSString *__nonnull const SCContextOptionsEAGLContextKey;
+extern NSString *__nonnull const SCContextOptionsMTLDeviceKey;
+
+/**
+ Simple abstraction over CIContext.
+ */
 @interface SCContext : NSObject
 
-@property (readonly, nonatomic) CIContext *CIContext;
-@property (readonly, nonatomic) EAGLContext *EAGLContext;
+/**
+ The CIContext
+ */
+@property (readonly, nonatomic) CIContext *__nonnull CIContext;
 
-+ (SCContext *)context;
+/**
+ The type with with which this SCContext was created
+ */
+@property (readonly, nonatomic) SCContextType type;
+
+/**
+ Will be non null if the type is SCContextTypeEAGL
+ */
+@property (readonly, nonatomic) EAGLContext *__nullable EAGLContext;
+
+/**
+ Will be non null if the type is SCContextTypeMetal
+ */
+@property (readonly, nonatomic) id<MTLDevice> __nullable MTLDevice;
+
+/**
+ Will be non null if the type is SCContextTypeCoreGraphics
+ */
+@property (readonly, nonatomic) CGContextRef __nullable CGContext;
+
+/**
+ Create and returns a new context with the given type. You must check
+ whether the contextType is supported by calling +[SCContext supportsType:] before.
+ */
++ (SCContext *__nonnull)contextWithType:(SCContextType)type options:(NSDictionary *__nullable)options;
+
+/**
+ Returns whether the contextType can be safely created and used using +[SCContext contextWithType:]
+ */
++ (BOOL)supportsType:(SCContextType)contextType;
 
 @end

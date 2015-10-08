@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "SCPlayer.h"
 #import "CIImageRendererUtils.h"
-#import "SCFilterSelectorView.h"
+#import "SCFilterImageView.h"
 
 @class SCSwipeableFilterView;
 @protocol SCSwipeableFilterViewDelegate <NSObject>
@@ -22,7 +22,26 @@
  A filter selector view that works like the Snapchat presentation of the available filters.
  Filters are swipeable from horizontally.
  */
-@interface SCSwipeableFilterView : SCFilterSelectorView<UIScrollViewDelegate>
+@interface SCSwipeableFilterView : SCImageView<UIScrollViewDelegate>
+
+/**
+ The available filterGroups that this SCFilterSwitcherView shows
+ If you want to show an empty filter (no processing), just add a [NSNull null]
+ entry instead of an instance of SCFilterGroup
+ */
+@property (strong, nonatomic) NSArray *__nullable filters;
+
+/**
+ The currently selected filter group.
+ This changes when scrolling in the underlying UIScrollView.
+ This value is Key-Value observable.
+ */
+@property (strong, nonatomic) SCFilter *__nullable selectedFilter;
+
+/**
+ A filter that is applied before applying the selected filter
+ */
+@property (strong, nonatomic) SCFilter *__nullable preprocessingFilter;
 
 /**
  The delegate that will receive messages
@@ -49,5 +68,16 @@
  Scrolls to a specific filter
  */
 - (void)scrollToFilter:(SCFilter *__nonnull)filter animated:(BOOL)animated;
+
+/**
+ Returns the current image processed by the selected filter as a CIImage
+ */
+- (CIImage *__nullable)processedCIImage;
+
+/**
+ Returns the current image processed by the selected filter as an UIImage
+ */
+- (UIImage *__nullable)processedUIImage;
+
 
 @end

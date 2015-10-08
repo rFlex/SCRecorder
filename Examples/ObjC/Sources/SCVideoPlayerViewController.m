@@ -81,6 +81,7 @@
 	_player = [SCPlayer player];
     
     if ([[NSProcessInfo processInfo] activeProcessorCount] > 1) {
+        self.filterSwitcherView.contextType = SCImageViewContextTypeCoreGraphics;
         self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
         self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFill;
         

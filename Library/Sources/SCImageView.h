@@ -13,17 +13,51 @@
 #import <GLKit/GLKit.h>
 #import "SCFilter.h"
 #import "CIImageRenderer.h"
+#import "SCContext.h"
+
+typedef NS_ENUM(NSInteger, SCImageViewContextType) {
+
+    /**
+     Automatically chooses the appropriate context
+     */
+    SCImageViewContextTypeAuto,
+
+    /**
+     Create a hardware accelerated SCContext with Metal
+     */
+    SCImageViewContextTypeMetal,
+
+    /**
+     Create a hardware accelerated SCContext with CoreGraphics
+     */
+    SCImageViewContextTypeCoreGraphics,
+
+    /**
+     Create a hardware accelerated SCContext with EAGL (OpenGL)
+     */
+    SCImageViewContextTypeEAGL
+};
+
 
 /**
  A Core Image renderer that works like a UIView. It supports filter through the
  filterGroup property.
  */
-@interface SCImageView : GLKView<CIImageRenderer>
+@interface SCImageView : UIView<CIImageRenderer>
 
 /**
- The filter to apply when rendering. If nil is set, no filter will be applied
+ The context type to use when loading the context.
  */
-@property (strong, nonatomic) SCFilter *__nullable filter;
+@property (assign, nonatomic) SCImageViewContextType contextType;
+
+/**
+ The SCContext that hold the underlying CIContext for rendering the CIImage's
+ Will be automatically loaded when setting the first CIImage or when rendering
+ for the first if using a CoreGraphics context type.
+ You can also set your own context.
+ Supported contexts are Metal, CoreGraphics, EAGL
+ */
+@property (strong, nonatomic) SCContext *__nullable context;
 
 /**
  The CIImage to render.
@@ -53,13 +87,21 @@
 - (void)setImageByUIImage:(UIImage *__nullable)image;
 
 /**
- Creates and returns the processed image as UIImage
+ Create the CIContext and setup the underlying rendering views. This is automatically done when setting an CIImage
+ for the first time to make the initialization faster. If for some reasons you want it to be done earlier
+ you can call this method.
+ Returns whether the context has been successfully loaded, returns NO otherwise.
  */
-- (UIImage *__nullable)processedUIImage;
+- (BOOL)loadContextIfNeeded;
 
 /**
- Creates and returns the processed image as CIImage
+ Returns whether the contextType is supported.
  */
-- (CIImage *__nullable)processedCIImage;
++ (BOOL)supportsContextType:(SCImageViewContextType)contextType;
+
+/**
+ Subclass can override this method to render the given CIImage into the CIContext.
+ */
+- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect andCIContext:(CIContext *)CIContext MTLTexture:(__nullable id<MTLTexture>)texture;
 
 @end

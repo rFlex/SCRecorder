@@ -9,7 +9,6 @@
 #import "SCSwipeableFilterView.h"
 #import "CIImageRendererUtils.h"
 #import "SCSampleBufferHolder.h"
-#import "SCFilterSelectorViewInternal.h"
 
 @interface SCSwipeableFilterView() {
     CGFloat _filterGroupIndexRatio;
@@ -23,7 +22,7 @@
     self = [super initWithFrame:frame];
     
     if (self) {
-        [self commonInit];
+        [self _commonInit];
     }
     
     return self;
@@ -33,7 +32,7 @@
     self = [super initWithCoder:aDecoder];
     
     if (self) {
-        [self commonInit];
+        [self _commonInit];
     }
     
     return self;
@@ -43,9 +42,7 @@
     
 }
 
-- (void)commonInit {
-    [super commonInit];
-    
+- (void)_commonInit {
     _refreshAutomaticallyWhenScrolling = YES;
     _selectFilterScrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
     _selectFilterScrollView.delegate = self;
@@ -150,49 +147,95 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     }
     
     if (_refreshAutomaticallyWhenScrolling) {
-        [self refresh];
+        [self setNeedsDisplay];
     }
 }
 
-- (void)render:(CIImage *)image toContext:(CIContext *)context inRect:(CGRect)rect {
+- (void)drawCIImage:(CIImage *)image inRect:(CGRect)rect andCIContext:(CIContext *)context MTLTexture:(id<MTLTexture>)texture {
     CGRect extent = [image extent];
-    
+
     CGFloat ratio = _filterGroupIndexRatio;
-    
+
     NSInteger index = (NSInteger)ratio;
     NSInteger upIndex = (NSInteger)ceilf(ratio);
     CGFloat remainingRatio = ratio - ((CGFloat)index);
-    
+
     NSArray *filterGroups = self.filters;
-    
+
     CGFloat xOutputRect = rect.size.width * -remainingRatio;
     CGFloat xImage = extent.size.width * -remainingRatio;
     CFTimeInterval imageTime = self.CIImageTime;
-    
+
     while (index <= upIndex) {
         NSInteger currentIndex = index % filterGroups.count;
         id obj = [filterGroups objectAtIndex:currentIndex];
         CIImage *imageToUse = image;
-        
+
         if ([obj isKindOfClass:[SCFilter class]]) {
             imageToUse = [((SCFilter *)obj) imageByProcessingImage:imageToUse atTime:imageTime];
         }
-        
+
         CGRect outputRect = CGRectTranslate(rect, xOutputRect, rect.size.width);
         CGRect fromRect = CGRectTranslate(extent, xImage, extent.size.width);
-        
-        [context drawImage:imageToUse inRect:outputRect fromRect:fromRect];
-        
+
+        if (texture != nil) {
+            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+            [context render:imageToUse toMTLTexture:texture commandBuffer:nil bounds:outputRect colorSpace:colorSpace];
+            CGColorSpaceRelease(colorSpace);
+        } else {
+            [context drawImage:imageToUse inRect:outputRect fromRect:fromRect];
+        }
+
         xOutputRect += rect.size.width;
         xImage += extent.size.width;
         index++;
     }
 }
 
+- (CIImage *)processedCIImage {
+    CIImage *image = [self.CIImage imageByApplyingTransform:self.preferredCIImageTransform];
+
+    if (self.preprocessingFilter != nil) {
+        image = [self.preprocessingFilter imageByProcessingImage:image atTime:self.CIImageTime];
+    }
+
+    if (self.selectedFilter != nil) {
+        image = [self.selectedFilter imageByProcessingImage:image atTime:self.CIImageTime];
+    }
+
+    return image;
+}
+
+- (UIImage *)processedUIImage {
+    CIImage *image = [self processedCIImage];
+
+    if (![self loadContextIfNeeded]) {
+        return nil;
+    }
+
+    CGImageRef outputImage = [self.context.CIContext createCGImage:image fromRect:image.extent];
+
+    UIImage *uiImage = [UIImage imageWithCGImage:outputImage scale:self.contentScaleFactor orientation:UIImageOrientationUp];
+
+    CGImageRelease(outputImage);
+
+    return uiImage;
+}
+
 - (void)setFilters:(NSArray *)filters {
-    [super setFilters:filters];
-    
+    _filters = filters;
     [self updateScrollViewContentSize];
+}
+
+- (void)setSelectedFilter:(SCFilter *)selectedFilter {
+    if (_selectedFilter != selectedFilter) {
+        [self willChangeValueForKey:@"selectedFilter"];
+        _selectedFilter = selectedFilter;
+
+        [self didChangeValueForKey:@"selectedFilter"];
+
+        [self setNeedsLayout];
+    }
 }
 
 @end

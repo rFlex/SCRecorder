@@ -6,21 +6,24 @@
 //  Copyright (c) 2014 rFlex. All rights reserved.
 //
 
+#import <MetalKit/MetalKit.h>
 #import "SCImageView.h"
 #import "CIImageRendererUtils.h"
 #import "SCSampleBufferHolder.h"
 #import "SCContext.h"
 
-@interface SCImageView() {
-    CIContext *_CIContext;
+@interface SCImageView()<GLKViewDelegate, MTKViewDelegate> {
     SCSampleBufferHolder *_sampleBufferHolder;
 }
+
+@property (nonatomic, strong) GLKView *GLKView;
+@property (nonatomic, strong) MTKView *MTKView;
 
 @end
 
 @implementation SCImageView
 
-- (id)initWithFrame:(CGRect)frame {
+- (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     
     if (self) {
@@ -30,7 +33,7 @@
     return self;
 }
 
-- (id)initWithCoder:(NSCoder *)aDecoder {
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     
     if (self) {
@@ -46,64 +49,159 @@
     _sampleBufferHolder = [SCSampleBufferHolder new];
 }
 
-- (void)_loadContext {
-    if (_CIContext == nil) {
-        SCContext *context = [SCContext context];
-        _CIContext = context.CIContext;
-        self.context = context.EAGLContext;
+- (SCImageViewContextType)suggestedContextType {
+    SCImageViewContextType contextType = _contextType;
+
+    if (contextType == SCImageViewContextTypeAuto) {
+        if ([SCImageView supportsContextType:SCImageViewContextTypeMetal]) {
+            contextType = SCImageViewContextTypeMetal;
+        } else if ([SCImageView supportsContextType:SCImageViewContextTypeEAGL]) {
+            contextType = SCImageViewContextTypeEAGL;
+        } else if ([SCImageView supportsContextType:SCImageViewContextTypeCoreGraphics]) {
+            contextType = SCImageViewContextTypeCoreGraphics;
+        } else {
+            [NSException raise:@"NoContextSupported" format:@"Unable to find a compatible context for the SCImageView"];
+        }
+    }
+    return contextType;
+}
+
+- (BOOL)loadContextIfNeeded {
+    if (_context == nil) {
+        SCImageViewContextType contextType = [self suggestedContextType];
+
+        SCContextType sccontextType = -1;
+        NSDictionary *options = nil;
+        switch (contextType) {
+            case SCImageViewContextTypeCoreGraphics:
+                sccontextType = SCContextTypeCoreGraphics;
+                CGContextRef contextRef = UIGraphicsGetCurrentContext();
+
+                if (contextRef == nil) {
+                    return NO;
+                }
+                options = @{SCContextOptionsCGContextKey: (__bridge id)contextRef};
+                break;
+            case SCImageViewContextTypeEAGL:
+                sccontextType = SCContextTypeEAGL;
+                break;
+            case SCImageViewContextTypeMetal:
+                sccontextType = SCContextTypeMetal;
+                break;
+            default:
+                break;
+        }
+
+        self.context = [SCContext contextWithType:sccontextType options:options];
+    }
+
+    return YES;
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+
+    _GLKView.frame = self.bounds;
+    _MTKView.frame = self.bounds;
+}
+
+- (void)unloadContext {
+    if (_GLKView != nil) {
+        [_GLKView removeFromSuperview];
+        _GLKView = nil;
+    }
+    if (_MTKView != nil) {
+        [_MTKView removeFromSuperview];
+        [_MTKView releaseDrawables];
+        _MTKView = nil;
+    }
+    _context = nil;
+}
+
+- (void)setContext:(SCContext * _Nullable)context {
+    [self unloadContext];
+
+    if (context != nil) {
+        switch (context.type) {
+            case SCContextTypeCoreGraphics:
+                break;
+            case SCContextTypeEAGL:
+                _GLKView = [[GLKView alloc] initWithFrame:self.bounds context:context.EAGLContext];
+                _GLKView.delegate = self;
+                [self insertSubview:_GLKView atIndex:0];
+                break;
+            case SCContextTypeMetal:
+                _MTKView = [[MTKView alloc] initWithFrame:self.bounds device:context.MTLDevice];
+                _MTKView.delegate = self;
+                _MTKView.enableSetNeedsDisplay = YES;
+                [self insertSubview:_MTKView atIndex:0];
+                break;
+            default:
+                [NSException raise:@"InvalidContext" format:@"Unsupported context type: %d. SCImageView only supports CoreGraphics, EAGL and Metal", (int)context.type];
+                break;
+        }
+    }
+
+    _context = context;
+}
+
+- (void)setNeedsDisplay {
+    [super setNeedsDisplay];
+
+    [_GLKView setNeedsDisplay];
+    [_MTKView setNeedsDisplay];
+}
+
++ (BOOL)supportsContextType:(SCImageViewContextType)contextType {
+    switch (contextType) {
+        case SCImageViewContextTypeAuto:
+            return YES;
+        case SCImageViewContextTypeMetal:
+            return [SCContext supportsType:SCContextTypeMetal];
+        case SCImageViewContextTypeCoreGraphics:
+            return [SCContext supportsType:SCContextTypeCoreGraphics];
+        case SCImageViewContextTypeEAGL:
+            return [SCContext supportsType:SCContextTypeCoreGraphics];
+    }
+    return NO;
+}
+
+- (void)drawCIImageInRect:(CGRect)rect MTLTexture:(id<MTLTexture>)texture {
+    CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
+
+    if (newImage != nil) {
+        _CIImage = newImage;
+    }
+
+    CIImage *image = _CIImage;
+
+    if (image != nil) {
+        image = [image imageByApplyingTransform:self.preferredCIImageTransform];
+        [self drawCIImage:image inRect:rect andCIContext:self.context.CIContext MTLTexture:texture];
+    }
+}
+
+- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect andCIContext:(CIContext *)CIContext MTLTexture:(id<MTLTexture>)texture {
+    CGRect extent = [CIImage extent];
+
+    CGRect outputRect = [CIImageRendererUtils processRect:self.bounds withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
+
+    if (texture != nil) {
+        CGColorSpaceRef deviceRGB = CGColorSpaceCreateDeviceRGB();
+        [CIContext render:CIImage toMTLTexture:texture commandBuffer:nil bounds:outputRect colorSpace:deviceRGB];
+        CGColorSpaceRelease(deviceRGB);
+    } else {
+        [CIContext drawImage:CIImage inRect:outputRect fromRect:extent];
     }
 }
 
 - (void)drawRect:(CGRect)rect {
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-    
-    CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
-    
-    if (newImage != nil) {
-        _CIImage = newImage;
-    }
-    
-    CIImage *image = [self processedCIImage];
-    
-    if (image != nil) {
-        CGRect extent = [image extent];
-        
-        CGRect outputRect = [CIImageRendererUtils processRect:self.bounds withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
-        
-        [_CIContext drawImage:image inRect:outputRect fromRect:extent];
-    }
-}
+    [super drawRect:rect];
 
-- (CIImage *)processedCIImage {
-    CIImage *image = _CIImage;
-    
-    if (image != nil) {
-        image = [image imageByApplyingTransform:self.preferredCIImageTransform];
-        
-        if (_filter != nil) {
-            image = [_filter imageByProcessingImage:image atTime:_CIImageTime];
+    if (_CIImage != nil && [self loadContextIfNeeded]) {
+        if (self.context.type == SCContextTypeCoreGraphics) {
+            [self drawCIImageInRect:rect MTLTexture:nil];
         }
-        
-        return image;
-    }
-    
-    return image;
-}
-
-- (UIImage *)processedUIImage {
-    CIImage *image = [self processedCIImage];
-    
-    if (image != nil) {
-        CGImageRef CGImage = [_CIContext createCGImage:image fromRect:[image extent]];
-        
-        UIImage *uiImage = [UIImage imageWithCGImage:CGImage scale:self.contentScaleFactor orientation:UIImageOrientationUp];
-        
-        CGImageRelease(CGImage);
-        
-        return uiImage;
-    } else {
-        return nil;
     }
 }
 
@@ -121,16 +219,35 @@
     _CIImage = CIImage;
     
     if (CIImage != nil) {
-        [self _loadContext];
+        [self loadContextIfNeeded];
     }
     
     [self setNeedsDisplay];
 }
 
-- (void)setFilter:(SCFilter *)filter {
-    _filter = filter;
-    
-    [self setNeedsDisplay];
+- (void)setContextType:(SCImageViewContextType)contextType {
+    if (_contextType != contextType) {
+        self.context = nil;
+        _contextType = contextType;
+    }
+}
+
+#pragma mark -- MTKViewDelegate
+
+- (void)drawInMTKView:(nonnull MTKView *)view {
+    [self drawCIImageInRect:view.bounds MTLTexture:view.currentDrawable.texture];
+}
+
+- (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
+
+}
+
+#pragma mark -- GLKViewDelegate
+
+- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    [self drawCIImageInRect:rect MTLTexture:nil];
 }
 
 @end
