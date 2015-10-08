@@ -98,7 +98,7 @@
                                                  [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]],
                                                  [self createAnimatedFilter]
                                                  ];
-        _player.CIImageRenderer = self.filterSwitcherView;
+        _player.SCImageView = self.filterSwitcherView;
         [self.filterSwitcherView addObserver:self forKeyPath:@"selectedFilter" options:NSKeyValueObservingOptionNew context:nil];
     } else {
         SCVideoPlayerView *playerView = [[SCVideoPlayerView alloc] initWithPlayer:_player];
@@ -185,15 +185,22 @@
     [alertController addAction:[UIAlertAction actionWithTitle:@"Auto" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         self.filterSwitcherView.contextType = SCImageViewContextTypeAuto;
     }]];
-    [alertController addAction:[UIAlertAction actionWithTitle:@"Metal" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        self.filterSwitcherView.contextType = SCImageViewContextTypeMetal;
-    }]];
-    [alertController addAction:[UIAlertAction actionWithTitle:@"EAGL" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        self.filterSwitcherView.contextType = SCImageViewContextTypeEAGL;
-    }]];
-    [alertController addAction:[UIAlertAction actionWithTitle:@"CoreGraphics" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        self.filterSwitcherView.contextType = SCImageViewContextTypeCoreGraphics;
-    }]];
+
+    if ([SCImageView supportsContextType:SCImageViewContextTypeMetal]) {
+        [alertController addAction:[UIAlertAction actionWithTitle:@"Metal" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            self.filterSwitcherView.contextType = SCImageViewContextTypeMetal;
+        }]];
+    }
+    if ([SCImageView supportsContextType:SCImageViewContextTypeEAGL]) {
+        [alertController addAction:[UIAlertAction actionWithTitle:@"EAGL" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            self.filterSwitcherView.contextType = SCImageViewContextTypeEAGL;
+        }]];
+    }
+    if ([SCImageView supportsContextType:SCImageViewContextTypeCoreGraphics]) {
+        [alertController addAction:[UIAlertAction actionWithTitle:@"CoreGraphics" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            self.filterSwitcherView.contextType = SCImageViewContextTypeCoreGraphics;
+        }]];
+    }
     [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
 
     [self presentViewController:alertController animated:YES completion:nil];

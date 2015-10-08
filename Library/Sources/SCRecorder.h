@@ -138,7 +138,7 @@
  If set, this render will receive every received frames as CIImage.
  Can be useful for displaying a real time filter for example.
  */
-@property (strong, nonatomic) id<CIImageRenderer> __nullable CIImageRenderer;
+@property (strong, nonatomic) SCImageView *__nullable SCImageView;
 
 /**
  Set the delegate used to receive messages for the SCRecorder

@@ -702,19 +702,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         }
         
         _lastVideoBuffer.sampleBuffer = sampleBuffer;
-        id<CIImageRenderer> imageRenderer = _CIImageRenderer;
+        SCImageView *imageRenderer = _SCImageView;
         if (imageRenderer != nil) {
             CFRetain(sampleBuffer);
             dispatch_async(dispatch_get_main_queue(), ^{
-                if ([imageRenderer respondsToSelector:@selector(setImageBySampleBuffer:)]) {
-                    [imageRenderer setImageBySampleBuffer:sampleBuffer];
-                } else {
-                    CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-                    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:buffer];
-                    
-                    imageRenderer.CIImage = ciImage;
-                }
-                
+                [imageRenderer setImageBySampleBuffer:sampleBuffer];
                 CFRelease(sampleBuffer);
             });
         }

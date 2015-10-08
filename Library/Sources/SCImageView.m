@@ -8,7 +8,6 @@
 
 #import <MetalKit/MetalKit.h>
 #import "SCImageView.h"
-#import "CIImageRendererUtils.h"
 #import "SCSampleBufferHolder.h"
 #import "SCContext.h"
 
@@ -181,10 +180,11 @@
 
 - (void)drawCIImageInRect:(CGRect)rect {
     @autoreleasepool {
-        CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
+        CMSampleBufferRef sampleBuffer = _sampleBufferHolder.sampleBuffer;
 
-        if (newImage != nil) {
-            _CIImage = newImage;
+        if (sampleBuffer != nil) {
+            _CIImage = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(sampleBuffer)];
+            _sampleBufferHolder.sampleBuffer = nil;
         }
 
         CIImage *image = _CIImage;
@@ -239,19 +239,14 @@
 
 - (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect {
     CGRect extent = [CIImage extent];
-
-    [self drawCIImage:CIImage inRect:rect fromRect:CGRectMake(0, 0, extent.size.width, extent.size.height)];
-}
-
-- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)inRect fromRect:(CGRect)fromRect {
     CIContext *context = _context.CIContext;
 
     if (_currentTexture != nil) {
         CGColorSpaceRef deviceRGB = CGColorSpaceCreateDeviceRGB();
-        [context render:CIImage toMTLTexture:_currentTexture commandBuffer:_currentCommandBuffer bounds:fromRect colorSpace:deviceRGB];
+        [context render:CIImage toMTLTexture:_currentTexture commandBuffer:_currentCommandBuffer bounds:extent colorSpace:deviceRGB];
         CGColorSpaceRelease(deviceRGB);
     } else {
-        [context drawImage:CIImage inRect:inRect fromRect:fromRect];
+        [context drawImage:CIImage inRect:rect fromRect:extent];
     }
 }
 
@@ -271,8 +266,64 @@
     [self setNeedsDisplay];
 }
 
++ (CGAffineTransform)preferredCIImageTransformFromUIImage:(UIImage *)image {
+    if (image.imageOrientation == UIImageOrientationUp) {
+        return CGAffineTransformIdentity;
+    }
+    CGAffineTransform transform = CGAffineTransformIdentity;
+
+    switch (image.imageOrientation) {
+        case UIImageOrientationDown:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, image.size.width, image.size.height);
+            transform = CGAffineTransformRotate(transform, M_PI);
+            break;
+
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+            transform = CGAffineTransformTranslate(transform, image.size.width, 0);
+            transform = CGAffineTransformRotate(transform, M_PI_2);
+            break;
+
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, 0, image.size.height);
+            transform = CGAffineTransformRotate(transform, -M_PI_2);
+            break;
+        case UIImageOrientationUp:
+        case UIImageOrientationUpMirrored:
+            break;
+    }
+
+    switch (image.imageOrientation) {
+        case UIImageOrientationUpMirrored:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, image.size.width, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, image.size.height, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+        case UIImageOrientationUp:
+        case UIImageOrientationDown:
+        case UIImageOrientationLeft:
+        case UIImageOrientationRight:
+            break;
+    }
+
+    return transform;
+}
+
 - (void)setImageByUIImage:(UIImage *)image {
-    [CIImageRendererUtils putUIImage:image toRenderer:self];
+    if (image == nil) {
+        self.CIImage = nil;
+    } else {
+        self.preferredCIImageTransform = [SCImageView preferredCIImageTransformFromUIImage:image];
+        self.CIImage = [CIImage imageWithCGImage:image.CGImage];
+    }
 }
 
 - (void)setCIImage:(CIImage *)CIImage {

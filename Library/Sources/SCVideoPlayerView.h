@@ -33,28 +33,14 @@
 @property (strong, nonatomic) SCPlayer *__nullable player;
 
 /**
- The underlying AVPlayerLayer used for displaying the video. This property
- will be set only if SCImageViewEnabled if false.
+ The underlying AVPlayerLayer used for displaying the video.
  */
 @property (readonly, nonatomic) AVPlayerLayer *__nullable playerLayer;
-
-/**
- The underlying SCImageView used for displaying the video. This property
- will be set only if SCImageViewEnabled is true.
- */
-@property (readonly, nonatomic) SCImageView *__nullable SCImageView;
 
 /**
  If enabled, tapping on the view will pause/unpause the player.
  */
 @property (assign, nonatomic) BOOL tapToPauseEnabled;
-
-/**
- Whether it should create and use an SCImageView for displaying the frames.
- If false (the default), the SCVideoPlayerView will use the default Apple provided
- AVPlayerLayer for rendering fhe frames.
- */
-@property (assign, nonatomic) BOOL SCImageViewEnabled;
 
 /**
  Init the SCVideoPlayerView with a provided SCPlayer.

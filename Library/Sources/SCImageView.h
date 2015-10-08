@@ -12,7 +12,6 @@
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
 #import "SCFilter.h"
-#import "CIImageRenderer.h"
 #import "SCContext.h"
 
 typedef NS_ENUM(NSInteger, SCImageViewContextType) {
@@ -40,10 +39,9 @@ typedef NS_ENUM(NSInteger, SCImageViewContextType) {
 
 
 /**
- A Core Image renderer that works like a UIView. It supports filter through the
- filterGroup property.
+ A view capable of rendering CIImages.
  */
-@interface SCImageView : UIView<CIImageRenderer>
+@interface SCImageView : UIView
 
 /**
  The context type to use when loading the context.
@@ -102,9 +100,7 @@ typedef NS_ENUM(NSInteger, SCImageViewContextType) {
 /**
  Subclass can override this method to render the given CIImage into the CIContext.
  */
-- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect;
-
-- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)inRect fromRect:(CGRect)fromRect;
+- (void)drawCIImage:(CIImage *__nonnull)CIImage inRect:(CGRect)rect;
 
 /**
  Subclass can override this method to prevent the CIImage to be rescaled and resized automatically

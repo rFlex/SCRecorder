@@ -50,8 +50,10 @@
     }
 }
 
-- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect {
-    return [super drawCIImage:[self processImage:CIImage] inRect:rect];
+- (void)drawCIImage:(CIImage *)image inRect:(CGRect)rect {
+    CIImage *filteredImage = [self processImage:image];
+
+    [super drawCIImage:filteredImage inRect:rect];
 }
 
 - (void)setFilter:(SCFilter *)filter {
