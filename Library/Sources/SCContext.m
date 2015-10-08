@@ -23,6 +23,7 @@ static NSDictionary *SCContextCreateCIContextOptions() {
 
     if (self) {
         _CIContext = [CIContext contextWithOptions:SCContextCreateCIContextOptions()];
+        _type = SCContextTypeCPU;
     }
 
     return self;
@@ -33,6 +34,7 @@ static NSDictionary *SCContextCreateCIContextOptions() {
 
     if (self) {
         _CIContext = [CIContext contextWithCGContext:contextRef options:SCContextCreateCIContextOptions()];
+        _type = SCContextTypeCoreGraphics;
     }
 
     return self;
@@ -45,6 +47,7 @@ static NSDictionary *SCContextCreateCIContextOptions() {
         _EAGLContext = context;
 
         _CIContext = [CIContext contextWithEAGLContext:_EAGLContext options:SCContextCreateCIContextOptions()];
+        _type = SCContextTypeEAGL;
     }
     
     return self;
@@ -57,6 +60,7 @@ static NSDictionary *SCContextCreateCIContextOptions() {
         _MTLDevice = device;
 
         _CIContext = [CIContext contextWithMTLDevice:device options:SCContextCreateCIContextOptions()];
+        _type = SCContextTypeMetal;
     }
 
     return self;

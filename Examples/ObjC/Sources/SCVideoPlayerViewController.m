@@ -81,7 +81,6 @@
 	_player = [SCPlayer player];
     
     if ([[NSProcessInfo processInfo] activeProcessorCount] > 1) {
-        self.filterSwitcherView.contextType = SCImageViewContextTypeCoreGraphics;
         self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
         self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFill;
         
@@ -179,6 +178,25 @@
 
 - (IBAction)cancelTapped:(id)sender {
     [self cancelSaveToCameraRoll];
+}
+
+- (IBAction)changeRenderingModeTapped:(id)sender {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Change video rendering mode" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Auto" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        self.filterSwitcherView.contextType = SCImageViewContextTypeAuto;
+    }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Metal" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        self.filterSwitcherView.contextType = SCImageViewContextTypeMetal;
+    }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"EAGL" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        self.filterSwitcherView.contextType = SCImageViewContextTypeEAGL;
+    }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"CoreGraphics" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        self.filterSwitcherView.contextType = SCImageViewContextTypeCoreGraphics;
+    }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 - (void)saveToCameraRoll {

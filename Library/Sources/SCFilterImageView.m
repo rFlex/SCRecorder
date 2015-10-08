@@ -50,10 +50,8 @@
     }
 }
 
-- (void)drawCIImage:(CIImage *)image inRect:(CGRect)rect andCIContext:(CIContext *)CIContext MTLTexture:(id<MTLTexture>)texture {
-    CIImage *processedImage = [self processImage:image];
-
-    [super drawCIImage:processedImage inRect:rect andCIContext:CIContext MTLTexture:texture];
+- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect {
+    return [super drawCIImage:[self processImage:CIImage] inRect:rect];
 }
 
 - (void)setFilter:(SCFilter *)filter {

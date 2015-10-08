@@ -102,6 +102,13 @@ typedef NS_ENUM(NSInteger, SCImageViewContextType) {
 /**
  Subclass can override this method to render the given CIImage into the CIContext.
  */
-- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect andCIContext:(CIContext *)CIContext MTLTexture:(__nullable id<MTLTexture>)texture;
+- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect;
+
+- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)inRect fromRect:(CGRect)fromRect;
+
+/**
+ Subclass can override this method to prevent the CIImage to be rescaled and resized automatically
+ */
+- (BOOL)shouldScaleAndResizeCIImageAutomatically;
 
 @end

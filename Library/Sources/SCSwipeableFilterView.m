@@ -7,7 +7,6 @@
 //
 
 #import "SCSwipeableFilterView.h"
-#import "CIImageRendererUtils.h"
 #import "SCSampleBufferHolder.h"
 
 @interface SCSwipeableFilterView() {
@@ -151,7 +150,11 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     }
 }
 
-- (void)drawCIImage:(CIImage *)image inRect:(CGRect)rect andCIContext:(CIContext *)context MTLTexture:(id<MTLTexture>)texture {
+- (void)drawCIImage:(CIImage *)image inRect:(CGRect)rect {
+    if (self.preprocessingFilter != nil) {
+        image = [self.preprocessingFilter imageByProcessingImage:image atTime:self.CIImageTime];
+    }
+
     CGRect extent = [image extent];
 
     CGFloat ratio = _filterGroupIndexRatio;
@@ -162,34 +165,21 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
 
     NSArray *filterGroups = self.filters;
 
-    CGFloat xOutputRect = rect.size.width * -remainingRatio;
     CGFloat xImage = extent.size.width * -remainingRatio;
     CFTimeInterval imageTime = self.CIImageTime;
+    CIImage *outputImage = [CIImage new];
 
     while (index <= upIndex) {
         NSInteger currentIndex = index % filterGroups.count;
-        id obj = [filterGroups objectAtIndex:currentIndex];
-        CIImage *imageToUse = image;
-
-        if ([obj isKindOfClass:[SCFilter class]]) {
-            imageToUse = [((SCFilter *)obj) imageByProcessingImage:imageToUse atTime:imageTime];
-        }
-
-        CGRect outputRect = CGRectTranslate(rect, xOutputRect, rect.size.width);
-        CGRect fromRect = CGRectTranslate(extent, xImage, extent.size.width);
-
-        if (texture != nil) {
-            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-            [context render:imageToUse toMTLTexture:texture commandBuffer:nil bounds:outputRect colorSpace:colorSpace];
-            CGColorSpaceRelease(colorSpace);
-        } else {
-            [context drawImage:imageToUse inRect:outputRect fromRect:fromRect];
-        }
-
-        xOutputRect += rect.size.width;
+        SCFilter *filter = [filterGroups objectAtIndex:currentIndex];
+        CIImage *filteredImage = [filter imageByProcessingImage:image atTime:imageTime];
+        filteredImage = [filteredImage imageByCroppingToRect:CGRectMake(xImage, 0, extent.size.width, extent.size.height)];
+        outputImage = [filteredImage imageByCompositingOverImage:outputImage];
         xImage += extent.size.width;
         index++;
     }
+
+    [super drawCIImage:outputImage inRect:rect];
 }
 
 - (CIImage *)processedCIImage {

@@ -14,10 +14,13 @@
 
 @interface SCImageView()<GLKViewDelegate, MTKViewDelegate> {
     SCSampleBufferHolder *_sampleBufferHolder;
+    id<MTLCommandBuffer> _currentCommandBuffer;
+    id<MTLTexture> _currentTexture;
 }
 
 @property (nonatomic, strong) GLKView *GLKView;
 @property (nonatomic, strong) MTKView *MTKView;
+@property (nonatomic, strong) id<MTLCommandQueue> MTLCommandQueue;
 
 @end
 
@@ -111,6 +114,7 @@
         _GLKView = nil;
     }
     if (_MTKView != nil) {
+        _MTLCommandQueue = nil;
         [_MTKView removeFromSuperview];
         [_MTKView releaseDrawables];
         _MTKView = nil;
@@ -127,13 +131,18 @@
                 break;
             case SCContextTypeEAGL:
                 _GLKView = [[GLKView alloc] initWithFrame:self.bounds context:context.EAGLContext];
+                _GLKView.contentScaleFactor = self.contentScaleFactor;
                 _GLKView.delegate = self;
                 [self insertSubview:_GLKView atIndex:0];
                 break;
             case SCContextTypeMetal:
+                _MTLCommandQueue = [context.MTLDevice newCommandQueue];
                 _MTKView = [[MTKView alloc] initWithFrame:self.bounds device:context.MTLDevice];
+                _MTKView.clearColor = MTLClearColorMake(0, 0, 0, 0);
+                _MTKView.contentScaleFactor = self.contentScaleFactor;
                 _MTKView.delegate = self;
                 _MTKView.enableSetNeedsDisplay = YES;
+                _MTKView.framebufferOnly = NO;
                 [self insertSubview:_MTKView atIndex:0];
                 break;
             default:
@@ -161,37 +170,88 @@
         case SCImageViewContextTypeCoreGraphics:
             return [SCContext supportsType:SCContextTypeCoreGraphics];
         case SCImageViewContextTypeEAGL:
-            return [SCContext supportsType:SCContextTypeCoreGraphics];
+            return [SCContext supportsType:SCContextTypeEAGL];
     }
     return NO;
 }
 
-- (void)drawCIImageInRect:(CGRect)rect MTLTexture:(id<MTLTexture>)texture {
-    CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
+- (BOOL)shouldScaleAndResizeCIImageAutomatically {
+    return YES;
+}
 
-    if (newImage != nil) {
-        _CIImage = newImage;
-    }
+- (void)drawCIImageInRect:(CGRect)rect {
+    @autoreleasepool {
+        CIImage *newImage = [CIImageRendererUtils generateImageFromSampleBufferHolder:_sampleBufferHolder];
 
-    CIImage *image = _CIImage;
+        if (newImage != nil) {
+            _CIImage = newImage;
+        }
 
-    if (image != nil) {
-        image = [image imageByApplyingTransform:self.preferredCIImageTransform];
-        [self drawCIImage:image inRect:rect andCIContext:self.context.CIContext MTLTexture:texture];
+        CIImage *image = _CIImage;
+
+        if (image != nil) {
+            image = [image imageByApplyingTransform:self.preferredCIImageTransform];
+
+            if ([self shouldScaleAndResizeCIImageAutomatically]) {;
+//                image = [self scaleAndResizeCIImage:image forRect:rect];
+            }
+            
+            [self drawCIImage:image inRect:rect];
+        }
     }
 }
 
-- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect andCIContext:(CIContext *)CIContext MTLTexture:(id<MTLTexture>)texture {
+
+- (CIImage *)scaleAndResizeCIImage:(CIImage *)image forRect:(CGRect)rect {
+    CGSize imageSize = image.extent.size;
+
+    CGFloat contentScale = self.contentScaleFactor;
+    CGAffineTransform transform = CGAffineTransformMakeScale(contentScale, contentScale);
+    transform = CGAffineTransformTranslate(transform, 10, 0);
+
+    rect.origin.x *= contentScale;
+    rect.origin.y *= contentScale;
+    rect.size.width *= contentScale;
+    rect.size.height *= contentScale;
+
+    UIViewContentMode mode = self.contentMode;
+    if (mode != UIViewContentModeScaleToFill) {
+        CGFloat horizontalScale = rect.size.width / imageSize.width;
+        CGFloat verticalScale = rect.size.height / imageSize.height;
+
+        BOOL shouldResizeWidth = mode == UIViewContentModeScaleAspectFit ? horizontalScale > verticalScale : verticalScale > horizontalScale;
+        BOOL shouldResizeHeight = mode == UIViewContentModeScaleAspectFit ? verticalScale > horizontalScale : horizontalScale > verticalScale;
+
+
+        if (shouldResizeWidth) {
+            CGFloat newWidth = imageSize.width * verticalScale;
+            rect.origin.x = (rect.size.width / 2 - newWidth / 2);
+            rect.size.width = newWidth;
+        } else if (shouldResizeHeight) {
+            CGFloat newHeight = imageSize.height * horizontalScale;
+            rect.origin.y = (rect.size.height / 2 - newHeight / 2);
+            rect.size.height = newHeight;
+        }
+    }
+
+    return [image imageByApplyingTransform:transform];
+}
+
+- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect {
     CGRect extent = [CIImage extent];
 
-    CGRect outputRect = [CIImageRendererUtils processRect:self.bounds withImageSize:extent.size contentScale:self.contentScaleFactor contentMode:self.contentMode];
+    [self drawCIImage:CIImage inRect:rect fromRect:CGRectMake(0, 0, extent.size.width, extent.size.height)];
+}
 
-    if (texture != nil) {
+- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)inRect fromRect:(CGRect)fromRect {
+    CIContext *context = _context.CIContext;
+
+    if (_currentTexture != nil) {
         CGColorSpaceRef deviceRGB = CGColorSpaceCreateDeviceRGB();
-        [CIContext render:CIImage toMTLTexture:texture commandBuffer:nil bounds:outputRect colorSpace:deviceRGB];
+        [context render:CIImage toMTLTexture:_currentTexture commandBuffer:_currentCommandBuffer bounds:fromRect colorSpace:deviceRGB];
         CGColorSpaceRelease(deviceRGB);
     } else {
-        [CIContext drawImage:CIImage inRect:outputRect fromRect:extent];
+        [context drawImage:CIImage inRect:inRect fromRect:fromRect];
     }
 }
 
@@ -200,7 +260,7 @@
 
     if (_CIImage != nil && [self loadContextIfNeeded]) {
         if (self.context.type == SCContextTypeCoreGraphics) {
-            [self drawCIImageInRect:rect MTLTexture:nil];
+            [self drawCIImageInRect:rect];
         }
     }
 }
@@ -235,7 +295,14 @@
 #pragma mark -- MTKViewDelegate
 
 - (void)drawInMTKView:(nonnull MTKView *)view {
-    [self drawCIImageInRect:view.bounds MTLTexture:view.currentDrawable.texture];
+    _currentCommandBuffer = [_MTLCommandQueue commandBuffer];
+    _currentTexture = view.currentDrawable.texture;
+    [self drawCIImageInRect:view.bounds];
+
+    [_currentCommandBuffer presentDrawable:view.currentDrawable];
+    [_currentCommandBuffer commit];
+    _currentCommandBuffer = nil;
+    _currentTexture = nil;
 }
 
 - (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
@@ -245,9 +312,9 @@
 #pragma mark -- GLKViewDelegate
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-    glClearColor(0, 0, 0, 1);
+    glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    [self drawCIImageInRect:rect MTLTexture:nil];
+    [self drawCIImageInRect:rect];
 }
 
 @end
