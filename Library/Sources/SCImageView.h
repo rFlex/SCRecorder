@@ -14,30 +14,6 @@
 #import "SCFilter.h"
 #import "SCContext.h"
 
-typedef NS_ENUM(NSInteger, SCImageViewContextType) {
-
-    /**
-     Automatically chooses the appropriate context
-     */
-    SCImageViewContextTypeAuto,
-
-    /**
-     Create a hardware accelerated SCContext with Metal
-     */
-    SCImageViewContextTypeMetal,
-
-    /**
-     Create a hardware accelerated SCContext with CoreGraphics
-     */
-    SCImageViewContextTypeCoreGraphics,
-
-    /**
-     Create a hardware accelerated SCContext with EAGL (OpenGL)
-     */
-    SCImageViewContextTypeEAGL
-};
-
-
 /**
  A view capable of rendering CIImages.
  */
@@ -46,7 +22,7 @@ typedef NS_ENUM(NSInteger, SCImageViewContextType) {
 /**
  The context type to use when loading the context.
  */
-@property (assign, nonatomic) SCImageViewContextType contextType;
+@property (assign, nonatomic) SCContextType contextType;
 
 /**
  The SCContext that hold the underlying CIContext for rendering the CIImage's
@@ -97,11 +73,6 @@ typedef NS_ENUM(NSInteger, SCImageViewContextType) {
  Returns whether the context has been successfully loaded, returns NO otherwise.
  */
 - (BOOL)loadContextIfNeeded;
-
-/**
- Returns whether the contextType is supported.
- */
-+ (BOOL)supportsContextType:(SCImageViewContextType)contextType;
 
 /**
  Returns the rendered CIImage in the given rect.

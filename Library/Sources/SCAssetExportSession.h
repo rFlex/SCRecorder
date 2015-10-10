@@ -11,6 +11,7 @@
 #import "SCFilter.h"
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
+#import "SCContext.h"
 
 @class SCAssetExportSession;
 @protocol SCAssetExportSessionDelegate <NSObject>
@@ -43,9 +44,9 @@
 @property (strong, nonatomic) NSString *__nullable outputFileType;
 
 /**
- If true, the export session will use the GPU for rendering the filters
+ The context type to use for rendering the images through a filter
  */
-@property (assign, nonatomic) BOOL useGPUForRenderingFilters;
+@property (assign, nonatomic) SCContextType contextType;
 
 /**
  Access the configuration for the video.
@@ -76,7 +77,6 @@
  The current progress
  */
 @property (readonly, nonatomic) float progress;
-
 
 @property (weak, nonatomic) __nullable id<SCAssetExportSessionDelegate> delegate;
 

@@ -22,7 +22,9 @@ static NSDictionary *SCContextCreateCIContextOptions() {
     self = [super init];
 
     if (self) {
-        _CIContext = [CIContext contextWithOptions:SCContextCreateCIContextOptions()];
+        NSMutableDictionary *options = SCContextCreateCIContextOptions().mutableCopy;
+        options[kCIContextUseSoftwareRenderer] = @YES;
+        _CIContext = [CIContext contextWithOptions:options];
         _type = SCContextTypeCPU;
     }
 
@@ -76,14 +78,29 @@ static NSDictionary *SCContextCreateCIContextOptions() {
             return [CIContextClass respondsToSelector:@selector(contextWithCGContext:options:)];
         case SCContextTypeEAGL:
             return [CIContextClass respondsToSelector:@selector(contextWithEAGLContext:options:)];
+        case SCContextTypeAuto:
         case SCContextTypeCPU:
             return YES;
     }
     return NO;
 }
 
++ (SCContextType)suggestedContextType {
+    if ([SCContext supportsType:SCContextTypeMetal]) {
+        return SCContextTypeMetal;
+    } else if ([SCContext supportsType:SCContextTypeEAGL]) {
+        return SCContextTypeEAGL;
+    } else if ([SCContext supportsType:SCContextTypeCoreGraphics]) {
+        return SCContextTypeCoreGraphics;
+    } else {
+        return SCContextTypeCPU;
+    }
+}
+
 + (SCContext *)contextWithType:(SCContextType)contextType options:(NSDictionary *)options {
     switch (contextType) {
+        case SCContextTypeAuto:
+            return [SCContext contextWithType:[SCContext suggestedContextType] options:options];
         case SCContextTypeMetal: {
             id<MTLDevice> device = options[SCContextOptionsMTLDeviceKey];
             if (device == nil) {

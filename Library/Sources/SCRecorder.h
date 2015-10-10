@@ -23,6 +23,7 @@
 #import "SCRecorderTools.h"
 #import "SCRecorderDelegate.h"
 #import "SCContext.h"
+#import "NSURL+SCSaveToCameraRoll.h"
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 

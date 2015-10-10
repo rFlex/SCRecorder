@@ -50,50 +50,32 @@
     _sampleBufferHolder = [SCSampleBufferHolder new];
 }
 
-- (SCImageViewContextType)suggestedContextType {
-    SCImageViewContextType contextType = _contextType;
-
-    if (contextType == SCImageViewContextTypeAuto) {
-        if ([SCImageView supportsContextType:SCImageViewContextTypeMetal]) {
-            contextType = SCImageViewContextTypeMetal;
-        } else if ([SCImageView supportsContextType:SCImageViewContextTypeEAGL]) {
-            contextType = SCImageViewContextTypeEAGL;
-        } else if ([SCImageView supportsContextType:SCImageViewContextTypeCoreGraphics]) {
-            contextType = SCImageViewContextTypeCoreGraphics;
-        } else {
-            [NSException raise:@"NoContextSupported" format:@"Unable to find a compatible context for the SCImageView"];
-        }
-    }
-    return contextType;
-}
-
 - (BOOL)loadContextIfNeeded {
     if (_context == nil) {
-        SCImageViewContextType contextType = [self suggestedContextType];
+        SCContextType contextType = _contextType;
+        if (contextType == SCContextTypeAuto) {
+            contextType = [SCContext suggestedContextType];
+        }
 
-        SCContextType sccontextType = -1;
         NSDictionary *options = nil;
         switch (contextType) {
-            case SCImageViewContextTypeCoreGraphics:
-                sccontextType = SCContextTypeCoreGraphics;
+            case SCContextTypeCoreGraphics: {
                 CGContextRef contextRef = UIGraphicsGetCurrentContext();
 
                 if (contextRef == nil) {
                     return NO;
                 }
                 options = @{SCContextOptionsCGContextKey: (__bridge id)contextRef};
+            }
                 break;
-            case SCImageViewContextTypeEAGL:
-                sccontextType = SCContextTypeEAGL;
-                break;
-            case SCImageViewContextTypeMetal:
-                sccontextType = SCContextTypeMetal;
+            case SCContextTypeCPU:
+                [NSException raise:@"UnsupportedContextType" format:@"SCImageView does not support CPU context type."];
                 break;
             default:
                 break;
         }
 
-        self.context = [SCContext contextWithType:sccontextType options:options];
+        self.context = [SCContext contextWithType:contextType options:options];
     }
 
     return YES;
@@ -157,20 +139,6 @@
 
     [_GLKView setNeedsDisplay];
     [_MTKView setNeedsDisplay];
-}
-
-+ (BOOL)supportsContextType:(SCImageViewContextType)contextType {
-    switch (contextType) {
-        case SCImageViewContextTypeAuto:
-            return YES;
-        case SCImageViewContextTypeMetal:
-            return [SCContext supportsType:SCContextTypeMetal];
-        case SCImageViewContextTypeCoreGraphics:
-            return [SCContext supportsType:SCContextTypeCoreGraphics];
-        case SCImageViewContextTypeEAGL:
-            return [SCContext supportsType:SCContextTypeEAGL];
-    }
-    return NO;
 }
 
 - (UIImage *)renderedUIImageInRect:(CGRect)rect {
@@ -330,7 +298,7 @@
     [self setNeedsDisplay];
 }
 
-- (void)setContextType:(SCImageViewContextType)contextType {
+- (void)setContextType:(SCContextType)contextType {
     if (_contextType != contextType) {
         self.context = nil;
         _contextType = contextType;

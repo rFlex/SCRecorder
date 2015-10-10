@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		90B02E351BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */; settings = {ASSET_TAGS = (); }; };
+		90B02E361BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */; settings = {ASSET_TAGS = (); }; };
 		90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 90D4FBDD1BC6C1840017748D /* SCFilterImageView.h */; settings = {ASSET_TAGS = (); }; };
 		90D4FBE01BC6C1840017748D /* SCFilterImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 90D4FBDE1BC6C1840017748D /* SCFilterImageView.m */; settings = {ASSET_TAGS = (); }; };
 		90D4FBE21BC6DDB80017748D /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBE11BC6DDB80017748D /* MetalKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -116,6 +118,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+SCSaveToCameraRoll.h"; sourceTree = "<group>"; };
+		90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+SCSaveToCameraRoll.m"; sourceTree = "<group>"; };
 		90D4FBDD1BC6C1840017748D /* SCFilterImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterImageView.h; sourceTree = "<group>"; };
 		90D4FBDE1BC6C1840017748D /* SCFilterImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterImageView.m; sourceTree = "<group>"; };
 		90D4FBE11BC6DDB80017748D /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
@@ -380,6 +384,8 @@
 				DCD12A9E1B456C5E0064674D /* SCProcessingQueue.m */,
 				DCD12AA21B45AA540064674D /* SCIOPixelBuffers.h */,
 				DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */,
+				90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */,
+				90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */,
 			);
 			name = Tools;
 			sourceTree = "<group>";
@@ -499,6 +505,7 @@
 				DCC1FC491A4AF1DD00F1C653 /* SCRecorderTools.h in Headers */,
 				DCD12A9F1B456C5E0064674D /* SCProcessingQueue.h in Headers */,
 				DC4CBA4D1863118E00532F1F /* SCAudioTools.h in Headers */,
+				90B02E351BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h in Headers */,
 				DCD12AA41B45AA540064674D /* SCIOPixelBuffers.h in Headers */,
 				DC1949C019C07F1600E92A95 /* SCSampleBufferHolder.h in Headers */,
 			);
@@ -675,6 +682,7 @@
 				DC933E8C193814D1007E2E88 /* SCSwipeableFilterView.m in Sources */,
 				DC633E30192BCE0D00050796 /* SCFilter.m in Sources */,
 				DCA1639A1A2028C400505966 /* SCAudioConfiguration.m in Sources */,
+				90B02E361BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m in Sources */,
 				DC4CBA521863118E00532F1F /* SCPlayer.m in Sources */,
 				DC4CBA4E1863118E00532F1F /* SCAudioTools.m in Sources */,
 			);

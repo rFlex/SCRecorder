@@ -24,14 +24,13 @@
     dispatch_queue_t _audioQueue;
     dispatch_queue_t _videoQueue;
     dispatch_group_t _dispatchGroup;
-    EAGLContext *_eaglContext;
-    CIContext *_ciContext;
     BOOL _animationsWereEnabled;
     Float64 _totalDuration;
     SCFilter *_watermarkFilter;
     CGSize _outputBufferSize;
     BOOL _outputBufferDiffersFromInput;
-
+    SCContext *_context;
+    CVPixelBufferRef _contextPixelBuffer;
 }
 
 @property (nonatomic, strong) AVAssetReaderOutput *videoOutput;
@@ -46,14 +45,14 @@
 
 @implementation SCAssetExportSession
 
--(id)init {
+-(instancetype)init {
     self = [super init];
     
     if (self) {
         _audioQueue = dispatch_queue_create("me.corsin.SCAssetExportSession.AudioQueue", nil);
         _videoQueue = dispatch_queue_create("me.corsin.SCAssetExportSession.VideoQueue", nil);
         _dispatchGroup = dispatch_group_create();
-        _useGPUForRenderingFilters = YES;
+        _contextType = SCContextTypeAuto;
         _audioConfiguration = [SCAudioConfiguration new];
         _videoConfiguration = [SCVideoConfiguration new];
         _timeRange = CMTimeRangeMake(kCMTimeZero, kCMTimePositiveInfinity);
@@ -62,7 +61,7 @@
     return self;
 }
 
-- (id)initWithAsset:(AVAsset *)inputAsset {
+- (instancetype)initWithAsset:(AVAsset *)inputAsset {
     self = [self init];
     
     if (self) {
@@ -70,6 +69,12 @@
     }
     
     return self;
+}
+
+- (void)dealloc {
+    if (_contextPixelBuffer != nil) {
+        CVPixelBufferRelease(_contextPixelBuffer);
+    }
 }
 
 - (AVAssetWriterInput *)addWriter:(NSString *)mediaType withSettings:(NSDictionary *)outputSettings {
@@ -112,7 +117,7 @@
 - (SCIOPixelBuffers *)renderIOPixelBuffersWithCI:(SCIOPixelBuffers *)pixelBuffers {
     SCIOPixelBuffers *outputPixelBuffers = pixelBuffers;
     
-    if (_ciContext != nil) {
+    if (_context != nil) {
         @autoreleasepool {
             CIImage *result = [CIImage imageWithCVPixelBuffer:pixelBuffers.inputPixelBuffer];
 
@@ -133,7 +138,7 @@
 
             CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
-            [_ciContext render:result toCVPixelBuffer:pixelBuffers.outputPixelBuffer bounds:result.extent colorSpace:colorSpace];
+            [_context.CIContext render:result toCVPixelBuffer:pixelBuffers.outputPixelBuffer bounds:result.extent colorSpace:colorSpace];
 
             CGColorSpaceRelease(colorSpace);
             
@@ -148,6 +153,23 @@
     return outputPixelBuffers;
 }
 
+
+
+static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer) {
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+
+    CGBitmapInfo bitmapInfo = kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst;
+
+    CGContextRef ctx = CGBitmapContextCreate(CVPixelBufferGetBaseAddress(pixelBuffer), CVPixelBufferGetWidth(pixelBuffer), CVPixelBufferGetHeight(pixelBuffer), 8, CVPixelBufferGetBytesPerRow(pixelBuffer), colorSpace, bitmapInfo);
+
+    CGColorSpaceRelease(colorSpace);
+
+    CGContextTranslateCTM(ctx, 1, CGBitmapContextGetHeight(ctx));
+    CGContextScaleCTM(ctx, 1, -1);
+
+    return ctx;
+}
+
 - (void)CGRenderWithInputPixelBuffer:(CVPixelBufferRef)inputPixelBuffer toOutputPixelBuffer:(CVPixelBufferRef)outputPixelBuffer atTimeInterval:(NSTimeInterval)timeSeconds {
     UIView<SCVideoOverlay> *overlay = self.videoConfiguration.overlay;
     
@@ -155,17 +177,8 @@
         if ([overlay respondsToSelector:@selector(updateWithVideoTime:)]) {
             [overlay updateWithVideoTime:timeSeconds];
         }
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-        
-        CGBitmapInfo bitmapInfo = kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst;
-        
-        CGContextRef ctx = CGBitmapContextCreate(CVPixelBufferGetBaseAddress(outputPixelBuffer), CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer), 8, CVPixelBufferGetBytesPerRow(outputPixelBuffer), colorSpace, bitmapInfo);
-        
-        CGColorSpaceRelease(colorSpace);
-        
-        CGContextTranslateCTM(ctx, 1, CGBitmapContextGetHeight(ctx));
-        CGContextScaleCTM(ctx, 1, -1);
-        
+
+        CGContextRef ctx = SCCreateContextFromPixelBuffer(outputPixelBuffer);
         overlay.frame = CGRectMake(0, 0, CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer));
         [overlay layoutIfNeeded];
         
@@ -369,26 +382,44 @@
     }
 }
 
-- (BOOL)setupCoreImage:(AVAssetTrack *)videoTrack {
+- (BOOL)setupContextUsingVideoTrack:(AVAssetTrack *)videoTrack {
     if ([self needsCIContext] && _videoInput != nil) {
-        if (self.useGPUForRenderingFilters) {
-            _eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+        SCContextType contextType = _contextType;
+        if (contextType == SCContextTypeAuto) {
+            contextType = [SCContext suggestedContextType];
         }
-        
-        if (_eaglContext == nil) {
-            NSDictionary *options = @{ kCIContextUseSoftwareRenderer : [NSNumber numberWithBool:YES] };
-            _ciContext = [CIContext contextWithOptions:options];
-        } else {
-            NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
+        CGContextRef cgContext = nil;
+        NSDictionary *options = nil;
+        if (contextType == SCContextTypeCoreGraphics) {
+            CVPixelBufferRef pixelBuffer = nil;
+            CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, _videoPixelAdaptor.pixelBufferPool, &pixelBuffer);
+            if (ret != kCVReturnSuccess) {
+                NSString *format = [NSString stringWithFormat:@"Unable to create pixel buffer for creating CoreGraphics context: %d", ret];
+                _error = [NSError errorWithDomain:@"InternalError" code:500 userInfo:@{NSLocalizedDescriptionKey: format}];
+                return NO;
+            }
+            if (_contextPixelBuffer != nil) {
+                CVPixelBufferRelease(_contextPixelBuffer);
+            }
+            _contextPixelBuffer = pixelBuffer;
 
-            _ciContext = [CIContext contextWithEAGLContext:_eaglContext options:options];
+            cgContext = SCCreateContextFromPixelBuffer(pixelBuffer);
+
+            options = @{
+                        SCContextOptionsCGContextKey: (__bridge id)cgContext
+                        };
         }
-        
+
+        _context = [SCContext contextWithType:_contextType options:options];
+
+        if (cgContext != nil) {
+            CGContextRelease(cgContext);
+        }
+
         return YES;
     } else {
-        _ciContext = nil;
-        _eaglContext = nil;
-        
+        _context = nil;
+
         return NO;
     }
 }
@@ -400,7 +431,7 @@
         return YES;
     }
     
-    return _ciContext != nil || self.videoConfiguration.overlay != nil;
+    return [self needsCIContext] || self.videoConfiguration.overlay != nil;
 }
 
 + (NSError*)createError:(NSString*)errorDescription {
@@ -602,9 +633,14 @@
     _outputBufferSize = outputBufferSize;
     _outputBufferDiffersFromInput = !CGSizeEqualToSize(inputBufferSize, outputBufferSize);
     
-    [self setupCoreImage:videoTrack];
     [self setupPixelBufferAdaptor:outputBufferSize];
-    
+    [self setupContextUsingVideoTrack:videoTrack];
+
+    if (_error != nil) {
+        [self callCompletionHandler:completionHandler];
+        return;
+    }
+
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);
     }

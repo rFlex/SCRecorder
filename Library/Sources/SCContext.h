@@ -11,6 +11,12 @@
 #import <Metal/Metal.h>
 
 typedef NS_ENUM(NSInteger, SCContextType) {
+
+    /**
+     Automatically choose an appropriate SCContext context
+     */
+    SCContextTypeAuto,
+
     /**
      Create a hardware accelerated SCContext with Metal
      */
@@ -76,5 +82,10 @@ extern NSString *__nonnull const SCContextOptionsMTLDeviceKey;
  Returns whether the contextType can be safely created and used using +[SCContext contextWithType:]
  */
 + (BOOL)supportsType:(SCContextType)contextType;
+
+/**
+ The context that will be used when using an Auto context type;
+ */
++ (SCContextType)suggestedContextType;
 
 @end
