@@ -62,7 +62,7 @@
 }
 
 - (void)saveToCameraRoll {
-    UIImage *image = [self.filterSwitcherView processedUIImage];
+    UIImage *image = [self.filterSwitcherView renderedUIImageInRect:CGRectMake(0, 0, self.photo.size.width, self.photo.size.height)];
     
     UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
 }

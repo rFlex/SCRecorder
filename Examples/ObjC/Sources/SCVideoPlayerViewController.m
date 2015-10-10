@@ -81,7 +81,6 @@
 	_player = [SCPlayer player];
     
     if ([[NSProcessInfo processInfo] activeProcessorCount] > 1) {
-        self.filterSwitcherView.refreshAutomaticallyWhenScrolling = NO;
         self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFill;
         
         SCFilter *emptyFilter = [SCFilter emptyFilter];

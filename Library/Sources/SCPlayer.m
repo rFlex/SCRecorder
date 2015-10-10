@@ -238,7 +238,7 @@ static char* ItemChanged = "CurrentItemContext";
 
             // Return the video if it is upside down
             if (transform.b == 1 && transform.c == -1) {
-//                transform = CGAffineTransformRotate(transform, M_PI);
+                transform = CGAffineTransformRotate(transform, M_PI);
             }
 
             if (self.autoRotate) {
@@ -250,7 +250,7 @@ static char* ItemChanged = "CurrentItemContext";
                 BOOL videoIsWide = outRect.size.width / outRect.size.height > 1;
                     
                 if (viewIsWide != videoIsWide) {
-                        transform = CGAffineTransformRotate(transform, M_PI_2);
+                    transform = CGAffineTransformRotate(transform, M_PI_2);
                 }
             }
         }

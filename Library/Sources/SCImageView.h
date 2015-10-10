@@ -73,6 +73,12 @@ typedef NS_ENUM(NSInteger, SCImageViewContextType) {
 @property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
 
 /**
+ Whether the CIImage should be scaled and resized according to the contentMode of this view.
+ Default is YES.
+ */
+@property (assign, nonatomic) BOOL scaleAndResizeCIImageAutomatically;
+
+/**
  Set the CIImage using a sampleBuffer. The CIImage will be automatically generated
  when needed. This avoids creating multiple CIImage if the SCImageView can't render them
  as fast.
@@ -98,13 +104,16 @@ typedef NS_ENUM(NSInteger, SCImageViewContextType) {
 + (BOOL)supportsContextType:(SCImageViewContextType)contextType;
 
 /**
- Subclass can override this method to render the given CIImage into the CIContext.
+ Returns the rendered CIImage in the given rect.
+ Subclass can override this method to alterate the rendered image.
  */
-- (void)drawCIImage:(CIImage *__nonnull)CIImage inRect:(CGRect)rect;
+- (CIImage *__nullable)renderedCIImageInRect:(CGRect)rect;
 
 /**
- Subclass can override this method to prevent the CIImage to be rescaled and resized automatically
+ Returns the rendered CIImage in the given rect.
+ It internally calls renderedCIImageInRect:
+ Subclass should not override this method.
  */
-- (BOOL)shouldScaleAndResizeCIImageAutomatically;
+- (UIImage *__nullable)renderedUIImageInRect:(CGRect)rect;
 
 @end

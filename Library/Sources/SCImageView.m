@@ -13,8 +13,6 @@
 
 @interface SCImageView()<GLKViewDelegate, MTKViewDelegate> {
     SCSampleBufferHolder *_sampleBufferHolder;
-    id<MTLCommandBuffer> _currentCommandBuffer;
-    id<MTLTexture> _currentTexture;
 }
 
 @property (nonatomic, strong) GLKView *GLKView;
@@ -29,7 +27,7 @@
     self = [super initWithFrame:frame];
     
     if (self) {
-        [self commonInit];
+        [self _imageViewCommonInit];
     }
     
     return self;
@@ -39,13 +37,14 @@
     self = [super initWithCoder:aDecoder];
     
     if (self) {
-        [self commonInit];
+        [self _imageViewCommonInit];
     }
     
     return self;
 }
 
-- (void)commonInit {
+- (void)_imageViewCommonInit {
+    _scaleAndResizeCIImageAutomatically = YES;
     self.preferredCIImageTransform = CGAffineTransformIdentity;
     
     _sampleBufferHolder = [SCSampleBufferHolder new];
@@ -174,80 +173,71 @@
     return NO;
 }
 
-- (BOOL)shouldScaleAndResizeCIImageAutomatically {
-    return YES;
-}
+- (UIImage *)renderedUIImageInRect:(CGRect)rect {
+    UIImage *returnedImage = nil;
+    CIImage *image = [self renderedCIImageInRect:rect];
 
-- (void)drawCIImageInRect:(CGRect)rect {
-    @autoreleasepool {
-        CMSampleBufferRef sampleBuffer = _sampleBufferHolder.sampleBuffer;
-
-        if (sampleBuffer != nil) {
-            _CIImage = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(sampleBuffer)];
-            _sampleBufferHolder.sampleBuffer = nil;
+    if (image != nil) {
+        CIContext *context = nil;
+        if (![self loadContextIfNeeded]) {
+            context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer: @(NO)}];
+        } else {
+            context = _context.CIContext;
         }
 
-        CIImage *image = _CIImage;
+        CGImageRef imageRef = [context createCGImage:image fromRect:image.extent];
 
-        if (image != nil) {
-            image = [image imageByApplyingTransform:self.preferredCIImageTransform];
-
-            if ([self shouldScaleAndResizeCIImageAutomatically]) {;
-//                image = [self scaleAndResizeCIImage:image forRect:rect];
-            }
-            
-            [self drawCIImage:image inRect:rect];
+        if (imageRef != nil) {
+            returnedImage = [UIImage imageWithCGImage:imageRef];
+            CGImageRelease(imageRef);
         }
     }
+
+    return returnedImage;
 }
 
+- (CIImage *)renderedCIImageInRect:(CGRect)rect {
+    CMSampleBufferRef sampleBuffer = _sampleBufferHolder.sampleBuffer;
+
+    if (sampleBuffer != nil) {
+        _CIImage = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(sampleBuffer)];
+        _sampleBufferHolder.sampleBuffer = nil;
+    }
+
+    CIImage *image = _CIImage;
+
+    if (image != nil) {
+        image = [image imageByApplyingTransform:self.preferredCIImageTransform];
+
+        if (self.context.type != SCContextTypeEAGL) {
+            image = [image imageByApplyingOrientation:4];
+        }
+
+        if (self.scaleAndResizeCIImageAutomatically) {
+            image = [self scaleAndResizeCIImage:image forRect:rect];
+        }
+    }
+
+    return image;
+}
 
 - (CIImage *)scaleAndResizeCIImage:(CIImage *)image forRect:(CGRect)rect {
     CGSize imageSize = image.extent.size;
 
-    CGFloat contentScale = self.contentScaleFactor;
-    CGAffineTransform transform = CGAffineTransformMakeScale(contentScale, contentScale);
-    transform = CGAffineTransformTranslate(transform, 10, 0);
-
-    rect.origin.x *= contentScale;
-    rect.origin.y *= contentScale;
-    rect.size.width *= contentScale;
-    rect.size.height *= contentScale;
+    CGFloat horizontalScale = rect.size.width / imageSize.width;
+    CGFloat verticalScale = rect.size.height / imageSize.height;
 
     UIViewContentMode mode = self.contentMode;
-    if (mode != UIViewContentModeScaleToFill) {
-        CGFloat horizontalScale = rect.size.width / imageSize.width;
-        CGFloat verticalScale = rect.size.height / imageSize.height;
 
-        BOOL shouldResizeWidth = mode == UIViewContentModeScaleAspectFit ? horizontalScale > verticalScale : verticalScale > horizontalScale;
-        BOOL shouldResizeHeight = mode == UIViewContentModeScaleAspectFit ? verticalScale > horizontalScale : horizontalScale > verticalScale;
-
-
-        if (shouldResizeWidth) {
-            CGFloat newWidth = imageSize.width * verticalScale;
-            rect.origin.x = (rect.size.width / 2 - newWidth / 2);
-            rect.size.width = newWidth;
-        } else if (shouldResizeHeight) {
-            CGFloat newHeight = imageSize.height * horizontalScale;
-            rect.origin.y = (rect.size.height / 2 - newHeight / 2);
-            rect.size.height = newHeight;
-        }
+    if (mode == UIViewContentModeScaleAspectFill) {
+        horizontalScale = MAX(horizontalScale, verticalScale);
+        verticalScale = horizontalScale;
+    } else if (mode == UIViewContentModeScaleAspectFit) {
+        horizontalScale = MIN(horizontalScale, verticalScale);
+        verticalScale = horizontalScale;
     }
 
-    return [image imageByApplyingTransform:transform];
-}
-
-- (void)drawCIImage:(CIImage *)CIImage inRect:(CGRect)rect {
-    CGRect extent = [CIImage extent];
-    CIContext *context = _context.CIContext;
-
-    if (_currentTexture != nil) {
-        CGColorSpaceRef deviceRGB = CGColorSpaceCreateDeviceRGB();
-        [context render:CIImage toMTLTexture:_currentTexture commandBuffer:_currentCommandBuffer bounds:extent colorSpace:deviceRGB];
-        CGColorSpaceRelease(deviceRGB);
-    } else {
-        [context drawImage:CIImage inRect:rect fromRect:extent];
-    }
+    return [image imageByApplyingTransform:CGAffineTransformMakeScale(horizontalScale, verticalScale)];
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -255,7 +245,11 @@
 
     if (_CIImage != nil && [self loadContextIfNeeded]) {
         if (self.context.type == SCContextTypeCoreGraphics) {
-            [self drawCIImageInRect:rect];
+            CIImage *image = [self renderedCIImageInRect:rect];
+
+            if (image != nil) {
+                [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
+            }
         }
     }
 }
@@ -343,17 +337,34 @@
     }
 }
 
+static CGRect CGRectMultiply(CGRect rect, CGFloat contentScale) {
+    rect.origin.x *= contentScale;
+    rect.origin.y *= contentScale;
+    rect.size.width *= contentScale;
+    rect.size.height *= contentScale;
+
+    return rect;
+}
+
 #pragma mark -- MTKViewDelegate
 
 - (void)drawInMTKView:(nonnull MTKView *)view {
-    _currentCommandBuffer = [_MTLCommandQueue commandBuffer];
-    _currentTexture = view.currentDrawable.texture;
-    [self drawCIImageInRect:view.bounds];
+    @autoreleasepool {
+        CGRect rect = CGRectMultiply(view.bounds, self.contentScaleFactor);
 
-    [_currentCommandBuffer presentDrawable:view.currentDrawable];
-    [_currentCommandBuffer commit];
-    _currentCommandBuffer = nil;
-    _currentTexture = nil;
+        CIImage *image = [self renderedCIImageInRect:rect];
+
+        if (image != nil) {
+            id<MTLCommandBuffer> commandBuffer = [_MTLCommandQueue commandBuffer];
+            id<MTLTexture> texture = view.currentDrawable.texture;
+            CGColorSpaceRef deviceRGB = CGColorSpaceCreateDeviceRGB();
+            [_context.CIContext render:image toMTLTexture:texture commandBuffer:commandBuffer bounds:image.extent colorSpace:deviceRGB];
+            [commandBuffer presentDrawable:view.currentDrawable];
+            [commandBuffer commit];
+
+            CGColorSpaceRelease(deviceRGB);
+        }
+    }
 }
 
 - (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
@@ -363,9 +374,17 @@
 #pragma mark -- GLKViewDelegate
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    [self drawCIImageInRect:rect];
+    @autoreleasepool {
+        rect = CGRectMultiply(rect, self.contentScaleFactor);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        CIImage *image = [self renderedCIImageInRect:rect];
+
+        if (image != nil) {
+            [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
+        }
+    }
 }
 
 @end

@@ -16,15 +16,4 @@
  */
 @property (strong, nonatomic) SCFilter *__nullable filter;
 
-/**
- Creates and returns the processed image as UIImage
- */
-- (UIImage *__nullable)processedUIImage;
-
-/**
- Creates and returns the processed image as CIImage
- */
-- (CIImage *__nullable)processedCIImage;
-
-
 @end

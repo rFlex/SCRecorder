@@ -68,15 +68,4 @@
  */
 - (void)scrollToFilter:(SCFilter *__nonnull)filter animated:(BOOL)animated;
 
-/**
- Returns the current image processed by the selected filter as a CIImage
- */
-- (CIImage *__nullable)processedCIImage;
-
-/**
- Returns the current image processed by the selected filter as an UIImage
- */
-- (UIImage *__nullable)processedUIImage;
-
-
 @end

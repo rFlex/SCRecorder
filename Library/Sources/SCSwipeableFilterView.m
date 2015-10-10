@@ -10,7 +10,6 @@
 #import "SCSampleBufferHolder.h"
 
 @interface SCSwipeableFilterView() {
-    CGFloat _filterGroupIndexRatio;
 }
 
 @end
@@ -21,7 +20,7 @@
     self = [super initWithFrame:frame];
     
     if (self) {
-        [self _commonInit];
+        [self _swipeableCommonInit];
     }
     
     return self;
@@ -31,7 +30,7 @@
     self = [super initWithCoder:aDecoder];
     
     if (self) {
-        [self _commonInit];
+        [self _swipeableCommonInit];
     }
     
     return self;
@@ -41,7 +40,7 @@
     
 }
 
-- (void)_commonInit {
+- (void)_swipeableCommonInit {
     _refreshAutomaticallyWhenScrolling = YES;
     _selectFilterScrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
     _selectFilterScrollView.delegate = self;
@@ -70,12 +69,6 @@
     if (self.selectedFilter != nil) {
         [self scrollToFilter:self.selectedFilter animated:NO];
     }
-}
-
-static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
-    rect.origin.x += width;
-    
-    return rect;
 }
 
 - (void)scrollToFilter:(SCFilter *)filter animated:(BOOL)animated {
@@ -125,6 +118,12 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     [self updateCurrentSelected:YES];
 }
 
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    if (!decelerate) {
+        [self updateCurrentSelected:YES];
+    }
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGFloat width = scrollView.frame.size.width;
     CGFloat contentOffsetX = scrollView.contentOffset.x;
@@ -137,12 +136,6 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
         } else if (contentOffsetX + width >= contentSizeWidth) {
             scrollView.contentOffset = CGPointMake(contentOffsetX - normalWidth, scrollView.contentOffset.y);
         }
-
-        CGFloat ratio = scrollView.contentOffset.x / width;
-
-        _filterGroupIndexRatio = ratio;
-    } else {
-        _filterGroupIndexRatio = 0;
     }
     
     if (_refreshAutomaticallyWhenScrolling) {
@@ -150,71 +143,52 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     }
 }
 
-- (void)drawCIImage:(CIImage *)image inRect:(CGRect)rect {
+- (CIImage *)renderedCIImageInRect:(CGRect)rect {
+    CIImage *image = [super renderedCIImageInRect:rect];
+
+    CFTimeInterval imageTime = self.CIImageTime;
     if (self.preprocessingFilter != nil) {
-        image = [self.preprocessingFilter imageByProcessingImage:image atTime:self.CIImageTime];
+        image = [self.preprocessingFilter imageByProcessingImage:image atTime:imageTime];
     }
 
     CGRect extent = [image extent];
 
-    CGFloat ratio = _filterGroupIndexRatio;
+
+    CGSize contentSize = _selectFilterScrollView.frame.size;
+
+    if (contentSize.width == 0) {
+        return image;
+    }
+
+    CGFloat ratio = _selectFilterScrollView.contentOffset.x / contentSize.width;
 
     NSInteger index = (NSInteger)ratio;
     NSInteger upIndex = (NSInteger)ceilf(ratio);
     CGFloat remainingRatio = ratio - ((CGFloat)index);
 
-    NSArray *filterGroups = self.filters;
+    NSArray *filters = self.filters;
 
     CGFloat xImage = extent.size.width * -remainingRatio;
-    CFTimeInterval imageTime = self.CIImageTime;
     CIImage *outputImage = [CIImage new];
 
     while (index <= upIndex) {
-        NSInteger currentIndex = index % filterGroups.count;
-        SCFilter *filter = [filterGroups objectAtIndex:currentIndex];
+        NSInteger currentIndex = index % filters.count;
+        SCFilter *filter = [filters objectAtIndex:currentIndex];
         CIImage *filteredImage = [filter imageByProcessingImage:image atTime:imageTime];
         filteredImage = [filteredImage imageByCroppingToRect:CGRectMake(xImage, 0, extent.size.width, extent.size.height)];
         outputImage = [filteredImage imageByCompositingOverImage:outputImage];
         xImage += extent.size.width;
         index++;
     }
+    outputImage = [outputImage imageByCroppingToRect:extent];
 
-    [super drawCIImage:outputImage inRect:rect];
-}
-
-- (CIImage *)processedCIImage {
-    CIImage *image = [self.CIImage imageByApplyingTransform:self.preferredCIImageTransform];
-
-    if (self.preprocessingFilter != nil) {
-        image = [self.preprocessingFilter imageByProcessingImage:image atTime:self.CIImageTime];
-    }
-
-    if (self.selectedFilter != nil) {
-        image = [self.selectedFilter imageByProcessingImage:image atTime:self.CIImageTime];
-    }
-
-    return image;
-}
-
-- (UIImage *)processedUIImage {
-    CIImage *image = [self processedCIImage];
-
-    if (![self loadContextIfNeeded]) {
-        return nil;
-    }
-
-    CGImageRef outputImage = [self.context.CIContext createCGImage:image fromRect:image.extent];
-
-    UIImage *uiImage = [UIImage imageWithCGImage:outputImage scale:self.contentScaleFactor orientation:UIImageOrientationUp];
-
-    CGImageRelease(outputImage);
-
-    return uiImage;
+    return outputImage;
 }
 
 - (void)setFilters:(NSArray *)filters {
     _filters = filters;
     [self updateScrollViewContentSize];
+    [self updateCurrentSelected:YES];
 }
 
 - (void)setSelectedFilter:(SCFilter *)selectedFilter {

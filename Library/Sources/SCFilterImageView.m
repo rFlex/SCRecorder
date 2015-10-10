@@ -10,50 +10,16 @@
 
 @implementation SCFilterImageView
 
-- (CIImage *)processImage:(CIImage *)image {
-    image = [image imageByApplyingTransform:self.preferredCIImageTransform];
-
-    if (_filter != nil) {
-        image = [_filter imageByProcessingImage:image atTime:self.CIImageTime];
-    }
-
-    return image;
-}
-
-- (CIImage *)processedCIImage {
-    CIImage *image = self.CIImage;
+- (CIImage *)renderedCIImageInRect:(CGRect)rect {
+    CIImage *image = [super renderedCIImageInRect:rect];
 
     if (image != nil) {
-        image = [self processImage:image];
-    }
-
-    return image;
-}
-
-- (UIImage *)processedUIImage {
-    CIImage *image = [self processedCIImage];
-
-    if (image != nil) {
-        if (![self loadContextIfNeeded]) {
-            return nil;
+        if (_filter != nil) {
+            image = [_filter imageByProcessingImage:image atTime:self.CIImageTime];
         }
-
-        CGImageRef CGImage = [self.context.CIContext createCGImage:image fromRect:[image extent]];
-
-        UIImage *uiImage = [UIImage imageWithCGImage:CGImage scale:self.contentScaleFactor orientation:UIImageOrientationUp];
-
-        CGImageRelease(CGImage);
-
-        return uiImage;
-    } else {
-        return nil;
     }
-}
 
-- (void)drawCIImage:(CIImage *)image inRect:(CGRect)rect {
-    CIImage *filteredImage = [self processImage:image];
-
-    [super drawCIImage:filteredImage inRect:rect];
+    return image;
 }
 
 - (void)setFilter:(SCFilter *)filter {
