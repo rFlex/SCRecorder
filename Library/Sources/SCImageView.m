@@ -189,6 +189,14 @@
     return image;
 }
 
+- (CIImage *)renderedCIImage {
+    return [self renderedCIImageInRect:self.CIImage.extent];
+}
+
+- (UIImage *)renderedUIImage {
+    return [self renderedUIImageInRect:self.CIImage.extent];
+}
+
 - (CIImage *)scaleAndResizeCIImage:(CIImage *)image forRect:(CGRect)rect {
     CGSize imageSize = image.extent.size;
 

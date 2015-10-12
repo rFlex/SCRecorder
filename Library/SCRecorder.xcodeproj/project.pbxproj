@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		90B02E351BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */; settings = {ASSET_TAGS = (); }; };
 		90B02E361BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */; settings = {ASSET_TAGS = (); }; };
+		90B02E3B1BCBFE7F00559011 /* SCSaveToCameraRollOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E391BCBFE7F00559011 /* SCSaveToCameraRollOperation.h */; settings = {ASSET_TAGS = (); }; };
+		90B02E3C1BCBFE7F00559011 /* SCSaveToCameraRollOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E3A1BCBFE7F00559011 /* SCSaveToCameraRollOperation.m */; settings = {ASSET_TAGS = (); }; };
+		90B02E3F1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E3D1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.h */; settings = {ASSET_TAGS = (); }; };
+		90B02E401BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E3E1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m */; settings = {ASSET_TAGS = (); }; };
 		90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 90D4FBDD1BC6C1840017748D /* SCFilterImageView.h */; settings = {ASSET_TAGS = (); }; };
 		90D4FBE01BC6C1840017748D /* SCFilterImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 90D4FBDE1BC6C1840017748D /* SCFilterImageView.m */; settings = {ASSET_TAGS = (); }; };
 		90D4FBE21BC6DDB80017748D /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBE11BC6DDB80017748D /* MetalKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -120,6 +124,11 @@
 /* Begin PBXFileReference section */
 		90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+SCSaveToCameraRoll.h"; sourceTree = "<group>"; };
 		90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+SCSaveToCameraRoll.m"; sourceTree = "<group>"; };
+		90B02E391BCBFE7F00559011 /* SCSaveToCameraRollOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSaveToCameraRollOperation.h; sourceTree = "<group>"; };
+		90B02E3A1BCBFE7F00559011 /* SCSaveToCameraRollOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCSaveToCameraRollOperation.m; sourceTree = "<group>"; };
+		90B02E3D1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+SCSaveToCameraRoll.h"; sourceTree = "<group>"; };
+		90B02E3E1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+SCSaveToCameraRoll.m"; sourceTree = "<group>"; };
+		90B02E411BCC00AC00559011 /* SCRecorderHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCRecorderHeader.h; sourceTree = "<group>"; };
 		90D4FBDD1BC6C1840017748D /* SCFilterImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCFilterImageView.h; sourceTree = "<group>"; };
 		90D4FBDE1BC6C1840017748D /* SCFilterImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCFilterImageView.m; sourceTree = "<group>"; };
 		90D4FBE11BC6DDB80017748D /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
@@ -318,6 +327,7 @@
 				DCAA1F1F19C8FEC6002065CA /* Players */,
 				DCAA1F1E19C8FEBE002065CA /* Tools */,
 				DC633DE2192BCCB600050796 /* Filters */,
+				90B02E411BCC00AC00559011 /* SCRecorderHeader.h */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -386,6 +396,10 @@
 				DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */,
 				90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */,
 				90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */,
+				90B02E391BCBFE7F00559011 /* SCSaveToCameraRollOperation.h */,
+				90B02E3A1BCBFE7F00559011 /* SCSaveToCameraRollOperation.m */,
+				90B02E3D1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.h */,
+				90B02E3E1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m */,
 			);
 			name = Tools;
 			sourceTree = "<group>";
@@ -483,10 +497,12 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90B02E3F1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.h in Headers */,
 				DCA163A31A23C7C300505966 /* SCPhotoConfiguration.h in Headers */,
 				DCA163991A2028C400505966 /* SCAudioConfiguration.h in Headers */,
 				DCA163951A2028B800505966 /* SCVideoConfiguration.h in Headers */,
 				90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */,
+				90B02E3B1BCBFE7F00559011 /* SCSaveToCameraRollOperation.h in Headers */,
 				DC23C1C71AAF95600013E14C /* SCRecordSessionSegment.h in Headers */,
 				DC50285918E51FC9004E833F /* SCRecorder.h in Headers */,
 				DC4CBA531863118E00532F1F /* SCVideoPlayerView.h in Headers */,
@@ -673,6 +689,7 @@
 				DCA163A41A23C7C300505966 /* SCPhotoConfiguration.m in Sources */,
 				DC10CF291ACFD458009880C4 /* SCWeakSelectorTarget.m in Sources */,
 				90D4FBE01BC6C1840017748D /* SCFilterImageView.m in Sources */,
+				90B02E3C1BCBFE7F00559011 /* SCSaveToCameraRollOperation.m in Sources */,
 				DC4CBA541863118E00532F1F /* SCVideoPlayerView.m in Sources */,
 				DCA836ED18FC2C910058FE13 /* SCRecorderFocusTargetView.m in Sources */,
 				DCA1639E1A2028D100505966 /* SCMediaTypeConfiguration.m in Sources */,
@@ -681,6 +698,7 @@
 				DCC1FC4A1A4AF1DD00F1C653 /* SCRecorderTools.m in Sources */,
 				DC933E8C193814D1007E2E88 /* SCSwipeableFilterView.m in Sources */,
 				DC633E30192BCE0D00050796 /* SCFilter.m in Sources */,
+				90B02E401BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m in Sources */,
 				DCA1639A1A2028C400505966 /* SCAudioConfiguration.m in Sources */,
 				90B02E361BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m in Sources */,
 				DC4CBA521863118E00532F1F /* SCPlayer.m in Sources */,

@@ -10,6 +10,6 @@
 
 @interface NSURL (SCSaveToCameraRoll)
 
-- (void)saveToCameraRollWithCompletion:(void (^)(NSString * _Nullable, NSError * _Nullable))completion;
+- (void)saveToCameraRollWithCompletion:(void (^__nullable)(NSString * _Nullable path, NSError * _Nullable error))completion;
 
 @end

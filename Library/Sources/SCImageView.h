@@ -87,4 +87,17 @@
  */
 - (UIImage *__nullable)renderedUIImageInRect:(CGRect)rect;
 
+/**
+ Returns the rendered CIImage in its natural size.
+ Subclass should not override this method.
+ */
+- (CIImage *__nullable)renderedCIImage;
+
+/**
+ Returns the rendered UIImage in its natural size.
+ Subclass should not override this method.
+ */
+- (UIImage *__nullable)renderedUIImage;
+
+
 @end

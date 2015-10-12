@@ -1,6 +1,6 @@
 //
-//  SCNewCamera.h
-//  SCAudioVideoRecorder
+//  SCRecorder.h
+//  SCRecorder
 //
 //  Created by Simon CORSIN on 27/03/14.
 //  Copyright (c) 2014 rFlex. All rights reserved.
@@ -10,20 +10,16 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 #import "SCRecordSession.h"
-#import "SCSampleBufferHolder.h"
-#import "SCVideoPlayerView.h"
-#import "SCPlayer.h"
 #import "SCAssetExportSession.h"
 #import "SCImageView.h"
-#import "SCSwipeableFilterView.h"
-#import "SCRecorderToolsView.h"
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
 #import "SCPhotoConfiguration.h"
 #import "SCRecorderTools.h"
 #import "SCRecorderDelegate.h"
-#import "SCContext.h"
-#import "NSURL+SCSaveToCameraRoll.h"
+
+// Convenience
+#import "SCRecorderHeader.h"
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 
