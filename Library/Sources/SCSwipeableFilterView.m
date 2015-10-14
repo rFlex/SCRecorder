@@ -134,16 +134,20 @@ static CGRect CGRectTranslate(CGRect rect, CGFloat width, CGFloat maxWidth) {
     CGFloat contentOffsetX = scrollView.contentOffset.x;
     CGFloat contentSizeWidth = scrollView.contentSize.width;
     CGFloat normalWidth = self.filters.count * width;
-    
-    if (contentOffsetX <= 0) {
-        scrollView.contentOffset = CGPointMake(contentOffsetX + normalWidth, scrollView.contentOffset.y);
-    } else if (contentOffsetX + width >= contentSizeWidth) {
-        scrollView.contentOffset = CGPointMake(contentOffsetX - normalWidth, scrollView.contentOffset.y);
+
+    if (width > 0 && contentSizeWidth > 0) {
+        if (contentOffsetX <= 0) {
+            scrollView.contentOffset = CGPointMake(contentOffsetX + normalWidth, scrollView.contentOffset.y);
+        } else if (contentOffsetX + width >= contentSizeWidth) {
+            scrollView.contentOffset = CGPointMake(contentOffsetX - normalWidth, scrollView.contentOffset.y);
+        }
+
+        CGFloat ratio = scrollView.contentOffset.x / width;
+
+        _filterGroupIndexRatio = ratio;
+    } else {
+        _filterGroupIndexRatio = 0;
     }
-    
-    CGFloat ratio = scrollView.contentOffset.x / width;
-    
-    _filterGroupIndexRatio = ratio;
     
     if (_refreshAutomaticallyWhenScrolling) {
         [self refresh];

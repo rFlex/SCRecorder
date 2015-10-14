@@ -1566,6 +1566,15 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     return 1;
 }
 
+- (CGFloat)maxVideoZoomFactor {
+    return [self maxVideoZoomFactorForDevice:_device];
+}
+
+- (CGFloat)maxVideoZoomFactorForDevice:(AVCaptureDevicePosition)devicePosition
+{
+    return [SCRecorderTools videoDeviceForPosition:devicePosition].activeFormat.videoMaxZoomFactor;
+}
+
 - (void)setVideoZoomFactor:(CGFloat)videoZoomFactor {
     AVCaptureDevice *device = [self videoDevice];
     

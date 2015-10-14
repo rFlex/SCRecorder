@@ -77,6 +77,16 @@
 @property (assign, nonatomic) CGFloat videoZoomFactor;
 
 /**
+ The max zoom factor for the current device
+ */
+@property (assign, nonatomic) CGFloat maxVideoZoomFactor;
+
+/**
+ Returns the max zoom factor for the given device
+ */
+- (CGFloat)maxVideoZoomFactorForDevice:(AVCaptureDevicePosition)devicePosition;
+
+/**
  Whether the zoom should be reset whenever the device changes.
  */
 @property (assign, nonatomic) BOOL resetZoomOnChangeDevice;
