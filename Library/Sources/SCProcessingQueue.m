@@ -52,31 +52,35 @@
 }
 
 - (void)_process:(id (^)())processingBlock {
-    while (!_completed) {
-        BOOL shouldProcess = NO;
+    @autoreleasepool {
+        while (!_completed) {
+            BOOL shouldProcess = NO;
 
-        dispatch_semaphore_wait(_availableItemsToEnqueue, DISPATCH_TIME_FOREVER);
-        shouldProcess = !_completed;
+            @autoreleasepool {
+                dispatch_semaphore_wait(_availableItemsToEnqueue, DISPATCH_TIME_FOREVER);
+                shouldProcess = !_completed;
 
-        BOOL shouldStopProcessing = NO;
-        if (shouldProcess) {
-            id data = processingBlock();
+                BOOL shouldStopProcessing = NO;
+                if (shouldProcess) {
+                    id data = processingBlock();
 
-            if (data != nil) {
-                dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
-                [_queue addObject:data];
-                dispatch_semaphore_signal(_accessQueue);
-                dispatch_semaphore_signal(_availableItemsToDequeue);
-            } else {
-                shouldStopProcessing = YES;
-                dispatch_semaphore_signal(_availableItemsToEnqueue);
+                    if (data != nil) {
+                        dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
+                        [_queue addObject:data];
+                        dispatch_semaphore_signal(_accessQueue);
+                        dispatch_semaphore_signal(_availableItemsToDequeue);
+                    } else {
+                        shouldStopProcessing = YES;
+                        dispatch_semaphore_signal(_availableItemsToEnqueue);
+                    }
+                } else {
+                    dispatch_semaphore_signal(_availableItemsToEnqueue);
+                }
+
+                if (shouldStopProcessing) {
+                    [self stopProcessing];
+                }
             }
-        } else {
-            dispatch_semaphore_signal(_availableItemsToEnqueue);
-        }
-
-        if (shouldStopProcessing) {
-            [self stopProcessing];
         }
     }
 }
