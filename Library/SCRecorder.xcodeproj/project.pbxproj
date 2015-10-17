@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9079317B1BD2A06700D7D181 /* SCFilter+VideoComposition.h in Headers */ = {isa = PBXBuildFile; fileRef = 907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */; settings = {ASSET_TAGS = (); }; };
+		9079317C1BD2A06700D7D181 /* SCFilter+VideoComposition.m in Sources */ = {isa = PBXBuildFile; fileRef = 9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */; settings = {ASSET_TAGS = (); }; };
 		90B02E351BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */; settings = {ASSET_TAGS = (); }; };
 		90B02E361BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */; settings = {ASSET_TAGS = (); }; };
 		90B02E3B1BCBFE7F00559011 /* SCSaveToCameraRollOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E391BCBFE7F00559011 /* SCSaveToCameraRollOperation.h */; settings = {ASSET_TAGS = (); }; };
@@ -122,6 +124,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SCFilter+VideoComposition.h"; sourceTree = "<group>"; };
+		9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SCFilter+VideoComposition.m"; sourceTree = "<group>"; };
 		90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+SCSaveToCameraRoll.h"; sourceTree = "<group>"; };
 		90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+SCSaveToCameraRoll.m"; sourceTree = "<group>"; };
 		90B02E391BCBFE7F00559011 /* SCSaveToCameraRollOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSaveToCameraRollOperation.h; sourceTree = "<group>"; };
@@ -339,6 +343,8 @@
 				DC633E26192BCE0D00050796 /* SCFilter.m */,
 				DC7A62BD1AFA47EC00EAB60C /* SCFilterAnimation.h */,
 				DC7A62BE1AFA47EC00EAB60C /* SCFilterAnimation.m */,
+				907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */,
+				9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */,
 			);
 			name = Filters;
 			sourceTree = "<group>";
@@ -504,6 +510,7 @@
 				90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */,
 				90B02E3B1BCBFE7F00559011 /* SCSaveToCameraRollOperation.h in Headers */,
 				DC23C1C71AAF95600013E14C /* SCRecordSessionSegment.h in Headers */,
+				9079317B1BD2A06700D7D181 /* SCFilter+VideoComposition.h in Headers */,
 				DC50285918E51FC9004E833F /* SCRecorder.h in Headers */,
 				DC4CBA531863118E00532F1F /* SCVideoPlayerView.h in Headers */,
 				DC633E2F192BCE0D00050796 /* SCFilter.h in Headers */,
@@ -700,6 +707,7 @@
 				DC633E30192BCE0D00050796 /* SCFilter.m in Sources */,
 				90B02E401BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m in Sources */,
 				DCA1639A1A2028C400505966 /* SCAudioConfiguration.m in Sources */,
+				9079317C1BD2A06700D7D181 /* SCFilter+VideoComposition.m in Sources */,
 				90B02E361BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m in Sources */,
 				DC4CBA521863118E00532F1F /* SCPlayer.m in Sources */,
 				DC4CBA4E1863118E00532F1F /* SCAudioTools.m in Sources */,

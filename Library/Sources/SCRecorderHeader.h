@@ -23,3 +23,4 @@
 #import "SCContext.h"
 #import "NSURL+SCSaveToCameraRoll.h"
 #import "UIImage+SCSaveToCameraRoll.h"
+#import "SCFilter+VideoComposition.h"

@@ -197,4 +197,9 @@
  */
 + (SCFilter *__nonnull)filterWithFilters:(NSArray *__nonnull)filters;
 
+/**
+ Creates and returns a filter that will apply a CIImage on top
+ */
++ (SCFilter *__nonnull)filterWithCIImage:(CIImage *__nonnull)image;
+
 @end
