@@ -57,8 +57,9 @@
         _audioConfiguration = [SCAudioConfiguration new];
         _videoConfiguration = [SCVideoConfiguration new];
         _timeRange = CMTimeRangeMake(kCMTimeZero, kCMTimePositiveInfinity);
+        _translatesFilterIntoComposition = YES;
     }
-    
+
     return self;
 }
 
@@ -433,8 +434,8 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     if (needsPixelBuffer && _videoInput != nil) {
         NSDictionary *pixelBufferAttributes = @{
                                                 (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
-                                                (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:_inputBufferSize.width],
-                                                (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:_inputBufferSize.height]
+                                                (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:_outputBufferSize.width],
+                                                (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:_outputBufferSize.height]
                                                 };
         
         _videoPixelAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
@@ -590,7 +591,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
         _filter = [self _generateRenderingFilterForVideoSize:outputBufferSize];
 
-        if (videoComposition == nil && _filter != nil) {
+        if (videoComposition == nil && _filter != nil && self.translatesFilterIntoComposition) {
             videoComposition = [_filter videoCompositionWithAsset:_inputAsset];
             if (videoComposition != nil) {
                 _filter = nil;

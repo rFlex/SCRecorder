@@ -74,6 +74,12 @@
 @property (assign, nonatomic) CMTimeRange timeRange;
 
 /**
+ Whether the assetExportSession should automatically translate the filter into an AVVideoComposition
+ Default is YES
+ */
+@property (assign, nonatomic) BOOL translatesFilterIntoComposition;
+
+/**
  The current progress
  */
 @property (readonly, nonatomic) float progress;
