@@ -42,65 +42,64 @@
 }
 
 - (void)setMaxQueueSize:(NSUInteger)maxQueueSize {    
-    _availableItemsToEnqueue = dispatch_semaphore_create(maxQueueSize);
+    _availableItemsToEnqueue = dispatch_semaphore_create(0);
+
+    for (NSUInteger i = 0; i < maxQueueSize; i++) {
+        dispatch_semaphore_signal(_availableItemsToEnqueue);
+    }
+
     _maxQueueSize = maxQueueSize;
 }
 
-- (void)startProcessingWithBlock:(id (^)())processingBlock {
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+- (void)_process:(id (^)())processingBlock {
+    while (!_completed) {
+        BOOL shouldProcess = NO;
 
-        while (!_completed) {
-            
-            BOOL shouldProcess = NO;
-            
-            if (!_completed) {
-                dispatch_semaphore_wait(_availableItemsToEnqueue, DISPATCH_TIME_FOREVER);
-                shouldProcess = !_completed;
-                
-                if (!shouldProcess) {
-                    dispatch_semaphore_signal(_availableItemsToEnqueue);
-                }
+        dispatch_semaphore_wait(_availableItemsToEnqueue, DISPATCH_TIME_FOREVER);
+        shouldProcess = !_completed;
+
+        BOOL shouldStopProcessing = NO;
+        if (shouldProcess) {
+            id data = processingBlock();
+
+            if (data != nil) {
+                dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
+                [_queue addObject:data];
+                dispatch_semaphore_signal(_accessQueue);
+                dispatch_semaphore_signal(_availableItemsToDequeue);
+            } else {
+                shouldStopProcessing = YES;
+                dispatch_semaphore_signal(_availableItemsToEnqueue);
             }
-            
-            
-            BOOL shouldStopProcessing = NO;
-            if (shouldProcess) {
-                id data = processingBlock();
-                
-                if (data != nil) {
-                    dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
-                    [_queue addObject:data];
-                    dispatch_semaphore_signal(_accessQueue)
-                    ;
-                    dispatch_semaphore_signal(_availableItemsToDequeue);
-                } else {
-                    shouldStopProcessing = YES;
-                    dispatch_semaphore_signal(_availableItemsToEnqueue);
-                }
-            }
-            
-            if (shouldStopProcessing) {
-                [self stopProcessing];
-            }
+        } else {
+            dispatch_semaphore_signal(_availableItemsToEnqueue);
         }
-    });
+
+        if (shouldStopProcessing) {
+            [self stopProcessing];
+        }
+    }
+}
+
+- (void)startProcessingWithBlock:(id (^)())processingBlock {
+    [NSThread detachNewThreadSelector:@selector(_process:) toTarget:self withObject:processingBlock];
 }
 
 - (void)stopProcessing {
     dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
 
     _completed = YES;
-    
+
     [_queue removeAllObjects];
     
-    while (dispatch_semaphore_signal(_availableItemsToEnqueue) != 0) {
+    while (dispatch_semaphore_signal(_availableItemsToDequeue) < 0) {
+
+    }
+    while (dispatch_semaphore_signal(_availableItemsToEnqueue) < 0) {
         
     }
     
-    while (dispatch_semaphore_signal(_availableItemsToDequeue) != 0) {
-        
-    }
-    
+
     dispatch_semaphore_signal(_accessQueue);    
 }
 
@@ -116,10 +115,9 @@
             [_queue removeObjectAtIndex:0];
             dispatch_semaphore_signal(_availableItemsToEnqueue);
         } else {
-            // Reincrement the semaphore because we didn't actually dequeue
             dispatch_semaphore_signal(_availableItemsToDequeue);
         }
-        
+
         dispatch_semaphore_signal(_accessQueue);
     }
     
