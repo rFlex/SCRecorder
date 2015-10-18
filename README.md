@@ -156,17 +156,17 @@ UIView *view = ... // Some view that will get the video
 AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:player];
 playerLayer.frame = view.bounds;
 [view.layer.addSublayer:playerLayer];
-	
+
 // Start playing the asset and render it into the view
 [player play];
 	
 // Render the video directly through a filter
-SCImageView *SCImageView = [[SCImageView alloc] initWithFrame:view.bounds];
-SCImageView.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
+SCFilterImageView *filterView = [[SCFilterImageView alloc] initWithFrame:view.bounds];
+filterVieww.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
 	
-player.CIImageRenderer = SCImageView;
+player.SCImageView = filterView;
 	
-[view addSubview:SCImageView];
+[view addSubview:filterView];
 ```
 
 SCVideoPlayerView is a subclass of UIView that holds an SCPlayer. The video buffers are rendered directly in this view. It removes the need to handle the creation of an AVPlayerLayer and makes it really easy to play a video in your app.
@@ -182,10 +182,6 @@ SCVideoPlayerView *playerView = // Your instance somewhere
 	
 // Start playing the asset and render it into the view
 [playerView.player play];
-	
-// Render the video directly through a filter
-playerView.SCImageViewEnabled = YES;
-playerView.SCImageView.filter = [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"];
 ```
 
 Editing your recording
@@ -233,7 +229,10 @@ First, you can use [SCRecordSession mergeSegmentsUsingPreset:completionHandler:]
 // Merge all the segments into one file using an AVAssetExportSession
 [recordSession mergeSegmentsUsingPreset:AVAssetExportPresetHighestQuality completionHandler:^(NSURL *url, NSError *error) {
 	if (error == nil) {
-		// Do something with this url
+	   	// Easily save to camera roll
+		[url saveToCameraRollWithCompletion:^(NSString *path, NSError *saveError) {
+		     
+		}];
 	} else {
 		NSLog(@"Bad things happened: %@", error);
 	}
@@ -295,6 +294,15 @@ if (error == nil) {
 
 // Restoring the filter group
 SCFilter *restoredFilter = [SCFilter filterWithContentsOfUrl:[NSURL fileUrlWithPath:@"some-url.cisf"]];
+
+// Processing a UIImage through the filter
+UIImage *myImage = ... // Some image
+UIImage *processedImage = [restoredFilter UIImageByProcessingUIImage:myImage];
+
+// Save it to the photo library
+[processedImage saveToCameraRollWithCompletion: ^(NSError *error) {
+
+}];
 ```
 
 If you want to create your own filters easily, you can also check out [CoreImageShop](https://github.com/rFlex/CoreImageShop) which is a Mac application that will generate serialized SCFilter directly useable by the filter classes in this project.
