@@ -342,17 +342,17 @@ Some details about the other provided classes
 
 Configurable view that can have an SCRecorder instance and handle tap to focus, pinch to zoom.
 
-#### [CIImageRenderer](Library/Sources/CIImageRenderer.h) (protocol)
+#### [SCImageView](Library/Sources/SCImageView.h) (protocol)
 
-Every class that conforms to this protocol can render a CIImage.
+Class that can render a CIImage through either EAGL, Metal or CoreGraphics. This class is intended for live rendering of CIImage's. If you want to alter the rendering when subclassing, you can override renderedCIImageInRect:.
 
-#### [SCImageView<CIImageRenderer>](Library/Sources/SCImageView.h)
+#### [SCFilterImageView](Library/Sources/SCImageView.h)
 
-A simple CIImageRenderer view that can have a SCFilterGroup. It renders the input CIImage using the SCFilterGroup, if there is any.
+A subclass of SCImageView that can have a filter. It renders the input CIImage using the SCFilter, if there is any.
 
-#### [SCSwipeableFilterView<CIImageRenderer>](Library/Sources/SCSwipeableFilterView.h)
+#### [SCSwipeableFilterView](Library/Sources/SCSwipeableFilterView.h)
 
-A CIImageRenderer view that has a scrollview and a list of SCFilterGroup. It let the user scrolls between the filters so he can chose one. The selected filter can be retrieved using -[SCSwipeableFilterView selectedFilterGroup]. This basically works the same as the Snapchat composition page.
+A subclass of SCImageView that has a scrollview and a list of SCFilter. It let the user scrolls between the filters so he can chose one. The selected filter can be retrieved using -[SCSwipeableFilterView selectedFilter]. This basically works the same as the Snapchat composition page.
 
 #### [SCPlayer](Library/Sources/SCPlayer.h)
 
