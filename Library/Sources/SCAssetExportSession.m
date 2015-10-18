@@ -118,7 +118,7 @@
 
 - (SCIOPixelBuffers *)renderIOPixelBuffersWithCI:(SCIOPixelBuffers *)pixelBuffers {
     SCIOPixelBuffers *outputPixelBuffers = pixelBuffers;
-    
+
     if (_context != nil) {
         @autoreleasepool {
             CIImage *result = [CIImage imageWithCVPixelBuffer:pixelBuffers.inputPixelBuffer];
@@ -130,15 +130,17 @@
             }
 
             if (!CGSizeEqualToSize(result.extent.size, _outputBufferSize)) {
-                result = [result imageByCroppingToRect:CGRectMake(0, 0, _outputBufferSize.width, _outputBufferSize.height)];
+                result = [result imageByCroppingToRect:CGRectMake(result.extent.origin.x, result.extent.origin.y, _outputBufferSize.width, _outputBufferSize.height)];
             }
+
+            result = [result imageByApplyingTransform:CGAffineTransformMakeTranslation(-result.extent.origin.x, -result.extent.origin.y)];
 
             CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
             [_context.CIContext render:result toCVPixelBuffer:pixelBuffers.outputPixelBuffer bounds:result.extent colorSpace:colorSpace];
 
             CGColorSpaceRelease(colorSpace);
-            
+
             if (pixelBuffers.inputPixelBuffer != pixelBuffers.outputPixelBuffer) {
                 CVPixelBufferUnlockBaseAddress(pixelBuffers.inputPixelBuffer, 0);
             }
