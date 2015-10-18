@@ -342,7 +342,7 @@ Some details about the other provided classes
 
 Configurable view that can have an SCRecorder instance and handle tap to focus, pinch to zoom.
 
-#### [SCImageView](Library/Sources/SCImageView.h) (protocol)
+#### [SCImageView](Library/Sources/SCImageView.h)
 
 Class that can render a CIImage through either EAGL, Metal or CoreGraphics. This class is intended for live rendering of CIImage's. If you want to alter the rendering when subclassing, you can override renderedCIImageInRect:.
 
