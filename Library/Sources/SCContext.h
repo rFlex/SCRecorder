@@ -33,6 +33,11 @@ typedef NS_ENUM(NSInteger, SCContextType) {
     SCContextTypeEAGL,
 
     /**
+     Creates a standard SCContext hardware accelerated.
+     */
+    SCContextTypeDefault,
+
+    /**
      Create a software rendered SCContext (no hardware acceleration)
      */
     SCContextTypeCPU

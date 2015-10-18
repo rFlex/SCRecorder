@@ -18,14 +18,18 @@ static NSDictionary *SCContextCreateCIContextOptions() {
     return @{kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null]};
 }
 
-- (instancetype)init {
+- (instancetype)initWithSoftwareRenderer:(BOOL)softwareRenderer {
     self = [super init];
 
     if (self) {
         NSMutableDictionary *options = SCContextCreateCIContextOptions().mutableCopy;
-        options[kCIContextUseSoftwareRenderer] = @YES;
+        options[kCIContextUseSoftwareRenderer] = @(softwareRenderer);
         _CIContext = [CIContext contextWithOptions:options];
-        _type = SCContextTypeCPU;
+        if (softwareRenderer) {
+            _type = SCContextTypeCPU;
+        } else {
+            _type = SCContextTypeDefault;
+        }
     }
 
     return self;
@@ -79,6 +83,7 @@ static NSDictionary *SCContextCreateCIContextOptions() {
         case SCContextTypeEAGL:
             return [CIContextClass respondsToSelector:@selector(contextWithEAGLContext:options:)];
         case SCContextTypeAuto:
+        case SCContextTypeDefault:
         case SCContextTypeCPU:
             return YES;
     }
@@ -86,14 +91,16 @@ static NSDictionary *SCContextCreateCIContextOptions() {
 }
 
 + (SCContextType)suggestedContextType {
-    if ([SCContext supportsType:SCContextTypeMetal]) {
-        return SCContextTypeMetal;
-    } else if ([SCContext supportsType:SCContextTypeEAGL]) {
+    // On iOS 9.0, Metal does not behave nicely with gaussian blur filters
+//    if ([SCContext supportsType:SCContextTypeMetal]) {
+//        return SCContextTypeMetal;
+//    } else
+    if ([SCContext supportsType:SCContextTypeEAGL]) {
         return SCContextTypeEAGL;
     } else if ([SCContext supportsType:SCContextTypeCoreGraphics]) {
         return SCContextTypeCoreGraphics;
     } else {
-        return SCContextTypeCPU;
+        return SCContextTypeDefault;
     }
 }
 
@@ -119,7 +126,9 @@ static NSDictionary *SCContextCreateCIContextOptions() {
             return [[SCContext alloc] initWithCGContextRef:context];
         }
         case SCContextTypeCPU:
-            return [[SCContext alloc] init];
+            return [[SCContext alloc] initWithSoftwareRenderer:YES];
+        case SCContextTypeDefault:
+            return [[SCContext alloc] initWithSoftwareRenderer:NO];
         case SCContextTypeEAGL: {
             EAGLContext *context = options[SCContextOptionsEAGLContextKey];
 

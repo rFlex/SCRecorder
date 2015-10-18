@@ -74,7 +74,8 @@
 @property (assign, nonatomic) CMTimeRange timeRange;
 
 /**
- Whether the assetExportSession should automatically translate the filter into an AVVideoComposition
+ Whether the assetExportSession should automatically translate the filter into an AVVideoComposition.
+ This won't be done if a composition has already been set in the videoConfiguration.
  Default is YES
  */
 @property (assign, nonatomic) BOOL translatesFilterIntoComposition;

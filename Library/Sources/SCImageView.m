@@ -67,7 +67,7 @@
                 }
                 options = @{SCContextOptionsCGContextKey: (__bridge id)contextRef};
             }
-                break;
+                break;            
             case SCContextTypeCPU:
                 [NSException raise:@"UnsupportedContextType" format:@"SCImageView does not support CPU context type."];
                 break;
