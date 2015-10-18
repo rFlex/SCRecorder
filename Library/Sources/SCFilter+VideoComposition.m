@@ -10,10 +10,10 @@
 
 @implementation SCFilter (VideoComposition)
 
-- (AVVideoComposition *)videoCompositionWithAsset:(AVAsset *)asset {
+- (AVMutableVideoComposition *)videoCompositionWithAsset:(AVAsset *)asset {
     if ([[AVVideoComposition class] respondsToSelector:@selector(videoCompositionWithAsset:applyingCIFiltersWithHandler:)]) {
         CIContext *context = [CIContext contextWithOptions:@{kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null]}];
-        return [AVVideoComposition videoCompositionWithAsset:asset applyingCIFiltersWithHandler:^(AVAsynchronousCIImageFilteringRequest * _Nonnull request) {
+        return [AVMutableVideoComposition videoCompositionWithAsset:asset applyingCIFiltersWithHandler:^(AVAsynchronousCIImageFilteringRequest * _Nonnull request) {
             CIImage *image = [self imageByProcessingImage:request.sourceImage atTime:CMTimeGetSeconds(request.compositionTime)];
 
             [request finishWithImage:image context:context];

@@ -11,6 +11,6 @@
 
 @interface SCFilter (VideoComposition)
 
-- (AVVideoComposition *__nullable)videoCompositionWithAsset:(AVAsset *__nonnull)asset NS_AVAILABLE(10_11, 9_0);
+- (AVMutableVideoComposition *__nullable)videoCompositionWithAsset:(AVAsset *__nonnull)asset NS_AVAILABLE(10_11, 9_0);
 
 @end

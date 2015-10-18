@@ -133,8 +133,6 @@
                 result = [result imageByCroppingToRect:CGRectMake(result.extent.origin.x, result.extent.origin.y, _outputBufferSize.width, _outputBufferSize.height)];
             }
 
-            result = [result imageByApplyingTransform:CGAffineTransformMakeTranslation(-result.extent.origin.x, -result.extent.origin.y)];
-
             CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
             [_context.CIContext render:result toCVPixelBuffer:pixelBuffers.outputPixelBuffer bounds:result.extent colorSpace:colorSpace];
