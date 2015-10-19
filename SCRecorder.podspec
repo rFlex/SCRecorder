@@ -11,13 +11,12 @@ Pod::Spec.new do |s|
   s.homepage     = "https://github.com/rFlex/SCRecorder"
   s.license      = 'Apache License, Version 2.0'
   s.author             = { "Simon CORSIN" => "simon@corsin.me" }
-  s.platform     = :ios, '9.0'
-  s.ios.deployment_target = '7.0'
+  s.platform     = :ios, '7.0'
   s.source       = { :git => "https://github.com/rFlex/SCRecorder.git", :tag => "v2.6.0" }
   s.source_files  = 'Library/Sources/*.{h,m}'
   s.public_header_files = 'Library/Sources/*.h'
   s.requires_arc = true
-  s.weak_frameworks = 'Metal', 'GLKit', 'MetalKit'
+  s.weak_frameworks = 'Metal', 'GLKit'
   s.frameworks = 'AVFoundation'
 
 end

@@ -6,7 +6,8 @@
 //  Copyright © 2015 rFlex. All rights reserved.
 //
 
-#import <SCRecorder/SCRecorder.h>
+#import <UIKit/UIKit.h>
+#import "SCFilter.h"
 
 @interface SCFilter (UIImage)
 

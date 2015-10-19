@@ -19,7 +19,6 @@
 		90B02E401BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E3E1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m */; settings = {ASSET_TAGS = (); }; };
 		90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 90D4FBDD1BC6C1840017748D /* SCFilterImageView.h */; settings = {ASSET_TAGS = (); }; };
 		90D4FBE01BC6C1840017748D /* SCFilterImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 90D4FBDE1BC6C1840017748D /* SCFilterImageView.m */; settings = {ASSET_TAGS = (); }; };
-		90D4FBE21BC6DDB80017748D /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBE11BC6DDB80017748D /* MetalKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		90D4FBE41BC6DDBF0017748D /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBE31BC6DDBF0017748D /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		90D4FBE61BC6DDDC0017748D /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBE51BC6DDDC0017748D /* GLKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		DC10CF281ACFD458009880C4 /* SCWeakSelectorTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = DC10CF261ACFD458009880C4 /* SCWeakSelectorTarget.h */; };
@@ -232,7 +231,6 @@
 			files = (
 				90D4FBE61BC6DDDC0017748D /* GLKit.framework in Frameworks */,
 				90D4FBE41BC6DDBF0017748D /* Metal.framework in Frameworks */,
-				90D4FBE21BC6DDB80017748D /* MetalKit.framework in Frameworks */,
 				DC23FE2317B451A100389EDA /* UIKit.framework in Frameworks */,
 				DC23FE2217B4519A00389EDA /* CoreGraphics.framework in Frameworks */,
 				DC23FE2117B4519100389EDA /* AVFoundation.framework in Frameworks */,
@@ -775,7 +773,10 @@
 		DC23FE1B17B4200900389EDA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = NO;
 				DSTROOT = /tmp/SCAudioVideoRecorder.dst;
+				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				OTHER_LDFLAGS = "-ObjC";
@@ -787,7 +788,10 @@
 		DC23FE1C17B4200900389EDA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = NO;
 				DSTROOT = /tmp/SCAudioVideoRecorder.dst;
+				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				OTHER_LDFLAGS = "-ObjC";

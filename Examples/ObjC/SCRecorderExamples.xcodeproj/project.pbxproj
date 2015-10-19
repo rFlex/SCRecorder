@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		90A0D7DE1BC7367A008F1BB0 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90A0D7DD1BC7367A008F1BB0 /* Launch Screen.storyboard */; settings = {ASSET_TAGS = (); }; };
-		90D4FBE81BC6DDE40017748D /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBE71BC6DDE40017748D /* MetalKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		90D4FBED1BC6DDEC0017748D /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBEC1BC6DDEC0017748D /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		DC10CF251ACFD082009880C4 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC10CF1E1ACFCF6E009880C4 /* libSCRecorder.a */; };
 		DC1485DD1AFB78F2004896E9 /* a_filter.cisf in Resources */ = {isa = PBXBuildFile; fileRef = DC1485DC1AFB78F2004896E9 /* a_filter.cisf */; };
@@ -129,7 +128,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				90D4FBED1BC6DDEC0017748D /* Metal.framework in Frameworks */,
-				90D4FBE81BC6DDE40017748D /* MetalKit.framework in Frameworks */,
 				DC10CF251ACFD082009880C4 /* libSCRecorder.a in Frameworks */,
 				DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */,
 				DC7F370E18FC2A0D00D54901 /* CoreGraphics.framework in Frameworks */,
@@ -516,6 +514,8 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = NO;
+				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
@@ -543,6 +543,8 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = NO;
+				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
 				HEADER_SEARCH_PATHS = (

@@ -6,18 +6,24 @@
 //  Copyright (c) 2014 rFlex. All rights reserved.
 //
 
-#import <MetalKit/MetalKit.h>
 #import "SCImageView.h"
 #import "SCSampleBufferHolder.h"
 #import "SCContext.h"
 
-@interface SCImageView()<GLKViewDelegate, MTKViewDelegate> {
-    SCSampleBufferHolder *_sampleBufferHolder;
-}
+#if TARGET_IPHONE_SIMULATOR
+@interface SCImageView()<GLKViewDelegate>
+
+#else
+@import MetalKit;
+
+@interface SCImageView()<GLKViewDelegate, MTKViewDelegate>
+
+@property (nonatomic, strong) MTKView *MTKView;
+#endif
 
 @property (nonatomic, strong) GLKView *GLKView;
-@property (nonatomic, strong) MTKView *MTKView;
 @property (nonatomic, strong) id<MTLCommandQueue> MTLCommandQueue;
+@property (nonatomic, strong) SCSampleBufferHolder *sampleBufferHolder;
 
 @end
 
@@ -85,7 +91,10 @@
     [super layoutSubviews];
 
     _GLKView.frame = self.bounds;
+
+#if !(TARGET_IPHONE_SIMULATOR)
     _MTKView.frame = self.bounds;
+#endif
 }
 
 - (void)unloadContext {
@@ -93,12 +102,14 @@
         [_GLKView removeFromSuperview];
         _GLKView = nil;
     }
+#if !(TARGET_IPHONE_SIMULATOR)
     if (_MTKView != nil) {
         _MTLCommandQueue = nil;
         [_MTKView removeFromSuperview];
         [_MTKView releaseDrawables];
         _MTKView = nil;
     }
+#endif
     _context = nil;
 }
 
@@ -115,6 +126,7 @@
                 _GLKView.delegate = self;
                 [self insertSubview:_GLKView atIndex:0];
                 break;
+#if !(TARGET_IPHONE_SIMULATOR)
             case SCContextTypeMetal:
                 _MTLCommandQueue = [context.MTLDevice newCommandQueue];
                 _MTKView = [[MTKView alloc] initWithFrame:self.bounds device:context.MTLDevice];
@@ -125,6 +137,7 @@
                 _MTKView.framebufferOnly = NO;
                 [self insertSubview:_MTKView atIndex:0];
                 break;
+#endif
             default:
                 [NSException raise:@"InvalidContext" format:@"Unsupported context type: %d. SCImageView only supports CoreGraphics, EAGL and Metal", (int)context.type];
                 break;
@@ -138,7 +151,9 @@
     [super setNeedsDisplay];
 
     [_GLKView setNeedsDisplay];
+#if !(TARGET_IPHONE_SIMULATOR)
     [_MTKView setNeedsDisplay];
+#endif
 }
 
 - (UIImage *)renderedUIImageInRect:(CGRect)rect {
@@ -322,6 +337,23 @@ static CGRect CGRectMultiply(CGRect rect, CGFloat contentScale) {
     return rect;
 }
 
+#pragma mark -- GLKViewDelegate
+
+- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+    @autoreleasepool {
+        rect = CGRectMultiply(rect, self.contentScaleFactor);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        CIImage *image = [self renderedCIImageInRect:rect];
+
+        if (image != nil) {
+            [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
+        }
+    }
+}
+
+#if !(TARGET_IPHONE_SIMULATOR)
 #pragma mark -- MTKViewDelegate
 
 - (void)drawInMTKView:(nonnull MTKView *)view {
@@ -344,23 +376,8 @@ static CGRect CGRectMultiply(CGRect rect, CGFloat contentScale) {
 }
 
 - (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
-
+    
 }
-
-#pragma mark -- GLKViewDelegate
-
-- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-    @autoreleasepool {
-        rect = CGRectMultiply(rect, self.contentScaleFactor);
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        CIImage *image = [self renderedCIImageInRect:rect];
-
-        if (image != nil) {
-            [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
-        }
-    }
-}
+#endif
 
 @end
