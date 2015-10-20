@@ -48,23 +48,18 @@
                                              [SCFilter filterWithCIFilterName:@"CIPhotoEffectTonal"],
                                              [SCFilter filterWithCIFilterName:@"CIPhotoEffectFade"]
                                              ];
-
-	// Do any additional setup after loading the view.
-}
-
-- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo {
-    if (error == nil) {
-        [[[UIAlertView alloc] initWithTitle:@"Done!" message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-    } else {
-        [[[UIAlertView alloc] initWithTitle:@"Failed :(" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-    }
-    
 }
 
 - (void)saveToCameraRoll {
-    UIImage *image = [self.filterSwitcherView processedUIImage];
+    UIImage *image = [self.filterSwitcherView renderedUIImage];
     
-    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+    [image saveToCameraRollWithCompletion:^(NSError * _Nullable error) {
+        if (error == nil) {
+            [[[UIAlertView alloc] initWithTitle:@"Done!" message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        } else {
+            [[[UIAlertView alloc] initWithTitle:@"Failed :(" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+    }];
 }
 
 @end

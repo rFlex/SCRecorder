@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import "SCImageView.h"
-#import "CIImageRenderer.h"
 
 @class SCPlayer;
 
@@ -42,7 +41,7 @@
  Called when the player has setup the renderer so it can receive the image in the
  proper orientation.
  */
-- (void)player:(SCPlayer *__nonnull)player didSetupRenderer:(__nonnull id<CIImageRenderer>)renderer;
+- (void)player:(SCPlayer *__nonnull)player didSetupSCImageView:(SCImageView *__nonnull)SCImageView;
 
 @end
 
@@ -100,7 +99,7 @@
  The renderer for the CIImage. If this property is set, the player will set the CIImage
  property when the current frame changes.
  */
-@property (strong, nonatomic) __nullable id<CIImageRenderer> CIImageRenderer;
+@property (strong, nonatomic) SCImageView *__nullable SCImageView;
 
 /**
  Convenient method to return a new instance of a SCPlayer

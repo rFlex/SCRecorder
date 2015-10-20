@@ -1,6 +1,6 @@
 //
-//  SCNewCamera.h
-//  SCAudioVideoRecorder
+//  SCRecorder.h
+//  SCRecorder
 //
 //  Created by Simon CORSIN on 27/03/14.
 //  Copyright (c) 2014 rFlex. All rights reserved.
@@ -10,19 +10,16 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 #import "SCRecordSession.h"
-#import "SCSampleBufferHolder.h"
-#import "SCVideoPlayerView.h"
-#import "SCPlayer.h"
 #import "SCAssetExportSession.h"
 #import "SCImageView.h"
-#import "SCSwipeableFilterView.h"
-#import "SCRecorderToolsView.h"
 #import "SCVideoConfiguration.h"
 #import "SCAudioConfiguration.h"
 #import "SCPhotoConfiguration.h"
 #import "SCRecorderTools.h"
 #import "SCRecorderDelegate.h"
-#import "SCContext.h"
+
+// Convenience
+#import "SCRecorderHeader.h"
 
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 
@@ -138,7 +135,7 @@
  If set, this render will receive every received frames as CIImage.
  Can be useful for displaying a real time filter for example.
  */
-@property (strong, nonatomic) id<CIImageRenderer> __nullable CIImageRenderer;
+@property (strong, nonatomic) SCImageView *__nullable SCImageView;
 
 /**
  Set the delegate used to receive messages for the SCRecorder

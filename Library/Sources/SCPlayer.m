@@ -141,17 +141,15 @@ static char* ItemChanged = "CurrentItemContext";
     
     if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
         
-        id<CIImageRenderer> renderer = self.CIImageRenderer;
+        SCImageView *renderer = self.SCImageView;
 
         if (renderer != nil) {
             if (!_rendererWasSetup) {
-                if ([renderer respondsToSelector:@selector(setPreferredCIImageTransform:)]) {
-                    [renderer setPreferredCIImageTransform:_rendererTransform];
-                }
-                
+                renderer.preferredCIImageTransform = _rendererTransform;
+
                 id<SCPlayerDelegate> delegate = self.delegate;
-                if ([delegate respondsToSelector:@selector(player:didSetupRenderer:)]) {
-                    [delegate player:self didSetupRenderer:renderer];
+                if ([delegate respondsToSelector:@selector(player:didSetupSCImageView:)]) {
+                    [delegate player:self didSetupSCImageView:renderer];
                 }
                 
                 _rendererWasSetup = YES;
@@ -165,11 +163,10 @@ static char* ItemChanged = "CurrentItemContext";
                 
                 renderer.CIImageTime = CMTimeGetSeconds(outputItemTime);
                 renderer.CIImage = inputImage;
-                
-                CFRelease(pixelBuffer);
+
+                CVPixelBufferRelease(pixelBuffer);
             }
         }
-
     }
 }
 
@@ -230,32 +227,30 @@ static char* ItemChanged = "CurrentItemContext";
         _displayLink.paused = NO;
         
         CGAffineTransform transform = CGAffineTransformIdentity;
-        id<CIImageRenderer> renderer = self.CIImageRenderer;
+        SCImageView *renderer = self.SCImageView;
         
-        if ([renderer respondsToSelector:@selector(frame)]) {
-            NSArray *videoTracks = [item.asset tracksWithMediaType:AVMediaTypeVideo];
-            
-            if (videoTracks.count > 0) {
-                AVAssetTrack *track = videoTracks.firstObject;
-                
-                transform = track.preferredTransform;
-                
-                // Return the video if it is upside down
-                if (transform.b == 1 && transform.c == -1) {
-                    transform = CGAffineTransformRotate(transform, M_PI);
-                }
-                
-                if (self.autoRotate) {
-                    CGSize videoSize = track.naturalSize;
-                    CGSize viewSize =  [renderer frame].size;
-                    CGRect outRect = CGRectApplyAffineTransform(CGRectMake(0, 0, videoSize.width, videoSize.height), transform);
+        NSArray *videoTracks = [item.asset tracksWithMediaType:AVMediaTypeVideo];
+
+        if (videoTracks.count > 0) {
+            AVAssetTrack *track = videoTracks.firstObject;
+
+            transform = track.preferredTransform;
+
+            // Return the video if it is upside down
+            if (transform.b == 1 && transform.c == -1) {
+                transform = CGAffineTransformRotate(transform, M_PI);
+            }
+
+            if (self.autoRotate) {
+                CGSize videoSize = track.naturalSize;
+                CGSize viewSize =  [renderer frame].size;
+                CGRect outRect = CGRectApplyAffineTransform(CGRectMake(0, 0, videoSize.width, videoSize.height), transform);
+
+                BOOL viewIsWide = viewSize.width / viewSize.height > 1;
+                BOOL videoIsWide = outRect.size.width / outRect.size.height > 1;
                     
-                    BOOL viewIsWide = viewSize.width / viewSize.height > 1;
-                    BOOL videoIsWide = outRect.size.width / outRect.size.height > 1;
-                    
-                    if (viewIsWide != videoIsWide) {
-                        transform = CGAffineTransformRotate(transform, M_PI_2);
-                    }
+                if (viewIsWide != videoIsWide) {
+                    transform = CGAffineTransformRotate(transform, M_PI_2);
                 }
             }
         }
@@ -361,10 +356,10 @@ static char* ItemChanged = "CurrentItemContext";
     self.actionAtItemEnd = loopEnabled ? AVPlayerActionAtItemEndNone : AVPlayerActionAtItemEndPause;
 }
 
-- (void)setCIImageRenderer:(id<CIImageRenderer>)CIImageRenderer {
-    _CIImageRenderer = CIImageRenderer;
-    
-    if (CIImageRenderer == nil) {
+- (void)setSCImageView:(SCImageView *)SCImageView {
+    _SCImageView = SCImageView;
+
+    if (SCImageView == nil) {
         [self unsetupDisplayLink];
     } else {
         [self setupDisplayLink];

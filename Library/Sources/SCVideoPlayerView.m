@@ -63,8 +63,9 @@
 }
 
 - (void)_commonInit:(SCPlayer *)player {
-    self.SCImageViewEnabled = NO;
-    
+    _playerLayer = [AVPlayerLayer new];
+    [self.layer insertSublayer:_playerLayer atIndex:0];
+
     BOOL holdPlayer = NO;
     if (player == nil && [SCVideoPlayerView autoCreatePlayerWhenNeeded]) {
         player = [SCPlayer player];
@@ -74,6 +75,7 @@
     _holdPlayer = holdPlayer;
     
 	self.clipsToBounds = YES;
+    [self setNeedsLayout];
 }
 
 - (void)tapOrPause {
@@ -98,7 +100,6 @@
 	[super layoutSubviews];
 	
     _playerLayer.frame = self.bounds;
-    _SCImageView.frame = self.bounds;
 }
 
 - (BOOL)tapToPauseEnabled {
@@ -121,45 +122,12 @@
 
 - (void)setPlayer:(SCPlayer *)player {
     if (player != _player) {
-        _player.CIImageRenderer = nil;
-        
         _player = player;
         
-        _player.CIImageRenderer = _SCImageView;
         _playerLayer.player = player;
         
         _holdPlayer = NO;
     }
-}
-
-- (void)setSCImageViewEnabled:(BOOL)SCImageViewEnabled {
-    _SCImageViewEnabled = SCImageViewEnabled;
-    
-    if (SCImageViewEnabled) {
-        if (_playerLayer != nil) {
-            [_playerLayer removeFromSuperlayer];
-            _playerLayer.player = nil;
-            _playerLayer = nil;
-        }
-        
-        if (_SCImageView == nil) {
-            _SCImageView = [SCImageView new];
-            [self insertSubview:_SCImageView atIndex:0];
-            _player.CIImageRenderer = _SCImageView;
-        }
-    } else {
-        if (_SCImageView != nil) {
-            [_SCImageView removeFromSuperview];
-            _SCImageView = nil;
-            _player.CIImageRenderer = nil;
-        }
-        if (_playerLayer == nil) {
-            _playerLayer = [AVPlayerLayer new];
-            [self.layer insertSublayer:_playerLayer atIndex:0];
-        }
-    }
-    
-    [self setNeedsLayout];
 }
 
 static BOOL _autoCreatePlayerWhenNeeded = YES;

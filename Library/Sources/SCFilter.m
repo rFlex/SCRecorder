@@ -14,6 +14,8 @@
     NSMutableArray *_animations;
 }
 
+@property (strong, nonatomic) CIImage *overlayImage;
+
 @end
 
 @implementation SCFilter
@@ -303,19 +305,24 @@
         image = [filter imageByProcessingImage:image atTime:time];
     }
     
-    CIFilter *ciFilter = _CIFilter;
-    
-    if (ciFilter == nil) {
-        return image;
-    }
-    
     for (SCFilterAnimation *animation in _animations) {
         if ([animation hasValueAtTime:time]) {
             id value = [animation valueAtTime:time];
             [self setParameterValue:value forKey:animation.key];
         }
     }
-    
+
+    CIImage *overlayImage = _overlayImage;
+    if (overlayImage != nil) {
+        image = [overlayImage imageByCompositingOverImage:image];
+    }
+
+    CIFilter *ciFilter = _CIFilter;
+
+    if (ciFilter == nil) {
+        return image;
+    }
+
     [ciFilter setValue:image forKey:kCIInputImageKey];
     return [ciFilter valueForKey:kCIOutputImageKey];
 }
@@ -411,6 +418,13 @@
         [filter addSubFilter:subFilter];
     }
     
+    return filter;
+}
+
++ (SCFilter *)filterWithCIImage:(CIImage *)image {
+    SCFilter *filter = [SCFilter emptyFilter];
+    filter.overlayImage = image;
+
     return filter;
 }
 

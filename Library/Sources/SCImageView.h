@@ -12,18 +12,26 @@
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
 #import "SCFilter.h"
-#import "CIImageRenderer.h"
+#import "SCContext.h"
 
 /**
- A Core Image renderer that works like a UIView. It supports filter through the
- filterGroup property.
+ A view capable of rendering CIImages.
  */
-@interface SCImageView : GLKView<CIImageRenderer>
+@interface SCImageView : UIView
 
 /**
- The filter to apply when rendering. If nil is set, no filter will be applied
+ The context type to use when loading the context.
  */
-@property (strong, nonatomic) SCFilter *__nullable filter;
+@property (assign, nonatomic) SCContextType contextType;
+
+/**
+ The SCContext that hold the underlying CIContext for rendering the CIImage's
+ Will be automatically loaded when setting the first CIImage or when rendering
+ for the first if using a CoreGraphics context type.
+ You can also set your own context.
+ Supported contexts are Metal, CoreGraphics, EAGL
+ */
+@property (strong, nonatomic) SCContext *__nullable context;
 
 /**
  The CIImage to render.
@@ -41,6 +49,12 @@
 @property (assign, nonatomic) CGAffineTransform preferredCIImageTransform;
 
 /**
+ Whether the CIImage should be scaled and resized according to the contentMode of this view.
+ Default is YES.
+ */
+@property (assign, nonatomic) BOOL scaleAndResizeCIImageAutomatically;
+
+/**
  Set the CIImage using a sampleBuffer. The CIImage will be automatically generated
  when needed. This avoids creating multiple CIImage if the SCImageView can't render them
  as fast.
@@ -53,13 +67,37 @@
 - (void)setImageByUIImage:(UIImage *__nullable)image;
 
 /**
- Creates and returns the processed image as UIImage
+ Create the CIContext and setup the underlying rendering views. This is automatically done when setting an CIImage
+ for the first time to make the initialization faster. If for some reasons you want it to be done earlier
+ you can call this method.
+ Returns whether the context has been successfully loaded, returns NO otherwise.
  */
-- (UIImage *__nullable)processedUIImage;
+- (BOOL)loadContextIfNeeded;
 
 /**
- Creates and returns the processed image as CIImage
+ Returns the rendered CIImage in the given rect.
+ Subclass can override this method to alterate the rendered image.
  */
-- (CIImage *__nullable)processedCIImage;
+- (CIImage *__nullable)renderedCIImageInRect:(CGRect)rect;
+
+/**
+ Returns the rendered CIImage in the given rect.
+ It internally calls renderedCIImageInRect:
+ Subclass should not override this method.
+ */
+- (UIImage *__nullable)renderedUIImageInRect:(CGRect)rect;
+
+/**
+ Returns the rendered CIImage in its natural size.
+ Subclass should not override this method.
+ */
+- (CIImage *__nullable)renderedCIImage;
+
+/**
+ Returns the rendered UIImage in its natural size.
+ Subclass should not override this method.
+ */
+- (UIImage *__nullable)renderedUIImage;
+
 
 @end

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		90A0D7DE1BC7367A008F1BB0 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90A0D7DD1BC7367A008F1BB0 /* Launch Screen.storyboard */; settings = {ASSET_TAGS = (); }; };
+		90D4FBED1BC6DDEC0017748D /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBEC1BC6DDEC0017748D /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		DC10CF251ACFD082009880C4 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC10CF1E1ACFCF6E009880C4 /* libSCRecorder.a */; };
 		DC1485DD1AFB78F2004896E9 /* a_filter.cisf in Resources */ = {isa = PBXBuildFile; fileRef = DC1485DC1AFB78F2004896E9 /* a_filter.cisf */; };
 		DC1C8E9F18FD24C9005A342D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC1C8E9E18FD24C9005A342D /* Main.storyboard */; };
@@ -37,7 +39,7 @@
 		DC7F376D18FC2B0300D54901 /* Record-Normal-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376118FC2B0300D54901 /* Record-Normal-icon.png */; };
 		DC7F376E18FC2B0300D54901 /* Record-Pressed-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376218FC2B0300D54901 /* Record-Pressed-icon.png */; };
 		DC7F376F18FC2B0300D54901 /* Stop-Normal-Red-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DC7F376318FC2B0300D54901 /* Stop-Normal-Red-icon.png */; };
-		DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCB0416C19253FB800D945D2 /* GLKit.framework */; };
+		DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCB0416C19253FB800D945D2 /* GLKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		DCB69AB5197EE31300AF667A /* SCEditVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DCB69AB4197EE31300AF667A /* SCEditVideoViewController.m */; };
 		DCD44C111B30A92000B42A24 /* SCWatermarkOverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD44C101B30A92000B42A24 /* SCWatermarkOverlayView.m */; };
 /* End PBXBuildFile section */
@@ -67,6 +69,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		90A0D7DD1BC7367A008F1BB0 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+		90D4FBE71BC6DDE40017748D /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		90D4FBEC1BC6DDEC0017748D /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		DC1485DC1AFB78F2004896E9 /* a_filter.cisf */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = a_filter.cisf; sourceTree = "<group>"; };
 		DC1C8E9E18FD24C9005A342D /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		DC34A7D0199D66FA0001BD08 /* SCSessionListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSessionListViewController.h; sourceTree = "<group>"; };
@@ -122,6 +127,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90D4FBED1BC6DDEC0017748D /* Metal.framework in Frameworks */,
 				DC10CF251ACFD082009880C4 /* libSCRecorder.a in Frameworks */,
 				DCB0416D19253FB800D945D2 /* GLKit.framework in Frameworks */,
 				DC7F370E18FC2A0D00D54901 /* CoreGraphics.framework in Frameworks */,
@@ -184,6 +190,8 @@
 		DC7F370A18FC2A0D00D54901 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				90D4FBEC1BC6DDEC0017748D /* Metal.framework */,
+				90D4FBE71BC6DDE40017748D /* MetalKit.framework */,
 				DCB0416C19253FB800D945D2 /* GLKit.framework */,
 				DC7F370B18FC2A0D00D54901 /* Foundation.framework */,
 				DC7F370D18FC2A0D00D54901 /* CoreGraphics.framework */,
@@ -232,6 +240,7 @@
 				DC7F371418FC2A0D00D54901 /* InfoPlist.strings */,
 				DC7F371718FC2A0D00D54901 /* main.m */,
 				DC7F371918FC2A0D00D54901 /* SCRecorderExamples-Prefix.pch */,
+				90A0D7DD1BC7367A008F1BB0 /* Launch Screen.storyboard */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -374,6 +383,7 @@
 			files = (
 				DC7F376C18FC2B0300D54901 /* Play-Pressed-icon.png in Resources */,
 				DC7F376918FC2B0300D54901 /* Default@2x.png in Resources */,
+				90A0D7DE1BC7367A008F1BB0 /* Launch Screen.storyboard in Resources */,
 				DC7F376A18FC2B0300D54901 /* Pause-Normal-icon.png in Resources */,
 				DC7F376618FC2B0300D54901 /* capture_onion@2x.png in Resources */,
 				DC7F376E18FC2B0300D54901 /* Record-Pressed-icon.png in Resources */,
@@ -504,6 +514,8 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = NO;
+				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
@@ -531,6 +543,8 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = NO;
+				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
