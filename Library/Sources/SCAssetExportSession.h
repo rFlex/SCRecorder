@@ -81,6 +81,12 @@
 @property (assign, nonatomic) BOOL translatesFilterIntoComposition;
 
 /**
+ Indicates whether the movie should be optimized for network use.
+ Default is NO
+ */
+@property (assign, nonatomic) BOOL shouldOptimizeForNetworkUse;
+
+/**
  The current progress
  */
 @property (readonly, nonatomic) float progress;

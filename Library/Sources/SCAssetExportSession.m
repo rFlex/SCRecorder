@@ -58,6 +58,7 @@
         _videoConfiguration = [SCVideoConfiguration new];
         _timeRange = CMTimeRangeMake(kCMTimeZero, kCMTimePositiveInfinity);
         _translatesFilterIntoComposition = YES;
+        _shouldOptimizeForNetworkUse = NO;
     }
 
     return self;
@@ -643,6 +644,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     [[NSFileManager defaultManager] removeItemAtURL:self.outputUrl error:nil];
     
     _writer = [AVAssetWriter assetWriterWithURL:self.outputUrl fileType:self.outputFileType error:&error];
+    _writer.shouldOptimizeForNetworkUse = _shouldOptimizeForNetworkUse;
     _writer.metadata = [SCRecorderTools assetWriterMetadata];
 
     EnsureSuccess(error, completionHandler);
