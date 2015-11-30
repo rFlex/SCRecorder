@@ -169,7 +169,7 @@
     NSArray *filters = self.filters;
 
     CGFloat xImage = extent.size.width * -remainingRatio;
-    CIImage *outputImage = [CIImage new];
+    CIImage *outputImage = [CIImage imageWithColor:[CIColor colorWithRed:0 green:0 blue:0]];
 
     while (index <= upIndex) {
         NSInteger currentIndex = index % filters.count;
