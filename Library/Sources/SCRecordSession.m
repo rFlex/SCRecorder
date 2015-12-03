@@ -677,7 +677,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         if ([_audioInput isReadyForMoreMediaData] && [_audioInput appendSampleBuffer:adjustedBuffer]) {
             _lastTimeAudio = lastTimeAudio;
 
-            //            NSLog(@"Appending audio at %fs (buffer: %fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(actualBufferTime));
+            NSLog(@"Appending audio at %fs", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)));
 
             completion(YES);
         } else {
@@ -725,6 +725,8 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
     if ([_videoInput isReadyForMoreMediaData] && (CMTIME_IS_INVALID(_completionSourceTime) || CMTIME_COMPARE_INLINE(_completionSourceTime, >, bufferTimestamp))) {
         if ([_videoPixelBufferAdaptor appendPixelBuffer:videoPixelBuffer withPresentationTime:bufferTimestamp]) {
+            NSLog(@"Appending video at %fs", CMTimeGetSeconds(bufferTimestamp));
+
             _lastTimeVideo = CMTimeAdd(bufferTimestamp, duration);
             completion(YES);
         } else {

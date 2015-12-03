@@ -11,6 +11,8 @@
 		9079317C1BD2A06700D7D181 /* SCFilter+VideoComposition.m in Sources */ = {isa = PBXBuildFile; fileRef = 9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */; };
 		9079317F1BD451C200D7D181 /* SCFilter+UIImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 9079317D1BD451C200D7D181 /* SCFilter+UIImage.h */; };
 		907931801BD451C200D7D181 /* SCFilter+UIImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 9079317E1BD451C200D7D181 /* SCFilter+UIImage.m */; };
+		907E87051C1101A500E652F7 /* SCRecorderOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 907E87031C1101A500E652F7 /* SCRecorderOperation.h */; };
+		907E87061C1101A500E652F7 /* SCRecorderOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 907E87041C1101A500E652F7 /* SCRecorderOperation.m */; };
 		90B02E351BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */; };
 		90B02E361BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */; };
 		90B02E3B1BCBFE7F00559011 /* SCSaveToCameraRollOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E391BCBFE7F00559011 /* SCSaveToCameraRollOperation.h */; };
@@ -129,6 +131,8 @@
 		9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SCFilter+VideoComposition.m"; sourceTree = "<group>"; };
 		9079317D1BD451C200D7D181 /* SCFilter+UIImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SCFilter+UIImage.h"; sourceTree = "<group>"; };
 		9079317E1BD451C200D7D181 /* SCFilter+UIImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SCFilter+UIImage.m"; sourceTree = "<group>"; };
+		907E87031C1101A500E652F7 /* SCRecorderOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRecorderOperation.h; sourceTree = "<group>"; };
+		907E87041C1101A500E652F7 /* SCRecorderOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRecorderOperation.m; sourceTree = "<group>"; };
 		90B02E331BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+SCSaveToCameraRoll.h"; sourceTree = "<group>"; };
 		90B02E341BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+SCSaveToCameraRoll.m"; sourceTree = "<group>"; };
 		90B02E391BCBFE7F00559011 /* SCSaveToCameraRollOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSaveToCameraRollOperation.h; sourceTree = "<group>"; };
@@ -462,6 +466,8 @@
 				DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */,
 				DC23C1C61AAF95600013E14C /* SCRecordSessionSegment.m */,
 				DCF3A68E1AB9F4760034CF5C /* SCRecorderDelegate.h */,
+				907E87031C1101A500E652F7 /* SCRecorderOperation.h */,
+				907E87041C1101A500E652F7 /* SCRecorderOperation.m */,
 			);
 			name = Recorder;
 			sourceTree = "<group>";
@@ -517,6 +523,7 @@
 				DC23C1C71AAF95600013E14C /* SCRecordSessionSegment.h in Headers */,
 				9079317B1BD2A06700D7D181 /* SCFilter+VideoComposition.h in Headers */,
 				DC50285918E51FC9004E833F /* SCRecorder.h in Headers */,
+				907E87051C1101A500E652F7 /* SCRecorderOperation.h in Headers */,
 				DC4CBA531863118E00532F1F /* SCVideoPlayerView.h in Headers */,
 				DC633E2F192BCE0D00050796 /* SCFilter.h in Headers */,
 				DC933E8B193814D1007E2E88 /* SCSwipeableFilterView.h in Headers */,
@@ -713,6 +720,7 @@
 				DC633E30192BCE0D00050796 /* SCFilter.m in Sources */,
 				90B02E401BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m in Sources */,
 				DCA1639A1A2028C400505966 /* SCAudioConfiguration.m in Sources */,
+				907E87061C1101A500E652F7 /* SCRecorderOperation.m in Sources */,
 				9079317C1BD2A06700D7D181 /* SCFilter+VideoComposition.m in Sources */,
 				90B02E361BC995CD00559011 /* NSURL+SCSaveToCameraRoll.m in Sources */,
 				DC4CBA521863118E00532F1F /* SCPlayer.m in Sources */,

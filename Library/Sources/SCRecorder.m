@@ -8,11 +8,12 @@
 
 #import "SCRecorder.h"
 #import "SCRecordSession_Internal.h"
+#import "SCRecorderOperation.h"
 #define dispatch_handler(x) if (x != nil) dispatch_async(dispatch_get_main_queue(), x)
 #define kSCRecorderRecordSessionQueueKey "SCRecorderRecordSessionQueue"
 #define kMinTimeBetweenAppend 0.004
 
-@interface SCRecorder() {
+@interface SCRecorder() <SCRecorderOperationDelegate> {
     AVCaptureVideoPreviewLayer *_previewLayer;
     AVCaptureSession *_captureSession;
     UIView *_previewView;
@@ -42,7 +43,7 @@
     SCFilter *_transformFilter;
     size_t _transformFilterBufferWidth;
     size_t _transformFilterBufferHeight;
-    dispatch_block_t _delayedVideoRecordBlock;
+    NSMutableArray *_pendingActions;
 }
 
 @end
@@ -97,6 +98,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         
         _context = [SCContext new].CIContext;
         _readyToRecord = YES;
+        _pendingActions = [NSMutableArray new];
     }
     
     return self;
@@ -460,15 +462,46 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     _lastMovieFileOutputTime = recordedDuration;
 }
 
-- (void)_setDelayedVideoRecordBlock:(dispatch_block_t)recordActionBlock {
-    if (_delayedVideoRecordBlock != nil) {
-        dispatch_block_cancel(_delayedVideoRecordBlock);
+- (void)_enqueuePendingAction:(void(^)(SCRecorderOperation *operation))action forceExecution:(BOOL)forceExecution {
+    if ([SCRecorder isSessionQueue]) {
+        // Remove operations that have not started to execute yet
+        for (SCRecorderOperation *existingOperation in [_pendingActions copy]) {
+            if (!existingOperation.executing) {
+                [_pendingActions removeObject:existingOperation];
+            }
+        }
+        SCRecorderOperation *operation = [[SCRecorderOperation alloc] initWithBlock:action];
+        operation.delegate = self;
+        [_pendingActions addObject:operation];
+
+        if (forceExecution) {
+            [operation start];
+        } else {
+            [self _dequeuePendingActionIfNeeded];
+        }
+    } else {
+        dispatch_async(_sessionQueue, ^{
+            [self _enqueuePendingAction:action forceExecution:forceExecution];
+        });
     }
-    _delayedVideoRecordBlock = recordActionBlock;
+}
+
+- (void)_dequeuePendingActionIfNeeded {
+    if (_pendingActions.count > 0) {
+        SCRecorderOperation *operation = _pendingActions.firstObject;
+        if (!operation.executing) {
+            [operation start];
+        }
+    }
+}
+
+- (void)recorderOperationDidComplete:(SCRecorderOperation *)recorderOperation {
+    [_pendingActions removeObject:recorderOperation];
+    [self _dequeuePendingActionIfNeeded];
 }
 
 - (void)record {
-    void (^block)() = ^{
+    [self _enqueuePendingAction:^(SCRecorderOperation *operation) {
         if (!_readyToRecord) {
             _shouldRecordWhenReady = YES;
             return;
@@ -477,37 +510,26 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _shouldRecordWhenReady = NO;
         _recordingAudio = YES;
 
-        if (!_recordingVideo) {
-            CMTime videoLatency = self.videoLatency;
-            if (CMTIME_COMPARE_INLINE(videoLatency, <=, kCMTimeZero)) {
-                [self _setDelayedVideoRecordBlock:nil];
-                _recordingVideo = YES;
-            } else {
-                dispatch_block_t delayedVideoRecordBlock = dispatch_block_create(0, ^{
-                    if (_readyToRecord) {
-                        _recordingVideo = YES;
-                    }
-                    [self _setDelayedVideoRecordBlock:nil];
-                });
-                [self _setDelayedVideoRecordBlock:delayedVideoRecordBlock];
-                // If we have some video latency, we wait a little more before starting to append the video buffer.
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(CMTimeGetSeconds(videoLatency) * NSEC_PER_SEC)), _sessionQueue, delayedVideoRecordBlock);
-            }
-        }
         if (_movieOutput != nil && _session != nil) {
             _movieOutput.maxRecordedDuration = self.maxRecordDuration;
             [self beginRecordSegmentIfNeeded:_session];
             if (_movieOutputProgressTimer == nil) {
                 _movieOutputProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 / 60.0 target:self selector:@selector(_progressTimerFired:) userInfo:nil repeats:YES];
             }
+        } else if (!_recordingVideo) {
+            CMTime videoLatency = CMTimeSubtract(self.videoLatency, CMTimeMake(1, 10));
+            if (CMTIME_COMPARE_INLINE(videoLatency, <=, kCMTimeZero)) {
+                _recordingVideo = YES;
+            } else {
+                [operation asyncBegan];
+                // If we have some video latency, we wait a little more before starting to append the video buffer.
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(CMTimeGetSeconds(videoLatency) * NSEC_PER_SEC)), _sessionQueue, ^{
+                    _recordingVideo = YES;
+                    [operation asyncEnded];
+                });
+            }
         }
-    };
-    
-    if ([SCRecorder isSessionQueue]) {
-        block();
-    } else {
-        dispatch_sync(_sessionQueue, block);
-    }
+    } forceExecution:NO];
 }
 
 - (void)pause {
@@ -515,19 +537,18 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)pause:(void(^)())completionHandler {
-    void (^block)() = ^{
+    [self _enqueuePendingAction:^(SCRecorderOperation *operation) {
         NSLog(@"CALLING PAUSE");
+        _shouldRecordWhenReady = NO;
+
         if (!_readyToRecord) {
             dispatch_handler(completionHandler);
             return;
         }
 
-        [self _setDelayedVideoRecordBlock:nil];
-
-        _shouldRecordWhenReady = NO;
         _recordingAudio = NO;
         SCRecordSession *recordSession = _session;
-        
+
         if (recordSession != nil) {
             if (recordSession.recordSegmentReady) {
                 NSDictionary *info = [self _createSegmentInfo];
@@ -544,6 +565,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                     void (^endSegmentBlock)() = ^{
                         NSLog(@"ENDING SEGMENT WITH INFO");
                         _recordingVideo = NO;
+                        [operation asyncBegan];
                         [recordSession endSegmentWithInfo:info completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
                             id<SCRecorderDelegate> delegate = self.delegate;
                             if ([delegate respondsToSelector:@selector(recorder:didCompleteSegment:inSession:error:)]) {
@@ -552,21 +574,34 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                             if (completionHandler != nil) {
                                 completionHandler();
                             }
+                            [operation asyncEnded];
                         }];
                     };
 
                     CMTime videoLatency = self.videoLatency;
                     if (CMTIME_COMPARE_INLINE(videoLatency, >, kCMTimeZero)) {
                         _readyToRecord = NO;
-                        CMTime maxTime = CMTIME_COMPARE_INLINE(recordSession.lastTimeAudio, >, recordSession.lastTimeVideo) ? recordSession.lastTimeAudio : recordSession.lastTimeVideo;
+                        CMTime lastTimeAudio = recordSession.lastTimeAudio;
+                        CMTime lastTimeVideo = recordSession.lastTimeVideo;
+                        CMTime maxTime;
+                        if (CMTIME_IS_INVALID(lastTimeVideo)) {
+                            maxTime = lastTimeAudio;
+                        } else if (CMTIME_IS_INVALID(lastTimeAudio)) {
+                            maxTime = lastTimeVideo;
+                        } else {
+                            maxTime = CMTIME_COMPARE_INLINE(lastTimeAudio, >, lastTimeVideo) ? lastTimeAudio : lastTimeVideo;
+                        }
+                        NSLog(@"%fs", CMTimeGetSeconds(maxTime));
                         [recordSession scheduleForCompletionAtSourceTime:maxTime];
                         NSLog(@"SCHEDULE VIDEO FOR COMPLETION");
+                        [operation asyncBegan];
                         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(CMTimeGetSeconds(videoLatency) * NSEC_PER_SEC)), _sessionQueue, ^{
                             endSegmentBlock();
                             _readyToRecord = YES;
                             if (_shouldRecordWhenReady) {
                                 [self record];
                             }
+                            [operation asyncEnded];
                         });
                     } else {
                         endSegmentBlock();
@@ -578,13 +613,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         } else {
             dispatch_handler(completionHandler);
         }
-    };
-
-    if ([SCRecorder isSessionQueue]) {
-        block();
-    } else {
-        dispatch_sync(_sessionQueue, block);
-    }
+    } forceExecution:YES];
 }
 
 + (NSError*)createError:(NSString*)errorDescription {
