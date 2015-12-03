@@ -65,7 +65,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _initializeSessionLazily = YES;
         
         _videoOrientation = AVCaptureVideoOrientationPortrait;
-        
+        _videoStabilizationMode = AVCaptureVideoStabilizationModeStandard;
+
         [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(_subjectAreaDidChange) name:AVCaptureDeviceSubjectAreaDidChangeNotification  object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionInterrupted:) name:AVAudioSessionInterruptionNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
@@ -700,7 +701,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         if (!recordSession.videoInitialized) {
             NSError *error = nil;
             NSDictionary *settings = [self.videoConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
-            
+
             CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
             [recordSession initializeVideo:settings formatDescription:formatDescription error:&error];
             NSLog(@"INITIALIZED VIDEO");
@@ -938,6 +939,15 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     [videoDevice removeObserver:self forKeyPath:@"adjustingExposure"];
 }
 
+- (void)_configureVideoStabilization {
+    AVCaptureConnection *videoConnection = [self videoConnection];
+    if ([videoConnection isVideoStabilizationSupported]) {
+        if ([videoConnection respondsToSelector:@selector(setPreferredVideoStabilizationMode:)]) {
+            videoConnection.preferredVideoStabilizationMode = _videoStabilizationMode;
+        }
+    }
+}
+
 - (void)configureDevice:(AVCaptureDevice*)newDevice mediaType:(NSString*)mediaType error:(NSError**)error {
     AVCaptureDeviceInput *currentInput = [self currentDeviceInputForMediaType:mediaType];
     AVCaptureDevice *currentUsedDevice = currentInput.device;
@@ -984,18 +994,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                         _videoInputAdded = YES;
                         
                         [self addVideoObservers:newInput.device];
-                        
-                        AVCaptureConnection *videoConnection = [self videoConnection];
-                        if ([videoConnection isVideoStabilizationSupported]) {
-                            if ([videoConnection respondsToSelector:@selector(setPreferredVideoStabilizationMode:)]) {
-                                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
-                            } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                                videoConnection.enablesVideoStabilizationWhenAvailable = YES;
-#pragma clang diagnostic pop
-                            }
-                        }
+                        [self _configureVideoStabilization];
                     } else {
                         _audioInputAdded = YES;
                     }
@@ -1612,6 +1611,13 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         
         [self _reconfigureSession];
     }
+}
+
+- (void)setVideoStabilizationMode:(AVCaptureVideoStabilizationMode)videoStabilizationMode {
+    _videoStabilizationMode = videoStabilizationMode;
+    [self beginConfiguration];
+    [self _configureVideoStabilization];
+    [self commitConfiguration];
 }
 
 + (SCRecorder *)sharedRecorder {

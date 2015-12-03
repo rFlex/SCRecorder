@@ -153,6 +153,12 @@
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
 
 /**
+ The video stabilization mode to use.
+ Default is AVCaptureVideoStabilizationModeStandard
+ */
+@property (assign, nonatomic) AVCaptureVideoStabilizationMode videoStabilizationMode;
+
+/**
  If true, the videoOrientation property will be set automatically
  depending on the current device orientation
  Default is NO
