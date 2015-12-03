@@ -235,6 +235,18 @@
 @property (readonly, nonatomic) BOOL subjectAreaChanged;
 
 /**
+ The latency between the video and the audio. This only reflect the latency
+ in the recording pipeline and won't affect the recorded file.
+ */
+@property (readonly, nonatomic) CMTime videoLatency;
+
+/**
+ Whether the recorder is ready to record. This will turn to NO when pausing and switch
+ back to YES after. This isn't an error to call record while this property is false (it won't trigger an exception).
+ */
+@property (readonly, nonatomic) BOOL readyToRecord;
+
+/**
  Will contains an error if an error occured while reconfiguring
  the underlying AVCaptureSession.
  */

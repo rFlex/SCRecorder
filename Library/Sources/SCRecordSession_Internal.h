@@ -17,25 +17,22 @@
     BOOL _audioInitializationFailed;
     BOOL _videoInitializationFailed;
     BOOL _recordSegmentReady;
-    BOOL _currentSegmentHasVideo;
-    BOOL _currentSegmentHasAudio;
     
     int _currentSegmentCount;
     CMTime _timeOffset;
-    CMTime _lastTimeAudio;
-    CMTime _currentSegmentDuration;
     CMTime _sessionStartTime;
     
     SCVideoConfiguration *_videoConfiguration;
     SCAudioConfiguration *_audioConfiguration;
     
     AVAssetWriterInputPixelBufferAdaptor *_videoPixelBufferAdaptor;
-    CMTime _lastTimeVideo;
-    
+
     dispatch_queue_t _audioQueue;
     
     // Used when the fastRecordMethod is enabled
     AVCaptureMovieFileOutput *_movieFileOutput;
+
+    CMTime _completionSourceTime;
 }
 
 @property (weak, nonatomic) SCRecorder *recorder;
@@ -48,6 +45,8 @@
 @property (readonly, nonatomic) BOOL currentSegmentHasAudio;
 @property (readonly, nonatomic) BOOL currentSegmentHasVideo;
 @property (readonly, nonatomic) BOOL isUsingMovieFileOutput;
+@property (readonly, nonatomic) CMTime lastTimeAudio;
+@property (readonly, nonatomic) CMTime lastTimeVideo;
 
 - (void)initializeVideo:(NSDictionary *)videoOptions formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError **)error;
 - (void)initializeAudio:(NSDictionary *)audioOptions formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError **)error;
@@ -58,6 +57,7 @@
 
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer completion:(void(^)(BOOL success))completion;
 
+- (void)scheduleForCompletionAtSourceTime:(CMTime)completionSourceTime;
 
 - (void)beginRecordSegmentUsingMovieFileOutput:(AVCaptureMovieFileOutput *)movieFileOutput error:(NSError **)error delegate:(id<AVCaptureFileOutputRecordingDelegate>)delegate;
 

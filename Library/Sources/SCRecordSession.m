@@ -116,7 +116,6 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         _currentSegmentCount = 0;
         _timeOffset = kCMTimeZero;
         _lastTimeAudio = kCMTimeZero;
-        _currentSegmentDuration = kCMTimeZero;
         _segmentsDuration = kCMTimeZero;
         _date = [NSDate date];
         _segmentsDirectory = SCRecordSessionTemporaryDirectory;
@@ -449,9 +448,6 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     [self dispatchSyncOnSessionQueue:^{
         if (_assetWriter == nil) {
             _assetWriter = [self createWriter:error];
-            _currentSegmentDuration = kCMTimeZero;
-            _currentSegmentHasAudio = NO;
-            _currentSegmentHasVideo = NO;
         } else {
             if (error != nil) {
                 *error = [SCRecordSession createError:@"A record segment has already began."];
@@ -461,12 +457,10 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)_destroyAssetWriter {
-    _currentSegmentHasAudio = NO;
-    _currentSegmentHasVideo = NO;
     _assetWriter = nil;
     _lastTimeAudio = kCMTimeInvalid;
     _lastTimeVideo = kCMTimeInvalid;
-    _currentSegmentDuration = kCMTimeZero;
+    _completionSourceTime = kCMTimeInvalid;
     _sessionStartTime = kCMTimeInvalid;
     _movieFileOutput = nil;
 }
@@ -502,7 +496,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
                 AVAssetWriter *writer = _assetWriter;
                 
                 if (writer != nil) {
-                    BOOL currentSegmentEmpty = (!_currentSegmentHasVideo && !_currentSegmentHasAudio);
+                    BOOL currentSegmentEmpty = (!self.currentSegmentHasVideo && !self.currentSegmentHasAudio) || CMTIME_IS_INVALID(_sessionStartTime);
                     
                     if (currentSegmentEmpty) {
                         [writer cancelWriting];
@@ -517,7 +511,18 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
                         }
                     } else {
                         //                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_currentSegmentDuration));
-                        [writer endSessionAtSourceTime:CMTimeAdd(_currentSegmentDuration, _sessionStartTime)];
+                        CMTime sourceTime = _completionSourceTime;
+
+                        if (CMTIME_IS_INVALID(sourceTime)) {
+                            // Prefers to use the video time to avoid having black frames.
+                            if (CMTIME_IS_VALID(_lastTimeVideo)) {
+                                sourceTime = _lastTimeVideo;
+                            } else {
+                                sourceTime = _lastTimeAudio;
+                            }
+                        }
+
+                        [writer endSessionAtSourceTime:sourceTime];
 
                         [writer finishWritingWithCompletionHandler: ^{
                             [self appendRecordSegmentUrl:writer.outputURL info:info error:writer.error completionHandler:completionHandler];
@@ -672,12 +677,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         if ([_audioInput isReadyForMoreMediaData] && [_audioInput appendSampleBuffer:adjustedBuffer]) {
             _lastTimeAudio = lastTimeAudio;
 
-            if (!_currentSegmentHasVideo) {
-                _currentSegmentDuration = CMTimeSubtract(lastTimeAudio, _sessionStartTime);
-            }
-
             //            NSLog(@"Appending audio at %fs (buffer: %fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(actualBufferTime));
-            _currentSegmentHasAudio = YES;
 
             completion(YES);
         } else {
@@ -686,6 +686,11 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
         CFRelease(adjustedBuffer);
     });
+    CFRelease(adjustedBuffer);
+}
+
+- (void)scheduleForCompletionAtSourceTime:(CMTime)completionSourceTime {
+    _completionSourceTime = completionSourceTime;
 }
 
 - (void)_startSessionIfNeededAtTime:(CMTime)time
@@ -704,9 +709,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     CGFloat videoTimeScale = _videoConfiguration.timeScale;
     if (videoTimeScale != 1.0) {
         CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
-        if (_currentSegmentDuration.value > 0) {
-            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
-        }
+        _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
         duration = computedFrameDuration;
     }
     
@@ -720,12 +723,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     //        }
     //    }
 
-    if ([_videoInput isReadyForMoreMediaData]) {
+    if ([_videoInput isReadyForMoreMediaData] && (CMTIME_IS_INVALID(_completionSourceTime) || CMTIME_COMPARE_INLINE(_completionSourceTime, >, bufferTimestamp))) {
         if ([_videoPixelBufferAdaptor appendPixelBuffer:videoPixelBuffer withPresentationTime:bufferTimestamp]) {
-            _currentSegmentDuration = CMTimeSubtract(CMTimeAdd(bufferTimestamp, duration), _sessionStartTime);
-            _lastTimeVideo = actualBufferTime;
-            
-            _currentSegmentHasVideo = YES;
+            _lastTimeVideo = CMTimeAdd(bufferTimestamp, duration);
             completion(YES);
         } else {
             NSLog(@"Failed to append buffer");
@@ -872,16 +872,12 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     return _recordSegmentReady;
 }
 
-- (BOOL)currentSegmentHasVideo {
-    return _currentSegmentHasVideo;
-}
-
 - (BOOL)currentSegmentHasAudio {
-    return _currentSegmentHasAudio;
+    return CMTIME_IS_VALID(_lastTimeAudio);
 }
 
-- (CMTime)currentSegmentDuration {
-    return _movieFileOutput.isRecording ? _movieFileOutput.recordedDuration : _currentSegmentDuration;
+- (BOOL)currentSegmentHasVideo {
+    return CMTIME_IS_VALID(_lastTimeVideo);
 }
 
 - (CMTime)duration {
@@ -943,6 +939,36 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
 - (BOOL)isUsingMovieFileOutput {
     return _movieFileOutput != nil;
+}
+
+- (CMTime)currentSegmentDuration {
+    if  (_movieFileOutput.isRecording) {
+        return _movieFileOutput.recordedDuration;
+    }
+
+    CMTime sessionStartTime = _sessionStartTime;
+    CMTime audioTime = _lastTimeAudio;
+    CMTime videoTime = _lastTimeVideo;
+
+    if (CMTIME_IS_INVALID(sessionStartTime)) {
+        return kCMTimeZero;
+    }
+
+    CMTime highestTime;
+    if (CMTIME_IS_VALID(_completionSourceTime)) {
+        highestTime = _completionSourceTime;
+    } else if (CMTIME_IS_VALID(audioTime) && CMTIME_IS_VALID(videoTime)) {
+        if (CMTIME_COMPARE_INLINE(audioTime, >, videoTime)) {
+            highestTime = audioTime;
+        } else {
+            highestTime = videoTime;
+        }
+    } else if (CMTIME_IS_VALID(audioTime)) {
+        highestTime = audioTime;
+    } else {
+        highestTime = videoTime;
+    }
+    return CMTimeSubtract(highestTime, _sessionStartTime);
 }
 
 @end

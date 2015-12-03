@@ -70,7 +70,8 @@
 
     _recorder = [SCRecorder recorder];
     _recorder.captureSessionPreset = [SCRecorderTools bestCaptureSessionPresetCompatibleWithAllDevices];
-//    _recorder.maxRecordDuration = CMTimeMake(10, 1);
+    _recorder.videoStabilizationMode = AVCaptureVideoStabilizationModeCinematic;
+    _recorder.maxRecordDuration = CMTimeMake(10, 1);
 //    _recorder.fastRecordMethodEnabled = YES;
     
     _recorder.delegate = self;
@@ -346,6 +347,10 @@
 }
 
 - (void)recorder:(SCRecorder *)recorder didAppendVideoSampleBufferInSession:(SCRecordSession *)recordSession {
+    [self updateTimeRecordedLabel];
+}
+
+- (void)recorder:(SCRecorder *)recorder didAppendAudioSampleBufferInSession:(SCRecordSession *)session {
     [self updateTimeRecordedLabel];
 }
 
