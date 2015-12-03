@@ -333,8 +333,8 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         
         if ([writer startWriting]) {
             //                NSLog(@"Starting session at %fs", CMTimeGetSeconds(_lastTime));
-            [writer startSessionAtSourceTime:kCMTimeZero];
-            _timeOffset = kCMTimeInvalid;
+            _timeOffset = kCMTimeZero;
+            _sessionStartTime = kCMTimeInvalid;
             //                _sessionStartedTime = _lastTime;
             //                _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
             _recordSegmentReady = YES;
@@ -467,6 +467,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     _lastTimeAudio = kCMTimeInvalid;
     _lastTimeVideo = kCMTimeInvalid;
     _currentSegmentDuration = kCMTimeZero;
+    _sessionStartTime = kCMTimeInvalid;
     _movieFileOutput = nil;
 }
 
@@ -502,8 +503,8 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
                 
                 if (writer != nil) {
                     SCRecorder *recorder = self.recorder;
-                    
-                    BOOL currentSegmentEmpty = (!_currentSegmentHasVideo && recorder.videoEnabledAndReady) || (!_currentSegmentHasAudio && recorder.audioEnabledAndReady);
+
+                    BOOL currentSegmentEmpty = (!_currentSegmentHasVideo && !_currentSegmentHasAudio);
                     
                     if (currentSegmentEmpty) {
                         [writer cancelWriting];
@@ -518,7 +519,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
                         }
                     } else {
                         //                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_currentSegmentDuration));
-                        [writer endSessionAtSourceTime:_currentSegmentDuration];
+                        [writer endSessionAtSourceTime:CMTimeAdd(_currentSegmentDuration, _sessionStartTime)];
 
                         [writer finishWritingWithCompletionHandler: ^{
                             [self appendRecordSegmentUrl:writer.outputURL info:info error:writer.error completionHandler:completionHandler];
@@ -660,56 +661,48 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer completion:(void (^)(BOOL))completion {
-    CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer);
-    
-    if (CMTIME_IS_INVALID(_timeOffset)) {
-        _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
-    }
-    
+    [self _startSessionIfNeededAtTime:CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer)];
+
     CMTime duration = CMSampleBufferGetDuration(audioSampleBuffer);
     CMSampleBufferRef adjustedBuffer = [self adjustBuffer:audioSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
     
     CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
     CMTime lastTimeAudio = CMTimeAdd(presentationTime, duration);
-    
-    BOOL appended = CMTIME_COMPARE_INLINE(presentationTime, >=, kCMTimeZero);
-    
-    if (appended) {
-        CFRetain(adjustedBuffer);
-        dispatch_async(_audioQueue, ^{
-            if ([_audioInput isReadyForMoreMediaData] && [_audioInput appendSampleBuffer:adjustedBuffer]) {
-                _lastTimeAudio = lastTimeAudio;
-                
-                if (!_currentSegmentHasVideo) {
-                    _currentSegmentDuration = lastTimeAudio;
-                }
-                
-                //            NSLog(@"Appending audio at %fs (buffer: %fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(actualBufferTime));
-                _currentSegmentHasAudio = YES;
-                
-                completion(YES);
-            } else {
-                completion(NO);
+
+    CFRetain(adjustedBuffer);
+    dispatch_async(_audioQueue, ^{
+        if ([_audioInput isReadyForMoreMediaData] && [_audioInput appendSampleBuffer:adjustedBuffer]) {
+            _lastTimeAudio = lastTimeAudio;
+
+            if (!_currentSegmentHasVideo) {
+                _currentSegmentDuration = CMTimeSubtract(lastTimeAudio, _sessionStartTime);
             }
-            
-            CFRelease(adjustedBuffer);
-        });
-    } else {
-        completion(NO);
+
+            //            NSLog(@"Appending audio at %fs (buffer: %fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(actualBufferTime));
+            _currentSegmentHasAudio = YES;
+
+            completion(YES);
+        } else {
+            completion(NO);
+        }
+
+        CFRelease(adjustedBuffer);
+    });
+}
+
+- (void)_startSessionIfNeededAtTime:(CMTime)time
+{
+    if (CMTIME_IS_INVALID(_sessionStartTime)) {
+        _sessionStartTime = time;
+        [_assetWriter startSessionAtSourceTime:time];
     }
-    
-    CFRelease(adjustedBuffer);
 }
 
 - (void)appendVideoPixelBuffer:(CVPixelBufferRef)videoPixelBuffer atTime:(CMTime)actualBufferTime duration:(CMTime)duration completion:(void (^)(BOOL))completion {
-    CMTime bufferTimestamp;
-    
-    if (CMTIME_IS_INVALID(_timeOffset)) {
-        _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
-        //            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
-    }
-    bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
-    
+    [self _startSessionIfNeededAtTime:actualBufferTime];
+
+    CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
+
     CGFloat videoTimeScale = _videoConfiguration.timeScale;
     if (videoTimeScale != 1.0) {
         CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
@@ -731,7 +724,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
     if ([_videoInput isReadyForMoreMediaData]) {
         if ([_videoPixelBufferAdaptor appendPixelBuffer:videoPixelBuffer withPresentationTime:bufferTimestamp]) {
-            _currentSegmentDuration = CMTimeAdd(bufferTimestamp, duration);
+            _currentSegmentDuration = CMTimeSubtract(CMTimeAdd(bufferTimestamp, duration), _sessionStartTime);
             _lastTimeVideo = actualBufferTime;
             
             _currentSegmentHasVideo = YES;
