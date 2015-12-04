@@ -502,8 +502,6 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
                 AVAssetWriter *writer = _assetWriter;
                 
                 if (writer != nil) {
-                    SCRecorder *recorder = self.recorder;
-
                     BOOL currentSegmentEmpty = (!_currentSegmentHasVideo && !_currentSegmentHasAudio);
                     
                     if (currentSegmentEmpty) {

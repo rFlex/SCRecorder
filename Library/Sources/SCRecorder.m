@@ -704,7 +704,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
             CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
             [recordSession initializeVideo:settings formatDescription:formatDescription error:&error];
-            NSLog(@"INITIALIZED VIDEO");
+//            NSLog(@"INITIALIZED VIDEO");
 
             id<SCRecorderDelegate> delegate = self.delegate;
             if ([delegate respondsToSelector:@selector(recorder:didInitializeVideoInSession:error:)]) {
@@ -729,7 +729,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                     [NSThread sleepForTimeInterval:timeToWait];
                 }
                 BOOL isFirstVideoBuffer = !recordSession.currentSegmentHasVideo;
-                NSLog(@"APPENDING");
+//                NSLog(@"APPENDING");
                 [self appendVideoSampleBuffer:sampleBuffer toRecordSession:recordSession duration:duration connection:connection completion:^(BOOL success) {
                     _lastAppendedVideoTime = CACurrentMediaTime();
                     if (success) {
@@ -763,7 +763,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 }
             }
         } else {
-            NSLog(@"SKIPPING");
+//            NSLog(@"SKIPPING");
         }
     }
 }
@@ -775,7 +775,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
             NSDictionary *settings = [self.audioConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
             CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
             [recordSession initializeAudio:settings formatDescription:formatDescription error:&error];
-            NSLog(@"INITIALIZED AUDIO");
+//            NSLog(@"INITIALIZED AUDIO");
 
             id<SCRecorderDelegate> delegate = self.delegate;
             if ([delegate respondsToSelector:@selector(recorder:didInitializeAudioInSession:error:)]) {
@@ -790,7 +790,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
             if (_isRecording && recordSession.recordSegmentReady && (!self.videoEnabledAndReady || recordSession.currentSegmentHasVideo)) {
                 id<SCRecorderDelegate> delegate = self.delegate;
-                NSLog(@"APPENDING");
+//                NSLog(@"APPENDING");
 
                 [recordSession appendAudioSampleBuffer:sampleBuffer completion:^(BOOL success) {
                     if (success) {
@@ -810,7 +810,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                     }
                 }];
             } else {
-                NSLog(@"SKIPPING");
+//                NSLog(@"SKIPPING");
             }
         }
     }
@@ -819,7 +819,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     if (captureOutput == _videoOutput) {
         _lastVideoBuffer.sampleBuffer = sampleBuffer;
-        NSLog(@"VIDEO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
+//        NSLog(@"VIDEO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 
         if (_videoConfiguration.shouldIgnore) {
             return;
@@ -835,7 +835,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         }
     } else if (captureOutput == _audioOutput) {
         _lastAudioBuffer.sampleBuffer = sampleBuffer;
-        NSLog(@"AUDIO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
+//        NSLog(@"AUDIO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 
         if (_audioConfiguration.shouldIgnore) {
             return;
