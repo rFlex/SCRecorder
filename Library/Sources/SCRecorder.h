@@ -203,6 +203,12 @@
 @property (assign, nonatomic) BOOL initializeSessionLazily;
 
 /**
+ If enabled, flips the video about its vertical axis and produce a mirror-image effect,
+ when recording with the front camera.
+ */
+@property (assign, nonatomic) BOOL mirrorOnFrontCamera;
+
+/**
  If enabled, mirrored video buffers like when using a front camera
  will be written also as mirrored.
  */

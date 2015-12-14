@@ -80,6 +80,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _lastAudioBuffer = [SCSampleBufferHolder new];
         _maxRecordDuration = kCMTimeInvalid;
         _resetZoomOnChangeDevice = YES;
+        _mirrorOnFrontCamera = NO;
         
         self.device = AVCaptureDevicePositionBack;
         _videoConfiguration = [SCVideoConfiguration new];
@@ -948,6 +949,15 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     }
 }
 
+- (void)_configureFrontCameraMirroring:(BOOL)videoMirrored {
+    AVCaptureConnection *videoConnection = [self videoConnection];
+    if ([videoConnection isVideoMirroringSupported]) {
+        if ([videoConnection respondsToSelector:@selector(setVideoMirrored:)]) {
+            videoConnection.videoMirrored = videoMirrored;
+        }
+    }
+}
+
 - (void)configureDevice:(AVCaptureDevice*)newDevice mediaType:(NSString*)mediaType error:(NSError**)error {
     AVCaptureDeviceInput *currentInput = [self currentDeviceInputForMediaType:mediaType];
     AVCaptureDevice *currentUsedDevice = currentInput.device;
@@ -995,6 +1005,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                         
                         [self addVideoObservers:newInput.device];
                         [self _configureVideoStabilization];
+                        [self _configureFrontCameraMirroring:_mirrorOnFrontCamera && newInput.device.position == AVCaptureDevicePositionFront];
+                        
                     } else {
                         _audioInputAdded = YES;
                     }
