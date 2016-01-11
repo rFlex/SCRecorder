@@ -439,8 +439,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         pInfo[i].duration = duration;
     }
     
-    CMSampleBufferRef sout;
-    CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
+    CMSampleBufferRef sout = sample;
     free(pInfo);
     return sout;
 }
