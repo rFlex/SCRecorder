@@ -39,7 +39,7 @@ static char* ItemChanged = "CurrentItemContext";
     self = [super init];
     
     if (self) {
-        _shouldSuppressPlayerRendering = YES;
+        _shouldSuppressPlayerRendering = NO;
         [self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:ItemChanged];
     }
     
@@ -321,6 +321,8 @@ static char* ItemChanged = "CurrentItemContext";
 }
 
 - (void)setItem:(AVPlayerItem *)item {
+    [self unsetupDisplayLink];
+    [self setupDisplayLink];
     [self replaceCurrentItemWithPlayerItem:item];
 }
 
