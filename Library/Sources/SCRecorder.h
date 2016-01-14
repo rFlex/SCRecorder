@@ -54,6 +54,11 @@
 @property (readonly, nonatomic) BOOL isRecording;
 
 /**
+ If true the SCRecorder will only record video, not audio
+ */
+@property (nonatomic) BOOL mute;
+
+/**
  Change the flash mode on the camera
  */
 @property (assign, nonatomic) SCFlashMode flashMode;
