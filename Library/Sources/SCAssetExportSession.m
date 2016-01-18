@@ -271,20 +271,22 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
                 SCIOPixelBuffers *videoBuffer = nil;
                 SCSampleBufferHolder *bufferHolder = nil;
 
+                CMTime time;
                 if (videoProcessingQueue != nil) {
                     videoBuffer = [videoProcessingQueue dequeue];
+                    time = videoBuffer.time;
                 } else {
                     bufferHolder = [videoReadingQueue dequeue];
+                    if (bufferHolder != nil) {
+                        time = CMSampleBufferGetPresentationTimeStamp(bufferHolder.sampleBuffer);
+                    }
                 }
 
                 if (videoBuffer != nil || bufferHolder != nil) {
-                    if (CMTIME_COMPARE_INLINE(videoBuffer.time, >=, strongSelf.nextAllowedVideoFrame)) {
-                        CMTime time;
+                    if (CMTIME_COMPARE_INLINE(time, >=, strongSelf.nextAllowedVideoFrame)) {
                         if (bufferHolder != nil) {
-                            time = CMSampleBufferGetPresentationTimeStamp(bufferHolder.sampleBuffer);
                             shouldReadNextBuffer = [strongSelf.videoInput appendSampleBuffer:bufferHolder.sampleBuffer];
                         } else {
-                            time = videoBuffer.time;
                             shouldReadNextBuffer = [strongSelf encodePixelBuffer:videoBuffer.outputPixelBuffer presentationTime:videoBuffer.time];
                         }
 
