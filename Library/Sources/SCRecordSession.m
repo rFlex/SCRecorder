@@ -667,7 +667,6 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
     CMTime lastTimeAudio = CMTimeAdd(presentationTime, duration);
 
-    CFRetain(adjustedBuffer);
     dispatch_async(_audioQueue, ^{
         if ([_audioInput isReadyForMoreMediaData] && [_audioInput appendSampleBuffer:adjustedBuffer]) {
             _lastTimeAudio = lastTimeAudio;
