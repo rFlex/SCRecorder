@@ -158,6 +158,11 @@ static char *ContextDidChangeDevice = "DidChangeDevice";
         self.cameraFocusTargetView.center = self.center;
         [recorder continuousFocusAtPoint:CGPointMake(.5f, .5f)];
     }
+    
+    id<SCRecorderToolsViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(recorderToolsView:didDoubleTapToFocusWithGestureRecognizer:)]) {
+        [delegate recorderToolsView:self didDoubleTapToFocusWithGestureRecognizer:gestureRecognizer];
+    }
 }
 
 - (void)pinchToZoom:(UIPinchGestureRecognizer *)gestureRecognizer {
