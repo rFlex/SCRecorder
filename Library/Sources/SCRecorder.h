@@ -111,6 +111,13 @@
 @property (copy, nonatomic) NSString *__nonnull captureSessionPreset;
 
 /**
+ The value of this property defaults to YES, causing the capture session to automatically configure the app’s shared AVAudioSession instance for optimal recording.
+ 
+ If you set this property’s value to NO, your app is responsible for selecting appropriate audio session settings. Recording may fail if the audio session’s settings are incompatible with the capture session.
+ */
+@property (assign, nonatomic) BOOL automaticallyConfiguresApplicationAudioSession;
+
+/**
  The captureSession. This will be null until prepare or startRunning has
  been called. Calling unprepare will set this property to null again.
  */
