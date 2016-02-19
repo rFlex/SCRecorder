@@ -37,7 +37,12 @@
     if (image != nil) {
         CGImageRef cgImage = [context.CIContext createCGImage:image fromRect:image.extent];
 
-        UIImage *outputImage = [UIImage imageWithCGImage:cgImage];
+        UIImage *outputImage = nil;
+        if (uiImage != nil) {
+            outputImage = [UIImage imageWithCGImage:cgImage scale:uiImage.scale orientation:uiImage.imageOrientation];
+        } else {
+            outputImage = [UIImage imageWithCGImage:cgImage];
+        }
 
         CGImageRelease(cgImage);
 
