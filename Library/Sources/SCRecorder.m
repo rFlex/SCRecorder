@@ -80,8 +80,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _lastAudioBuffer = [SCSampleBufferHolder new];
         _maxRecordDuration = kCMTimeInvalid;
         _resetZoomOnChangeDevice = YES;
-        _mirrorOnFrontCamera = NO;
-        
+		_mirrorOnFrontCamera = NO;
+		_automaticallyConfiguresApplicationAudioSession = YES;
+		
         self.device = AVCaptureDevicePositionBack;
         _videoConfiguration = [SCVideoConfiguration new];
         _audioConfiguration = [SCAudioConfiguration new];
@@ -299,6 +300,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     }
     
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
+	session.automaticallyConfiguresApplicationAudioSession = self.automaticallyConfiguresApplicationAudioSession;
     _beginSessionConfigurationCount = 0;
     _captureSession = session;
     
