@@ -651,6 +651,7 @@
 				TargetAttributes = {
 					DCDC1DF21AC79592001DC3D9 = {
 						CreatedOnToolsVersion = 6.2;
+						DevelopmentTeam = 9GVZK5FM29;
 					};
 				};
 			};
@@ -963,6 +964,8 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -985,6 +988,7 @@
 				MODULEMAP_FILE = SCRecorderFramework/SCRecorder.modulemap;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_NAME = SCRecorder;
+				PROVISIONING_PROFILE = "";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1001,6 +1005,8 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -1021,6 +1027,7 @@
 				MODULEMAP_FILE = SCRecorderFramework/SCRecorder.modulemap;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_NAME = SCRecorder;
+				PROVISIONING_PROFILE = "";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
