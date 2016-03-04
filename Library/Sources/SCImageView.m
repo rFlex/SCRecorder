@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 rFlex. All rights reserved.
 //
 
+#import <CoreImage/CoreImage.h>
+#import <GLKit/GLKit.h>
 #import "SCImageView.h"
 #import "SCSampleBufferHolder.h"
 #import "SCContext.h"
