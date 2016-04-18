@@ -708,7 +708,16 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         }
         duration = computedFrameDuration;
     }
-    
+    if (videoTimeScale < 1)
+    {
+        static int counter = 0;
+        NSInteger downsampleRatio = round(1/videoTimeScale);
+        if ((counter++)%downsampleRatio != 0)
+        {
+            completion(NO);
+            return;
+        }
+    }
     //    CMTime timeVideo = _lastTimeVideo;
     //    CMTime actualBufferDuration = duration;
     //
