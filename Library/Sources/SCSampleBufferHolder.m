@@ -29,4 +29,12 @@
     }
 }
 
++ (SCSampleBufferHolder *)sampleBufferHolderWithSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    SCSampleBufferHolder *sampleBufferHolder = [SCSampleBufferHolder new];
+    
+    sampleBufferHolder.sampleBuffer = sampleBuffer;
+    
+    return sampleBufferHolder;
+}
+
 @end

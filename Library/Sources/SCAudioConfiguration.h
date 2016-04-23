@@ -41,6 +41,6 @@
  
  Only used in SCAssetExportSession.
  */
-@property (strong, nonatomic) AVAudioMix *audioMix;
+@property (strong, nonatomic) AVAudioMix *__nullable audioMix;
 
 @end

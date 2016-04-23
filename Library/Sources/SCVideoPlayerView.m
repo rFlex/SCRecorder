@@ -8,7 +8,6 @@
 
 #import "SCVideoPlayerView.h"
 
-
 ////////////////////////////////////////////////////////////
 // PRIVATE DEFINITION
 /////////////////////
@@ -30,7 +29,7 @@
 	self = [super init];
 	
 	if (self) {
-		[self commonInit];
+        [self _commonInit:nil];
 	}
 	
 	return self;
@@ -40,8 +39,7 @@
     self = [super init];
     
     if (self) {
-        _player = thePlayer;
-        [self commonInit];
+        [self _commonInit:thePlayer];
     }
     
     return self;
@@ -58,21 +56,26 @@
 	self = [super initWithCoder:aDecoder];
 	
 	if (self) {
-		[self commonInit];
+        [self _commonInit:nil];
 	}
 	
 	return self;
 }
 
-- (void)commonInit {
-    self.SCImageViewEnabled = NO;
-    
-    if (_player == nil && [SCVideoPlayerView autoCreatePlayerWhenNeeded]) {
-        self.player = [SCPlayer player];
-        _holdPlayer = YES;
+- (void)_commonInit:(SCPlayer *)player {
+    _playerLayer = [AVPlayerLayer new];
+    [self.layer insertSublayer:_playerLayer atIndex:0];
+
+    BOOL holdPlayer = NO;
+    if (player == nil && [SCVideoPlayerView autoCreatePlayerWhenNeeded]) {
+        player = [SCPlayer player];
+        holdPlayer = YES;
     }
+    self.player = player;
+    _holdPlayer = holdPlayer;
     
 	self.clipsToBounds = YES;
+    [self setNeedsLayout];
 }
 
 - (void)tapOrPause {
@@ -93,7 +96,7 @@
     }
 }
 
-- (void) layoutSubviews {
+- (void)layoutSubviews {
 	[super layoutSubviews];
 	
     _playerLayer.frame = self.bounds;
@@ -119,45 +122,12 @@
 
 - (void)setPlayer:(SCPlayer *)player {
     if (player != _player) {
-        _player.CIImageRenderer = nil;
-        
         _player = player;
         
-        _player.CIImageRenderer = _SCImageView;
         _playerLayer.player = player;
         
         _holdPlayer = NO;
     }
-}
-
-- (void)setSCImageViewEnabled:(BOOL)SCImageViewEnabled {
-    _SCImageViewEnabled = SCImageViewEnabled;
-    
-    if (SCImageViewEnabled) {
-        if (_playerLayer != nil) {
-            [_playerLayer removeFromSuperlayer];
-            _playerLayer.player = nil;
-            _playerLayer = nil;
-        }
-        
-        if (_SCImageView == nil) {
-            _SCImageView = [SCImageView new];
-            [self insertSubview:_SCImageView atIndex:0];
-            _player.CIImageRenderer = _SCImageView;
-        }
-    } else {
-        if (_SCImageView != nil) {
-            [_SCImageView removeFromSuperview];
-            _SCImageView = nil;
-            _player.CIImageRenderer = nil;
-        }
-        if (_playerLayer == nil) {
-            _playerLayer = [AVPlayerLayer new];
-            [self.layer insertSublayer:_playerLayer atIndex:0];
-        }
-    }
-    
-    [self setNeedsLayout];
 }
 
 static BOOL _autoCreatePlayerWhenNeeded = YES;

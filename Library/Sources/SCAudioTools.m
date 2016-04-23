@@ -19,7 +19,10 @@
 	
     UInt32 doSetProperty = 1;
     
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     AudioSessionSetProperty (kAudioSessionProperty_OverrideCategoryMixWithOthers, sizeof(doSetProperty), &doSetProperty);
+#pragma clang diagnostic pop
 }
 #endif
 

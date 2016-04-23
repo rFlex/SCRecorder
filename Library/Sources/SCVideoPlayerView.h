@@ -14,29 +14,28 @@
 
 @protocol SCVideoPlayerViewDelegate <NSObject>
 
-- (void)videoPlayerViewTappedToPlay:(SCVideoPlayerView *)videoPlayerView;
+- (void)videoPlayerViewTappedToPlay:(SCVideoPlayerView *__nonnull)videoPlayerView;
 
-- (void)videoPlayerViewTappedToPause:(SCVideoPlayerView *)videoPlayerView;
+- (void)videoPlayerViewTappedToPause:(SCVideoPlayerView *__nonnull)videoPlayerView;
 
 @end
 
 @interface SCVideoPlayerView : UIView
 
-@property (weak, nonatomic) id<SCVideoPlayerViewDelegate> delegate;
-
-@property (strong, nonatomic) SCPlayer *player;
+/**
+ The delegate
+ */
+@property (weak, nonatomic) IBOutlet __nullable id<SCVideoPlayerViewDelegate> delegate;
 
 /**
- The underlying AVPlayerLayer used for displaying the video. This property
- will be set only if SCImageViewEnabled if false.
+ The player this SCVideoPlayerView show
  */
-@property (readonly, nonatomic) AVPlayerLayer *playerLayer;
+@property (strong, nonatomic) SCPlayer *__nullable player;
 
 /**
- The underlying SCImageView used for displaying the video. This property
- will be set only if SCImageViewEnabled is true.
+ The underlying AVPlayerLayer used for displaying the video.
  */
-@property (readonly, nonatomic) SCImageView *SCImageView;
+@property (readonly, nonatomic) AVPlayerLayer *__nullable playerLayer;
 
 /**
  If enabled, tapping on the view will pause/unpause the player.
@@ -44,16 +43,9 @@
 @property (assign, nonatomic) BOOL tapToPauseEnabled;
 
 /**
- Whether it should create and use an SCImageView for displaying the frames.
- If false (the default), the SCVideoPlayerView will use the default Apple provided
- AVPlayerLayer for rendering fhe frames.
- */
-@property (assign, nonatomic) BOOL SCImageViewEnabled;
-
-/**
  Init the SCVideoPlayerView with a provided SCPlayer.
  */
-- (id)initWithPlayer:(SCPlayer *)player;
+- (nonnull instancetype)initWithPlayer:(SCPlayer *__nonnull)player;
 
 /**
  Set whether every new instances of SCVideoPlayerView should automatically create

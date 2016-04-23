@@ -21,11 +21,11 @@
  If set, every other properties but "enabled" will be ignored
  and this options dictionary will be used instead.
  */
-@property (copy, nonatomic) NSDictionary *options;
+@property (copy, nonatomic) NSDictionary *__nullable options;
 
 /**
  Returns the output settings for the 
  */
-- (NSDictionary *)createOutputSettings;
+- (NSDictionary *__nonnull)createOutputSettings;
 
 @end

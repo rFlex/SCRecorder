@@ -13,4 +13,6 @@
 
 @property (assign, nonatomic) CMSampleBufferRef sampleBuffer;
 
++ (SCSampleBufferHolder *)sampleBufferHolderWithSampleBuffer:(CMSampleBufferRef)sampleBuffer;
+
 @end

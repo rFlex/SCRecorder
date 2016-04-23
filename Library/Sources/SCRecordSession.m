@@ -10,22 +10,21 @@
 #import "SCRecordSession_Internal.h"
 #import "SCRecorder.h"
 
-// These are sets in defines to avoid repeated method calls
-//#define CAN_HANDLE_AUDIO (_recorderHasAudio && !_shouldIgnoreAudio && !_audioInitializationFailed)
-//#define CAN_HANDLE_VIDEO (_recorderHasVideo && !_shouldIgnoreVideo && !_videoInitializationFailed)
-//#define IS_WAITING_AUDIO (CAN_HANDLE_AUDIO && !_currentSegmentHasAudio)
-//#define IS_WAITING_VIDEO (CAN_HANDLE_VIDEO && !_currentSegmentHasVideo)
-
 #pragma mark - Private definition
 
-NSString *SCRecordSessionSegmentFilenamesKey = @"RecordSegmentFilenames";
-NSString *SCRecordSessionDurationKey = @"Duration";
-NSString *SCRecordSessionIdentifierKey = @"Identifier";
-NSString *SCRecordSessionDateKey = @"Date";
-NSString *SCRecordSessionDirectoryKey = @"Directory";
+NSString * const SCRecordSessionSegmentFilenamesKey = @"RecordSegmentFilenames";
+NSString * const SCRecordSessionSegmentsKey = @"Segments";
+NSString * const SCRecordSessionSegmentFilenameKey = @"Filename";
+NSString * const SCRecordSessionSegmentInfoKey = @"Info";
 
-NSString *SCRecordSessionTemporaryDirectory = @"TemporaryDirectory";
-NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
+NSString * const SCRecordSessionDurationKey = @"Duration";
+NSString * const SCRecordSessionIdentifierKey = @"Identifier";
+NSString * const SCRecordSessionDateKey = @"Date";
+NSString * const SCRecordSessionDirectoryKey = @"Directory";
+
+NSString * const SCRecordSessionTemporaryDirectory = @"TemporaryDirectory";
+NSString * const SCRecordSessionCacheDirectory = @"CacheDirectory";
+NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
 @implementation SCRecordSession
 
@@ -35,25 +34,50 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     if (self) {
         NSString *directory = dictionaryRepresentation[SCRecordSessionDirectoryKey];
         if (directory != nil) {
-            _recordSegmentsDirectory = directory;
+            _segmentsDirectory = directory;
         }
         
         NSArray *recordSegments = [dictionaryRepresentation objectForKey:SCRecordSessionSegmentFilenamesKey];
         
-        int i = 0;
         BOOL shouldRecomputeDuration = NO;
-        for (NSString *recordSegment in recordSegments) {
-            NSURL *url = [SCRecordSession recordSegmentURLForFilename:recordSegment andDirectory:_recordSegmentsDirectory];
+        
+        // OLD WAY
+        for (NSObject *recordSegment in recordSegments) {
+            NSString *filename = nil;
+            NSDictionary *info = nil;
+            if ([recordSegment isKindOfClass:[NSDictionary class]]) {
+                filename = ((NSDictionary *)recordSegment)[SCRecordSessionSegmentFilenameKey];
+                info = ((NSDictionary *)recordSegment)[SCRecordSessionSegmentInfoKey];
+            } else if ([recordSegment isKindOfClass:[NSString class]]) {
+                // EVEN OLDER WAY
+                filename = (NSString *)recordSegment;
+            }
+            
+            NSURL *url = [SCRecordSessionSegment segmentURLForFilename:filename andDirectory:_segmentsDirectory];
             
             if ([[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
-                [_recordSegments addObject:url];
+                [_segments addObject:[SCRecordSessionSegment segmentWithURL:url info:info]];
             } else {
-                NSLog(@"Skipping record segment %d: File does not exist", i);
+                NSLog(@"Skipping record segment %@: File does not exist", url);
                 shouldRecomputeDuration = YES;
             }
-            i++;
         }
-        _currentSegmentCount = i;
+        
+        // NEW WAY
+        NSArray *segments = [dictionaryRepresentation objectForKey:SCRecordSessionSegmentsKey];
+        for (NSDictionary *segmentDictRepresentation in segments) {
+            SCRecordSessionSegment *segment = [[SCRecordSessionSegment alloc] initWithDictionaryRepresentation:segmentDictRepresentation directory:_segmentsDirectory];
+            
+            if (segment.fileUrlExists) {
+                [_segments addObject:segment];
+            } else {
+                NSLog(@"Skipping record segment %@: File does not exist", segment.url);
+                shouldRecomputeDuration = YES;
+            }
+        }
+
+        
+        _currentSegmentCount = (int)_segments.count;
         
         NSNumber *recordDuration = [dictionaryRepresentation objectForKey:SCRecordSessionDurationKey];
         if (recordDuration != nil) {
@@ -63,7 +87,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         }
         
         if (shouldRecomputeDuration) {
-            _segmentsDuration = self.assetRepresentingRecordSegments.duration;
+            _segmentsDuration = self.assetRepresentingSegments.duration;
             
             if (CMTIME_IS_INVALID(_segmentsDuration)) {
                 NSLog(@"Unable to set the segments duration: one or most input assets are invalid");
@@ -81,8 +105,8 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 - (id)init {
     self = [super init];
     
-    if (self) {        
-        _recordSegments = [[NSMutableArray alloc] init];
+    if (self) {
+        _segments = [[NSMutableArray alloc] init];
         
         _assetWriter = nil;
         _videoInput = nil;
@@ -95,26 +119,25 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         _currentSegmentDuration = kCMTimeZero;
         _segmentsDuration = kCMTimeZero;
         _date = [NSDate date];
-        _recordSegmentsDirectory = SCRecordSessionTemporaryDirectory;
-        _identifier = [NSString stringWithFormat:@"%ld", (long)[_date timeIntervalSince1970]];
+        _segmentsDirectory = SCRecordSessionTemporaryDirectory;
+        _identifier = [NSString stringWithFormat:@"%@-", [SCRecordSession newIdentifier:12]];
+        _audioQueue = dispatch_queue_create("me.corsin.SCRecorder.Audio", nil);
     }
     
     return self;
 }
 
-+ (NSURL *)recordSegmentURLForFilename:(NSString *)filename andDirectory:(NSString *)directory {
-    NSURL *directoryUrl = nil;
+
++ (NSString *)newIdentifier:(NSUInteger)length {
+    static NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     
-    if ([SCRecordSessionTemporaryDirectory isEqualToString:directory]) {
-        directoryUrl = [NSURL fileURLWithPath:NSTemporaryDirectory()];
-    } else if ([SCRecordSessionCacheDirectory isEqualToString:directory]) {
-        NSArray *myPathList = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-        directoryUrl = [NSURL fileURLWithPath:myPathList.firstObject];
-    } else {
-        directoryUrl = [NSURL fileURLWithPath:directory];
+    NSMutableString *randomString = [NSMutableString stringWithCapacity:length];
+    
+    for (int i = 0; i < length; i++) {
+        [randomString appendFormat: @"%C", [letters characterAtIndex: arc4random_uniform((u_int32_t)[letters length])]];
     }
     
-    return [directoryUrl URLByAppendingPathComponent:filename];
+    return randomString;
 }
 
 + (id)recordSession {
@@ -129,13 +152,13 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return [NSError errorWithDomain:@"SCRecordSession" code:200 userInfo:@{NSLocalizedDescriptionKey : errorDescription}];
 }
 
-- (void)_dispatchSynchronouslyOnSafeQueue:(void(^)())block {
+- (void)dispatchSyncOnSessionQueue:(void(^)())block {
     SCRecorder *recorder = self.recorder;
     
-    if (recorder == nil || [SCRecorder isRecordSessionQueue]) {
+    if (recorder == nil || [SCRecorder isSessionQueue]) {
         block();
     } else {
-        dispatch_sync(recorder.recordSessionQueue, block);
+        dispatch_sync(recorder.sessionQueue, block);
     }
 }
 
@@ -144,29 +167,45 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     [[NSFileManager defaultManager] removeItemAtPath:fileUrl.path error:&error];
 }
 
+- (void)removeSegment:(SCRecordSessionSegment *)segment {
+    [self dispatchSyncOnSessionQueue:^{
+        NSUInteger index = [_segments indexOfObject:segment];
+        if (index != NSNotFound) {
+            [self removeSegmentAtIndex:index deleteFile:NO];
+        }
+    }];
+}
+
 - (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        NSURL *fileUrl = [_recordSegments objectAtIndex:segmentIndex];
-        CMTime segmentDuration = [(AVAsset *)[AVAsset assetWithURL:fileUrl] duration];
-        [_recordSegments removeObjectAtIndex:segmentIndex];
+    [self dispatchSyncOnSessionQueue:^{
+        SCRecordSessionSegment *segment = [_segments objectAtIndex:segmentIndex];
+        [_segments removeObjectAtIndex:segmentIndex];
+        
+        CMTime segmentDuration = segment.duration;
         
         if (CMTIME_IS_VALID(segmentDuration)) {
+//            NSLog(@"Removed duration of %fs", CMTimeGetSeconds(segmentDuration));
             _segmentsDuration = CMTimeSubtract(_segmentsDuration, segmentDuration);
         } else {
-            NSLog(@"Removed invalid segment index %d. Recomputing duration manually", (int)segmentIndex);
-            _segmentsDuration = self.assetRepresentingRecordSegments.duration;
+            CMTime newDuration = kCMTimeZero;
+            for (SCRecordSessionSegment *segment in _segments) {
+                if (CMTIME_IS_VALID(segment.duration)) {
+                    newDuration = CMTimeAdd(newDuration, segment.duration);
+                }
+            }
+            _segmentsDuration = newDuration;
         }
         
         if (deleteFile) {
-            [self removeFile:fileUrl];
+            [segment deleteFile];
         }
     }];
 }
 
 - (void)removeLastSegment {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        if (_recordSegments.count > 0) {
-            [self removeSegmentAtIndex:_recordSegments.count - 1 deleteFile:YES];
+    [self dispatchSyncOnSessionQueue:^{
+        if (_segments.count > 0) {
+            [self removeSegmentAtIndex:_segments.count - 1 deleteFile:YES];
         }
     }];
 }
@@ -176,13 +215,13 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 }
 
 - (void)removeAllSegments:(BOOL)removeFiles {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        while (_recordSegments.count > 0) {
+    [self dispatchSyncOnSessionQueue:^{
+        while (_segments.count > 0) {
             if (removeFiles) {
-                NSURL *fileUrl = [_recordSegments objectAtIndex:0];
-                [self removeFile:fileUrl];
+                SCRecordSessionSegment *segment = [_segments objectAtIndex:0];
+                [segment deleteFile];
             }
-            [_recordSegments removeObjectAtIndex:0];
+            [_segments removeObjectAtIndex:0];
         }
         
         _segmentsDuration = kCMTimeZero;
@@ -234,6 +273,28 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return nil;
 }
 
+- (NSURL *)nextFileURL:(NSError **)error {
+    NSString *extension = [self _suggestedFileExtension];
+
+    if (extension != nil) {
+        NSString *filename = [NSString stringWithFormat:@"%@SCVideo.%d.%@", _identifier, _currentSegmentCount, extension];
+        NSURL *file = [SCRecordSessionSegment segmentURLForFilename:filename andDirectory:self.segmentsDirectory];
+        
+        [self removeFile:file];
+        
+        _currentSegmentCount++;
+        
+        return file;
+
+    } else {
+        if (error != nil) {
+            *error = [SCRecordSession createError:[NSString stringWithFormat:@"Unable to find an extension"]];
+        }
+
+        return nil;
+    }
+}
+
 - (AVAssetWriter *)createWriter:(NSError **)error {
     NSError *theError = nil;
     AVAssetWriter *writer = nil;
@@ -241,18 +302,12 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     NSString *fileType = [self _suggestedFileType];
     
     if (fileType != nil) {
-        NSString *extension = [self _suggestedFileExtension];
-        if (extension != nil) {
-            NSString *filename = [NSString stringWithFormat:@"%@SCVideo.%d.%@", _identifier, _currentSegmentCount, extension];
-            NSURL *file = [SCRecordSession recordSegmentURLForFilename:filename andDirectory:self.recordSegmentsDirectory];
-            
-            [self removeFile:file];
-            
-            writer = [[AVAssetWriter alloc] initWithURL:file fileType:fileType error:&theError];
-        } else {
-            theError = [SCRecordSession createError:[NSString stringWithFormat:@"Unable to figure out an extension using file type %@", fileType]];
-        }
+        NSURL *file = [self nextFileURL:&theError];
         
+        if (file != nil) {
+            writer = [[AVAssetWriter alloc] initWithURL:file fileType:fileType error:&theError];
+            writer.metadata = [SCRecorderTools assetWriterMetadata];
+        }
     } else {
         theError = [SCRecordSession createError:@"No fileType has been set in the SCRecordSession"];
     }
@@ -278,8 +333,8 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
         
         if ([writer startWriting]) {
             //                NSLog(@"Starting session at %fs", CMTimeGetSeconds(_lastTime));
-            [writer startSessionAtSourceTime:kCMTimeZero];
-            _timeOffset = kCMTimeInvalid;
+            _timeOffset = kCMTimeZero;
+            _sessionStartTime = kCMTimeInvalid;
             //                _sessionStartedTime = _lastTime;
             //                _currentRecordDurationWithoutCurrentSegment = _currentRecordDuration;
             _recordSegmentReady = YES;
@@ -287,8 +342,6 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
             theError = writer.error;
             writer = nil;
         }
-        
-        _currentSegmentCount++;
     }
     
     if (error != nil) {
@@ -298,69 +351,53 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return writer;
 }
 
-+ (NSInteger)getBitsPerSecondForOutputVideoSize:(CGSize)size andBitsPerPixel:(Float32)bitsPerPixel {
-    int numPixels = size.width * size.height;
-    
-    return (NSInteger)((Float32)numPixels * bitsPerPixel);
+- (void)deinitialize {
+    [self dispatchSyncOnSessionQueue:^{
+        [self endSegmentWithInfo:nil completionHandler:nil];
+        
+        _audioConfiguration = nil;
+        _videoConfiguration = nil;
+        _audioInitializationFailed = NO;
+        _videoInitializationFailed = NO;
+        _videoInput = nil;
+        _audioInput = nil;
+        _videoPixelBufferAdaptor = nil;
+    }];
 }
 
-- (void)uninitialize {
-    [self endRecordSegment:nil];
-
-    _audioConfiguration = nil;
-    _videoConfiguration = nil;
-    _audioInitializationFailed = NO;
-    _videoInitializationFailed = NO;
-    _videoInput = nil;
-    _audioInput = nil;
-    _videoPixelBufferAdaptor = nil;
-}
-
-- (void)initializeVideo:(NSDictionary *)videoSettings error:(NSError *__autoreleasing *)error {
+- (void)initializeVideo:(NSDictionary *)videoSettings formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError *__autoreleasing *)error {
     NSError *theError = nil;
     @try {
         _videoConfiguration = self.recorder.videoConfiguration;
-        _videoInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
+        _videoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings sourceFormatHint:formatDescription];
         _videoInput.expectsMediaDataInRealTime = YES;
         _videoInput.transform = _videoConfiguration.affineTransform;
         
-        SCFilterGroup *filterGroup = _videoConfiguration.filterGroup;
-        if (filterGroup != nil) {
-            NSDictionary *pixelBufferAttributes = @{
-                                                    (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
-                                                    (id)kCVPixelBufferWidthKey : videoSettings[AVVideoWidthKey],
-                                                    (id)kCVPixelBufferHeightKey : videoSettings[AVVideoHeightKey]
+        CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
+        
+        NSDictionary *pixelBufferAttributes = @{
+                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
+                                                (id)kCVPixelBufferWidthKey : [NSNumber numberWithInt:dimensions.width],
+                                                (id)kCVPixelBufferHeightKey : [NSNumber numberWithInt:dimensions.height]
                                                     };
-            
-            _videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
-            
-            if (_CIContext == nil) {
-                NSDictionary *options = @{ kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null] };
-                
-                _CIContext = [CIContext contextWithEAGLContext:[[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2] options:options];
-            }
-        } else {
-            _CIContext = nil;
-        }
-    }
-    @catch (NSException *exception) {
+        
+        _videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
+    } @catch (NSException *exception) {
         theError = [SCRecordSession createError:exception.reason];
     }
     
     _videoInitializationFailed = theError != nil;
-    
-
     
     if (error != nil) {
         *error = theError;
     }
 }
 
-- (void)initializeAudio:(NSDictionary *)audioSettings error:(NSError *__autoreleasing *)error {
+- (void)initializeAudio:(NSDictionary *)audioSettings formatDescription:(CMFormatDescriptionRef)formatDescription error:(NSError *__autoreleasing *)error {
     NSError *theError = nil;
     @try {
         _audioConfiguration = self.recorder.audioConfiguration;
-        _audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioSettings];
+        _audioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioSettings sourceFormatHint:formatDescription];
         _audioInput.expectsMediaDataInRealTime = YES;
     } @catch (NSException *exception) {
         theError = [SCRecordSession createError:exception.reason];
@@ -373,40 +410,17 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     }
 }
 
-- (void)addSegment:(NSURL *)fileUrl {
-    AVAsset *asset = [AVAsset assetWithURL:fileUrl];
-    CMTime duration = asset.duration;
-    
-    if (CMTIME_IS_VALID(duration)) {
-        [self _addSegment:fileUrl duration:duration];
-    } else {
-        NSLog(@"Unable to read asset at url %@", fileUrl);
-    }
-    
-}
-
-- (void)insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex {
-    AVAsset *asset = [AVAsset assetWithURL:fileUrl];
-    CMTime duration = asset.duration;
-    
-    if (CMTIME_IS_VALID(duration)) {
-        [self _insertSegment:fileUrl atIndex:segmentIndex duration:duration];
-    } else {
-        NSLog(@"Unable to read asset at url %@", fileUrl);
-    }
-}
-
-- (void)_addSegment:(NSURL *)fileUrl duration:(CMTime)duration {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        [_recordSegments addObject:fileUrl];
-        _segmentsDuration = CMTimeAdd(_segmentsDuration, duration);
+- (void)addSegment:(SCRecordSessionSegment *)segment {
+    [self dispatchSyncOnSessionQueue:^{
+        [_segments addObject:segment];
+        _segmentsDuration = CMTimeAdd(_segmentsDuration, segment.duration);
     }];
 }
 
-- (void)_insertSegment:(NSURL *)fileUrl atIndex:(NSInteger)segmentIndex duration:(CMTime)duration{
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        [_recordSegments insertObject:fileUrl atIndex:segmentIndex];
-        _segmentsDuration = CMTimeAdd(_segmentsDuration, duration);
+- (void)insertSegment:(SCRecordSessionSegment *)segment atIndex:(NSInteger)segmentIndex {
+    [self dispatchSyncOnSessionQueue:^{
+        [_segments insertObject:segment atIndex:segmentIndex];
+        _segmentsDuration = CMTimeAdd(_segmentsDuration, segment.duration);
     }];
 }
 
@@ -416,7 +430,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 - (CMSampleBufferRef)adjustBuffer:(CMSampleBufferRef)sample withTimeOffset:(CMTime)offset andDuration:(CMTime)duration {
     CMItemCount count;
     CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
-    CMSampleTimingInfo* pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
+    CMSampleTimingInfo *pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
     CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
     
     for (CMItemCount i = 0; i < count; i++) {
@@ -431,10 +445,11 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return sout;
 }
 
-- (void)beginRecordSegment:(NSError**)error {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
+- (void)beginSegment:(NSError**)error {
+    [self dispatchSyncOnSessionQueue:^{
         if (_assetWriter == nil) {
             _assetWriter = [self createWriter:error];
+            _currentSegmentDuration = kCMTimeZero;
             _currentSegmentHasAudio = NO;
             _currentSegmentHasVideo = NO;
         } else {
@@ -450,118 +465,155 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     _currentSegmentHasVideo = NO;
     _assetWriter = nil;
     _lastTimeAudio = kCMTimeInvalid;
+    _lastTimeVideo = kCMTimeInvalid;
     _currentSegmentDuration = kCMTimeZero;
+    _sessionStartTime = kCMTimeInvalid;
+    _movieFileOutput = nil;
 }
 
-- (void)endRecordSegment:(void(^)(NSInteger segmentNumber, NSError* error))completionHandler {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        if (_recordSegmentReady) {
-            _recordSegmentReady = NO;
-            
-            AVAssetWriter *writer = _assetWriter;
-            SCRecorder *recorder = self.recorder;
-            
-            BOOL currentSegmentEmpty = (!_currentSegmentHasVideo && recorder.videoEnabledAndReady) || (!_currentSegmentHasAudio && recorder.audioEnabledAndReady);
-            
-            if (currentSegmentEmpty) {
-                [writer cancelWriting];
-                [self _destroyAssetWriter];
-                
-                [self removeFile:writer.outputURL];
-                
-                if (completionHandler != nil) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        completionHandler(-1, nil);
-                    });
-                }
-            } else {
-//                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_currentSegmentDuration));
-                [writer endSessionAtSourceTime:_currentSegmentDuration];
-                
-                [writer finishWritingWithCompletionHandler: ^{
-                    [self _dispatchSynchronouslyOnSafeQueue:^{
-                        NSInteger segmentNumber = -1;
-                        
-                        if (writer.error == nil) {
-                            segmentNumber = _recordSegments.count;
-                            [self _addSegment:writer.outputURL duration:_currentSegmentDuration];
-                        }
-                        
-                        [self _destroyAssetWriter];
-                        
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            if (completionHandler != nil) {
-                                completionHandler(segmentNumber, writer.error);
-                            }
-                        });
-                    }];
-                    
-                }];
-            }
-        } else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionHandler != nil) {
-                    completionHandler(-1, [SCRecordSession createError:@"The current record segment is not ready for this operation"]);
-                }
-            });
+- (void)appendRecordSegmentUrl:(NSURL *)url info:(NSDictionary *)info error:(NSError *)error completionHandler:(void (^)(SCRecordSessionSegment *, NSError *))completionHandler {
+    [self dispatchSyncOnSessionQueue:^{
+        SCRecordSessionSegment *segment = nil;
+        
+        if (error == nil) {
+            segment = [SCRecordSessionSegment segmentWithURL:url info:info];
+            [self addSegment:segment];
         }
+        
+        [self _destroyAssetWriter];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completionHandler != nil) {
+                completionHandler(segment, error);
+            }
+        });
     }];
 }
 
-- (void)mergeRecordSegmentsUsingPreset:(NSString *)exportSessionPreset completionHandler:(void(^)(NSURL *outputUrl, NSError *error))completionHandler {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        NSString *fileType = [self _suggestedFileType];
-        
-        if (fileType == nil) {
-            if (completionHandler != nil) {
+- (BOOL)endSegmentWithInfo:(NSDictionary *)info completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler {
+    __block BOOL success = NO;
+    
+    [self dispatchSyncOnSessionQueue:^{
+        dispatch_sync(_audioQueue, ^{
+            if (_recordSegmentReady) {
+                _recordSegmentReady = NO;
+                success = YES;
+                
+                AVAssetWriter *writer = _assetWriter;
+                
+                if (writer != nil) {
+                    BOOL currentSegmentEmpty = (!_currentSegmentHasVideo && !_currentSegmentHasAudio);
+                    
+                    if (currentSegmentEmpty) {
+                        [writer cancelWriting];
+                        [self _destroyAssetWriter];
+                        
+                        [self removeFile:writer.outputURL];
+                        
+                        if (completionHandler != nil) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                completionHandler(nil, nil);
+                            });
+                        }
+                    } else {
+                        //                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_currentSegmentDuration));
+                        [writer endSessionAtSourceTime:CMTimeAdd(_currentSegmentDuration, _sessionStartTime)];
+
+                        [writer finishWritingWithCompletionHandler: ^{
+                            [self appendRecordSegmentUrl:writer.outputURL info:info error:writer.error completionHandler:completionHandler];
+                        }];
+                    }
+                } else {
+                    [_movieFileOutput stopRecording];
+                }
+            } else {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(nil, [SCRecordSession createError:@"No output fileType was set"]);
+                    if (completionHandler != nil) {
+                        completionHandler(nil, [SCRecordSession createError:@"The current record segment is not ready for this operation"]);
+                    }
                 });
             }
+        });
+    }];
+    
+    return success;
+}
+
+- (void)notifyMovieFileOutputIsReady {
+    _recordSegmentReady = YES;
+}
+
+- (void)beginRecordSegmentUsingMovieFileOutput:(AVCaptureMovieFileOutput *)movieFileOutput error:(NSError *__autoreleasing *)error delegate:(id<AVCaptureFileOutputRecordingDelegate>)delegate {
+    NSURL *url = [self nextFileURL:error];
+    
+    if (url != nil) {
+        _movieFileOutput = movieFileOutput;
+        _movieFileOutput.metadata = [SCRecorderTools assetWriterMetadata];
+                
+        if (movieFileOutput.isRecording) {
+            [NSException raise:@"AlreadyRecordingException" format:@"The MovieFileOutput is already recording"];
+        }
+        
+        _recordSegmentReady = NO;
+        [movieFileOutput startRecordingToOutputFileURL:url recordingDelegate:delegate];
+    }
+}
+
+- (AVAssetExportSession *)mergeSegmentsUsingPreset:(NSString *)exportSessionPreset completionHandler:(void(^)(NSURL *outputUrl, NSError *error))completionHandler {
+    __block AVAsset *asset = nil;
+    __block NSError *error = nil;
+    __block NSString *fileType = nil;
+    __block NSURL *outputUrl = nil;
+
+    [self dispatchSyncOnSessionQueue:^{
+        fileType = [self _suggestedFileType];
+        
+        if (fileType == nil) {
+            error = [SCRecordSession createError:@"No output fileType was set"];
             return;
         }
         
         NSString *fileExtension = [self _suggestedFileExtension];
         if (fileExtension == nil) {
-            if (completionHandler != nil) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(nil, [SCRecordSession createError:@"Unable to figure out a file extension"]);
-                });
-            }
+            error = [SCRecordSession createError:@"Unable to figure out a file extension"];
             return;
         }
         
         NSString *filename = [NSString stringWithFormat:@"%@SCVideo-Merged.%@", _identifier, fileExtension];
-        NSURL *outputUrl = [SCRecordSession recordSegmentURLForFilename:filename andDirectory:_recordSegmentsDirectory];
+        outputUrl = [SCRecordSessionSegment segmentURLForFilename:filename andDirectory:_segmentsDirectory];
         [self removeFile:outputUrl];
 
-        if (_recordSegments.count == 0) {
-            if (completionHandler != nil) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(nil, [SCRecordSession createError:@"The session does not contains any record segment"]);
-                });
-            }
+        if (_segments.count == 0) {
+            error = [SCRecordSession createError:@"The session does not contains any record segment"];
         } else {
-            AVAsset *asset = [self assetRepresentingRecordSegments];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:asset presetName:exportSessionPreset];
-                exportSession.outputURL = outputUrl;
-                exportSession.outputFileType = fileType;
-                exportSession.shouldOptimizeForNetworkUse = YES;
-                [exportSession exportAsynchronouslyWithCompletionHandler:^{
-                    NSError *error = exportSession.error;
-                    
-                    if (completionHandler != nil) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            completionHandler(outputUrl, error);
-                        });
-                    }
-                }];
-            });
-
+            asset = [self assetRepresentingSegments];
         }
     }];
+
+    if (error != nil) {
+        if (completionHandler != nil) {
+            completionHandler(nil, error);
+        }
+
+        return nil;
+    } else {
+        AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:asset presetName:exportSessionPreset];
+        exportSession.outputURL = outputUrl;
+        exportSession.outputFileType = fileType;
+        exportSession.shouldOptimizeForNetworkUse = YES;
+        [exportSession exportAsynchronouslyWithCompletionHandler:^{
+            NSError *error = exportSession.error;
+
+            if (completionHandler != nil) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionHandler(outputUrl, error);
+                });
+            }
+        }];
+
+        return exportSession;
+
+    }
 }
 
 - (void)finishEndSession:(NSError*)mergeError completionHandler:(void (^)(NSError *))completionHandler {
@@ -578,14 +630,14 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 }
 
 - (void)cancelSession:(void (^)())completionHandler {
-    [self _dispatchSynchronouslyOnSafeQueue:^{
+    [self dispatchSyncOnSessionQueue:^{
         if (_assetWriter == nil) {
             [self removeAllSegments];
             if (completionHandler != nil) {
                 completionHandler();
             }
         } else {
-            [self endRecordSegment:^(NSInteger segmentIndex, NSError *error) {
+            [self endSegmentWithInfo:nil completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
                 [self removeAllSegments];
                 if (completionHandler != nil) {
                     completionHandler();
@@ -595,92 +647,91 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     }];
 }
 
-- (BOOL)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer {
-    if ([_audioInput isReadyForMoreMediaData]) {
-        CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer);
-        
-        if (CMTIME_IS_INVALID(_timeOffset)) {
-            _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
-        }
-        
-        CMTime duration = CMSampleBufferGetDuration(audioSampleBuffer);
-        CMSampleBufferRef adjustedBuffer = [self adjustBuffer:audioSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
-        
-        CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
-        CMTime lastTimeAudio = CMTimeAdd(presentationTime, duration);
-        
-        if (CMTIME_COMPARE_INLINE(presentationTime, >=, kCMTimeZero)) {
+- (CVPixelBufferRef)createPixelBuffer {
+    CVPixelBufferRef outputPixelBuffer = nil;
+    CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelBufferAdaptor pixelBufferPool], &outputPixelBuffer);
+    
+    if (ret != kCVReturnSuccess) {
+        NSLog(@"UNABLE TO CREATE PIXEL BUFFER (CVReturnError: %d)", ret);
+    }
+    
+    return outputPixelBuffer;
+}
+
+- (void)appendAudioSampleBuffer:(CMSampleBufferRef)audioSampleBuffer completion:(void (^)(BOOL))completion {
+    [self _startSessionIfNeededAtTime:CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer)];
+
+    CMTime duration = CMSampleBufferGetDuration(audioSampleBuffer);
+    CMSampleBufferRef adjustedBuffer = [self adjustBuffer:audioSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
+    
+    CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
+    CMTime lastTimeAudio = CMTimeAdd(presentationTime, duration);
+
+    dispatch_async(_audioQueue, ^{
+        if ([_audioInput isReadyForMoreMediaData] && [_audioInput appendSampleBuffer:adjustedBuffer]) {
             _lastTimeAudio = lastTimeAudio;
-            
+
             if (!_currentSegmentHasVideo) {
-                _currentSegmentDuration = lastTimeAudio;
+                _currentSegmentDuration = CMTimeSubtract(lastTimeAudio, _sessionStartTime);
             }
-            
-            [_audioInput appendSampleBuffer:adjustedBuffer];
+
+            //            NSLog(@"Appending audio at %fs (buffer: %fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(actualBufferTime));
             _currentSegmentHasAudio = YES;
+
+            completion(YES);
+        } else {
+            completion(NO);
         }
-        
+
         CFRelease(adjustedBuffer);
-        return YES;
-    } else {
-        return NO;
+    });
+}
+
+- (void)_startSessionIfNeededAtTime:(CMTime)time
+{
+    if (CMTIME_IS_INVALID(_sessionStartTime)) {
+        _sessionStartTime = time;
+        [_assetWriter startSessionAtSourceTime:time];
     }
 }
 
-- (BOOL)appendVideoSampleBuffer:(CMSampleBufferRef)videoSampleBuffer duration:(CMTime)duration {
-    if ([_videoInput isReadyForMoreMediaData]) {
-        CMTime actualBufferTime = CMSampleBufferGetPresentationTimeStamp(videoSampleBuffer);
-        
-        if (CMTIME_IS_INVALID(_timeOffset)) {
-            _timeOffset = CMTimeSubtract(actualBufferTime, _currentSegmentDuration);
-//            NSLog(@"Recomputed time offset to: %fs", CMTimeGetSeconds(_timeOffset));
-        }
-        
-        CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
-        
-        CGFloat videoTimeScale = _videoConfiguration.timeScale;
-        if (videoTimeScale != 1.0) {
-            CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
-            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
-            duration = computedFrameDuration;
-        }
-        
-        if (_videoPixelBufferAdaptor != nil) {
-            CIImage *image = [CIImage imageWithCVPixelBuffer:CMSampleBufferGetImageBuffer(videoSampleBuffer)];
-            
-            CIImage *result = [_videoConfiguration.filterGroup imageByProcessingImage:image];
-            
-            CVPixelBufferRef outputPixelBuffer = nil;
-            CVPixelBufferPoolCreatePixelBuffer(NULL, [_videoPixelBufferAdaptor pixelBufferPool], &outputPixelBuffer);
-            
-            CVPixelBufferLockBaseAddress(outputPixelBuffer, 0);
-            
-            [_CIContext render:result toCVPixelBuffer:outputPixelBuffer];
-            
-            [_videoPixelBufferAdaptor appendPixelBuffer:outputPixelBuffer withPresentationTime:bufferTimestamp];
-            
-            CVPixelBufferUnlockBaseAddress(outputPixelBuffer, 0);
-            
-            CVPixelBufferRelease(outputPixelBuffer);
-        } else {
-            CMSampleBufferRef adjustedBuffer = [self adjustBuffer:videoSampleBuffer withTimeOffset:_timeOffset andDuration:kCMTimeInvalid];
-//            CMTime sampleBufferDuration = CMSampleBufferGetDuration(adjustedBuffer);
-//            CMTime startTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
-            
-//            NSLog(@"Appending sample buffer: %fs -> %fs", CMTimeGetSeconds(startTime), CMTimeGetSeconds(CMTimeAdd(sampleBufferDuration, startTime)));
-            
-            [_videoInput appendSampleBuffer:adjustedBuffer];
-            
-            CFRelease(adjustedBuffer);
-        }
+- (void)appendVideoPixelBuffer:(CVPixelBufferRef)videoPixelBuffer atTime:(CMTime)actualBufferTime duration:(CMTime)duration completion:(void (^)(BOOL))completion {
+    [self _startSessionIfNeededAtTime:actualBufferTime];
 
-        _currentSegmentDuration = CMTimeAdd(bufferTimestamp, duration);
-        
-        _currentSegmentHasVideo = YES;
-        
-        return YES;
+    CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
+
+    CGFloat videoTimeScale = _videoConfiguration.timeScale;
+    if (videoTimeScale != 1.0) {
+        CMTime computedFrameDuration = CMTimeMultiplyByFloat64(duration, videoTimeScale);
+        if (_currentSegmentDuration.value > 0) {
+            _timeOffset = CMTimeAdd(_timeOffset, CMTimeSubtract(duration, computedFrameDuration));
+        }
+        duration = computedFrameDuration;
+    }
+    
+    //    CMTime timeVideo = _lastTimeVideo;
+    //    CMTime actualBufferDuration = duration;
+    //
+    //    if (CMTIME_IS_VALID(timeVideo)) {
+    //        while (CMTIME_COMPARE_INLINE(CMTimeSubtract(actualBufferTime, timeVideo), >=, CMTimeMultiply(actualBufferDuration, 2))) {
+    //            NSLog(@"Missing buffer");
+    //            timeVideo = CMTimeAdd(timeVideo, actualBufferDuration);
+    //        }
+    //    }
+
+    if ([_videoInput isReadyForMoreMediaData]) {
+        if ([_videoPixelBufferAdaptor appendPixelBuffer:videoPixelBuffer withPresentationTime:bufferTimestamp]) {
+            _currentSegmentDuration = CMTimeSubtract(CMTimeAdd(bufferTimestamp, duration), _sessionStartTime);
+            _lastTimeVideo = actualBufferTime;
+            
+            _currentSegmentHasVideo = YES;
+            completion(YES);
+        } else {
+            NSLog(@"Failed to append buffer");
+            completion(NO);
+        }
     } else {
-        return NO;
+        completion(NO);
     }
 }
 
@@ -712,50 +763,91 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return time;
 }
 
-- (AVAsset *)assetRepresentingRecordSegments {
-    __block AVAsset *asset = nil;
-    [self _dispatchSynchronouslyOnSafeQueue:^{
-        if (_recordSegments.count == 1) {
-            asset = [AVAsset assetWithURL:_recordSegments.firstObject];
-        } else {
-            AVMutableComposition *composition = [AVMutableComposition composition];
-            AVMutableCompositionTrack *audioTrack = nil;
-            AVMutableCompositionTrack *videoTrack = nil;
+- (void)appendSegmentsToComposition:(AVMutableComposition * __nonnull)composition {
+    [self appendSegmentsToComposition:composition audioMix:nil];
+}
+
+- (void)appendSegmentsToComposition:(AVMutableComposition *)composition audioMix:(AVMutableAudioMix *)audioMix {
+    [self dispatchSyncOnSessionQueue:^{
+        AVMutableCompositionTrack *audioTrack = nil;
+        AVMutableCompositionTrack *videoTrack = nil;
+        
+        int currentSegment = 0;
+        CMTime currentTime = composition.duration;
+        for (SCRecordSessionSegment *recordSegment in _segments) {
+            AVAsset *asset = recordSegment.asset;
             
-            NSDictionary *options = @{ AVURLAssetPreferPreciseDurationAndTimingKey : @YES };
-            int currentSegment = 0;
-            CMTime currentTime = kCMTimeZero;
-            for (NSURL *recordSegment in _recordSegments) {
-                AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:recordSegment options:options];
-                
-                NSArray *audioAssetTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
-                NSArray *videoAssetTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
-                
-                CMTime maxBounds = kCMTimeInvalid;
-                
-                CMTime videoTime = currentTime;
-                for (AVAssetTrack *videoAssetTrack in videoAssetTracks) {
-                    if (videoTrack == nil) {
-                        videoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-                    }
+            NSArray *audioAssetTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
+            NSArray *videoAssetTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+            
+            CMTime maxBounds = kCMTimeInvalid;
+            
+            CMTime videoTime = currentTime;
+            for (AVAssetTrack *videoAssetTrack in videoAssetTracks) {
+                if (videoTrack == nil) {
+                    NSArray *videoTracks = [composition tracksWithMediaType:AVMediaTypeVideo];
                     
-                    videoTime = [self _appendTrack:videoAssetTrack toCompositionTrack:videoTrack atTime:videoTime withBounds:maxBounds];
-                    maxBounds = videoTime;
+                    if (videoTracks.count > 0) {
+                        videoTrack = [videoTracks firstObject];
+                    } else {
+                        videoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+                        videoTrack.preferredTransform = videoAssetTrack.preferredTransform;
+                    }
                 }
                 
-                CMTime audioTime = currentTime;
-                for (AVAssetTrack *audioAssetTrack in audioAssetTracks) {
-                    if (audioTrack == nil) {
+                videoTime = [self _appendTrack:videoAssetTrack toCompositionTrack:videoTrack atTime:videoTime withBounds:maxBounds];
+                maxBounds = videoTime;
+            }
+            
+            CMTime audioTime = currentTime;
+            for (AVAssetTrack *audioAssetTrack in audioAssetTracks) {
+                if (audioTrack == nil) {
+                    NSArray *audioTracks = [composition tracksWithMediaType:AVMediaTypeAudio];
+                    
+                    if (audioTracks.count > 0) {
+                        audioTrack = [audioTracks firstObject];
+                    } else {
                         audioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
                     }
-              
-                    audioTime = [self _appendTrack:audioAssetTrack toCompositionTrack:audioTrack atTime:audioTime withBounds:maxBounds];
                 }
                 
-                currentTime = composition.duration;
-                
-                currentSegment++;
+                audioTime = [self _appendTrack:audioAssetTrack toCompositionTrack:audioTrack atTime:audioTime withBounds:maxBounds];
             }
+            
+            currentTime = composition.duration;
+            
+            currentSegment++;
+        }
+    }];
+}
+
+- (AVPlayerItem *)playerItemRepresentingSegments {
+    __block AVPlayerItem *playerItem = nil;
+    [self dispatchSyncOnSessionQueue:^{
+        if (_segments.count == 1) {
+            SCRecordSessionSegment *segment = _segments.firstObject;
+            playerItem = [AVPlayerItem playerItemWithAsset:segment.asset];
+        } else {
+            AVMutableComposition *composition = [AVMutableComposition composition];
+            [self appendSegmentsToComposition:composition];
+
+            playerItem = [AVPlayerItem playerItemWithAsset:composition];
+        }
+    }];
+
+    return playerItem;
+}
+
+- (AVAsset *)assetRepresentingSegments {
+    __block AVAsset *asset = nil;
+    [self dispatchSyncOnSessionQueue:^{
+        if (_segments.count == 1) {
+            SCRecordSessionSegment *segment = _segments.firstObject;
+            asset = segment.asset;
+        } else {
+            AVMutableComposition *composition = [AVMutableComposition composition];
+            [self appendSegmentsToComposition:composition];
+            
             asset = composition;
         }
     }];
@@ -772,7 +864,7 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
 }
 
 - (BOOL)recordSegmentBegan {
-    return _assetWriter != nil;
+    return _assetWriter != nil || _movieFileOutput != nil;
 }
 
 - (BOOL)recordSegmentReady {
@@ -787,23 +879,27 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     return _currentSegmentHasAudio;
 }
 
-- (CMTime)currentRecordDuration {
-    return CMTimeAdd(_segmentsDuration, _currentSegmentDuration);
+- (CMTime)currentSegmentDuration {
+    return _movieFileOutput.isRecording ? _movieFileOutput.recordedDuration : _currentSegmentDuration;
+}
+
+- (CMTime)duration {
+    return CMTimeAdd(_segmentsDuration, [self currentSegmentDuration]);
 }
 
 - (NSDictionary *)dictionaryRepresentation {
     NSMutableArray *recordSegments = [NSMutableArray array];
     
-    for (NSURL *recordSegment in self.recordSegments) {
-        [recordSegments addObject:recordSegment.lastPathComponent];
+    for (SCRecordSessionSegment *recordSegment in self.segments) {
+        [recordSegments addObject:recordSegment.dictionaryRepresentation];
     }
     
     return @{
-             SCRecordSessionSegmentFilenamesKey: recordSegments,
+             SCRecordSessionSegmentsKey: recordSegments,
              SCRecordSessionDurationKey : [NSNumber numberWithDouble:CMTimeGetSeconds(_segmentsDuration)],
              SCRecordSessionIdentifierKey : _identifier,
              SCRecordSessionDateKey : _date,             
-             SCRecordSessionDirectoryKey : _recordSegmentsDirectory
+             SCRecordSessionDirectoryKey : _segmentsDirectory
              };
 }
 
@@ -821,7 +917,31 @@ NSString *SCRecordSessionCacheDirectory = @"CacheDirectory";
     
     NSString *filename = [NSString stringWithFormat:@"%@SCVideo-Merged.%@", _identifier, fileExtension];
     
-    return [SCRecordSession recordSegmentURLForFilename:filename andDirectory:_recordSegmentsDirectory];
+    return [SCRecordSessionSegment segmentURLForFilename:filename andDirectory:_segmentsDirectory];
+}
+
+- (void)setSegmentsDirectory:(NSString *)segmentsDirectory {
+    _segmentsDirectory = [segmentsDirectory copy];
+    
+    [self dispatchSyncOnSessionQueue:^{
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        for (SCRecordSessionSegment *recordSegment in self.segments) {
+            NSURL *newUrl = [SCRecordSessionSegment segmentURLForFilename:recordSegment.url.lastPathComponent andDirectory:_segmentsDirectory];
+            
+            if (![newUrl isEqual:recordSegment.url]) {
+                NSError *error = nil;
+                if ([fileManager moveItemAtURL:recordSegment.url toURL:newUrl error:&error]) {
+                    recordSegment.url = newUrl;
+                } else {
+                    NSLog(@"Unable to change segmentsDirectory for segment %@: %@", recordSegment.url, error.localizedDescription);
+                }
+            }
+        }
+    }];
+}
+
+- (BOOL)isUsingMovieFileOutput {
+    return _movieFileOutput != nil;
 }
 
 @end

@@ -43,7 +43,7 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
     }
     
     CGSize outputSize = self.size;
-    unsigned long bitrate = self.bitrate;
+    unsigned long bitrate = (unsigned long)self.bitrate;
     
     if (self.preset != nil) {
         if ([self.preset isEqualToString:SCPresetLowQuality]) {
@@ -81,6 +81,10 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
     if (self.profileLevel) {
         [compressionSettings setObject:self.profileLevel forKey:AVVideoProfileLevelKey];
     }
+//    [compressionSettings setObject:@30 forKey:AVVideoAverageNonDroppableFrameRateKey];
+    [compressionSettings setObject:@NO forKey:AVVideoAllowFrameReorderingKey];
+//    [compressionSettings setObject:AVVideoH264EntropyModeCABAC forKey:AVVideoH264EntropyModeKey];
+    [compressionSettings setObject:@30 forKey:AVVideoExpectedSourceFrameRateKey];
     
     return @{
              AVVideoCodecKey : self.codec,

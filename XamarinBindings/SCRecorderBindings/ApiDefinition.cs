@@ -22,6 +22,38 @@ using MonoTouch.GLKit;
 namespace SCorsin {
 
 	[BaseType(typeof(NSObject))]
+	interface SCRecordSessionSegment {
+
+		[Export("initWithURL:info:")]
+		IntPtr Constructor(NSUrl url, NSDictionary info);
+
+		[Export("url")]
+		NSUrl Url { get; }
+
+		[Export("asset")]
+		AVAsset Asset { get; }
+
+		[Export("duration")]
+		CMTime Duration { get; }
+
+		[Export("thumbnail")]
+		UIImage Thumbnail { get; }
+
+		[Export("lastImage")]
+		UIImage LastImage { get; }
+
+		[Export("frameRate")]
+		float FrameRate { get; }
+
+		[Export("info")]
+		NSDictionary Info { get; }
+
+		[Export("deleteFile")]
+		void DeleteFile();
+		
+	}
+
+	[BaseType(typeof(NSObject))]
 	interface SCPhotoConfiguration {
 
 		[Export("enabled")]
@@ -139,11 +171,11 @@ namespace SCorsin {
 		[Export("fileExtension"), NullAllowed]
 		NSString FileExtension { get; set; }
 
-		[Export("recordSegments")]
-		NSUrl[] RecordSegments { get; }
+		[Export("segments")]
+		SCRecordSessionSegment[] Segments { get; }
 
-		[Export("currentRecordDuration")]
-		CMTime CurrentRecordDuration { get; }
+		[Export("duration")]
+		CMTime Duration { get; }
 
 		[Export("segmentsDuration")]
 		CMTime SegmentsDuration { get; }
@@ -172,8 +204,8 @@ namespace SCorsin {
 		[Export("removeAllSegments")]
 		void RemoveAllSegments();
 
-		[Export("mergeRecordSegmentsUsingPreset:completionHandler:")]
-		void MergeRecordSegments(NSString exportSessionPreset, [NullAllowed] GenericErrorDelegate completionHandler);
+		[Export("mergeSegmentsUsingPreset:completionHandler:")]
+		void MergeSegments(NSString exportSessionPreset, [NullAllowed] GenericErrorDelegate completionHandler);
 
 		[Export("cancelSession:")]
 		void CancelSession([NullAllowed] Action completionHandler);
@@ -181,8 +213,11 @@ namespace SCorsin {
 		[Export("removeLastSegment")]
 		void RemoveLastSegment();
 
-		[Export("assetRepresentingRecordSegments")]
-		AVAsset AssetRepresentingRecordSegments { get; }
+		[Export("deinitialize")]
+		void Deinitialize();
+
+		[Export("assetRepresentingSegments")]
+		AVAsset AssetRepresentingSegments { get; }
 
 		[Export("dictionaryRepresentation")]
 		NSDictionary DictionaryRepresentation { get; }
@@ -203,9 +238,6 @@ namespace SCorsin {
 		[Export("recorder:didChangeFlashMode:error:"), Abstract, EventArgs("RecorderDidChangeFlashModeDelegate")]
 		void DidChangeFlashMode(SCRecorder recorder, int flashMode, NSError error);
 
-		[Export("recorder:didChangeSessionPreset:error:"), Abstract, EventArgs("RecorderDidChangeSessionPresetDelegate")]
-		void DidChangeSessionPreset(SCRecorder recorder, string sessionPreset, NSError error);
-
 		[Export("recorderWillStartFocus:"), Abstract, EventArgs("RecorderWillStartFocusDelegate")]
 		void WillStartFocus(SCRecorder recorder);
 
@@ -215,36 +247,38 @@ namespace SCorsin {
 		[Export("recorderDidEndFocus:"), Abstract, EventArgs("RecorderDidEndFocusDelegate")]
 		void DidEndFocus(SCRecorder recorder);
 
-		[Export("recorder:didInitializeAudioInRecordSession:error:"), Abstract, EventArgs("RecorderDidInitializeAudioInRecordSessionDelegate")]
+		[Export("recorder:didInitializeAudioInSession:error:"), Abstract, EventArgs("RecorderDidInitializeAudioInRecordSessionDelegate")]
 		void DidInitializeAudioInRecordSession(SCRecorder recorder, SCRecordSession recordSession, NSError error);
 
-		[Export("recorder:didInitializeVideoInRecordSession:error:"), Abstract, EventArgs("RecorderDidInitializeVideoInRecordSessionDelegate")]
+		[Export("recorder:didInitializeVideoInSession:error:"), Abstract, EventArgs("RecorderDidInitializeVideoInRecordSessionDelegate")]
 		void DidInitializeVideoInRecordSession(SCRecorder recorder, SCRecordSession recordSession, NSError error);
 
-		[Export("recorder:didBeginRecordSegment:error:"), Abstract, EventArgs("RecorderDidBeginRecordSegmentDelegate")]
+		[Export("recorder:didBeginSegmentInSession:error:"), Abstract, EventArgs("RecorderDidBeginRecordSegmentDelegate")]
 		void DidBeginRecordSegment(SCRecorder recorder, SCRecordSession recordSession, NSError error);
 
-		[Export("recorder:didEndRecordSegment:segmentIndex:error:"), Abstract, EventArgs("RecorderDidEndRecordSegmentDelegate")]
-		void DidEndRecordSegment(SCRecorder recorder, SCRecordSession recordSession, int segmentIndex, NSError error);
+		[Export("recorder:didCompleteSegment:inSession:error:"), Abstract, EventArgs("RecorderDidEndRecordSegmentDelegate")]
+		void DidEndRecordSegment(SCRecorder recorder, SCRecordSessionSegment segment, SCRecordSession session, NSError error);
 
-		[Export("recorder:didAppendVideoSampleBuffer:"), Abstract, EventArgs("RecorderDidAppendVideoSampleBufferDelegate")]
+		[Export("recorder:didAppendVideoSampleBufferInSession:"), Abstract, EventArgs("RecorderDidAppendVideoSampleBufferDelegate")]
 		void DidAppendVideoSampleBuffer(SCRecorder recorder, SCRecordSession recordSession);
 
-		[Export("recorder:didAppendAudioSampleBuffer:"), Abstract, EventArgs("RecorderDidAppendAudioSampleBufferDelegate")]
+		[Export("recorder:didAppendAudioSampleBufferInSession:"), Abstract, EventArgs("RecorderDidAppendAudioSampleBufferDelegate")]
 		void DidAppendAudioSampleBuffer(SCRecorder recorder, SCRecordSession recordSession);
 
-		[Export("recorder:didSkipAudioSampleBuffer:"), Abstract, EventArgs("RecorderDidSkip")]
+		[Export("recorder:didSkipAudioSampleBufferInSession:"), Abstract, EventArgs("RecorderDidSkip")]
 		void DidSkipAudioSampleBuffer(SCRecorder recorder, SCRecordSession recordSession);
 
-		[Export("recorder:didSkipVideoSampleBuffer:"), Abstract, EventArgs("RecorderDidSkip")]
+		[Export("recorder:didSkipVideoSampleBufferInSession:"), Abstract, EventArgs("RecorderDidSkip")]
 		void DidSkipVideoSampleBuffer(SCRecorder recorder, SCRecordSession recordSession);
 
-		[Export("recorder:didCompleteRecordSession:"), Abstract, EventArgs("RecorderDidCompleteRecordSessionDelegate")]
+		[Export("recorder:didCompleteSession:"), Abstract, EventArgs("RecorderDidCompleteRecordSessionDelegate")]
 		void DidCompleteRecordSession(SCRecorder recorder, SCRecordSession recordSession);
+
+		[Export("createSegmentInfoForRecorder:"), DelegateName("CreateSegmentInfoDelegate"), DefaultValue("null")]
+		NSDictionary CreateSegmentInfo(SCRecorder recorder);
 
 	}
 
-	public delegate void OpenSessionDelegate(NSError sessionError, NSError audioError, NSError videoError, NSError photoError);
 	public delegate void CapturePhotoDelegate(NSError error, UIImage image);
 
 	[BaseType(typeof(NSObject), Delegates = new string [] { "Delegate" }, Events = new Type [] { typeof(SCRecorderDelegate) })]
@@ -271,8 +305,8 @@ namespace SCorsin {
 		[Export("audioEnabledAndReady")]
 		bool AudioEnabledAndReady { get; }
 
-		[Export("photoEnabled")]
-		bool PhotoEnabled { get; set; }
+		[Export("fastRecordMethodEnabled")]
+		bool FastRecordMethodEnabled { get; set; }
 
 		[Export("isRecording")]
 		bool IsRecording { get; }
@@ -292,14 +326,14 @@ namespace SCorsin {
 		[Export("photoOutputSettings"), NullAllowed]
 		NSDictionary PhotoOutputSettings { get; set; }
 
-		[Export("sessionPreset")]
-		NSString SessionPreset { get; set; }
+		[Export("captureSessionPreset")]
+		NSString CaptureSessionPreset { get; set; }
 
 		[Export("captureSession")]
 		AVCaptureSession CaptureSession { get; }
 
-		[Export("isCaptureSessionOpened")]
-		bool IsCaptureSessionOpened { get; }
+		[Export("isPrepared")]
+		bool IsPrepared { get; }
 
 		[Export("previewLayer")]
 		AVCaptureVideoPreviewLayer PreviewLayer { get; }
@@ -307,8 +341,8 @@ namespace SCorsin {
 		[Export("previewView"), NullAllowed]
 		UIView PreviewView { get; set; }
 
-		[Export("recordSession"), NullAllowed]
-		SCRecordSession RecordSession { get; set; }
+		[Export("session"), NullAllowed]
+		SCRecordSession Session { get; set; }
 
 		[Export("videoOrientation")]
 		AVCaptureVideoOrientation VideoOrientation { get; set; }
@@ -316,8 +350,8 @@ namespace SCorsin {
 		[Export("autoSetVideoOrientation")]
 		bool AutoSetVideoOrientation { get; set; }
 
-		[Export("initializeRecordSessionLazily")]
-		bool InitializeRecordSessionLazily { get; set; }
+		[Export("initializeSessionLazily")]
+		bool InitializeSessionLazily { get; set; }
 
 		[Export("frameRate")]
 		int FrameRate { get; set; }
@@ -325,26 +359,26 @@ namespace SCorsin {
 		[Export("focusSupported")]
 		bool FocusSupported { get; }
 
-		[Export("openSession:")]
-		void OpenSession([NullAllowed] OpenSessionDelegate completionHandler);
+		[Export("prepare:")]
+		bool Prepare(out NSError error);
+
+		[Export("unprepare")]
+		void Unprepare();
 
 		[Export("previewViewFrameChanged")]
 		void PreviewViewFrameChanged();
 
-		[Export("closeSession")]
-		void CloseSession();
+		[Export("startRunning")]
+		void StartRunning();
 
-		[Export("startRunningSession")]
-		void StartRunningSession();
+		[Export("stopRunning")]
+		void StopRunning();
 
-		[Export("endRunningSession")]
-		void EndRunningSession();
+		[Export("beginConfiguration")]
+		void BeginConfiguration();
 
-		[Export("beginSessionConfiguration")]
-		void BeginSessionConfiguration();
-
-		[Export("endSessionConfiguration")]
-		void EndSessionConfiguration();
+		[Export("commitConfiguration")]
+		void CommitConfiguration();
 
 		[Export("switchCaptureDevices")]
 		void SwitchCaptureDevices();
@@ -379,9 +413,6 @@ namespace SCorsin {
 		[Export("snapshotOfLastVideoBuffer")]
 		UIImage SnapshotOfLastVideoBuffer();
 
-		[Export("snapshotOfLastAppendedVideoBuffer")]
-		UIImage SnapshotOfLastAppendedVideoBuffer();
-
 		[Export("CIImageRenderer"), NullAllowed]
 		NSObject CIImageRenderer { get; set; }
 
@@ -390,6 +421,12 @@ namespace SCorsin {
 
 		[Export("maxRecordDuration")]
 		CMTime MaxRecordDuration { get; set; }
+
+		[Export("keepMirroringOnWrite")]
+		bool KeepMirroringOnWrite { get; set; }
+
+		[Export("error")]
+		NSError Error { get; }
 
 	}
 
@@ -454,11 +491,15 @@ namespace SCorsin {
 	interface SCPlayerDelegate {
 		[Abstract]	
 		[Export("player:didPlay:loopsCount:"), EventArgs("PlayerDidPlay")]
-		void DidPlay(SCPlayer player, double secondsElapsed, int loopCount);
+		void DidPlay(SCPlayer player, CMTime currentTime, int loopCount);
 
 		[Abstract]
 		[Export("player:didChangeItem:"), EventArgs("PlayerChangedItem")]
         void DidChangeItem(SCPlayer player, [NullAllowed] AVPlayerItem item);
+
+		[Abstract]
+		[Export("player:itemReadyToPlay:"), EventArgs("PlayerChangedItem")]
+		void ItemReadyToPlay(SCPlayer player, [NullAllowed] AVPlayerItem item);
 
 	}
 
@@ -535,7 +576,7 @@ namespace SCorsin {
 	}
 
 	[BaseType(typeof(UIView))]
-	interface SCRecorderFocusView {
+	interface SCRecorderToolsView {
 
 		[Export("recorder")]
 		SCRecorder Recorder { get; set; }
@@ -554,6 +595,24 @@ namespace SCorsin {
 
 		[Export("hideFocusAnimation")]
 		void HideFocusAnimation();
+
+		[Export("minZoomFactor")]
+		float MinZoomFactor { get; set; }
+
+		[Export("maxZoomFactor")]
+		float MaxZoomFactor { get; set; }
+
+		[Export("tapToFocusEnabled")]
+		bool TapToFocusEnabled { get; set; }
+
+		[Export("doubleTapToResetFocusEnabled")]
+		bool DoubleTapToResetFocusEnabled { get; set; } 
+
+		[Export("pinchToZoomEnabled")]
+		bool PinchToZoomEnabled { get; set; }
+
+		[Export("showsFocusAnimationAutomatically")]
+		bool ShowsFocusAnimationAutomatically { get; set; }
 
 	}
 
@@ -586,6 +645,9 @@ namespace SCorsin {
 
 		[Export("useGPUForRenderingFilters")]
 		bool UseGPUForRenderingFilters { get; set; }
+
+		[Export("delegate")]
+		NSObject Delegate { get; set; }
 	}
 
 	[BaseType(typeof(UIView))]
