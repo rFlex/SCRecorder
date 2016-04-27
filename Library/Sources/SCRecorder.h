@@ -111,6 +111,13 @@
 @property (copy, nonatomic) NSString *__nonnull captureSessionPreset;
 
 /**
+ The value of this property defaults to YES, causing the capture session to automatically configure the app’s shared AVAudioSession instance for optimal recording.
+ 
+ If you set this property’s value to NO, your app is responsible for selecting appropriate audio session settings. Recording may fail if the audio session’s settings are incompatible with the capture session.
+ */
+@property (assign, nonatomic) BOOL automaticallyConfiguresApplicationAudioSession;
+
+/**
  The captureSession. This will be null until prepare or startRunning has
  been called. Calling unprepare will set this property to null again.
  */
@@ -151,6 +158,12 @@
  The video orientation. This is automatically set if autoSetVideoOrientation is enabled
  */
 @property (assign, nonatomic) AVCaptureVideoOrientation videoOrientation;
+
+/**
+ The video stabilization mode to use.
+ Default is AVCaptureVideoStabilizationModeStandard
+ */
+@property (assign, nonatomic) AVCaptureVideoStabilizationMode videoStabilizationMode;
 
 /**
  If true, the videoOrientation property will be set automatically
@@ -195,6 +208,12 @@
  Default is YES
  */
 @property (assign, nonatomic) BOOL initializeSessionLazily;
+
+/**
+ If enabled, flips the video about its vertical axis and produce a mirror-image effect,
+ when recording with the front camera.
+ */
+@property (assign, nonatomic) BOOL mirrorOnFrontCamera;
 
 /**
  If enabled, mirrored video buffers like when using a front camera

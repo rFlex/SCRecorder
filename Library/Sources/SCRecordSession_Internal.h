@@ -24,6 +24,7 @@
     CMTime _timeOffset;
     CMTime _lastTimeAudio;
     CMTime _currentSegmentDuration;
+    CMTime _sessionStartTime;
     
     SCVideoConfiguration *_videoConfiguration;
     SCAudioConfiguration *_audioConfiguration;
