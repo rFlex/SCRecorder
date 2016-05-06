@@ -75,7 +75,7 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 /**
  Contains every record segment as SCRecordSessionSegment.
  */
-@property (readonly, nonatomic) NSArray *__nonnull segments;
+@property (readonly, nonatomic) NSArray<SCRecordSessionSegment *> *__nonnull segments;
 
 /**
  The duration of the whole recordSession including the current recording segment
