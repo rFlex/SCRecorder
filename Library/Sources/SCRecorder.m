@@ -1140,6 +1140,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
             device.whiteBalanceMode = whiteBalanceMode;
         }
         
+        device.subjectAreaChangeMonitoringEnabled = !continuousMode;
+
         [device unlockForConfiguration];
         
         id<SCRecorderDelegate> delegate = self.delegate;
