@@ -175,7 +175,7 @@
         NSInteger currentIndex = index % filters.count;
         SCFilter *filter = [filters objectAtIndex:currentIndex];
         CIImage *filteredImage = [filter imageByProcessingImage:image atTime:imageTime];
-        filteredImage = [filteredImage imageByCroppingToRect:CGRectMake(xImage, 0, extent.size.width, extent.size.height)];
+        filteredImage = [filteredImage imageByCroppingToRect:CGRectMake(extent.origin.x + xImage, extent.origin.y, extent.size.width, extent.size.height)];
         outputImage = [filteredImage imageByCompositingOverImage:outputImage];
         xImage += extent.size.width;
         index++;
