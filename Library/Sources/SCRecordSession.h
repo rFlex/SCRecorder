@@ -217,7 +217,7 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 
 /**
  Stop the current segment and deinitialize the video and the audio.
- This can be usefull if the input video or audio profile changed.
+ This can be useful if the input video or audio profile changed.
  */
 - (void)deinitialize;
 
