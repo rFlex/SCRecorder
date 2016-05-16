@@ -335,7 +335,7 @@
 - (BOOL)isEmpty {
     BOOL isEmpty = YES;
     
-    if (_CIFilter != nil) {
+    if (_CIFilter != nil || _overlayImage != nil) {
         return NO;
     }
     
