@@ -11,8 +11,8 @@
 
 @interface SCRecordSessionSegment() {
     AVAsset *_asset;
-    UIImage *_thumbnail;
-    UIImage *_lastImage;
+    __weak UIImage *_thumbnail;
+    __weak UIImage *_lastImage;
 }
 
 @end
@@ -62,7 +62,8 @@
 }
 
 - (UIImage *)thumbnail {
-    if (_thumbnail == nil) {
+    UIImage *image = _thumbnail;
+    if (image == nil) {
         AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:self.asset];
         imageGenerator.appliesPreferredTrackTransform = YES;
         
@@ -70,17 +71,19 @@
         CGImageRef thumbnailImage = [imageGenerator copyCGImageAtTime:kCMTimeZero actualTime:nil error:&error];
         
         if (error == nil) {
-            _thumbnail = [UIImage imageWithCGImage:thumbnailImage];
+            image = [UIImage imageWithCGImage:thumbnailImage];
+            _thumbnail = image;
         } else {
             NSLog(@"Unable to generate thumbnail for %@: %@", self.url, error.localizedDescription);
         }
     }
     
-    return _thumbnail;
+    return image;
 }
 
 - (UIImage *)lastImage {
-    if (_lastImage == nil) {
+    UIImage *image = _lastImage;
+    if (image == nil) {
         AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:self.asset];
         imageGenerator.appliesPreferredTrackTransform = YES;
         
@@ -88,13 +91,14 @@
         CGImageRef lastImage = [imageGenerator copyCGImageAtTime:self.duration actualTime:nil error:&error];
         
         if (error == nil) {
-            _lastImage = [UIImage imageWithCGImage:lastImage];
+            image = [UIImage imageWithCGImage:lastImage];
+            _lastImage = image;
         } else {
             NSLog(@"Unable to generate lastImage for %@: %@", self.url, error.localizedDescription);
         }
     }
     
-    return _lastImage;
+    return image;
 }
 
 - (float)frameRate {
