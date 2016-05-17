@@ -40,18 +40,18 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (id)init {
     self = [super init];
-    
+
     if (self) {
         _shouldSuppressPlayerRendering = YES;
         [self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:ItemChanged];
     }
-    
+
     return self;
 }
 
 - (void)dealloc {
     [self endSendingPlayMessages];
-    
+
     [self unsetupDisplayLink];
     [self unsetupVideoOutputToItem:self.currentItem];
     [self removeObserver:self forKeyPath:@"currentItem"];
@@ -62,21 +62,21 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 - (void)beginSendingPlayMessages {
     if (!self.isSendingPlayMessages) {
         __weak SCPlayer *myWeakSelf = self;
-        
+
         _timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
             SCPlayer *mySelf = myWeakSelf;
             id<SCPlayerDelegate> delegate = mySelf.delegate;
             if ([delegate respondsToSelector:@selector(player:didPlay:loopsCount:)]) {
                 int itemsLoopLength = 1;
-                
+
                 if (mySelf != nil) {
                     itemsLoopLength = mySelf->_itemsLoopLength;
                 }
                 Float64 ratio = 1.0 / itemsLoopLength;
                 CMTime currentTime = CMTimeMultiplyByFloat64(time, ratio);
-                
+
                 NSInteger loopCount = CMTimeGetSeconds(time) / (CMTimeGetSeconds(mySelf.currentItem.duration) / (Float64)itemsLoopLength);
-                
+
                 [delegate player:mySelf didPlay:currentTime loopsCount:loopCount];
             }
         }];
@@ -110,8 +110,10 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
         [self initObserver];
     } else if (context == StatusChanged) {
         void (^block)() = ^{
+            [self setupVideoOutputToItem:self.currentItem];
+
             id<SCPlayerDelegate> delegate = self.delegate;
-            
+
             if ([delegate respondsToSelector:@selector(player:itemReadyToPlay:)]) {
                 [delegate player:self itemReadyToPlay:self.currentItem];
             }
@@ -160,7 +162,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
         [_oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
         
         [self unsetupVideoOutputToItem:_oldItem];
-        
+
         _oldItem = nil;
     }
 }
@@ -171,9 +173,9 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (void)renderVideo:(CFTimeInterval)hostFrameTime {
     CMTime outputItemTime = [_videoOutput itemTimeForHostTime:hostFrameTime];
-    
+
     if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
-        
+
         SCImageView *renderer = self.SCImageView;
 
         if (renderer != nil) {
@@ -184,16 +186,16 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
                 if ([delegate respondsToSelector:@selector(player:didSetupSCImageView:)]) {
                     [delegate player:self didSetupSCImageView:renderer];
                 }
-                
+
                 _rendererWasSetup = YES;
             }
-            
+
             CMTime time;
             CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:&time];
-            
+
             if (pixelBuffer != nil) {
                 CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
-                
+
                 renderer.CIImageTime = CMTimeGetSeconds(outputItemTime);
                 renderer.CIImage = inputImage;
 
@@ -205,14 +207,14 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (void)replaceCurrentItemWithPlayerItem:(AVPlayerItem *)item {
     _itemsLoopLength = 1;
-    
+
     [super replaceCurrentItemWithPlayerItem:item];
     [self suspendDisplay];
 }
 
 - (void)willRenderFrame:(CADisplayLink *)sender {
     CFTimeInterval nextFrameTime = sender.timestamp + sender.duration;
-    
+
     [self renderVideo:nextFrameTime];
 }
 
@@ -224,14 +226,14 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 - (void)setupDisplayLink {
     if (_displayLink == nil) {
         SCWeakSelectorTarget *target = [[SCWeakSelectorTarget alloc] initWithTarget:self targetSelector:@selector(willRenderFrame:)];
-        
+
         _displayLink = [CADisplayLink displayLinkWithTarget:target selector:target.handleSelector];
         _displayLink.frameInterval = 1;
-        
+
         [self setupVideoOutputToItem:self.currentItem];
-        
+
         [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
-        
+
         [self suspendDisplay];
     }
     _rendererWasSetup = NO;
@@ -241,27 +243,27 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
     if (_displayLink != nil) {
         [_displayLink invalidate];
         _displayLink = nil;
-        
+
         [self unsetupVideoOutputToItem:self.currentItem];
-        
+
         _videoOutput = nil;
     }
 }
 
 - (void)setupVideoOutputToItem:(AVPlayerItem *)item {
-    if (_displayLink != nil && item != nil && _videoOutput == nil) {
+    if (_displayLink != nil && item != nil && _videoOutput == nil && item.status == AVPlayerItemStatusReadyToPlay) {
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
         _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
         _videoOutput.suppressesPlayerRendering = self.shouldSuppressPlayerRendering;
-        
+
         [item addOutput:_videoOutput];
-        
+
         _displayLink.paused = NO;
-        
+
         CGAffineTransform transform = CGAffineTransformIdentity;
         SCImageView *renderer = self.SCImageView;
-        
+
         NSArray *videoTracks = [item.asset tracksWithMediaType:AVMediaTypeVideo];
 
         if (videoTracks.count > 0) {
@@ -281,7 +283,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
                 BOOL viewIsWide = viewSize.width / viewSize.height > 1;
                 BOOL videoIsWide = outRect.size.width / outRect.size.height > 1;
-                    
+
                 if (viewIsWide != videoIsWide) {
                     transform = CGAffineTransformRotate(transform, M_PI_2);
                 }
@@ -303,18 +305,18 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (void)initObserver {
     [self removeOldObservers];
-    
+
     if (self.currentItem != nil) {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
         _oldItem = self.currentItem;
         [self.currentItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:StatusChanged];
         [self.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:NSKeyValueObservingOptionNew context:PlaybackBufferEmpty];
         [self.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:NSKeyValueObservingOptionNew context:LoadedTimeRanges];
-        
+
         [self setupVideoOutputToItem:self.currentItem];
     }
-    
-    
+
+
     id<SCPlayerDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(player:didChangeItem:)]) {
         [delegate player:self didChangeItem:self.currentItem];
@@ -324,22 +326,22 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 - (CMTime)playableDuration {
     AVPlayerItem * item = self.currentItem;
     CMTime playableDuration = kCMTimeZero;
-    
+
     if (item.status != AVPlayerItemStatusFailed) {
         for (NSValue *value in item.loadedTimeRanges) {
             CMTimeRange timeRange = [value CMTimeRangeValue];
-            
+
             playableDuration = CMTimeAdd(playableDuration, timeRange.duration);
         }
     }
-    
+
     return playableDuration;
 }
 
 - (void)setShouldSuppressPlayerRendering:(BOOL)shouldSuppressPlayerRendering
 {
     _shouldSuppressPlayerRendering = shouldSuppressPlayerRendering;
-    
+
     _videoOutput.suppressesPlayerRendering = shouldSuppressPlayerRendering;
 }
 
@@ -369,15 +371,15 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (void)setSmoothLoopItemByAsset:(AVAsset *)asset smoothLoopCount:(NSUInteger)loopCount {
     AVMutableComposition * composition = [AVMutableComposition composition];
-    
+
     CMTimeRange timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
-    
+
     for (NSUInteger i = 0; i < loopCount; i++) {
         [composition insertTimeRange:timeRange ofAsset:asset atTime:composition.duration error:nil];
     }
-    
+
     [self setItemByAsset:composition];
-    
+
     _itemsLoopLength = loopCount;
 }
 
@@ -387,7 +389,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (void)setLoopEnabled:(BOOL)loopEnabled {
     _loopEnabled = loopEnabled;
-    
+
     self.actionAtItemEnd = loopEnabled ? AVPlayerActionAtItemEndNone : AVPlayerActionAtItemEndPause;
 }
 
@@ -403,7 +405,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (CMTime)itemDuration {
     Float64 ratio = 1.0 / _itemsLoopLength;
-    
+
     return CMTimeMultiply(self.currentItem.duration, ratio);
 }
 
