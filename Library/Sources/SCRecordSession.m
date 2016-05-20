@@ -696,6 +696,11 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)appendVideoPixelBuffer:(CVPixelBufferRef)videoPixelBuffer atTime:(CMTime)actualBufferTime duration:(CMTime)duration completion:(void (^)(BOOL))completion {
+    static int counter = 0;
+    if (CMTIME_IS_INVALID(_sessionStartTime)) {
+        counter = 0; // Start of new session
+    }
+
     [self _startSessionIfNeededAtTime:actualBufferTime];
 
     CMTime bufferTimestamp = CMTimeSubtract(actualBufferTime, _timeOffset);
@@ -710,7 +715,6 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     }
     if (videoTimeScale < 1)
     {
-        static int counter = 0;
         NSInteger downsampleRatio = round(1/videoTimeScale);
         if ((counter++)%downsampleRatio != 0)
         {
