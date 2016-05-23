@@ -34,6 +34,9 @@
 
 static char* StatusChanged = "StatusContext";
 static char* ItemChanged = "CurrentItemContext";
+static char* PlaybackBufferEmpty = "PlaybackBufferEmpty";
+static char* LoadedTimeRanges = "LoadedTimeRanges";
+
 
 - (id)init {
     self = [super init];
@@ -118,6 +121,34 @@ static char* ItemChanged = "CurrentItemContext";
         } else {
             dispatch_async(dispatch_get_main_queue(), block);
         }
+    } else if (context == LoadedTimeRanges) {
+        void (^block)() = ^{
+            id<SCPlayerDelegate> delegate = self.delegate;
+            
+            if ([delegate respondsToSelector:@selector(player:didUpdateLoadedTimeRanges:)]) {
+                NSArray * array= self.currentItem.loadedTimeRanges;
+                CMTimeRange range=[array.firstObject CMTimeRangeValue];
+                [delegate player:self didUpdateLoadedTimeRanges:range];
+            }
+        };
+        if ([NSThread isMainThread]) {
+            block();
+        } else {
+            dispatch_async(dispatch_get_main_queue(), block);
+        }
+    } else if (context == PlaybackBufferEmpty) {
+        void (^block)() = ^{
+            id<SCPlayerDelegate> delegate = self.delegate;
+            
+            if ([delegate respondsToSelector:@selector(player:itemPlaybackBufferIsEmpty:)]) {
+                [delegate player:self itemPlaybackBufferIsEmpty:self.currentItem];
+            }
+        };
+        if ([NSThread isMainThread]) {
+            block();
+        } else {
+            dispatch_async(dispatch_get_main_queue(), block);
+        }
     }
 }
 
@@ -125,6 +156,8 @@ static char* ItemChanged = "CurrentItemContext";
     if (_oldItem != nil) {
         [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:_oldItem];
         [_oldItem removeObserver:self forKeyPath:@"status"];
+        [_oldItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
+        [_oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
         
         [self unsetupVideoOutputToItem:_oldItem];
         
@@ -275,6 +308,8 @@ static char* ItemChanged = "CurrentItemContext";
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
         _oldItem = self.currentItem;
         [self.currentItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:StatusChanged];
+        [self.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:NSKeyValueObservingOptionNew context:PlaybackBufferEmpty];
+        [self.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:NSKeyValueObservingOptionNew context:LoadedTimeRanges];
         
         [self setupVideoOutputToItem:self.currentItem];
     }
