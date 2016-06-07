@@ -11,7 +11,6 @@
 #import "SCWatermarkOverlayView.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
-
 @interface SCVideoPlayerViewController ()
 
 @property (strong, nonatomic) SCAssetExportSession *exportSession;
@@ -40,48 +39,42 @@
     [self cancelSaveToCameraRoll];
 }
 
-//- (SCFilter *)createAnimatedFilter {
-//    SCFilter *animatedFilter = [SCFilter emptyFilter];
-//    animatedFilter.name = @"Animated Filter";
-//    
-//    SCFilter *gaussian = [SCFilter filterWithCIFilterName:@"CIGaussianBlur"];
-//    SCFilter *blackAndWhite = [SCFilter filterWithCIFilterName:@"CIColorControls"];
-//    
-//    [animatedFilter addSubFilter:gaussian];
-//    [animatedFilter addSubFilter:blackAndWhite];
-//    
-//    double duration = 0.5;
-//    double currentTime = 0;
-//    BOOL isAscending = YES;
-//    
-//    Float64 assetDuration = CMTimeGetSeconds(_recordSession.assetRepresentingSegments.duration);
-//    
-//    while (currentTime < assetDuration) {
-//        if (isAscending) {
-//            [blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@1 endValue:@0 startTime:currentTime duration:duration];
-//            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@0 endValue:@10 startTime:currentTime duration:duration];
-//        } else {
-//            [blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@0 endValue:@1 startTime:currentTime duration:duration];
-//            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@10 endValue:@0 startTime:currentTime duration:duration];
-//        }
-//        
-//        currentTime += duration;
-//        isAscending = !isAscending;
-//    }
-//    
-//    return animatedFilter;
-//}
+- (SCFilter *)createAnimatedFilter {
+    SCFilter *animatedFilter = [SCFilter emptyFilter];
+    animatedFilter.name = @"Animated Filter";
+    
+    SCFilter *gaussian = [SCFilter filterWithCIFilterName:@"CIGaussianBlur"];
+    SCFilter *blackAndWhite = [SCFilter filterWithCIFilterName:@"CIColorControls"];
+    
+    [animatedFilter addSubFilter:gaussian];
+    [animatedFilter addSubFilter:blackAndWhite];
+    
+    double duration = 0.5;
+    double currentTime = 0;
+    BOOL isAscending = YES;
+    
+    Float64 assetDuration = CMTimeGetSeconds(_recordSession.assetRepresentingSegments.duration);
+    
+    while (currentTime < assetDuration) {
+        if (isAscending) {
+            [blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@1 endValue:@0 startTime:currentTime duration:duration];
+            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@0 endValue:@10 startTime:currentTime duration:duration];
+        } else {
+            [blackAndWhite addAnimationForParameterKey:kCIInputSaturationKey startValue:@0 endValue:@1 startTime:currentTime duration:duration];
+            [gaussian addAnimationForParameterKey:kCIInputRadiusKey startValue:@10 endValue:@0 startTime:currentTime duration:duration];
+        }
+        
+        currentTime += duration;
+        isAscending = !isAscending;
+    }
+    
+    return animatedFilter;
+}
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    //overlay preview
-    SCWatermarkOverlayView *overlay = [[SCWatermarkOverlayView alloc]initWithFrame:self.view.frame];
-    overlay.userInteractionEnabled = NO;
-    [overlay scaleElementsWithDivideValue:1280/self.view.frame.size.height]; //1280 is the video height in hight quality
-    [self.view insertSubview:overlay aboveSubview:self.filterSwitcherView];
-
     self.exportView.clipsToBounds = YES;
     self.exportView.layer.cornerRadius = 20;
     UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleBordered target:self action:@selector(saveToCameraRoll)];
@@ -94,14 +87,7 @@
         self.filterSwitcherView.contentMode = UIViewContentModeScaleAspectFill;
         
         SCFilter *emptyFilter = [SCFilter emptyFilter];
-        emptyFilter.name = @"No Filter";
-        
-        SCFilter *filter = [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"vibrance" withExtension:@"cisf"]];
-        filter = [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"dot" withExtension:@"cisf"]];
-        filter = [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"false_color" withExtension:@"cisf"]];
-        //filter = [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"noise" withExtension:@"cisf"]];
-        filter = [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"sepia" withExtension:@"cisf"]];
-        //filter = [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"halftone" withExtension:@"cisf"]];
+        emptyFilter.name = @"#nofilter";
         
         self.filterSwitcherView.filters = @[
                                                  emptyFilter,
@@ -110,23 +96,9 @@
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectInstant"],
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectTonal"],
                                                  [SCFilter filterWithCIFilterName:@"CIPhotoEffectFade"],
-                                                 [SCFilter filterWithCIFilterName:@"CIFalseColor"],
-                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectProcess"],
-                                                 [SCFilter filterWithCIFilterName:@"CIPhotoEffectTransfer"],
-                                                 [SCFilter filterWithCIFilterName:@"CILinearToSRGBToneCurve"],
-                                                 
                                                  // Adding a filter created using CoreImageShop
                                                  [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"a_filter" withExtension:@"cisf"]],
-                                                 
-                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"vibrance" withExtension:@"cisf"]],
-                                                 
-                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"dot" withExtension:@"cisf"]],
-                                                 
-                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"false_color" withExtension:@"cisf"]],
-                                                 
-                                                 [SCFilter filterWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"sepia" withExtension:@"cisf"]]
- 
-                                                 //[self createAnimatedFilter]
+                                                 [self createAnimatedFilter]
                                                  ];
         _player.SCImageView = self.filterSwitcherView;
         [self.filterSwitcherView addObserver:self forKeyPath:@"selectedFilter" options:NSKeyValueObservingOptionNew context:nil];
@@ -248,7 +220,7 @@
     }];
 
     SCWatermarkOverlayView *overlay = [SCWatermarkOverlayView new];
-    //overlay.date = self.recordSession.date;
+    overlay.date = self.recordSession.date;
     exportSession.videoConfiguration.overlay = overlay;
     NSLog(@"Starting exporting");
 
@@ -280,7 +252,7 @@
                 [[UIApplication sharedApplication] endIgnoringInteractionEvents];
 
                 if (error == nil) {
-                    [[[UIAlertView alloc] initWithTitle:@"Saved" message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                    [[[UIAlertView alloc] initWithTitle:@"Saved to camera roll" message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
                 } else {
                     [[[UIAlertView alloc] initWithTitle:@"Failed to save" message:error.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
                 }
@@ -293,8 +265,6 @@
     }];
 }
 
-
-
 - (BOOL)startMediaBrowser {
     //Validations
     if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum] == NO) {
@@ -304,7 +274,7 @@
     UIImagePickerController *mediaUI = [[UIImagePickerController alloc] init];
     mediaUI.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
     mediaUI.mediaTypes = [[NSArray alloc] initWithObjects: (NSString *) kUTTypeMovie, nil];
-
+    
     mediaUI.allowsEditing = YES;
     mediaUI.delegate = self;
     
@@ -319,8 +289,8 @@
     SCRecordSessionSegment *segment = [SCRecordSessionSegment segmentWithURL:url info:nil];
     
     [_recordSession addSegment:segment];
-    //_recordSession = [SCRecordSession recordSession];
-    //[_recordSession addSegment:segment];
 }
+
+
 
 @end
