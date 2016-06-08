@@ -1,5 +1,7 @@
 SCRecorder
 ===============
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+
 
 <img src="filters.gif" width="230" height="408" />
 <img src="screenshot_2.png" width="230" height="408" />
