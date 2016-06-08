@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		45B33BB01D080598001A9833 /* SCProcessingQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD12A9E1B456C5E0064674D /* SCProcessingQueue.m */; };
+		45B33BB11D08059A001A9833 /* SCProcessingQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD12A9E1B456C5E0064674D /* SCProcessingQueue.m */; };
+		45B33BB21D08059E001A9833 /* SCProcessingQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = DCD12A9D1B456C5E0064674D /* SCProcessingQueue.h */; };
+		45B33BB31D08059F001A9833 /* SCProcessingQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = DCD12A9D1B456C5E0064674D /* SCProcessingQueue.h */; };
+		45B33BB41D0805AE001A9833 /* SCIOPixelBuffers.h in Headers */ = {isa = PBXBuildFile; fileRef = DCD12AA21B45AA540064674D /* SCIOPixelBuffers.h */; };
+		45B33BB51D0805AF001A9833 /* SCIOPixelBuffers.h in Headers */ = {isa = PBXBuildFile; fileRef = DCD12AA21B45AA540064674D /* SCIOPixelBuffers.h */; };
+		45B33BB61D0805B3001A9833 /* SCIOPixelBuffers.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */; };
+		45B33BB71D0805B4001A9833 /* SCIOPixelBuffers.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */; };
 		9079317B1BD2A06700D7D181 /* SCFilter+VideoComposition.h in Headers */ = {isa = PBXBuildFile; fileRef = 907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */; };
 		9079317C1BD2A06700D7D181 /* SCFilter+VideoComposition.m in Sources */ = {isa = PBXBuildFile; fileRef = 9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */; };
 		9079317F1BD451C200D7D181 /* SCFilter+UIImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 9079317D1BD451C200D7D181 /* SCFilter+UIImage.h */; };
@@ -543,6 +551,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				45B33BB21D08059E001A9833 /* SCProcessingQueue.h in Headers */,
+				45B33BB41D0805AE001A9833 /* SCIOPixelBuffers.h in Headers */,
 				DCA8EF8E192BD73A00839BE2 /* SCRecorderMac.h in Headers */,
 				DCA8EF7D192BD21B00839BE2 /* SCFilter.h in Headers */,
 			);
@@ -557,6 +567,7 @@
 				DCDC1E2F1AC799CF001DC3D9 /* SCAudioConfiguration.h in Headers */,
 				DCDC1E301AC799CF001DC3D9 /* SCMediaTypeConfiguration.h in Headers */,
 				DCDC1E311AC799CF001DC3D9 /* SCPhotoConfiguration.h in Headers */,
+				45B33BB51D0805AF001A9833 /* SCIOPixelBuffers.h in Headers */,
 				DCDC1E321AC799CF001DC3D9 /* SCRecordSession.h in Headers */,
 				DCDC1E331AC799CF001DC3D9 /* SCRecorder.h in Headers */,
 				DCDC1E341AC799CF001DC3D9 /* SCRecordSessionSegment.h in Headers */,
@@ -564,6 +575,7 @@
 				DCDC1E361AC799CF001DC3D9 /* SCRecorderFocusTargetView.h in Headers */,
 				DCDC1E371AC799CF001DC3D9 /* SCRecorderToolsView.h in Headers */,
 				DCDC1E391AC799CF001DC3D9 /* SCSwipeableFilterView.h in Headers */,
+				45B33BB31D08059F001A9833 /* SCProcessingQueue.h in Headers */,
 				DCDC1E3C1AC799CF001DC3D9 /* SCImageView.h in Headers */,
 				DCDC1E3D1AC799CF001DC3D9 /* SCPlayer.h in Headers */,
 				DCDC1E3E1AC799CF001DC3D9 /* SCVideoPlayerView.h in Headers */,
@@ -638,7 +650,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = VR;
-				LastUpgradeCheck = 0620;
+				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = rFlex;
 				TargetAttributes = {
 					DCDC1DF21AC79592001DC3D9 = {
@@ -724,7 +736,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				45B33BB11D08059A001A9833 /* SCProcessingQueue.m in Sources */,
 				DCA8EF74192BD20300839BE2 /* SCFilter.m in Sources */,
+				45B33BB61D0805B3001A9833 /* SCIOPixelBuffers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -748,11 +762,13 @@
 				DCDC1E211AC797EF001DC3D9 /* SCImageView.m in Sources */,
 				DCDC1E221AC797EF001DC3D9 /* SCPlayer.m in Sources */,
 				DCDC1E231AC797EF001DC3D9 /* SCVideoPlayerView.m in Sources */,
+				45B33BB01D080598001A9833 /* SCProcessingQueue.m in Sources */,
 				DCDC1E251AC797EF001DC3D9 /* SCSampleBufferHolder.m in Sources */,
 				DCDC1E261AC797EF001DC3D9 /* SCAssetExportSession.m in Sources */,
 				DCDC1E271AC797EF001DC3D9 /* SCAudioTools.m in Sources */,
 				DCDC1E281AC797EF001DC3D9 /* SCRecorderTools.m in Sources */,
 				DCDC1E291AC797EF001DC3D9 /* SCFilter.m in Sources */,
+				45B33BB71D0805B4001A9833 /* SCIOPixelBuffers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -817,6 +833,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -898,6 +915,7 @@
 				INFOPLIST_FILE = "SCRecorderMac/SCRecorderMac-Info.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/${EXECUTABLE_PATH}";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.corsin.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = framework;
@@ -932,6 +950,7 @@
 				INFOPLIST_FILE = "SCRecorderMac/SCRecorderMac-Info.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/${EXECUTABLE_PATH}";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.corsin.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = framework;
@@ -968,6 +987,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = SCRecorderFramework/SCRecorder.modulemap;
 				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.corsin.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = SCRecorder;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1004,6 +1024,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = SCRecorderFramework/SCRecorder.modulemap;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.corsin.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = SCRecorder;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
