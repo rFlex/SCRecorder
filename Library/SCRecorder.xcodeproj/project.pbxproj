@@ -15,6 +15,7 @@
 		45B33BB51D0805AF001A9833 /* SCIOPixelBuffers.h in Headers */ = {isa = PBXBuildFile; fileRef = DCD12AA21B45AA540064674D /* SCIOPixelBuffers.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		45B33BB61D0805B3001A9833 /* SCIOPixelBuffers.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */; };
 		45B33BB71D0805B4001A9833 /* SCIOPixelBuffers.m in Sources */ = {isa = PBXBuildFile; fileRef = DCD12AA31B45AA540064674D /* SCIOPixelBuffers.m */; };
+		45B33BCD1D095D47001A9833 /* SCFilterAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = DC7A62BD1AFA47EC00EAB60C /* SCFilterAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9079317B1BD2A06700D7D181 /* SCFilter+VideoComposition.h in Headers */ = {isa = PBXBuildFile; fileRef = 907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */; };
 		9079317C1BD2A06700D7D181 /* SCFilter+VideoComposition.m in Sources */ = {isa = PBXBuildFile; fileRef = 9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */; };
 		9079317F1BD451C200D7D181 /* SCFilter+UIImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 9079317D1BD451C200D7D181 /* SCFilter+UIImage.h */; };
@@ -570,6 +571,7 @@
 				45B33BB51D0805AF001A9833 /* SCIOPixelBuffers.h in Headers */,
 				DCDC1E321AC799CF001DC3D9 /* SCRecordSession.h in Headers */,
 				DCDC1E331AC799CF001DC3D9 /* SCRecorder.h in Headers */,
+				45B33BCD1D095D47001A9833 /* SCFilterAnimation.h in Headers */,
 				DCDC1E341AC799CF001DC3D9 /* SCRecordSessionSegment.h in Headers */,
 				DCDC1E351AC799CF001DC3D9 /* SCRecorderDelegate.h in Headers */,
 				DCDC1E361AC799CF001DC3D9 /* SCRecorderFocusTargetView.h in Headers */,

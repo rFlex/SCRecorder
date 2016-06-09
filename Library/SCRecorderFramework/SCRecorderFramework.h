@@ -53,3 +53,4 @@ FOUNDATION_EXPORT const unsigned char SCRecorderFrameworkVersionString[];
 
 // Filters.
 #import <SCRecorder/SCFilter.h>
+#import <SCRecorder/SCFilterAnimation.h>
