@@ -17,3 +17,4 @@ FOUNDATION_EXPORT const unsigned char SCRecorderFrameworkVersionString[];
 // In this header, you should import all the public headers of your framework using statements like #import <SCRecorderFramework/PublicHeader.h>
 
 #import <SCRecorder/SCRecorder.h>
+#import <SCRecorder/SCRecordSession.h>

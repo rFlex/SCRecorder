@@ -109,7 +109,7 @@
 		DCDC1E2F1AC799CF001DC3D9 /* SCAudioConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA163971A2028C400505966 /* SCAudioConfiguration.h */; };
 		DCDC1E301AC799CF001DC3D9 /* SCMediaTypeConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA1639B1A2028D100505966 /* SCMediaTypeConfiguration.h */; };
 		DCDC1E311AC799CF001DC3D9 /* SCPhotoConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA163A11A23C7C300505966 /* SCPhotoConfiguration.h */; };
-		DCDC1E321AC799CF001DC3D9 /* SCRecordSession.h in Headers */ = {isa = PBXBuildFile; fileRef = DC50285218E4F23F004E833F /* SCRecordSession.h */; };
+		DCDC1E321AC799CF001DC3D9 /* SCRecordSession.h in Headers */ = {isa = PBXBuildFile; fileRef = DC50285218E4F23F004E833F /* SCRecordSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCDC1E331AC799CF001DC3D9 /* SCRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = DC50285518E4FA5E004E833F /* SCRecorder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCDC1E341AC799CF001DC3D9 /* SCRecordSessionSegment.h in Headers */ = {isa = PBXBuildFile; fileRef = DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */; };
 		DCDC1E351AC799CF001DC3D9 /* SCRecorderDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = DCF3A68E1AB9F4760034CF5C /* SCRecorderDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
