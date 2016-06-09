@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "SCRecorder.h"
 
 typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeOff  = AVCaptureFlashModeOff,
@@ -17,7 +16,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
     SCFlashModeLight
 };
 
-@class SCRecorder;
+@class SCRecorder, SCRecordSession, SCRecordSessionSegment;
 
 @protocol SCRecorderDelegate <NSObject>
 

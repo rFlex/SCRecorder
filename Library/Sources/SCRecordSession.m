@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "SCRecordSession_Internal.h"
 #import "SCRecorder.h"
+#import "SCVideoConfiguration.h"
 
 #pragma mark - Private definition
 
