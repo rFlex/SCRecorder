@@ -30,6 +30,7 @@
     BOOL _shouldAutoresumeRecording;
     BOOL _needsSwitchBackToContinuousFocus;
     BOOL _adjustingFocus;
+    BOOL _didCaptureFirstAudioBuffer;
     int _beginSessionConfigurationCount;
     double _lastAppendedVideoTime;
     NSTimer *_movieOutputProgressTimer;
@@ -80,8 +81,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _lastAudioBuffer = [SCSampleBufferHolder new];
         _maxRecordDuration = kCMTimeInvalid;
         _resetZoomOnChangeDevice = YES;
-		_mirrorOnFrontCamera = NO;
-		_automaticallyConfiguresApplicationAudioSession = YES;
+        _mirrorOnFrontCamera = NO;
+        _automaticallyConfiguresApplicationAudioSession = YES;
 
         self.device = AVCaptureDevicePositionBack;
         _videoConfiguration = [SCVideoConfiguration new];
@@ -303,7 +304,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     }
 
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
-	session.automaticallyConfiguresApplicationAudioSession = self.automaticallyConfiguresApplicationAudioSession;
+    session.automaticallyConfiguresApplicationAudioSession = self.automaticallyConfiguresApplicationAudioSession;
     _beginSessionConfigurationCount = 0;
     _captureSession = session;
 
@@ -384,26 +385,26 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     AVCaptureConnection *connection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
     if (connection != nil) {
         [_photoOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:
-         ^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
+                                                                                       ^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
 
-             if (imageDataSampleBuffer != nil && error == nil) {
-                 NSData *jpegData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
-                 if (jpegData) {
-                     UIImage *image = [UIImage imageWithData:jpegData];
-                     if (completionHandler != nil) {
-                         completionHandler(nil, image);
-                     }
-                 } else {
-                     if (completionHandler != nil) {
-                         completionHandler([SCRecorder createError:@"Failed to create jpeg data"], nil);
-                     }
-                 }
-             } else {
-                 if (completionHandler != nil) {
-                     completionHandler(error, nil);
-                 }
-             }
-         }];
+                                                                                           if (imageDataSampleBuffer != nil && error == nil) {
+                                                                                               NSData *jpegData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
+                                                                                               if (jpegData) {
+                                                                                                   UIImage *image = [UIImage imageWithData:jpegData];
+                                                                                                   if (completionHandler != nil) {
+                                                                                                       completionHandler(nil, image);
+                                                                                                   }
+                                                                                               } else {
+                                                                                                   if (completionHandler != nil) {
+                                                                                                       completionHandler([SCRecorder createError:@"Failed to create jpeg data"], nil);
+                                                                                                   }
+                                                                                               }
+                                                                                           } else {
+                                                                                               if (completionHandler != nil) {
+                                                                                                   completionHandler(error, nil);
+                                                                                               }
+                                                                                           }
+                                                                                       }];
     } else {
         if (completionHandler != nil) {
             completionHandler([SCRecorder createError:@"Camera session not started or Photo disabled"], nil);
@@ -455,6 +456,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)record {
+    _didCaptureFirstAudioBuffer = NO;
     void (^block)() = ^{
         _isRecording = YES;
         if (_movieOutput != nil && _session != nil) {
@@ -612,8 +614,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     SCFilter *filterGroup = _videoConfiguration.filter;
     SCFilter *transformFilter = [self _transformFilterUsingBufferWidth:bufferWidth bufferHeight:bufferHeight mirrored:
-                                 _device == AVCaptureDevicePositionFront
-                                 ];
+            _device == AVCaptureDevicePositionFront
+    ];
 
     if (filterGroup == nil && transformFilter == nil) {
         [recordSession appendVideoPixelBuffer:sampleBufferImage atTime:time duration:duration completion:completion];
@@ -841,6 +843,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         }
     } else if (captureOutput == _audioOutput) {
         _lastAudioBuffer.sampleBuffer = sampleBuffer;
+        _didCaptureFirstAudioBuffer = YES;
 //        NSLog(@"AUDIO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 
         if (_audioConfiguration.shouldIgnore) {
@@ -851,7 +854,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (!_initializeSessionLazily || _isRecording) {
         SCRecordSession *recordSession = _session;
         if (recordSession != nil) {
-            if (captureOutput == _videoOutput) {
+            if (captureOutput == _videoOutput && _didCaptureFirstAudioBuffer) {
                 [self _handleVideoSampleBuffer:sampleBuffer withSession:recordSession connection:connection];
             } else if (captureOutput == _audioOutput) {
                 [self _handleAudioSampleBuffer:sampleBuffer withSession:recordSession];
