@@ -34,7 +34,6 @@ FOUNDATION_EXPORT const unsigned char SCRecorderFrameworkVersionString[];
 
 // FilterDisplayers.
 
-#import <SCRecorder/SCSwipeableFilterView.h>
 #import <SCRecorder/SCImageView.h>
 
 // Players.

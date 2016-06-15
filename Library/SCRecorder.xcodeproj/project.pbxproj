@@ -286,7 +286,6 @@
 				DC264DEE17BACA5A00A5EF98 /* CoreMedia.framework */,
 				DC551C4D17ADD66000E37F8F /* Sources */,
 				DCA8EF52192BD1C200839BE2 /* SCRecorderMac */,
-				DCDC1DF41AC79592001DC3D9 /* SCRecorderFramework */,
 				DCDC1E011AC79592001DC3D9 /* SCRecorderFrameworkTests */,
 				DC551C4617ADD66000E37F8F /* Frameworks */,
 				DC551C4517ADD66000E37F8F /* Products */,
@@ -380,6 +379,7 @@
 			isa = PBXGroup;
 			children = (
 				DCA8EF53192BD1C200839BE2 /* Supporting Files */,
+				DCDC1DF41AC79592001DC3D9 /* SCRecorderFramework */,
 				DCA8EF8D192BD71100839BE2 /* SCRecorderMac.h */,
 			);
 			path = SCRecorderMac;
@@ -480,7 +480,8 @@
 				DCDC1DF71AC79592001DC3D9 /* SCRecorderFramework.h */,
 				DCDC1DF51AC79592001DC3D9 /* Supporting Files */,
 			);
-			path = SCRecorderFramework;
+			name = SCRecorderFramework;
+			path = ../SCRecorderFramework;
 			sourceTree = "<group>";
 		};
 		DCDC1DF51AC79592001DC3D9 /* Supporting Files */ = {
