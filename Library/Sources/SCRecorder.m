@@ -843,7 +843,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         }
     } else if (captureOutput == _audioOutput) {
         _lastAudioBuffer.sampleBuffer = sampleBuffer;
-        _didCaptureFirstAudioBuffer = YES;
 //        NSLog(@"AUDIO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 
         if (_audioConfiguration.shouldIgnore) {
@@ -857,6 +856,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
             if (captureOutput == _videoOutput && _didCaptureFirstAudioBuffer) {
                 [self _handleVideoSampleBuffer:sampleBuffer withSession:recordSession connection:connection];
             } else if (captureOutput == _audioOutput) {
+                _didCaptureFirstAudioBuffer = YES;
                 [self _handleAudioSampleBuffer:sampleBuffer withSession:recordSession];
             }
         }
