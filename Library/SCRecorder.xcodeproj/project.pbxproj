@@ -118,7 +118,7 @@
 		DCDC1E371AC799CF001DC3D9 /* SCRecorderToolsView.h in Headers */ = {isa = PBXBuildFile; fileRef = DCBA8FE41A92B2FF00DD1A79 /* SCRecorderToolsView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCDC1E391AC799CF001DC3D9 /* SCSwipeableFilterView.h in Headers */ = {isa = PBXBuildFile; fileRef = DC933E89193814D1007E2E88 /* SCSwipeableFilterView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCDC1E3C1AC799CF001DC3D9 /* SCImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = DCB04157192458C800D945D2 /* SCImageView.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DCDC1E3D1AC799CF001DC3D9 /* SCPlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = DCF6142717D14A3700341EC2 /* SCPlayer.h */; };
+		DCDC1E3D1AC799CF001DC3D9 /* SCPlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = DCF6142717D14A3700341EC2 /* SCPlayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCDC1E3E1AC799CF001DC3D9 /* SCVideoPlayerView.h in Headers */ = {isa = PBXBuildFile; fileRef = DCF6142A17D1527F00341EC2 /* SCVideoPlayerView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCDC1E401AC799CF001DC3D9 /* SCSampleBufferHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1949BE19C07F1600E92A95 /* SCSampleBufferHolder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DCDC1E411AC799CF001DC3D9 /* SCAssetExportSession.h in Headers */ = {isa = PBXBuildFile; fileRef = DCB041651924663700D945D2 /* SCAssetExportSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -563,25 +563,25 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCDC1E3D1AC799CF001DC3D9 /* SCPlayer.h in Headers */,
 				DCDC1DF81AC79592001DC3D9 /* SCRecorderFramework.h in Headers */,
+				DCDC1E331AC799CF001DC3D9 /* SCRecorder.h in Headers */,
+				DCDC1E321AC799CF001DC3D9 /* SCRecordSession.h in Headers */,
 				DCDC1E2E1AC799CF001DC3D9 /* SCVideoConfiguration.h in Headers */,
 				DCDC1E2F1AC799CF001DC3D9 /* SCAudioConfiguration.h in Headers */,
 				DCDC1E301AC799CF001DC3D9 /* SCMediaTypeConfiguration.h in Headers */,
 				DCDC1E311AC799CF001DC3D9 /* SCPhotoConfiguration.h in Headers */,
-				45B33BB51D0805AF001A9833 /* SCIOPixelBuffers.h in Headers */,
-				DCDC1E321AC799CF001DC3D9 /* SCRecordSession.h in Headers */,
-				DCDC1E331AC799CF001DC3D9 /* SCRecorder.h in Headers */,
-				45B33BCD1D095D47001A9833 /* SCFilterAnimation.h in Headers */,
-				DCDC1E341AC799CF001DC3D9 /* SCRecordSessionSegment.h in Headers */,
-				DCDC1E351AC799CF001DC3D9 /* SCRecorderDelegate.h in Headers */,
 				DCDC1E361AC799CF001DC3D9 /* SCRecorderFocusTargetView.h in Headers */,
 				DCDC1E371AC799CF001DC3D9 /* SCRecorderToolsView.h in Headers */,
 				DCDC1E391AC799CF001DC3D9 /* SCSwipeableFilterView.h in Headers */,
-				45B33BB31D08059F001A9833 /* SCProcessingQueue.h in Headers */,
-				DCDC1E3C1AC799CF001DC3D9 /* SCImageView.h in Headers */,
-				DCDC1E3D1AC799CF001DC3D9 /* SCPlayer.h in Headers */,
-				DCDC1E3E1AC799CF001DC3D9 /* SCVideoPlayerView.h in Headers */,
 				DCDC1E401AC799CF001DC3D9 /* SCSampleBufferHolder.h in Headers */,
+				DCDC1E3C1AC799CF001DC3D9 /* SCImageView.h in Headers */,
+				45B33BB51D0805AF001A9833 /* SCIOPixelBuffers.h in Headers */,
+				45B33BCD1D095D47001A9833 /* SCFilterAnimation.h in Headers */,
+				DCDC1E341AC799CF001DC3D9 /* SCRecordSessionSegment.h in Headers */,
+				DCDC1E351AC799CF001DC3D9 /* SCRecorderDelegate.h in Headers */,
+				45B33BB31D08059F001A9833 /* SCProcessingQueue.h in Headers */,
+				DCDC1E3E1AC799CF001DC3D9 /* SCVideoPlayerView.h in Headers */,
 				DCDC1E411AC799CF001DC3D9 /* SCAssetExportSession.h in Headers */,
 				DCDC1E421AC799CF001DC3D9 /* SCAudioTools.h in Headers */,
 				DCDC1E431AC799CF001DC3D9 /* SCRecorderTools.h in Headers */,
