@@ -376,10 +376,10 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
 
         NSDictionary *pixelBufferAttributes = @{
-                                                (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
-                                                (id)kCVPixelBufferWidthKey : @(dimensions.width),
-                                                (id)kCVPixelBufferHeightKey : @(dimensions.height)
-                                                    };
+                (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
+                (id)kCVPixelBufferWidthKey : @(dimensions.width),
+                (id)kCVPixelBufferHeightKey : @(dimensions.height)
+        };
 
         _videoPixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
     } @catch (NSException *exception) {
@@ -713,7 +713,13 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     [self _startSessionIfNeededAtTime:CMSampleBufferGetPresentationTimeStamp(audioSampleBuffer)];
 
     CMTime duration = CMSampleBufferGetDuration(audioSampleBuffer);
-    CMSampleBufferRef adjustedBuffer = [self adjustBuffer:audioSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
+    /* Removed call to adjustBuffer - it was causing video/audio sync
+     * super fucking annoying - not sure why its happening but removing it fixed it so im happy with that
+     * GabeRoze
+     * */
+//    CMSampleBufferRef adjustedBuffer = [self adjustBuffer:audioSampleBuffer withTimeOffset:_timeOffset andDuration:duration];
+    CMSampleBufferRef adjustedBuffer;
+    CMSampleBufferCreateCopy(kCFAllocatorDefault, audioSampleBuffer, &adjustedBuffer);
 
     CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
     CMTime lastTimeAudio = CMTimeAdd(presentationTime, duration);
