@@ -7,10 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SCPlayer.h"
 #import "SCFilterImageView.h"
 
-@class SCSwipeableFilterView;
+@class SCSwipeableFilterView, SCPlayer;
 @protocol SCSwipeableFilterViewDelegate <NSObject>
 
 - (void)swipeableFilterView:(SCSwipeableFilterView *__nonnull)swipeableFilterView didScrollToFilter:(SCFilter *__nullable)filter;
