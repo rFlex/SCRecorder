@@ -26,7 +26,7 @@
 		90B02E3C1BCBFE7F00559011 /* SCSaveToCameraRollOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E3A1BCBFE7F00559011 /* SCSaveToCameraRollOperation.m */; };
 		90B02E3F1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.h in Headers */ = {isa = PBXBuildFile; fileRef = 90B02E3D1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.h */; };
 		90B02E401BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m in Sources */ = {isa = PBXBuildFile; fileRef = 90B02E3E1BCC003D00559011 /* UIImage+SCSaveToCameraRoll.m */; };
-		90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 90D4FBDD1BC6C1840017748D /* SCFilterImageView.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 90D4FBDD1BC6C1840017748D /* SCFilterImageView.h */; };
 		90D4FBE01BC6C1840017748D /* SCFilterImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 90D4FBDE1BC6C1840017748D /* SCFilterImageView.m */; };
 		90D4FBE41BC6DDBF0017748D /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBE31BC6DDBF0017748D /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		90D4FBE61BC6DDDC0017748D /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBE51BC6DDDC0017748D /* GLKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -521,7 +521,6 @@
 				9079317F1BD451C200D7D181 /* SCFilter+UIImage.h in Headers */,
 				DCA163991A2028C400505966 /* SCAudioConfiguration.h in Headers */,
 				DCA163951A2028B800505966 /* SCVideoConfiguration.h in Headers */,
-				90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */,
 				90B02E3B1BCBFE7F00559011 /* SCSaveToCameraRollOperation.h in Headers */,
 				DC23C1C71AAF95600013E14C /* SCRecordSessionSegment.h in Headers */,
 				9079317B1BD2A06700D7D181 /* SCFilter+VideoComposition.h in Headers */,
@@ -536,6 +535,7 @@
 				DCF3A68F1AB9F4760034CF5C /* SCRecorderDelegate.h in Headers */,
 				DCB041671924663700D945D2 /* SCAssetExportSession.h in Headers */,
 				DCB04159192458C800D945D2 /* SCImageView.h in Headers */,
+				90D4FBDF1BC6C1840017748D /* SCFilterImageView.h in Headers */,
 				DCBA8FE61A92B2FF00DD1A79 /* SCRecorderToolsView.h in Headers */,
 				DC10CF281ACFD458009880C4 /* SCWeakSelectorTarget.h in Headers */,
 				DCEE378A1B17E6480019C7B5 /* SCContext.h in Headers */,
