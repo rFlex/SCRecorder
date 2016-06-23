@@ -170,14 +170,31 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     UIView<SCVideoOverlay> *overlay = self.videoConfiguration.overlay;
     
     if (overlay != nil) {
-        if ([overlay respondsToSelector:@selector(updateWithVideoTime:)]) {
-            [overlay updateWithVideoTime:timeSeconds];
+        CGSize videoSize = CGSizeMake(CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer));
+
+        BOOL onMainThread = NO;
+        if ([overlay respondsToSelector:@selector(requiresUpdateOnMainThreadAtVideoTime:videoSize:)]) {
+            onMainThread = [overlay requiresUpdateOnMainThreadAtVideoTime:timeSeconds videoSize:videoSize];
         }
 
         CGContextRef ctx = SCCreateContextFromPixelBuffer(outputPixelBuffer);
-        overlay.frame = CGRectMake(0, 0, CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer));
-        [overlay layoutIfNeeded];
-        
+
+        void (^layoutBlock)() = ^{
+            overlay.frame = CGRectMake(0, 0, videoSize.width, videoSize.height);
+
+            if ([overlay respondsToSelector:@selector(updateWithVideoTime:)]) {
+                [overlay updateWithVideoTime:timeSeconds];
+            }
+
+            [overlay layoutIfNeeded];
+        };
+
+        if (onMainThread) {
+            dispatch_sync(dispatch_get_main_queue(), layoutBlock);
+        } else {
+            layoutBlock();
+        }
+
         [overlay.layer renderInContext:ctx];
         
         CGContextRelease(ctx);

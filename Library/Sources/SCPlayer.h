@@ -43,6 +43,18 @@
  */
 - (void)player:(SCPlayer *__nonnull)player didSetupSCImageView:(SCImageView *__nonnull)SCImageView;
 
+/**
+ Called when the item has updated the time ranges that have been loaded
+ */
+- (void)player:(SCPlayer *__nonnull)player didUpdateLoadedTimeRanges:(CMTimeRange)timeRange;
+
+
+/**
+ Called when the item playback buffer is empty
+ */
+- (void)player:(SCPlayer *__nonnull)player itemPlaybackBufferIsEmpty:(AVPlayerItem *__nullable)item;
+
+
 @end
 
 /**
