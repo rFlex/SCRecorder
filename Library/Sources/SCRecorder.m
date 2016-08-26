@@ -791,7 +791,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         if (!self.videoEnabledAndReady || recordSession.videoInitialized || recordSession.videoInitializationFailed) {
             [self beginRecordSegmentIfNeeded:recordSession];
 
-            if (_isRecording && recordSession.recordSegmentReady && (!self.videoEnabledAndReady || recordSession.currentSegmentHasVideo)) {
+            if (!self.mute && _isRecording && recordSession.recordSegmentReady && (!self.videoEnabledAndReady || recordSession.currentSegmentHasVideo)) {
                 id<SCRecorderDelegate> delegate = self.delegate;
 //                NSLog(@"APPENDING");
 
