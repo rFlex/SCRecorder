@@ -74,7 +74,7 @@
 //    _recorder.fastRecordMethodEnabled = YES;
     
     _recorder.delegate = self;
-    _recorder.autoSetVideoOrientation = YES;
+    _recorder.autoSetVideoOrientation = NO; //YES causes bad orientation for video from camera roll
     
     UIView *previewView = self.previewView;
     _recorder.previewView = previewView;
