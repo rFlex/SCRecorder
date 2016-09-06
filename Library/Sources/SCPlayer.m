@@ -42,7 +42,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
     self = [super init];
 
     if (self) {
-        _shouldSuppressPlayerRendering = YES;
+        _shouldSuppressPlayerRendering = NO;
         [self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:ItemChanged];
     }
 
@@ -358,6 +358,8 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 }
 
 - (void)setItem:(AVPlayerItem *)item {
+    [self unsetupDisplayLink];
+    [self setupDisplayLink];
     [self replaceCurrentItemWithPlayerItem:item];
 }
 
