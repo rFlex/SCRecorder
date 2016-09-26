@@ -348,9 +348,37 @@ static CGRect CGRectMultiply(CGRect rect, CGFloat contentScale) {
         CIImage *image = [self renderedCIImageInRect:rect];
 
         if (image != nil) {
-            [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
+//            [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
+            [_context.CIContext drawImage:image inRect:[self processRect:rect withImageSize:image.extent.size] fromRect:image.extent];
+
         }
     }
+}
+
+// taken from https://github.com/rFlex/SCRecorder/issues/265
+- (CGRect)processRect:(CGRect)rect withImageSize:(CGSize)imageSize {
+    
+    rect = CGRectMultiply(rect, 1);
+    
+    if (self.contentMode != UIViewContentModeScaleToFill) {
+        CGFloat horizontalScale = rect.size.width / imageSize.width;
+        CGFloat verticalScale = rect.size.height / imageSize.height;
+        
+        BOOL shouldResizeWidth = self.contentMode == UIViewContentModeScaleAspectFit ? horizontalScale > verticalScale : verticalScale > horizontalScale;
+        BOOL shouldResizeHeight = self.contentMode == UIViewContentModeScaleAspectFit ? verticalScale > horizontalScale : horizontalScale > verticalScale;
+        
+        if (shouldResizeWidth) {
+            CGFloat newWidth = imageSize.width * verticalScale;
+            rect.origin.x = (rect.size.width / 2 - newWidth / 2);
+            rect.size.width = newWidth;
+        } else if (shouldResizeHeight) {
+            CGFloat newHeight = imageSize.height * horizontalScale;
+            rect.origin.y = (rect.size.height / 2 - newHeight / 2);
+            rect.size.height = newHeight;
+        }
+    }
+    
+    return rect;
 }
 
 #if !(TARGET_IPHONE_SIMULATOR)
