@@ -26,6 +26,18 @@ typedef enum : NSUInteger {
 
 @optional
 
+/**
+ Called to determine whether setFrame:, updateWithVideoTime: and layoutIfNeeded should be called on the main thread.
+ You should avoid returning YES as much as possible from this method, since it will potentially
+ greatly reduce the encoding speed. Some views like UITextView requires to layout on the main thread. 
+ */
+- (BOOL)requiresUpdateOnMainThreadAtVideoTime:(NSTimeInterval)time videoSize:(CGSize)videoSize;
+
+/**
+ Update the underlying view with the given time.
+ This method will be called on the main thread if requiresVideoTimeUpdateOnMainThread returns true,
+ otherwise it will be called in an arbitrary queue managed by the SCAssetExportSession.
+ */
 - (void)updateWithVideoTime:(NSTimeInterval)time;
 
 @end

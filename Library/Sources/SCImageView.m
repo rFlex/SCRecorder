@@ -234,7 +234,7 @@
 - (void)drawRect:(CGRect)rect {
     [super drawRect:rect];
 
-    if (_CIImage != nil && [self loadContextIfNeeded]) {
+    if ((_CIImage != nil || _sampleBufferHolder.sampleBuffer != nil) && [self loadContextIfNeeded]) {
         if (self.context.type == SCContextTypeCoreGraphics) {
             CIImage *image = [self renderedCIImageInRect:rect];
 

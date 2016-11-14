@@ -75,7 +75,7 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 /**
  Contains every record segment as SCRecordSessionSegment.
  */
-@property (readonly, nonatomic) NSArray *__nonnull segments;
+@property (readonly, nonatomic) NSArray<SCRecordSessionSegment *> *__nonnull segments;
 
 /**
  The duration of the whole recordSession including the current recording segment
@@ -180,7 +180,7 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 /**
  Merge the recorded record segments using the given AVAssetExportSessionPreset.
  Returns the AVAssetExportSession used for exporting.
- Returns nil and call the completion handler block synchronously if an error happend while preparing the export session.
+ Returns nil and call the completion handler block synchronously if an error happened while preparing the export session.
  */
 - (AVAssetExportSession *__nullable)mergeSegmentsUsingPreset:(NSString *__nonnull)exportSessionPreset completionHandler:(void(^__nonnull)(NSURL *__nullable outputUrl, NSError *__nullable error))completionHandler;
 
@@ -217,7 +217,7 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 
 /**
  Stop the current segment and deinitialize the video and the audio.
- This can be usefull if the input video or audio profile changed.
+ This can be useful if the input video or audio profile changed.
  */
 - (void)deinitialize;
 

@@ -59,7 +59,7 @@
 @property (readonly, nonatomic) SCAudioConfiguration *__nonnull audioConfiguration;
 
 /**
- If an error occured during the export, this will contain that error
+ If an error occurred during the export, this will contain that error
  */
 @property (readonly, nonatomic) NSError *__nullable error;
 

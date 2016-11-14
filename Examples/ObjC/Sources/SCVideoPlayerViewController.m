@@ -9,6 +9,7 @@
 #import "SCVideoPlayerViewController.h"
 #import "SCEditVideoViewController.h"
 #import "SCWatermarkOverlayView.h"
+#import <MobileCoreServices/UTCoreTypes.h>
 
 @interface SCVideoPlayerViewController ()
 
@@ -76,7 +77,9 @@
     
     self.exportView.clipsToBounds = YES;
     self.exportView.layer.cornerRadius = 20;
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleBordered target:self action:@selector(saveToCameraRoll)];
+    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleBordered target:self action:@selector(saveToCameraRoll)];
+    UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithTitle:@"Add" style:UIBarButtonItemStyleBordered target:self action:@selector(startMediaBrowser)];
+    self.navigationItem.rightBarButtonItems = @[saveButton, addButton];
     
 	_player = [SCPlayer player];
     
@@ -261,5 +264,33 @@
         }
     }];
 }
+
+- (BOOL)startMediaBrowser {
+    //Validations
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum] == NO) {
+        return NO;
+    }
+    
+    UIImagePickerController *mediaUI = [[UIImagePickerController alloc] init];
+    mediaUI.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    mediaUI.mediaTypes = [[NSArray alloc] initWithObjects: (NSString *) kUTTypeMovie, nil];
+    
+    mediaUI.allowsEditing = YES;
+    mediaUI.delegate = self;
+    
+    [self presentViewController:mediaUI animated:YES completion:nil];
+    return YES;
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    NSURL *url = info[UIImagePickerControllerMediaURL];
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    
+    SCRecordSessionSegment *segment = [SCRecordSessionSegment segmentWithURL:url info:nil];
+    
+    [_recordSession addSegment:segment];
+}
+
+
 
 @end

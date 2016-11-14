@@ -34,21 +34,24 @@
 
 static char* StatusChanged = "StatusContext";
 static char* ItemChanged = "CurrentItemContext";
+static char* PlaybackBufferEmpty = "PlaybackBufferEmpty";
+static char* LoadedTimeRanges = "LoadedTimeRanges";
+
 
 - (id)init {
     self = [super init];
-    
+
     if (self) {
         _shouldSuppressPlayerRendering = YES;
         [self addObserver:self forKeyPath:@"currentItem" options:NSKeyValueObservingOptionNew context:ItemChanged];
     }
-    
+
     return self;
 }
 
 - (void)dealloc {
     [self endSendingPlayMessages];
-    
+
     [self unsetupDisplayLink];
     [self unsetupVideoOutputToItem:self.currentItem];
     [self removeObserver:self forKeyPath:@"currentItem"];
@@ -59,21 +62,21 @@ static char* ItemChanged = "CurrentItemContext";
 - (void)beginSendingPlayMessages {
     if (!self.isSendingPlayMessages) {
         __weak SCPlayer *myWeakSelf = self;
-        
+
         _timeObserver = [self addPeriodicTimeObserverForInterval:CMTimeMake(1, 24) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
             SCPlayer *mySelf = myWeakSelf;
             id<SCPlayerDelegate> delegate = mySelf.delegate;
             if ([delegate respondsToSelector:@selector(player:didPlay:loopsCount:)]) {
                 int itemsLoopLength = 1;
-                
+
                 if (mySelf != nil) {
                     itemsLoopLength = mySelf->_itemsLoopLength;
                 }
                 Float64 ratio = 1.0 / itemsLoopLength;
                 CMTime currentTime = CMTimeMultiplyByFloat64(time, ratio);
-                
+
                 NSInteger loopCount = CMTimeGetSeconds(time) / (CMTimeGetSeconds(mySelf.currentItem.duration) / (Float64)itemsLoopLength);
-                
+
                 [delegate player:mySelf didPlay:currentTime loopsCount:loopCount];
             }
         }];
@@ -107,10 +110,40 @@ static char* ItemChanged = "CurrentItemContext";
         [self initObserver];
     } else if (context == StatusChanged) {
         void (^block)() = ^{
+            [self setupVideoOutputToItem:self.currentItem];
+
             id<SCPlayerDelegate> delegate = self.delegate;
-            
+
             if ([delegate respondsToSelector:@selector(player:itemReadyToPlay:)]) {
                 [delegate player:self itemReadyToPlay:self.currentItem];
+            }
+        };
+        if ([NSThread isMainThread]) {
+            block();
+        } else {
+            dispatch_async(dispatch_get_main_queue(), block);
+        }
+    } else if (context == LoadedTimeRanges) {
+        void (^block)() = ^{
+            id<SCPlayerDelegate> delegate = self.delegate;
+            
+            if ([delegate respondsToSelector:@selector(player:didUpdateLoadedTimeRanges:)]) {
+                NSArray * array= self.currentItem.loadedTimeRanges;
+                CMTimeRange range=[array.firstObject CMTimeRangeValue];
+                [delegate player:self didUpdateLoadedTimeRanges:range];
+            }
+        };
+        if ([NSThread isMainThread]) {
+            block();
+        } else {
+            dispatch_async(dispatch_get_main_queue(), block);
+        }
+    } else if (context == PlaybackBufferEmpty) {
+        void (^block)() = ^{
+            id<SCPlayerDelegate> delegate = self.delegate;
+            
+            if ([delegate respondsToSelector:@selector(player:itemPlaybackBufferIsEmpty:)]) {
+                [delegate player:self itemPlaybackBufferIsEmpty:self.currentItem];
             }
         };
         if ([NSThread isMainThread]) {
@@ -125,9 +158,11 @@ static char* ItemChanged = "CurrentItemContext";
     if (_oldItem != nil) {
         [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:_oldItem];
         [_oldItem removeObserver:self forKeyPath:@"status"];
+        [_oldItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
+        [_oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
         
         [self unsetupVideoOutputToItem:_oldItem];
-        
+
         _oldItem = nil;
     }
 }
@@ -138,9 +173,9 @@ static char* ItemChanged = "CurrentItemContext";
 
 - (void)renderVideo:(CFTimeInterval)hostFrameTime {
     CMTime outputItemTime = [_videoOutput itemTimeForHostTime:hostFrameTime];
-    
+
     if ([_videoOutput hasNewPixelBufferForItemTime:outputItemTime]) {
-        
+
         SCImageView *renderer = self.SCImageView;
 
         if (renderer != nil) {
@@ -151,16 +186,16 @@ static char* ItemChanged = "CurrentItemContext";
                 if ([delegate respondsToSelector:@selector(player:didSetupSCImageView:)]) {
                     [delegate player:self didSetupSCImageView:renderer];
                 }
-                
+
                 _rendererWasSetup = YES;
             }
-            
+
             CMTime time;
             CVPixelBufferRef pixelBuffer = [_videoOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:&time];
-            
+
             if (pixelBuffer != nil) {
                 CIImage *inputImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
-                
+
                 renderer.CIImageTime = CMTimeGetSeconds(outputItemTime);
                 renderer.CIImage = inputImage;
 
@@ -172,14 +207,14 @@ static char* ItemChanged = "CurrentItemContext";
 
 - (void)replaceCurrentItemWithPlayerItem:(AVPlayerItem *)item {
     _itemsLoopLength = 1;
-    
+
     [super replaceCurrentItemWithPlayerItem:item];
     [self suspendDisplay];
 }
 
 - (void)willRenderFrame:(CADisplayLink *)sender {
     CFTimeInterval nextFrameTime = sender.timestamp + sender.duration;
-    
+
     [self renderVideo:nextFrameTime];
 }
 
@@ -191,14 +226,14 @@ static char* ItemChanged = "CurrentItemContext";
 - (void)setupDisplayLink {
     if (_displayLink == nil) {
         SCWeakSelectorTarget *target = [[SCWeakSelectorTarget alloc] initWithTarget:self targetSelector:@selector(willRenderFrame:)];
-        
+
         _displayLink = [CADisplayLink displayLinkWithTarget:target selector:target.handleSelector];
         _displayLink.frameInterval = 1;
-        
+
         [self setupVideoOutputToItem:self.currentItem];
-        
+
         [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
-        
+
         [self suspendDisplay];
     }
     _rendererWasSetup = NO;
@@ -208,27 +243,27 @@ static char* ItemChanged = "CurrentItemContext";
     if (_displayLink != nil) {
         [_displayLink invalidate];
         _displayLink = nil;
-        
+
         [self unsetupVideoOutputToItem:self.currentItem];
-        
+
         _videoOutput = nil;
     }
 }
 
 - (void)setupVideoOutputToItem:(AVPlayerItem *)item {
-    if (_displayLink != nil && item != nil && _videoOutput == nil) {
+    if (_displayLink != nil && item != nil && _videoOutput == nil && item.status == AVPlayerItemStatusReadyToPlay) {
         NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
         _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
         _videoOutput.suppressesPlayerRendering = self.shouldSuppressPlayerRendering;
-        
+
         [item addOutput:_videoOutput];
-        
+
         _displayLink.paused = NO;
-        
+
         CGAffineTransform transform = CGAffineTransformIdentity;
         SCImageView *renderer = self.SCImageView;
-        
+
         NSArray *videoTracks = [item.asset tracksWithMediaType:AVMediaTypeVideo];
 
         if (videoTracks.count > 0) {
@@ -248,7 +283,7 @@ static char* ItemChanged = "CurrentItemContext";
 
                 BOOL viewIsWide = viewSize.width / viewSize.height > 1;
                 BOOL videoIsWide = outRect.size.width / outRect.size.height > 1;
-                    
+
                 if (viewIsWide != videoIsWide) {
                     transform = CGAffineTransformRotate(transform, M_PI_2);
                 }
@@ -270,16 +305,18 @@ static char* ItemChanged = "CurrentItemContext";
 
 - (void)initObserver {
     [self removeOldObservers];
-    
+
     if (self.currentItem != nil) {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReachedEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.currentItem];
         _oldItem = self.currentItem;
         [self.currentItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:StatusChanged];
-        
+        [self.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:NSKeyValueObservingOptionNew context:PlaybackBufferEmpty];
+        [self.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:NSKeyValueObservingOptionNew context:LoadedTimeRanges];
+
         [self setupVideoOutputToItem:self.currentItem];
     }
-    
-    
+
+
     id<SCPlayerDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(player:didChangeItem:)]) {
         [delegate player:self didChangeItem:self.currentItem];
@@ -289,22 +326,22 @@ static char* ItemChanged = "CurrentItemContext";
 - (CMTime)playableDuration {
     AVPlayerItem * item = self.currentItem;
     CMTime playableDuration = kCMTimeZero;
-    
+
     if (item.status != AVPlayerItemStatusFailed) {
         for (NSValue *value in item.loadedTimeRanges) {
             CMTimeRange timeRange = [value CMTimeRangeValue];
-            
+
             playableDuration = CMTimeAdd(playableDuration, timeRange.duration);
         }
     }
-    
+
     return playableDuration;
 }
 
 - (void)setShouldSuppressPlayerRendering:(BOOL)shouldSuppressPlayerRendering
 {
     _shouldSuppressPlayerRendering = shouldSuppressPlayerRendering;
-    
+
     _videoOutput.suppressesPlayerRendering = shouldSuppressPlayerRendering;
 }
 
@@ -334,15 +371,15 @@ static char* ItemChanged = "CurrentItemContext";
 
 - (void)setSmoothLoopItemByAsset:(AVAsset *)asset smoothLoopCount:(NSUInteger)loopCount {
     AVMutableComposition * composition = [AVMutableComposition composition];
-    
+
     CMTimeRange timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
-    
+
     for (NSUInteger i = 0; i < loopCount; i++) {
         [composition insertTimeRange:timeRange ofAsset:asset atTime:composition.duration error:nil];
     }
-    
+
     [self setItemByAsset:composition];
-    
+
     _itemsLoopLength = loopCount;
 }
 
@@ -352,7 +389,7 @@ static char* ItemChanged = "CurrentItemContext";
 
 - (void)setLoopEnabled:(BOOL)loopEnabled {
     _loopEnabled = loopEnabled;
-    
+
     self.actionAtItemEnd = loopEnabled ? AVPlayerActionAtItemEndNone : AVPlayerActionAtItemEndPause;
 }
 
@@ -368,7 +405,7 @@ static char* ItemChanged = "CurrentItemContext";
 
 - (CMTime)itemDuration {
     Float64 ratio = 1.0 / _itemsLoopLength;
-    
+
     return CMTimeMultiply(self.currentItem.duration, ratio);
 }
 
