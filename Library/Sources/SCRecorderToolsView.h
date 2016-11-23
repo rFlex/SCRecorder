@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "SCRecorder.h"
+
 
 //typedef enum : NSUInteger {
 //    SCRecorderToolsViewShowFocusModeNever,

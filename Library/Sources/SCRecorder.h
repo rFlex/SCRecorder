@@ -9,18 +9,13 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "SCRecordSession.h"
-#import "SCAssetExportSession.h"
-#import "SCImageView.h"
-#import "SCVideoConfiguration.h"
-#import "SCAudioConfiguration.h"
-#import "SCPhotoConfiguration.h"
-#import "SCRecorderTools.h"
 #import "SCRecorderDelegate.h"
 
 // Convenience
-#import "SCRecorderHeader.h"
 
+#import "SCRecorderTools.h"
+
+@class SCRecorderSession, SCAssetExportSession, SCImageView, SCVideoConfiguration, SCAudioConfiguration, SCPhotoConfiguration, SCRecordSession;
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 
 /**

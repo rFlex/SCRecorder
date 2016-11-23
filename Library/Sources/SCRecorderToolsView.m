@@ -8,6 +8,7 @@
 
 #import "SCRecorderToolsView.h"
 #import "SCRecorderFocusTargetView.h"
+#import "SCRecorder.h"
 
 #define BASE_FOCUS_TARGET_WIDTH 60
 #define BASE_FOCUS_TARGET_HEIGHT 60

@@ -8,6 +8,13 @@
 
 #import "SCRecorder.h"
 #import "SCRecordSession_Internal.h"
+#import "SCVideoConfiguration.h"
+#import "SCSampleBufferHolder.h"
+#import "SCAudioConfiguration.h"
+#import "SCPhotoConfiguration.h"
+#import "SCContext.h"
+#import "SCImageView.h"
+
 #define dispatch_handler(x) if (x != nil) dispatch_async(dispatch_get_main_queue(), x)
 #define kSCRecorderRecordSessionQueueKey "SCRecorderRecordSessionQueue"
 #define kMinTimeBetweenAppend 0.004
