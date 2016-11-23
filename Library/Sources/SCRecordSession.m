@@ -314,6 +314,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     
     if (theError == nil) {
         writer.shouldOptimizeForNetworkUse = YES;
+        writer.movieFragmentInterval = CMTimeMakeWithSeconds(1, 600);
         
         if (_videoInput != nil) {
             if ([writer canAddInput:_videoInput]) {
