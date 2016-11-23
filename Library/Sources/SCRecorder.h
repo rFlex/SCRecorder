@@ -200,7 +200,7 @@
  this will contains a float between 0 and 1 representing the
  recorded ratio on the current record session, 1 being fully recorded.
  */
-@property (readonly, nonatomic) CGFloat ratioRecorded;
+@property (readonly, nonatomic) CGFloat recordedRatio;
 
 /**
  If enabled, the recorder will initialize the session and create the record segments
