@@ -107,6 +107,11 @@ static char *ContextDidChangeDevice = "DidChangeDevice";
     
     CGPoint viewPoint = [self.recorder convertPointOfInterestToViewCoordinates:currentFocusPoint];
     viewPoint = [self convertPoint:viewPoint fromView:self.recorder.previewView];
+    
+    if (isnan(viewPoint.x) || isnan(viewPoint.y)) {
+        viewPoint=CGPointMake(0.5,0.5);
+    }
+    
     self.cameraFocusTargetView.center = viewPoint;
 }
 
@@ -148,6 +153,12 @@ static char *ContextDidChangeDevice = "DidChangeDevice";
 
 // Change to continuous auto focus. The camera will constantly focus at the point choosen.
 - (void)tapToContinouslyAutoFocus:(UIGestureRecognizer *)gestureRecognizer {
+    
+    id<SCRecorderToolsViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(recorderToolsView:didDoubleTapToFocusWithGestureRecognizer:)]) {
+        [delegate recorderToolsView:self didDoubleTapToFocusWithGestureRecognizer:gestureRecognizer];
+    }
+    
     SCRecorder *recorder = self.recorder;
     if (recorder.focusSupported) {
         self.cameraFocusTargetView.center = self.center;
