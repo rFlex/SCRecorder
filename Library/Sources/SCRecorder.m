@@ -380,6 +380,27 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 - (void)capturePhoto:(void(^)(NSError*, UIImage*))completionHandler {
     AVCaptureConnection *connection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
     if (connection != nil) {
+    	
+        if ([connection isVideoOrientationSupported]) {
+            AVCaptureVideoOrientation videoOrientation;
+            UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+            switch (deviceOrientation) {
+                case UIDeviceOrientationLandscapeLeft:
+                    videoOrientation = AVCaptureVideoOrientationLandscapeRight;
+                    break;
+                case UIDeviceOrientationLandscapeRight:
+                    videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
+                    break;
+                case UIDeviceOrientationPortraitUpsideDown:
+                    videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+                    break;
+                default:
+                    videoOrientation = AVCaptureVideoOrientationPortrait;
+                    break;
+            }
+            connection.videoOrientation = videoOrientation;
+        }
+    
         [_photoOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:
          ^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
              
