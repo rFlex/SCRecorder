@@ -75,21 +75,8 @@
 - (BOOL)loadContextIfNeeded;
 
 /**
- Returns the rendered CIImage in the given rect.
- Subclass can override this method to alterate the rendered image.
- */
-- (CIImage *__nullable)renderedCIImageInRect:(CGRect)rect;
-
-/**
- Returns the rendered CIImage in the given rect.
- It internally calls renderedCIImageInRect:
- Subclass should not override this method.
- */
-- (UIImage *__nullable)renderedUIImageInRect:(CGRect)rect;
-
-/**
  Returns the rendered CIImage in its natural size.
- Subclass should not override this method.
+ Subclass can override this method to alterate the rendered image.
  */
 - (CIImage *__nullable)renderedCIImage;
 

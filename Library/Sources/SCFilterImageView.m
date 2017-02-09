@@ -10,8 +10,8 @@
 
 @implementation SCFilterImageView
 
-- (CIImage *)renderedCIImageInRect:(CGRect)rect {
-    CIImage *image = [super renderedCIImageInRect:rect];
+- (CIImage *)renderedCIImage {
+    CIImage *image = [super renderedCIImage];
 
     if (image != nil) {
         if (_filter != nil) {

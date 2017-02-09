@@ -143,8 +143,8 @@
     }
 }
 
-- (CIImage *)renderedCIImageInRect:(CGRect)rect {
-    CIImage *image = [super renderedCIImageInRect:rect];
+- (CIImage *)renderedCIImage {
+    CIImage *image = [super renderedCIImage];
 
     CFTimeInterval imageTime = self.CIImageTime;
     if (self.preprocessingFilter != nil) {
