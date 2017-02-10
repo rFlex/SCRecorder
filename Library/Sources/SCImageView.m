@@ -91,9 +91,11 @@
     [super layoutSubviews];
 
     _GLKView.frame = self.bounds;
+    [_GLKView setNeedsDisplay];
 
 #if !(TARGET_IPHONE_SIMULATOR)
     _MTKView.frame = self.bounds;
+    [_MTKView setNeedsDisplay];
 #endif
 }
 
