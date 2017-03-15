@@ -64,7 +64,7 @@
 }
 
 - (void)updateScrollViewContentSize {
-    _selectFilterScrollView.contentSize = CGSizeMake(self.filters.count * self.frame.size.width * 3, self.frame.size.height);
+    _selectFilterScrollView.contentSize = CGSizeMake(self.filters.count * self.bounds.size.width * 3, self.bounds.size.height);
     
     if (self.selectedFilter != nil) {
         [self scrollToFilter:self.selectedFilter animated:NO];
