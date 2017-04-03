@@ -142,7 +142,7 @@
 
 /**
  Write this filter to a specific file.
- This filter can then be restored from this file using [SCFilter filterWithContentsOfUrl:].
+ This filter can then be restored from this file using [SCFilter filterWithContentsOfURL:].
  */
 - (void)writeToFile:(NSURL *__nonnull)fileUrl error:(NSError *__nullable*__nullable)error;
 

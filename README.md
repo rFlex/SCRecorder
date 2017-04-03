@@ -293,7 +293,7 @@ if (error == nil) {
 }
 
 // Restoring the filter group
-SCFilter *restoredFilter = [SCFilter filterWithContentsOfUrl:[NSURL fileUrlWithPath:@"some-url.cisf"]];
+SCFilter *restoredFilter = [SCFilter filterWithContentsOfURL:[NSURL fileUrlWithPath:@"some-url.cisf"]];
 
 // Processing a UIImage through the filter
 UIImage *myImage = ... // Some image
