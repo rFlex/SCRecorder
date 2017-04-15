@@ -63,6 +63,8 @@
  */
 @property (assign, nonatomic) BOOL refreshAutomaticallyWhenScrolling;
 
+@property (nonatomic) BOOL horizontalScroll; // default true; when false, scroll vertical.
+
 /**
  Scrolls to a specific filter
  */
