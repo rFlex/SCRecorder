@@ -126,6 +126,7 @@
                 _GLKView = [[GLKView alloc] initWithFrame:self.bounds context:context.EAGLContext];
                 _GLKView.contentScaleFactor = self.contentScaleFactor;
                 _GLKView.delegate = self;
+                _GLKView.backgroundColor = [UIColor clearColor];
                 [self insertSubview:_GLKView atIndex:0];
                 break;
 #if !(TARGET_IPHONE_SIMULATOR)
