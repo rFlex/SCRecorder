@@ -272,7 +272,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
             transform = track.preferredTransform;
 
             // Return the video if it is upside down
-            if (transform.b == 1 && transform.c == -1) {
+            if ((transform.b == -1 && transform.c == 1) || (transform.b == 1 && transform.c == -1)) {
                 transform = CGAffineTransformRotate(transform, M_PI);
             }
 
