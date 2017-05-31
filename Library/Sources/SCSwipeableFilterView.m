@@ -127,21 +127,44 @@
     }
 }
 
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    id<SCSwipeableFilterViewDelegate> del = self.delegate;
+    if ([del respondsToSelector:@selector(swipeableFilterViewDidBeginScroll:)]) {
+        [del swipeableFilterViewDidBeginScroll:self];
+    }
+}
+
 - (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView {
     [self updateCurrentSelected:YES];
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
     [self updateCurrentSelected:YES];
+    id<SCSwipeableFilterViewDelegate> del = self.delegate;
+    if ([del respondsToSelector:@selector(swipeableFilterViewDidEndScroll:)]) {
+        [del swipeableFilterViewDidEndScroll:self];
+    }
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     [self updateCurrentSelected:YES];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (!scrollView.isDragging && !scrollView.isDecelerating) {
+            id<SCSwipeableFilterViewDelegate> del = self.delegate;
+            if ([del respondsToSelector:@selector(swipeableFilterViewDidEndScroll:)]) {
+                [del swipeableFilterViewDidEndScroll:self];
+            }
+        }
+    });
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     if (!decelerate) {
         [self updateCurrentSelected:YES];
+        id<SCSwipeableFilterViewDelegate> del = self.delegate;
+        if ([del respondsToSelector:@selector(swipeableFilterViewDidEndScroll:)]) {
+            [del swipeableFilterViewDidEndScroll:self];
+        }
     }
 }
 

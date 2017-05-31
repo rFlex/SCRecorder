@@ -14,6 +14,9 @@
 @protocol SCSwipeableFilterViewDelegate <NSObject>
 
 - (void)swipeableFilterView:(SCSwipeableFilterView *__nonnull)swipeableFilterView didScrollToFilter:(SCFilter *__nullable)filter;
+@optional
+- (void)swipeableFilterViewDidBeginScroll:(SCSwipeableFilterView *__nonnull)swipeableFilterView;
+- (void)swipeableFilterViewDidEndScroll:(SCSwipeableFilterView *__nonnull)swipeableFilterView;
 
 @end
 
