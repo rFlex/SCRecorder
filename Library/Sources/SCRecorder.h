@@ -57,6 +57,7 @@
  * > 0 if configuring
  * */
 @property (readonly, nonatomic) int beginSessionConfigurationCount;
+@property (assign, nonatomic) BOOL finishedCommit;
 
 /**
  Change the flash mode on the camera

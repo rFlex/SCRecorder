@@ -172,6 +172,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (_captureSession != nil) {
         _beginSessionConfigurationCount++;
         if (_beginSessionConfigurationCount == 1) {
+            self.finishedCommit = NO;
             [_captureSession beginConfiguration];
         }
     }
@@ -182,6 +183,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _beginSessionConfigurationCount--;
         if (_beginSessionConfigurationCount == 0) {
             [_captureSession commitConfiguration];
+            self.finishedCommit = YES;
         }
     }
 }
