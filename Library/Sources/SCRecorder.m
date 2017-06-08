@@ -331,7 +331,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         success = [self prepare:nil];
     }
 
-    if (!_captureSession.isRunning && _beginSessionConfigurationCount == 0) {
+    if (!_captureSession.isRunning) {
         [_captureSession startRunning];
     }
 
@@ -1006,7 +1006,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
             }
 
             if (newInput != nil) {
-                if ([_captureSession canAddInput:newInput] && _captureSession.inputs.count < 1) {
+                if ([_captureSession canAddInput:newInput]) {
                     [_captureSession addInput:newInput];
                     if ([newInput.device hasMediaType:AVMediaTypeVideo]) {
                         _videoInputAdded = YES;
