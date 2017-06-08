@@ -1393,6 +1393,10 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     return _adjustingFocus;
 }
 
+- (int)beginSessionConfigurationCount {
+    return _beginSessionConfigurationCount;
+}
+
 - (void)setAdjustingExposure:(BOOL)adjustingExposure {
     if (_isAdjustingExposure != adjustingExposure) {
         [self willChangeValueForKey:@"isAdjustingExposure"];
