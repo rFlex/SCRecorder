@@ -331,7 +331,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         success = [self prepare:nil];
     }
 
-    if (!_captureSession.isRunning) {
+    if (!_captureSession.isRunning && _beginSessionConfigurationCount == 0) {
         [_captureSession startRunning];
     }
 
