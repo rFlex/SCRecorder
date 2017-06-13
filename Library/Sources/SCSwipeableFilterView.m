@@ -70,12 +70,16 @@
     [self updateScrollViewContentSize];
 }
 
-- (void)updateScrollViewContentSize {
+- (CGSize)wantedContentSize {
     if (_horizontalScroll) {
-        _selectFilterScrollView.contentSize = CGSizeMake(self.filters.count * self.bounds.size.width * 3, self.bounds.size.height);
+        return CGSizeMake(self.filters.count * self.bounds.size.width * 3, self.bounds.size.height);
     } else {
-        _selectFilterScrollView.contentSize = CGSizeMake(self.bounds.size.width, self.filters.count * self.bounds.size.height * 3);
+        return CGSizeMake(self.bounds.size.width, self.filters.count * self.bounds.size.height * 3);
     }
+}
+
+- (void)updateScrollViewContentSize {
+    _selectFilterScrollView.contentSize = [self wantedContentSize];
     
     if (self.selectedFilter != nil) {
         [self scrollToFilter:self.selectedFilter animated:NO];
@@ -169,6 +173,9 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if (!CGSizeEqualToSize(scrollView.contentSize, [self wantedContentSize])) {
+        return;
+    }
     if (_horizontalScroll) {
         CGFloat width = scrollView.frame.size.width;
         CGFloat contentOffsetX = scrollView.contentOffset.x;
