@@ -14,6 +14,9 @@
 @protocol SCSwipeableFilterViewDelegate <NSObject>
 
 - (void)swipeableFilterView:(SCSwipeableFilterView *__nonnull)swipeableFilterView didScrollToFilter:(SCFilter *__nullable)filter;
+@optional
+- (void)swipeableFilterViewDidBeginScroll:(SCSwipeableFilterView *__nonnull)swipeableFilterView;
+- (void)swipeableFilterViewDidEndScroll:(SCSwipeableFilterView *__nonnull)swipeableFilterView;
 
 @end
 
@@ -62,6 +65,8 @@
  Default is YES
  */
 @property (assign, nonatomic) BOOL refreshAutomaticallyWhenScrolling;
+
+@property (nonatomic) BOOL horizontalScroll; // default true; when false, scroll vertical.
 
 /**
  Scrolls to a specific filter

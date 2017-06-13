@@ -49,6 +49,10 @@
     return self;
 }
 
+- (void)dealloc {
+    [EAGLContext setCurrentContext:nil];
+}
+
 - (void)_imageViewCommonInit {
     _scaleAndResizeCIImageAutomatically = YES;
     self.preferredCIImageTransform = CGAffineTransformIdentity;
@@ -91,9 +95,11 @@
     [super layoutSubviews];
 
     _GLKView.frame = self.bounds;
+    [_GLKView setNeedsDisplay];
 
 #if !(TARGET_IPHONE_SIMULATOR)
     _MTKView.frame = self.bounds;
+    [_MTKView setNeedsDisplay];
 #endif
 }
 
@@ -124,6 +130,7 @@
                 _GLKView = [[GLKView alloc] initWithFrame:self.bounds context:context.EAGLContext];
                 _GLKView.contentScaleFactor = self.contentScaleFactor;
                 _GLKView.delegate = self;
+                _GLKView.backgroundColor = [UIColor clearColor];
                 [self insertSubview:_GLKView atIndex:0];
                 break;
 #if !(TARGET_IPHONE_SIMULATOR)
@@ -156,9 +163,9 @@
 #endif
 }
 
-- (UIImage *)renderedUIImageInRect:(CGRect)rect {
+- (UIImage *)renderedUIImage {
     UIImage *returnedImage = nil;
-    CIImage *image = [self renderedCIImageInRect:rect];
+    CIImage *image = [self renderedCIImage];
 
     if (image != nil) {
         CIContext *context = nil;
@@ -179,7 +186,7 @@
     return returnedImage;
 }
 
-- (CIImage *)renderedCIImageInRect:(CGRect)rect {
+- (CIImage *)renderedCIImage {
     CMSampleBufferRef sampleBuffer = _sampleBufferHolder.sampleBuffer;
 
     if (sampleBuffer != nil) {
@@ -195,24 +202,12 @@
         if (self.context.type != SCContextTypeEAGL) {
             image = [image imageByApplyingOrientation:4];
         }
-
-        if (self.scaleAndResizeCIImageAutomatically) {
-            image = [self scaleAndResizeCIImage:image forRect:rect];
-        }
     }
 
     return image;
 }
 
-- (CIImage *)renderedCIImage {
-    return [self renderedCIImageInRect:self.CIImage.extent];
-}
-
-- (UIImage *)renderedUIImage {
-    return [self renderedUIImageInRect:self.CIImage.extent];
-}
-
-- (CIImage *)scaleAndResizeCIImage:(CIImage *)image forRect:(CGRect)rect {
+- (CGRect)scaleAndResizeCIImage:(CIImage *)image forRect:(CGRect)rect {
     CGSize imageSize = image.extent.size;
 
     CGFloat horizontalScale = rect.size.width / imageSize.width;
@@ -228,7 +223,13 @@
         verticalScale = horizontalScale;
     }
 
-    return [image imageByApplyingTransform:CGAffineTransformMakeScale(horizontalScale, verticalScale)];
+    CGFloat newWidth = imageSize.width * horizontalScale;
+    CGFloat newHeight = imageSize.height * verticalScale;
+    CGFloat x = (rect.size.width - newWidth) * 0.5;
+    CGFloat y = (rect.size.height - newHeight) * 0.5;
+    
+    CGRect result = CGRectMake(x, y, newWidth, newHeight);
+    return result;
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -236,10 +237,14 @@
 
     if ((_CIImage != nil || _sampleBufferHolder.sampleBuffer != nil) && [self loadContextIfNeeded]) {
         if (self.context.type == SCContextTypeCoreGraphics) {
-            CIImage *image = [self renderedCIImageInRect:rect];
-
+            CIImage *image = [self renderedCIImage];
+            
             if (image != nil) {
-                [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
+                CGRect inRect = rect;
+                if (_scaleAndResizeCIImageAutomatically) {
+                    inRect = [self scaleAndResizeCIImage:image forRect:rect];
+                }
+                [_context.CIContext drawImage:image inRect:inRect fromRect:image.extent];
             }
         }
     }
@@ -345,10 +350,14 @@ static CGRect CGRectMultiply(CGRect rect, CGFloat contentScale) {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        CIImage *image = [self renderedCIImageInRect:rect];
+        CIImage *image = [self renderedCIImage];
 
         if (image != nil) {
-            [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
+            CGRect inRect = rect;
+            if (_scaleAndResizeCIImageAutomatically) {
+                inRect = [self scaleAndResizeCIImage:image forRect:rect];
+            }
+            [_context.CIContext drawImage:image inRect:inRect fromRect:image.extent];
         }
     }
 }
@@ -358,9 +367,7 @@ static CGRect CGRectMultiply(CGRect rect, CGFloat contentScale) {
 
 - (void)drawInMTKView:(nonnull MTKView *)view {
     @autoreleasepool {
-        CGRect rect = CGRectMultiply(view.bounds, self.contentScaleFactor);
-
-        CIImage *image = [self renderedCIImageInRect:rect];
+        CIImage *image = [self renderedCIImage];
 
         if (image != nil) {
             id<MTLCommandBuffer> commandBuffer = [_MTLCommandQueue commandBuffer];

@@ -324,7 +324,9 @@
     }
 
     [ciFilter setValue:image forKey:kCIInputImageKey];
-    return [ciFilter valueForKey:kCIOutputImageKey];
+    CIImage *result = [ciFilter valueForKey:kCIOutputImageKey];
+    [ciFilter setValue:nil forKey:kCIInputImageKey];
+    return result;
 }
 
 - (void)writeToFile:(NSURL *)fileUrl error:(NSError *__autoreleasing *)error {
