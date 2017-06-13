@@ -49,6 +49,10 @@
     return self;
 }
 
+- (void)dealloc {
+    [EAGLContext setCurrentContext:nil];
+}
+
 - (void)_imageViewCommonInit {
     _scaleAndResizeCIImageAutomatically = YES;
     self.preferredCIImageTransform = CGAffineTransformIdentity;
