@@ -31,6 +31,7 @@
     BOOL _needsSwitchBackToContinuousFocus;
     BOOL _adjustingFocus;
     BOOL _didCaptureFirstAudioBuffer;
+    BOOL _preparing;
     int _beginSessionConfigurationCount;
     double _lastAppendedVideoTime;
     NSTimer *_movieOutputProgressTimer;
@@ -305,6 +306,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         [NSException raise:@"SCCameraException" format:@"The session is already opened"];
     }
 
+    if (_preparing) {
+        return NO;
+    }
+
+    _preparing = YES;
+
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
     session.automaticallyConfiguresApplicationAudioSession = self.automaticallyConfiguresApplicationAudioSession;
     _beginSessionConfigurationCount = 0;
@@ -324,12 +331,14 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
     [self commitConfiguration];
 
+    _preparing = NO;
+
     return success;
 }
 
 - (BOOL)startRunning {
     BOOL success = YES;
-    if (!self.isPrepared) {
+    if (!self.isPrepared && !_preparing) {
         success = [self prepare:nil];
     }
 
