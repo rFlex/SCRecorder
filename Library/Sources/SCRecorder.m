@@ -339,7 +339,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
 - (BOOL)startRunning {
     BOOL success = YES;
-    if (!self.isPrepared && !_preparing) {
+    if (!self.isPrepared && !_preparing && !_reconfiguring) {
         success = [self prepare:nil];
     }
 
