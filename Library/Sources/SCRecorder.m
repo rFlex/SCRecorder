@@ -32,6 +32,7 @@
     BOOL _adjustingFocus;
     BOOL _didCaptureFirstAudioBuffer;
     BOOL _preparing;
+    BOOL _reconfiguring;
     int _beginSessionConfigurationCount;
     double _lastAppendedVideoTime;
     NSTimer *_movieOutputProgressTimer;
@@ -1038,7 +1039,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)reconfigureVideoInput:(BOOL)shouldConfigureVideo audioInput:(BOOL)shouldConfigureAudio {
+    if (_reconfiguring) {
+        return;
+    }
+
     if (_captureSession != nil) {
+        _reconfiguring = YES;
         [self beginConfiguration];
 
         NSError *videoError = nil;
@@ -1069,6 +1075,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 [delegate recorder:self didReconfigureVideoInput:videoError];
             }
         }
+
+        _reconfiguring = NO;
     }
 }
 
