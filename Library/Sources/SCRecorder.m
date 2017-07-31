@@ -1320,7 +1320,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (_resetZoomOnChangeDevice) {
         self.videoZoomFactor = 1;
     }
-    if (_captureSession != nil) {
+    if (_captureSession != nil && !_reconfiguring) {
         [self reconfigureVideoInput:self.videoConfiguration.enabled audioInput:NO];
     }
 
