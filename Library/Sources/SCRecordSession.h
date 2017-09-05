@@ -157,12 +157,12 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 /**
  Remove all the record segments and their associated files.
  */
-- (void)removeAllSegments;
+- (void)removeAllSegments:(void(^ __nullable)())completionHandler;
 
 /**
  Remove all the record segments and their associated files if deleteFiles is true.
  */
-- (void)removeAllSegments:(BOOL)deleteFiles;
+- (void)removeAllSegments:(BOOL)deleteFiles withCompletion:(void(^ __nullable)())completionHandler;
 
 /**
  Remove the last segment safely. Does nothing if no segment were recorded.

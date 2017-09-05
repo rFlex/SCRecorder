@@ -210,11 +210,13 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     }];
 }
 
-- (void)removeAllSegments {
-    [self removeAllSegments:YES];
+- (void)removeAllSegments:(void(^ __nullable)())completionHandler {
+    [self removeAllSegments:YES
+          withCompletion:completionHandler];
 }
 
-- (void)removeAllSegments:(BOOL)removeFiles {
+- (void)removeAllSegments:(BOOL)removeFiles
+           withCompletion:(void(^ __nullable)())completionHandler;{
     [self dispatchSyncOnSessionQueue:^{
         while (_segments.count > 0) {
             if (removeFiles) {
@@ -225,6 +227,10 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         }
 
         _segmentsDuration = kCMTimeZero;
+
+        if (completionHandler) {
+            completionHandler();
+        }
     }];
 }
 
@@ -669,7 +675,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
 - (void)finishEndSession:(NSError*)mergeError completionHandler:(void (^)(NSError *))completionHandler {
     if (mergeError == nil) {
-        [self removeAllSegments];
+        [self removeAllSegments:nil];
         if (completionHandler != nil) {
             completionHandler(nil);
         }
@@ -683,13 +689,13 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 - (void)cancelSession:(void (^)())completionHandler {
     [self dispatchSyncOnSessionQueue:^{
         if (_assetWriter == nil) {
-            [self removeAllSegments];
+            [self removeAllSegments:nil];
             if (completionHandler != nil) {
                 completionHandler();
             }
         } else {
             [self endSegmentWithInfo:nil completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
-                [self removeAllSegments];
+                [self removeAllSegments:nil];
                 if (completionHandler != nil) {
                     completionHandler();
                 }
@@ -952,12 +958,12 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     }
 
     return @{
-             SCRecordSessionSegmentsKey: recordSegments,
-             SCRecordSessionDurationKey : [NSNumber numberWithDouble:CMTimeGetSeconds(_segmentsDuration)],
-             SCRecordSessionIdentifierKey : _identifier,
-             SCRecordSessionDateKey : _date,
-             SCRecordSessionDirectoryKey : _segmentsDirectory
-             };
+            SCRecordSessionSegmentsKey: recordSegments,
+            SCRecordSessionDurationKey : [NSNumber numberWithDouble:CMTimeGetSeconds(_segmentsDuration)],
+            SCRecordSessionIdentifierKey : _identifier,
+            SCRecordSessionDateKey : _date,
+            SCRecordSessionDirectoryKey : _segmentsDirectory
+    };
 }
 
 - (NSURL *)outputUrl {
