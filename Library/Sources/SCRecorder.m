@@ -31,6 +31,8 @@
     BOOL _needsSwitchBackToContinuousFocus;
     BOOL _adjustingFocus;
     BOOL _didCaptureFirstAudioBuffer;
+    BOOL _preparing;
+    BOOL _reconfiguring;
     int _beginSessionConfigurationCount;
     double _lastAppendedVideoTime;
     NSTimer *_movieOutputProgressTimer;
@@ -172,6 +174,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (_captureSession != nil) {
         _beginSessionConfigurationCount++;
         if (_beginSessionConfigurationCount == 1) {
+            self.finishedCommit = NO;
             [_captureSession beginConfiguration];
         }
     }
@@ -182,6 +185,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _beginSessionConfigurationCount--;
         if (_beginSessionConfigurationCount == 0) {
             [_captureSession commitConfiguration];
+            self.finishedCommit = YES;
         }
     }
 }
@@ -303,6 +307,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         [NSException raise:@"SCCameraException" format:@"The session is already opened"];
     }
 
+    if (_preparing) {
+        return NO;
+    }
+
+    _preparing = YES;
+
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
     session.automaticallyConfiguresApplicationAudioSession = self.automaticallyConfiguresApplicationAudioSession;
     _beginSessionConfigurationCount = 0;
@@ -322,12 +332,14 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
     [self commitConfiguration];
 
+    _preparing = NO;
+
     return success;
 }
 
 - (BOOL)startRunning {
     BOOL success = YES;
-    if (!self.isPrepared) {
+    if (!self.isPrepared && !_preparing && !_reconfiguring) {
         success = [self prepare:nil];
     }
 
@@ -1027,7 +1039,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)reconfigureVideoInput:(BOOL)shouldConfigureVideo audioInput:(BOOL)shouldConfigureAudio {
+    if (_reconfiguring) {
+        return;
+    }
+
     if (_captureSession != nil) {
+        _reconfiguring = YES;
         [self beginConfiguration];
 
         NSError *videoError = nil;
@@ -1058,6 +1075,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 [delegate recorder:self didReconfigureVideoInput:videoError];
             }
         }
+
+        _reconfiguring = NO;
     }
 }
 
@@ -1301,7 +1320,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (_resetZoomOnChangeDevice) {
         self.videoZoomFactor = 1;
     }
-    if (_captureSession != nil) {
+    if (_captureSession != nil && !_reconfiguring) {
         [self reconfigureVideoInput:self.videoConfiguration.enabled audioInput:NO];
     }
 
@@ -1391,6 +1410,10 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
 - (BOOL)isAdjustingFocus {
     return _adjustingFocus;
+}
+
+- (int)beginSessionConfigurationCount {
+    return _beginSessionConfigurationCount;
 }
 
 - (void)setAdjustingExposure:(BOOL)adjustingExposure {
