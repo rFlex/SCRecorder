@@ -376,7 +376,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
 
         NSDictionary *pixelBufferAttributes = @{
-                (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
+                (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange),
                 (id)kCVPixelBufferWidthKey : @(dimensions.width),
                 (id)kCVPixelBufferHeightKey : @(dimensions.height)
         };

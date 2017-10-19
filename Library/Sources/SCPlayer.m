@@ -126,7 +126,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
     } else if (context == LoadedTimeRanges) {
         void (^block)() = ^{
             id<SCPlayerDelegate> delegate = self.delegate;
-            
+
             if ([delegate respondsToSelector:@selector(player:didUpdateLoadedTimeRanges:)]) {
                 NSArray * array= self.currentItem.loadedTimeRanges;
                 CMTimeRange range=[array.firstObject CMTimeRangeValue];
@@ -141,7 +141,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
     } else if (context == PlaybackBufferEmpty) {
         void (^block)() = ^{
             id<SCPlayerDelegate> delegate = self.delegate;
-            
+
             if ([delegate respondsToSelector:@selector(player:itemPlaybackBufferIsEmpty:)]) {
                 [delegate player:self itemPlaybackBufferIsEmpty:self.currentItem];
             }
@@ -160,7 +160,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
         [_oldItem removeObserver:self forKeyPath:@"status"];
         [_oldItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
         [_oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
-        
+
         [self unsetupVideoOutputToItem:_oldItem];
 
         _oldItem = nil;
@@ -252,7 +252,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (void)setupVideoOutputToItem:(AVPlayerItem *)item {
     if (_displayLink != nil && item != nil && _videoOutput == nil && item.status == AVPlayerItemStatusReadyToPlay) {
-        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
+        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)};
         _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
         _videoOutput.suppressesPlayerRendering = self.shouldSuppressPlayerRendering;
