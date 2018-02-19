@@ -1308,9 +1308,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     
     if (currentDevice.hasFlash) {
         if ([currentDevice lockForConfiguration:&error]) {
-            if (flashMode == SCFlashModeLight) {
-                if ([currentDevice isTorchModeSupported:AVCaptureTorchModeOn]) {
+            if (flashMode == SCFlashModeLightOn || flashMode == SCFlashModeLightAuto) {
+                if (flashMode == SCFlashModeLightOn && [currentDevice isTorchModeSupported:AVCaptureTorchModeOn]) {
                     [currentDevice setTorchMode:AVCaptureTorchModeOn];
+                } else if (flashMode == SCFlashModeLightAuto && [currentDevice isTorchModeSupported:AVCaptureTorchModeAuto]) {
+                    [currentDevice setTorchMode:AVCaptureTorchModeAuto];
                 }
                 if ([currentDevice isFlashModeSupported:AVCaptureFlashModeOff]) {
                     [currentDevice setFlashMode:AVCaptureFlashModeOff];
