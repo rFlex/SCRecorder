@@ -979,7 +979,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                         newDevice.exposureMode = AVCaptureExposureModeContinuousAutoExposure;
                     }
                     if ([newDevice isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
-                        newDevice.exposureMode = AVCaptureFocusModeContinuousAutoFocus;
+                        newDevice.focusMode = AVCaptureFocusModeContinuousAutoFocus;
                     }
                 }
                 
