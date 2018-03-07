@@ -15,6 +15,7 @@
 @interface SCRecorder() {
     AVCaptureVideoPreviewLayer *_previewLayer;
     AVCaptureSession *_captureSession;
+    AVCaptureSession *_audioCaptureSession;
     UIView *_previewView;
     AVCaptureVideoDataOutput *_videoOutput;
     AVCaptureMovieFileOutput *_movieOutput;
@@ -207,8 +208,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 [session removeOutput:_videoOutput];
             }
             
-            if (_audioOutput != nil && [session.outputs containsObject:_audioOutput]) {
-                [session removeOutput:_audioOutput];
+            if (_audioOutput != nil && [_audioCaptureSession.outputs containsObject:_audioOutput]) {
+                [_audioCaptureSession removeOutput:_audioOutput];
             }
             
             if (![session.outputs containsObject:_movieOutput]) {
@@ -255,9 +256,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                     [_audioOutput setSampleBufferDelegate:self queue:_sessionQueue];
                 }
                 
-                if (![session.outputs containsObject:_audioOutput]) {
-                    if ([session canAddOutput:_audioOutput]) {
-                        [session addOutput:_audioOutput];
+                if (![_audioCaptureSession.outputs containsObject:_audioOutput]) {
+                    if ([_audioCaptureSession canAddOutput:_audioOutput]) {
+                        [_audioCaptureSession addOutput:_audioOutput];
                         _audioOutputAdded = YES;
                     } else {
                         if (newError == nil) {
@@ -298,6 +299,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (_captureSession != nil) {
         [NSException raise:@"SCCameraException" format:@"The session is already opened"];
     }
+
+    _audioCaptureSession = [[AVCaptureSession alloc] init];
+    _audioCaptureSession.automaticallyConfiguresApplicationAudioSession = false;
     
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
 	session.automaticallyConfiguresApplicationAudioSession = self.automaticallyConfiguresApplicationAudioSession;
@@ -326,7 +330,10 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (!self.isPrepared) {
         success = [self prepare:nil];
     }
-    
+
+    if (!_audioCaptureSession.isRunning) {
+        [_audioCaptureSession startRunning];
+    }
     if (!_captureSession.isRunning) {
         [_captureSession startRunning];
     }
@@ -335,6 +342,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)stopRunning {
+    [_audioCaptureSession stopRunning];
     [_captureSession stopRunning];
 }
 
@@ -409,6 +417,16 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)unprepare {
+    if (_audioCaptureSession != nil) {
+        for (AVCaptureDeviceInput *input in _audioCaptureSession.inputs) {
+            [_audioCaptureSession removeInput:input];
+        }
+
+        for (AVCaptureOutput *output in _audioCaptureSession.outputs) {
+            [_audioCaptureSession removeOutput:output];
+        }
+        _audioCaptureSession = nil;
+    }
     if (_captureSession != nil) {
         for (AVCaptureDeviceInput *input in _captureSession.inputs) {
             [_captureSession removeInput:input];
@@ -1000,18 +1018,20 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         if (newDevice != nil) {
             newInput = [[AVCaptureDeviceInput alloc] initWithDevice:newDevice error:error];
         }
+
+        AVCaptureSession *session = mediaType == AVMediaTypeAudio ? _audioCaptureSession : _captureSession;
         
         if (*error == nil) {
             if (currentInput != nil) {
-                [_captureSession removeInput:currentInput];
+                [session removeInput:currentInput];
                 if ([currentInput.device hasMediaType:AVMediaTypeVideo]) {
                     [self removeVideoObservers:currentInput.device];
                 }
             }
             
             if (newInput != nil) {
-                if ([_captureSession canAddInput:newInput]) {
-                    [_captureSession addInput:newInput];
+                if ([session canAddInput:newInput]) {
+                    [session addInput:newInput];
                     if ([newInput.device hasMediaType:AVMediaTypeVideo]) {
                         _videoInputAdded = YES;
                         
@@ -1218,7 +1238,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (AVCaptureDeviceInput*)currentDeviceInputForMediaType:(NSString*)mediaType {
-    for (AVCaptureDeviceInput* deviceInput in _captureSession.inputs) {
+    AVCaptureSession *session = mediaType == AVMediaTypeAudio ? _audioCaptureSession : _captureSession;
+    for (AVCaptureDeviceInput* deviceInput in session.inputs) {
         if ([deviceInput.device hasMediaType:mediaType]) {
             return deviceInput;
         }
