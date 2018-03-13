@@ -42,7 +42,7 @@
     size_t _transformFilterBufferWidth;
     size_t _transformFilterBufferHeight;
 }
-
+@property (nonatomic, strong) SCContext*	scContext;
 @end
 
 @implementation SCRecorder
@@ -95,10 +95,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         [_audioConfiguration addObserver:self forKeyPath:@"enabled" options:NSKeyValueObservingOptionNew context:SCRecorderAudioEnabledContext];
         [_photoConfiguration addObserver:self forKeyPath:@"options" options:NSKeyValueObservingOptionNew context:SCRecorderPhotoOptionsContext];
 
-        SCContext *context = [SCContext
-                contextWithType:SCContextTypeAuto
-                options:nil];
-        _context = context.CIContext;
+		self.scContext = [SCContext contextWithType:SCContextTypeAuto
+											options:nil];
+        _context = self.scContext.CIContext;
     }
 
     return self;
