@@ -179,7 +179,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
         CGContextRef ctx = SCCreateContextFromPixelBuffer(outputPixelBuffer);
 
-        void (^layoutBlock)() = ^{
+        void (^layoutBlock)(void) = ^{
             overlay.frame = CGRectMake(0, 0, videoSize.width, videoSize.height);
 
             if ([overlay respondsToSelector:@selector(updateWithVideoTime:)]) {
@@ -288,7 +288,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
                 SCIOPixelBuffers *videoBuffer = nil;
                 SCSampleBufferHolder *bufferHolder = nil;
 
-                CMTime time;
+                CMTime time = kCMTimeZero;
                 if (videoProcessingQueue != nil) {
                     videoBuffer = [videoProcessingQueue dequeue];
                     time = videoBuffer.time;
@@ -385,7 +385,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     }
 }
 
-- (void)callCompletionHandler:(void (^)())completionHandler {
+- (void)callCompletionHandler:(void (^)(void))completionHandler {
     if (!_cancelled) {
         [self _setProgress:1];
     }
@@ -465,22 +465,23 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 - (void)cancelExport
 {
     _cancelled = YES;
-
+	__weak typeof(self) wSelf = self;
     dispatch_sync(_videoQueue, ^{
-        if (_needsLeaveVideo) {
-            _needsLeaveVideo = NO;
-            dispatch_group_leave(_dispatchGroup);
+		typeof(self) iSelf = wSelf;
+        if (iSelf->_needsLeaveVideo) {
+            iSelf->_needsLeaveVideo = NO;
+            dispatch_group_leave(iSelf->_dispatchGroup);
         }
 
-        dispatch_sync(_audioQueue, ^{
-            if (_needsLeaveAudio) {
-                _needsLeaveAudio = NO;
-                dispatch_group_leave(_dispatchGroup);
+        dispatch_sync(iSelf->_audioQueue, ^{
+            if (iSelf->_needsLeaveAudio) {
+                iSelf->_needsLeaveAudio = NO;
+                dispatch_group_leave(iSelf->_dispatchGroup);
             }
         });
 
-        [_reader cancelReading];
-        [_writer cancelWriting];
+        [iSelf->_reader cancelReading];
+        [iSelf->_writer cancelWriting];
     });
 }
 
@@ -655,7 +656,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     }
 }
 
-- (void)exportAsynchronouslyWithCompletionHandler:(void (^)())completionHandler {
+- (void)exportAsynchronouslyWithCompletionHandler:(void (^)(void))completionHandler {
     _cancelled = NO;
     _nextAllowedVideoFrame = kCMTimeZero;
     NSError *error = nil;
@@ -695,18 +696,20 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     [self beginReadWriteOnAudio];
     [self beginReadWriteOnVideo];
 
+	__weak typeof(self) wSelf = self;
     dispatch_group_notify(_dispatchGroup, dispatch_get_main_queue(), ^{
-        if (_error == nil) {
-            _error = _writer.error;
+		typeof(self) iSelf = wSelf;
+        if (iSelf->_error == nil) {
+            iSelf->_error = iSelf->_writer.error;
         }
 
-        if (_error == nil && _writer.status != AVAssetWriterStatusCancelled) {
-            [_writer finishWritingWithCompletionHandler:^{
-                _error = _writer.error;
-                [self callCompletionHandler:completionHandler];
+        if (iSelf->_error == nil && iSelf->_writer.status != AVAssetWriterStatusCancelled) {
+            [iSelf->_writer finishWritingWithCompletionHandler:^{
+                iSelf->_error = iSelf->_writer.error;
+                [wSelf callCompletionHandler:completionHandler];
             }];
         } else {
-            [self callCompletionHandler:completionHandler];
+            [wSelf callCompletionHandler:completionHandler];
         }
     });
 }

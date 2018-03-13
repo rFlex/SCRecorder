@@ -403,7 +403,7 @@
  if it is empty or not.
  @param completionHandler called on the main queue when the recorder is ready to record again.
  */
-- (void)pause:( void(^ __nullable)()) completionHandler;
+- (void)pause:( void(^ __nullable)(void)) completionHandler;
 
 /**
  Capture a photo from the camera

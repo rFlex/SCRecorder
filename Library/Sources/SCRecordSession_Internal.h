@@ -39,6 +39,7 @@
 }
 
 @property (weak, nonatomic) SCRecorder *recorder;
+@property (assign, atomic) CMTime segmentsDuration;
 
 @property (readonly, nonatomic) BOOL videoInitialized;
 @property (readonly, nonatomic) BOOL audioInitialized;

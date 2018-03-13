@@ -12,7 +12,7 @@
 
 @property (assign, nonatomic) NSUInteger maxQueueSize;
 
-- (void)startProcessingWithBlock:(id(^)())processingBlock;
+- (void)startProcessingWithBlock:(id(^)(void))processingBlock;
 
 - (void)stopProcessing;
 

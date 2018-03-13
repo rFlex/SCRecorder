@@ -106,6 +106,6 @@
 /**
  Starts the asynchronous execution of the export session
  */
-- (void)exportAsynchronouslyWithCompletionHandler:(void(^__nullable)())completionHandler;
+- (void)exportAsynchronouslyWithCompletionHandler:(void(^__nullable)(void))completionHandler;
 
 @end
