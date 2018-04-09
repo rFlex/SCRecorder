@@ -50,7 +50,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  This will be called in the SCRecorder internal queue, make sure
  you don't block the thread for too long.
  */
-- (void)recorder:(SCRecorder *__nonnull)recorder didOutputAudioSampleBuffer:(__nonnull CMSampleBufferRef)videoSampleBuffer;
+- (void)recorder:(SCRecorder *__nonnull)recorder didOutputAudioSampleBuffer:(__nonnull CMSampleBufferRef)audioSampleBuffer;
 
 /**
  Called when the recorder has lost the focus. Returning true will make the recorder
