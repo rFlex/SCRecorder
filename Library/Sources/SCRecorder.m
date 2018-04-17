@@ -979,7 +979,17 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 if (newDevice.isSmoothAutoFocusSupported) {
                     newDevice.smoothAutoFocusEnabled = YES;
                 }
-                newDevice.subjectAreaChangeMonitoringEnabled = true;
+                
+                if ([newDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
+                    newDevice.subjectAreaChangeMonitoringEnabled = true;
+                } else {
+                    if ([newDevice isExposureModeSupported:AVCaptureExposureModeContinuousAutoExposure]) {
+                        newDevice.exposureMode = AVCaptureExposureModeContinuousAutoExposure;
+                    }
+                    if ([newDevice isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
+                        newDevice.exposureMode = AVCaptureFocusModeContinuousAutoFocus;
+                    }
+                }
                 
                 if (newDevice.isLowLightBoostSupported) {
                     newDevice.automaticallyEnablesLowLightBoostWhenAvailable = YES;
