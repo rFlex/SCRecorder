@@ -189,7 +189,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     }
 }
 
-- (BOOL)_reconfigureSession {
+- (BOOL)_reconfigureSession:(BOOL)attachAudio {
     NSError *newError = nil;
 
     AVCaptureSession *session = _captureSession;
@@ -254,28 +254,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                     _videoOutputAdded = YES;
                 }
             }
-
-            _audioOutputAdded = NO;
-            if (self.audioConfiguration.enabled) {
-                if (_audioOutput == nil) {
-                    _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
-                    [_audioOutput setSampleBufferDelegate:self queue:_sessionQueue];
-                }
-
-                if (![session.outputs containsObject:_audioOutput]) {
-                    if ([session canAddOutput:_audioOutput]) {
-                        [session addOutput:_audioOutput];
-                        _audioOutputAdded = YES;
-                    } else {
-                        if (newError == nil) {
-                            newError = [SCRecorder createError:@"Cannot add audioOutput inside the sesssion"];
-                        }
-                    }
-                } else {
-                    _audioOutputAdded = YES;
-                }
-            }
-        }
+			if (attachAudio)
+				newError = [self attachAudio];
+		}
 
         if (self.photoConfiguration.enabled) {
             if (_photoOutput == nil) {
@@ -301,7 +282,46 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     return newError == nil;
 }
 
+- (NSError*)attachAudio {
+	AVCaptureSession *session = _captureSession;
+	NSError* newError = nil;
+
+            _audioOutputAdded = NO;
+            if (self.audioConfiguration.enabled) {
+                if (_audioOutput == nil) {
+                    _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
+                    [_audioOutput setSampleBufferDelegate:self queue:_sessionQueue];
+                }
+
+                if (![session.outputs containsObject:_audioOutput]) {
+                    if ([session canAddOutput:_audioOutput]) {
+                        [session addOutput:_audioOutput];
+                        _audioOutputAdded = YES;
+                    } else {
+                        if (newError == nil) {
+                            newError = [SCRecorder createError:@"Cannot add audioOutput inside the sesssion"];
+                        }
+                    }
+                } else {
+                    _audioOutputAdded = YES;
+                }
+            }
+	return newError;
+        }
+
+- (void)detachAudio {
+	AVCaptureSession *session = _captureSession;
+	if (_audioOutput) {
+		if ([session.outputs containsObject:_audioOutput]) {
+			[session removeOutput:_audioOutput];
+        }
+		_audioOutputAdded = NO;
+		_audioOutput = nil;
+    }
+}
+
 - (BOOL)prepare:(NSError **)error {
+
     if (_captureSession != nil) {
         [NSException raise:@"SCCameraException" format:@"The session is already opened"];
     }
@@ -319,7 +339,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
     [self beginConfiguration];
 
-    BOOL success = [self _reconfigureSession];
+	BOOL success = [self _reconfigureSession:_isRecording];
 
     if (!success && error != nil) {
         *error = _error;
@@ -439,7 +459,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _previewLayer.session = nil;
         _captureSession = nil;
     }
-    [self _reconfigureSession];
+	[self _reconfigureSession:_isRecording];
 }
 
 - (void)_progressTimerFired:(NSTimer *)progressTimer {
@@ -1395,7 +1415,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     _captureSessionPreset = sessionPreset;
 
     if (_captureSession != nil) {
-        [self _reconfigureSession];
+		[self _reconfigureSession:_isRecording];
         _captureSessionPreset = _captureSession.sessionPreset;
     }
 }
@@ -1671,7 +1691,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (_fastRecordMethodEnabled != fastRecordMethodEnabled) {
         _fastRecordMethodEnabled = fastRecordMethodEnabled;
 
-        [self _reconfigureSession];
+		[self _reconfigureSession:_isRecording];
     }
 }
 

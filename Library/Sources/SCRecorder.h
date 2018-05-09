@@ -417,6 +417,8 @@
  */
 - (void)previewViewFrameChanged;
 
+- (NSError*)attachAudio;
+- (void)detachAudio;
 /**
  Get an image representing the last output video buffer.
  */
