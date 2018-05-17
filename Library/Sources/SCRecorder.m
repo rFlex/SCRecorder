@@ -865,6 +865,43 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 //                NSLog(@"SKIPPING");
             }
         }
+		if ([_delegate respondsToSelector:@selector(recorder:didAcquireAudioBufferList:)]) {
+			id<SCRecorderDelegate> 	delegate = self.delegate;
+//			CMItemCount 			sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
+			size_t					audioBufferListSize = 0;
+			AudioBufferList*		audioBufferList = nil;
+			CMBlockBufferRef		outAudioBuffer = nil;
+			OSStatus 				status = CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer, 
+																									 &audioBufferListSize, 
+																									 nil,
+																									 0, 
+																									 nil, nil, 
+																									 0, 
+																									 nil);
+			
+			if (status == kCMBlockBufferNoErr) {
+				audioBufferList = malloc(audioBufferListSize);
+				status = CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer, 
+																				 nil, 
+																				 audioBufferList, 
+																				 audioBufferListSize, 
+																				 nil, nil, 
+																				 kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment, 
+																				 &outAudioBuffer);
+				
+				if (status == kCMBlockBufferNoErr) {
+					dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
+						[delegate recorder:self didAcquireAudioBufferList:audioBufferList];
+						CFRelease(outAudioBuffer);
+						free(audioBufferList);
+					});
+				} else {
+					NSLog(@"OSStatus = %i", status);
+					CFRelease(outAudioBuffer);
+					free(audioBufferList);
+				}
+			}
+		}
     }
 }
 
