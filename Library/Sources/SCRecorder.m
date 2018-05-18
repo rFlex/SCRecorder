@@ -865,30 +865,23 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 //                NSLog(@"SKIPPING");
             }
         }
-		if ([_delegate respondsToSelector:@selector(recorder:didAcquireAudioBufferList:)]) {
+		if ([_delegate respondsToSelector:@selector(recorder:didAcquireAudioBuffer:length:)]) {
 			id<SCRecorderDelegate> 	delegate = self.delegate;
-//			CMItemCount 			sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
-			size_t					size = sizeof(AudioBufferList);
-			AudioBufferList*		audioBufferList = malloc(size);
-			CMBlockBufferRef		outAudioBuffer = nil;
-			OSStatus 				status = CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer, 
-																									 &size, 
-																									 audioBufferList, 
-																									 size, 
-																									 nil, nil, 
-																									 kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment, 
-																									 &outAudioBuffer);
+			CMBlockBufferRef		blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
+			CMItemCount 			sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
+			size_t					sampleSize = CMSampleBufferGetSampleSize(sampleBuffer, 0);
+			size_t					dataLength = sampleCount * sampleSize;
+			SInt16*					data = malloc(dataLength);
+			OSStatus				status = CMBlockBufferCopyDataBytes(blockBuffer, 0, dataLength, data);
 			
 			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
 				if (status == kCMBlockBufferNoErr) {
-					[delegate recorder:self didAcquireAudioBufferList:audioBufferList];
+					[delegate recorder:self didAcquireAudioBuffer:data length:sampleCount];
 				} else {
 					NSLog(@"OSStatus = %i", status);
 				}
-				if (outAudioBuffer) CFRelease(outAudioBuffer);
-				free(audioBufferList);
+				free(data);
 			});
-			
 		}
     }
 }
