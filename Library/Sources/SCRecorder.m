@@ -868,39 +868,27 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 		if ([_delegate respondsToSelector:@selector(recorder:didAcquireAudioBufferList:)]) {
 			id<SCRecorderDelegate> 	delegate = self.delegate;
 //			CMItemCount 			sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
-			size_t					audioBufferListSize = 0;
-			AudioBufferList*		audioBufferList = nil;
+			size_t					size = sizeof(AudioBufferList);
+			AudioBufferList*		audioBufferList = malloc(size);
 			CMBlockBufferRef		outAudioBuffer = nil;
 			OSStatus 				status = CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer, 
-																									 &audioBufferListSize, 
-																									 nil,
-																									 0, 
+																									 &size, 
+																									 audioBufferList, 
+																									 size, 
 																									 nil, nil, 
-																									 0, 
-																									 nil);
+																									 kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment, 
+																									 &outAudioBuffer);
 			
-			if (status == kCMBlockBufferNoErr) {
-				audioBufferList = malloc(audioBufferListSize);
-				status = CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer, 
-																				 nil, 
-																				 audioBufferList, 
-																				 audioBufferListSize, 
-																				 nil, nil, 
-																				 kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment, 
-																				 &outAudioBuffer);
-				
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
 				if (status == kCMBlockBufferNoErr) {
-					dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
-						[delegate recorder:self didAcquireAudioBufferList:audioBufferList];
-						CFRelease(outAudioBuffer);
-						free(audioBufferList);
-					});
+					[delegate recorder:self didAcquireAudioBufferList:audioBufferList];
 				} else {
 					NSLog(@"OSStatus = %i", status);
-					CFRelease(outAudioBuffer);
-					free(audioBufferList);
 				}
-			}
+				if (outAudioBuffer) CFRelease(outAudioBuffer);
+				free(audioBufferList);
+			});
+			
 		}
     }
 }
