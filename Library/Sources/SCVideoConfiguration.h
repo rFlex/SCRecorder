@@ -181,5 +181,7 @@ typedef enum : NSUInteger {
 
 
 - (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize;
+- (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize
+												sizeIsSuggestion:(BOOL)suggestion;
 
 @end
