@@ -33,16 +33,23 @@
     BOOL _didCaptureFirstAudioBuffer;
     BOOL _preparing;
     BOOL _reconfiguring;
+	BOOL _audioMuting;
     int _beginSessionConfigurationCount;
     double _lastAppendedVideoTime;
     NSTimer *_movieOutputProgressTimer;
-    CMTime _lastMovieFileOutputTime;
+	CMTime _lastMovieFileOutputTime;
+	CMTime _firstAudioTime;
     void(^_pauseCompletionHandler)(void);
     SCFilter *_transformFilter;
     size_t _transformFilterBufferWidth;
     size_t _transformFilterBufferHeight;
+
+	CMBlockBufferRef 	quietBlockBuffer;
+	CMSampleBufferRef 	quietSampleBuffer;
+
 }
 @property (nonatomic, strong) SCContext*	scContext;
+
 @end
 
 @implementation SCRecorder
@@ -57,7 +64,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     self = [super init];
 
     if (self) {
-        _sessionQueue = dispatch_queue_create("me.corsin.SCRecorder.RecordSession", nil);
+		quietBlockBuffer = nil;
+		quietSampleBuffer = nil;
+		_sessionQueue = dispatch_queue_create("me.corsin.SCRecorder.RecordSession", nil);
 
         dispatch_queue_set_specific(_sessionQueue, kSCRecorderRecordSessionQueueKey, "true", nil);
         dispatch_set_target_queue(_sessionQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
@@ -85,6 +94,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         _resetZoomOnChangeDevice = YES;
         _mirrorOnFrontCamera = NO;
         _automaticallyConfiguresApplicationAudioSession = YES;
+		_audioMuting = NO;
 
         self.device = AVCaptureDevicePositionBack;
         _videoConfiguration = [SCVideoConfiguration new];
@@ -104,11 +114,19 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)dealloc {
-    [_videoConfiguration removeObserver:self forKeyPath:@"enabled"];
-    [_audioConfiguration removeObserver:self forKeyPath:@"enabled"];
-    [_photoConfiguration removeObserver:self forKeyPath:@"options"];
+	[_videoConfiguration removeObserver:self forKeyPath:@"enabled"];
+	[_audioConfiguration removeObserver:self forKeyPath:@"enabled"];
+	[_photoConfiguration removeObserver:self forKeyPath:@"options"];
 
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
+	if (quietBlockBuffer)
+		CFRelease(quietBlockBuffer);
+	quietBlockBuffer = nil;
+	if (quietSampleBuffer)
+		CFRelease(quietSampleBuffer);
+	quietSampleBuffer = nil;
+
     [self unprepare];
 }
 
@@ -778,7 +796,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 BOOL isFirstVideoBuffer = !recordSession.currentSegmentHasVideo;
 //                NSLog(@"APPENDING");
 				__weak typeof(self) wSelf = self;
-                [self appendVideoSampleBuffer:sampleBuffer toRecordSession:recordSession
+                [self appendVideoSampleBuffer:sampleBuffer
+							  toRecordSession:recordSession
 									 duration:duration
 								   connection:connection
 								   completion:^(BOOL success) {
@@ -805,11 +824,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                     CMSampleBufferRef audioBuffer = _lastAudioBuffer.sampleBuffer;
                     if (audioBuffer != nil) {
                         CMTime lastAudioEndTime = CMTimeAdd(CMSampleBufferGetPresentationTimeStamp(audioBuffer), CMSampleBufferGetDuration(audioBuffer));
-                        CMTime videoStartTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+						CMTime videoStartTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+
                         // If the end time of the last audio buffer is after this video buffer, we need to re-use it,
                         // since it was skipped on the last cycle to wait until the video becomes ready.
                         if (CMTIME_COMPARE_INLINE(lastAudioEndTime, >, videoStartTime)) {
-                            [self _handleAudioSampleBuffer:audioBuffer withSession:recordSession];
+							[self _handleAudioSampleBuffer:audioBuffer withSession:recordSession];
                         }
                     }
                 }
@@ -865,7 +885,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 //                NSLog(@"SKIPPING");
             }
         }
-		if ([_delegate respondsToSelector:@selector(recorder:didAcquireAudioBuffer:length:)]) {
+		if ([_delegate respondsToSelector:@selector(recorder:didAcquireAudioBuffer:length:timestamp:)]) {
 			id<SCRecorderDelegate> 	delegate = self.delegate;
 			CMBlockBufferRef		blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
 			CMItemCount 			sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
@@ -873,10 +893,13 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 			size_t					dataLength = sampleCount * sampleSize;
 			SInt16*					data = malloc(dataLength);
 			OSStatus				status = CMBlockBufferCopyDataBytes(blockBuffer, 0, dataLength, data);
-			
+//			CMTime 					audioStartTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+			CMTime 					audioStartTime = CMSampleBufferGetOutputPresentationTimeStamp(sampleBuffer);
+			CMTime 					bufferTimestamp = CMTimeSubtract(audioStartTime, _firstAudioTime);
+
 			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
 				if (status == kCMBlockBufferNoErr) {
-					[delegate recorder:self didAcquireAudioBuffer:data length:sampleCount];
+					[delegate recorder:self didAcquireAudioBuffer:data length:sampleCount timestamp:bufferTimestamp];
 				} else {
 					NSLog(@"OSStatus = %i", status);
 				}
@@ -887,42 +910,73 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-    if (captureOutput == _videoOutput) {
-        _lastVideoBuffer.sampleBuffer = sampleBuffer;
-//        NSLog(@"VIDEO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 
-        if (_videoConfiguration.shouldIgnore) {
-            return;
-        }
+	if (captureOutput == _videoOutput) {
+		_lastVideoBuffer.sampleBuffer = sampleBuffer;
+		//        NSLog(@"VIDEO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 
-        SCImageView *imageView = _SCImageView;
-        if (imageView != nil) {
-            CFRetain(sampleBuffer);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [imageView setImageBySampleBuffer:sampleBuffer];
-                CFRelease(sampleBuffer);
-            });
-        }
-    } else if (captureOutput == _audioOutput) {
-        _lastAudioBuffer.sampleBuffer = sampleBuffer;
-//        NSLog(@"AUDIO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
+		if (_videoConfiguration.shouldIgnore) {
+			return;
+		}
 
-        if (_audioConfiguration.shouldIgnore) {
-            return;
-        }
-    }
+		SCImageView *imageView = _SCImageView;
+		if (imageView != nil) {
+			CFRetain(sampleBuffer);
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[imageView setImageBySampleBuffer:sampleBuffer];
+				CFRelease(sampleBuffer);
+			});
+		}
+	} else if (captureOutput == _audioOutput) {
+		_lastAudioBuffer.sampleBuffer = sampleBuffer;
+		//        NSLog(@"AUDIO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 
-    if (!_initializeSessionLazily || _isRecording) {
-        SCRecordSession *recordSession = _session;
-        if (recordSession != nil) {
-            if (captureOutput == _videoOutput && _didCaptureFirstAudioBuffer) {
-                [self _handleVideoSampleBuffer:sampleBuffer withSession:recordSession connection:connection];
-            } else if (captureOutput == _audioOutput) {
-                _didCaptureFirstAudioBuffer = YES;
-                [self _handleAudioSampleBuffer:sampleBuffer withSession:recordSession];
-            }
-        }
-    }
+		if (_audioConfiguration.shouldIgnore) {
+			return;
+		}
+		if (_audioMuting) {
+			if (quietSampleBuffer == nil) {
+				CMItemCount 			numSamples = CMSampleBufferGetNumSamples(sampleBuffer);
+				size_t					sampleSize = CMSampleBufferGetSampleSize(sampleBuffer, 0);
+				CMFormatDescriptionRef	format = CMSampleBufferGetFormatDescription(sampleBuffer);
+				size_t					dataLength = numSamples * sampleSize;
+				OSStatus 				status = noErr;
+				static SInt16*			blockOfZeros = nil;
+
+				if (blockOfZeros == nil)
+					blockOfZeros = malloc(dataLength);
+
+				memset(blockOfZeros, 0x0000, dataLength);
+
+				status = CMBlockBufferCreateWithMemoryBlock(kCFAllocatorDefault, blockOfZeros, dataLength, kCFAllocatorDefault, nil, 0, dataLength, kCMBlockBufferAssureMemoryNowFlag, &quietBlockBuffer);
+				if (status) NSLog(@"CMBlockBuffer OSStatus = %i", status);
+				if (status == noErr) {
+					status = CMAudioSampleBufferCreateWithPacketDescriptions(kCFAllocatorDefault, quietBlockBuffer, YES, nil, nil, format, numSamples, kCMTimeZero, nil, &quietSampleBuffer);
+					if (status) NSLog(@"CMSampleBuffer OSStatus = %i", status);
+				}
+			}
+			if (quietSampleBuffer) {
+				CMSampleBufferSetOutputPresentationTimeStamp(quietSampleBuffer, CMSampleBufferGetPresentationTimeStamp(sampleBuffer));
+				sampleBuffer = quietSampleBuffer;
+				_lastAudioBuffer.sampleBuffer = sampleBuffer;
+			}
+		}
+	}
+
+	if (!_initializeSessionLazily || _isRecording) {
+		SCRecordSession *recordSession = _session;
+		if (recordSession != nil) {
+			if (captureOutput == _videoOutput && _didCaptureFirstAudioBuffer) {
+				[self _handleVideoSampleBuffer:sampleBuffer withSession:recordSession connection:connection];
+			} else if (captureOutput == _audioOutput) {
+				if (_didCaptureFirstAudioBuffer == NO)
+					_firstAudioTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+				_didCaptureFirstAudioBuffer = YES;
+
+				[self _handleAudioSampleBuffer:sampleBuffer withSession:recordSession];
+			}
+		}
+	}
 }
 
 - (NSDictionary *)_createSegmentInfo {
@@ -1733,4 +1787,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     return dispatch_get_specific(kSCRecorderRecordSessionQueueKey) != nil;
 }
 
+- (void)setAudioMute:(BOOL)muting {
+	_audioMuting = muting;
+}
+
+- (BOOL)audioMute {
+	return _audioMuting;
+}
 @end

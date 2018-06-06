@@ -280,6 +280,8 @@
  */
 @property (readonly, nonatomic) dispatch_queue_t __nonnull sessionQueue;
 
+@property (assign, nonatomic) BOOL audioMute;
+
 /**
  Create a recorder
  @return the newly created recorder
@@ -419,6 +421,7 @@
 
 - (NSError*)attachAudio;
 - (void)detachAudio;
+
 /**
  Get an image representing the last output video buffer.
  */

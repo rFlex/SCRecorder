@@ -127,6 +127,7 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 /**
  Gives an opportunity to the delegate to do some low-level audio munging.
  */
-- (void)recorder:(SCRecorder *__nonnull)recorder didAcquireAudioBuffer:(SInt16*)audioBuffer length:(CMItemCount)length;
+- (void)recorder:(SCRecorder *__nonnull)recorder didAcquireAudioBuffer:(SInt16*)audioBuffer
+		  length:(CMItemCount)length timestamp:(CMTime)time;
 
 @end
