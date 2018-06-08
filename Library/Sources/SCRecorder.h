@@ -419,13 +419,13 @@
  */
 - (void)previewViewFrameChanged;
 
-- (NSError*)attachAudio;
+- (NSError* __nullable)attachAudio;
 - (void)detachAudio;
 
 /**
  Get an image representing the last output video buffer.
  */
-- (UIImage *__nullable)snapshotOfLastVideoBuffer;
+- (UIImage * __nullable)snapshotOfLastVideoBuffer;
 
 /**
  Returns a shared recorder if you want to use the same instance throughout your app.
