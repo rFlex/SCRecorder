@@ -272,7 +272,10 @@
 /**
  The underlying AVCaptureStillImageOutput
  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 @property (readonly, nonatomic) AVCaptureStillImageOutput *__nullable photoOutput;
+#pragma clang diagnostic pop
 
 /**
  The dispatch queue that the SCRecorder uses for sending messages to the attached
