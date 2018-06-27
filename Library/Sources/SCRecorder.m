@@ -30,15 +30,17 @@
     BOOL _shouldAutoresumeRecording;
     BOOL _needsSwitchBackToContinuousFocus;
     BOOL _adjustingFocus;
-    BOOL _didCaptureFirstAudioBuffer;
+	BOOL _didCaptureFirstAudioBuffer;
+	BOOL _didCaptureFirstSessionBuffer;
     BOOL _preparing;
     BOOL _reconfiguring;
 	BOOL _audioMuting;
+	BOOL hasDidAcquireAudioBuffer;
     int _beginSessionConfigurationCount;
     double _lastAppendedVideoTime;
     NSTimer *_movieOutputProgressTimer;
 	CMTime _lastMovieFileOutputTime;
-	CMTime _firstAudioTime;
+	CMTime _firstBufferTime, _firstSessionTime, _runningTime, _lastBufferTime;
     void(^_pauseCompletionHandler)(void);
     SCFilter *_transformFilter;
     size_t _transformFilterBufferWidth;
@@ -504,8 +506,14 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     _lastMovieFileOutputTime = recordedDuration;
 }
 
+- (void)prerecord {
+	_didCaptureFirstSessionBuffer = NO;
+	_runningTime = kCMTimeZero;
+	hasDidAcquireAudioBuffer = [_delegate respondsToSelector:@selector(recorder:didAcquireAudioBuffer:length:timestamp:)];
+}
+
 - (void)record {
-    _didCaptureFirstAudioBuffer = NO;
+	_didCaptureFirstAudioBuffer = NO;
 	__weak typeof(self) wSelf = self;
     void (^block)(void) = ^{
 		typeof(self) internal = wSelf;
@@ -885,7 +893,25 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 //                NSLog(@"SKIPPING");
             }
         }
-		if ([_delegate respondsToSelector:@selector(recorder:didAcquireAudioBuffer:length:timestamp:)]) {
+
+		if (hasDidAcquireAudioBuffer) {
+			CMTime 					sampleTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+			CMTime					sampleDuration = CMSampleBufferGetDuration(sampleBuffer);
+
+			if (_didCaptureFirstSessionBuffer == NO) {
+//				NSLog(@"**** FIRST SESSION ***");
+				_firstSessionTime = sampleTime;
+				_lastBufferTime = sampleTime;
+				_didCaptureFirstSessionBuffer = YES;
+			}
+			if (_didCaptureFirstAudioBuffer == NO) {
+//				NSLog(@"**** FIRST BUFFER ***");
+				_runningTime = CMTimeSubtract(_lastBufferTime, _firstSessionTime);
+				_firstBufferTime = sampleTime;
+				_didCaptureFirstAudioBuffer = YES;
+			}
+			_lastBufferTime = CMTimeAdd(sampleTime, sampleDuration);
+
 			id<SCRecorderDelegate> 	delegate = self.delegate;
 			CMBlockBufferRef		blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
 			CMItemCount 			sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
@@ -893,9 +919,10 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 			size_t					dataLength = sampleCount * sampleSize;
 			SInt16*					data = malloc(dataLength);
 			OSStatus				status = CMBlockBufferCopyDataBytes(blockBuffer, 0, dataLength, data);
-//			CMTime 					audioStartTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-			CMTime 					audioStartTime = CMSampleBufferGetOutputPresentationTimeStamp(sampleBuffer);
-			CMTime 					bufferTimestamp = CMTimeSubtract(audioStartTime, _firstAudioTime);
+			CMTime 					bufferTimestamp = CMTimeSubtract(sampleTime, _firstBufferTime);
+
+			if (CMTimeCompare(_runningTime, kCMTimeZero))
+				bufferTimestamp = CMTimeAdd(bufferTimestamp, _runningTime);
 
 			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
 				if (status == kCMBlockBufferNoErr) {
@@ -969,10 +996,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 			if (captureOutput == _videoOutput && _didCaptureFirstAudioBuffer) {
 				[self _handleVideoSampleBuffer:sampleBuffer withSession:recordSession connection:connection];
 			} else if (captureOutput == _audioOutput) {
-				if (_didCaptureFirstAudioBuffer == NO)
-					_firstAudioTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-				_didCaptureFirstAudioBuffer = YES;
-
 				[self _handleAudioSampleBuffer:sampleBuffer withSession:recordSession];
 			}
 		}
@@ -1427,7 +1450,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (_captureSession != nil && !_reconfiguring) {
         [self reconfigureVideoInput:self.videoConfiguration.enabled audioInput:NO];
     }
-
     [self didChangeValueForKey:@"device"];
 }
 

@@ -391,6 +391,12 @@
 - (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError*__nullable*__nullable)error;
 
 /**
+ this is necessary because for some reason, on the camera flip, BitSmash calls pause, then record, instead of just flipping
+ so, we need one 'master' prerecord so we know when the REAL start is
+ */
+- (void)prerecord;
+
+/**
  Allow the recorder to append the sample buffers inside the current setted session
  */
 - (void)record;
