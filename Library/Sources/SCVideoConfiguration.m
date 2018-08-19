@@ -36,7 +36,12 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
     return CGSizeMake(videoSize.width / ratio, videoSize.height / ratio);
 }
 
-- (NSDictionary *)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize {
+- (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize {
+	return [self createAssetWriterOptionsWithVideoSize:videoSize sizeIsSuggestion:YES];
+}
+
+- (NSDictionary *)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize
+									   sizeIsSuggestion:(BOOL)suggestion {
     NSDictionary *options = self.options;
     if (options != nil) {
         return options;
@@ -48,18 +53,23 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
     if (self.preset != nil) {
         if ([self.preset isEqualToString:SCPresetLowQuality]) {
             bitrate = 500000;
-            outputSize = MakeVideoSize(videoSize, 640);
+            if (suggestion)
+				outputSize = MakeVideoSize(videoSize, 640);
         } else if ([self.preset isEqualToString:SCPresetMediumQuality]) {
             bitrate = 1000000;
-            outputSize = MakeVideoSize(videoSize, 1280);
+            if (suggestion)
+				outputSize = MakeVideoSize(videoSize, 1280);
         } else if ([self.preset isEqualToString:SCPresetHighestQuality]) {
             bitrate = 6000000;
-            outputSize = MakeVideoSize(videoSize, 1920);
+            if (suggestion)
+				outputSize = MakeVideoSize(videoSize, 1920);
         } else {
             NSLog(@"Unrecognized video preset %@", self.preset);
         }
     }
-    
+	if (suggestion == NO)
+		outputSize = videoSize;
+	
     if (CGSizeEqualToSize(outputSize, CGSizeZero)) {
         outputSize = videoSize;
     }

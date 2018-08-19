@@ -128,7 +128,7 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
  within this block will ensure that you are the only one who has
  access to any modification on this SCRecordSession.
  */
-- (void)dispatchSyncOnSessionQueue:(void(^__nonnull)())block;
+- (void)dispatchSyncOnSessionQueue:(void(^__nonnull)(void))block;
 
 //////////////////////
 /////// SEGMENTS
@@ -157,12 +157,12 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
 /**
  Remove all the record segments and their associated files.
  */
-- (void)removeAllSegments;
+- (void)removeAllSegments:(void(^ __nullable)(void))completionHandler;
 
 /**
  Remove all the record segments and their associated files if deleteFiles is true.
  */
-- (void)removeAllSegments:(BOOL)deleteFiles;
+- (void)removeAllSegments:(BOOL)deleteFiles withCompletion:(void(^ __nullable)(void))completionHandler;
 
 /**
  Remove the last segment safely. Does nothing if no segment were recorded.
@@ -175,7 +175,7 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
  If you don't want a segment to be automatically added when calling this method,
  you should remove the SCRecordSession from the SCRecorder
  */
-- (void)cancelSession:(void(^ __nullable)())completionHandler;
+- (void)cancelSession:(void(^ __nullable)(void))completionHandler;
 
 /**
  Merge the recorded record segments using the given AVAssetExportSessionPreset.
@@ -183,6 +183,10 @@ extern NSString *__nonnull const SCRecordSessionDocumentDirectory;
  Returns nil and call the completion handler block synchronously if an error happened while preparing the export session.
  */
 - (AVAssetExportSession *__nullable)mergeSegmentsUsingPreset:(NSString *__nonnull)exportSessionPreset completionHandler:(void(^__nonnull)(NSURL *__nullable outputUrl, NSError *__nullable error))completionHandler;
+
+- (AVAssetExportSession *__nullable)mergeSegmentsUsingPreset:(NSString *__nonnull)exportSessionPreset
+													   atURL:(NSURL *__nonnull)url
+										   completionHandler:(void(^__nullable)(NSURL * __nullable outputUrl, NSError * __nullable error))completionHandler;
 
 /**
  Returns an asset representing all the record segments

@@ -109,7 +109,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
     if (context == ItemChanged) {
         [self initObserver];
     } else if (context == StatusChanged) {
-        void (^block)() = ^{
+        void (^block)(void) = ^{
             [self setupVideoOutputToItem:self.currentItem];
 
             id<SCPlayerDelegate> delegate = self.delegate;
@@ -124,9 +124,9 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
             dispatch_async(dispatch_get_main_queue(), block);
         }
     } else if (context == LoadedTimeRanges) {
-        void (^block)() = ^{
+        void (^block)(void) = ^{
             id<SCPlayerDelegate> delegate = self.delegate;
-            
+
             if ([delegate respondsToSelector:@selector(player:didUpdateLoadedTimeRanges:)]) {
                 NSArray * array= self.currentItem.loadedTimeRanges;
                 CMTimeRange range=[array.firstObject CMTimeRangeValue];
@@ -139,9 +139,9 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
             dispatch_async(dispatch_get_main_queue(), block);
         }
     } else if (context == PlaybackBufferEmpty) {
-        void (^block)() = ^{
+        void (^block)(void) = ^{
             id<SCPlayerDelegate> delegate = self.delegate;
-            
+
             if ([delegate respondsToSelector:@selector(player:itemPlaybackBufferIsEmpty:)]) {
                 [delegate player:self itemPlaybackBufferIsEmpty:self.currentItem];
             }
@@ -160,7 +160,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
         [_oldItem removeObserver:self forKeyPath:@"status"];
         [_oldItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
         [_oldItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
-        
+
         [self unsetupVideoOutputToItem:_oldItem];
 
         _oldItem = nil;
@@ -252,7 +252,7 @@ static char* LoadedTimeRanges = "LoadedTimeRanges";
 
 - (void)setupVideoOutputToItem:(AVPlayerItem *)item {
     if (_displayLink != nil && item != nil && _videoOutput == nil && item.status == AVPlayerItemStatusReadyToPlay) {
-        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
+        NSDictionary *pixBuffAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)};
         _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [_videoOutput setDelegate:self queue:dispatch_get_main_queue()];
         _videoOutput.suppressesPlayerRendering = self.shouldSuppressPlayerRendering;

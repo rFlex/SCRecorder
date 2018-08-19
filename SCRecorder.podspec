@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.homepage     = "https://github.com/rFlex/SCRecorder"
   s.license      = 'Apache License, Version 2.0'
   s.author             = { "Simon CORSIN" => "simon@corsin.me" }
-  s.platform     = :ios, '7.0'
+  s.platform     = :ios, '8.0'
   s.source       = { :git => "https://github.com/rFlex/SCRecorder.git", :tag => "v2.7.0" }
   s.source_files  = 'Library/Sources/*.{h,m}'
   s.public_header_files = 'Library/Sources/*.h'

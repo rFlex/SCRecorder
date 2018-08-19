@@ -51,7 +51,7 @@
     _maxQueueSize = maxQueueSize;
 }
 
-- (void)_process:(id (^)())processingBlock {
+- (void)_process:(id (^)(void))processingBlock {
     @autoreleasepool {
         while (!_completed) {
             BOOL shouldProcess = NO;
@@ -85,7 +85,7 @@
     }
 }
 
-- (void)startProcessingWithBlock:(id (^)())processingBlock {
+- (void)startProcessingWithBlock:(id (^)(void))processingBlock {
     [NSThread detachNewThreadSelector:@selector(_process:) toTarget:self withObject:processingBlock];
 }
 

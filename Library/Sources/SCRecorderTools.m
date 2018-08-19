@@ -101,7 +101,7 @@
 + (NSString *)bestCaptureSessionPresetCompatibleWithAllDevices {
     NSArray *videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 
-    CMVideoDimensions highestCompatibleDimension;
+	CMVideoDimensions highestCompatibleDimension = {0,0};
     BOOL lowestSet = NO;
     
     for (AVCaptureDevice *device in videoDevices) {

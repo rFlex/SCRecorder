@@ -48,7 +48,7 @@
 
 -(instancetype)init {
     self = [super init];
-    
+
     if (self) {
         _audioQueue = dispatch_queue_create("me.corsin.SCAssetExportSession.AudioQueue", nil);
         _videoQueue = dispatch_queue_create("me.corsin.SCAssetExportSession.VideoQueue", nil);
@@ -66,11 +66,11 @@
 
 - (instancetype)initWithAsset:(AVAsset *)inputAsset {
     self = [self init];
-    
+
     if (self) {
         self.inputAsset = inputAsset;
     }
-    
+
     return self;
 }
 
@@ -82,11 +82,11 @@
 
 - (AVAssetWriterInput *)addWriter:(NSString *)mediaType withSettings:(NSDictionary *)outputSettings {
     AVAssetWriterInput *writer = [AVAssetWriterInput assetWriterInputWithMediaType:mediaType outputSettings:outputSettings];
-    
+
     if ([_writer canAddInput:writer]) {
         [_writer addInput:writer];
     }
-    
+
     return writer;
 }
 
@@ -97,20 +97,20 @@
 - (SCIOPixelBuffers *)createIOPixelBuffers:(CMSampleBufferRef)sampleBuffer {
     CVPixelBufferRef inputPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-    
+
     if (_outputBufferDiffersFromInput) {
         CVPixelBufferRef outputPixelBuffer = nil;
-        
+
         CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, _videoPixelAdaptor.pixelBufferPool, &outputPixelBuffer);
-        
+
         if (ret != kCVReturnSuccess) {
             NSLog(@"Unable to allocate pixelBuffer: %d", ret);
             return nil;
         }
-        
+
         SCIOPixelBuffers *pixelBuffers = [SCIOPixelBuffers IOPixelBuffersWithInputPixelBuffer:inputPixelBuffer outputPixelBuffer:outputPixelBuffer time:time];
         CVPixelBufferRelease(outputPixelBuffer);
-        
+
         return pixelBuffers;
     } else {
         return [SCIOPixelBuffers IOPixelBuffersWithInputPixelBuffer:inputPixelBuffer outputPixelBuffer:inputPixelBuffer time:time];
@@ -147,7 +147,7 @@
 
         outputPixelBuffers = [SCIOPixelBuffers IOPixelBuffersWithInputPixelBuffer:pixelBuffers.outputPixelBuffer outputPixelBuffer:pixelBuffers.outputPixelBuffer time:pixelBuffers.time];
     }
-    
+
     return outputPixelBuffers;
 }
 
@@ -168,7 +168,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
 - (void)CGRenderWithInputPixelBuffer:(CVPixelBufferRef)inputPixelBuffer toOutputPixelBuffer:(CVPixelBufferRef)outputPixelBuffer atTimeInterval:(NSTimeInterval)timeSeconds {
     UIView<SCVideoOverlay> *overlay = self.videoConfiguration.overlay;
-    
+
     if (overlay != nil) {
         CGSize videoSize = CGSizeMake(CVPixelBufferGetWidth(outputPixelBuffer), CVPixelBufferGetHeight(outputPixelBuffer));
 
@@ -179,14 +179,14 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
         CGContextRef ctx = SCCreateContextFromPixelBuffer(outputPixelBuffer);
 
-        void (^layoutBlock)() = ^{
-            overlay.frame = CGRectMake(0, 0, videoSize.width, videoSize.height);
+        void (^layoutBlock)(void) = ^{
+//            overlay.frame = CGRectMake(0, 0, videoSize.width, videoSize.height);
 
             if ([overlay respondsToSelector:@selector(updateWithVideoTime:)]) {
                 [overlay updateWithVideoTime:timeSeconds];
             }
 
-            [overlay layoutIfNeeded];
+//            [overlay layoutIfNeeded];
         };
 
         if (onMainThread) {
@@ -196,7 +196,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
         }
 
         [overlay.layer renderInContext:ctx];
-        
+
         CGContextRelease(ctx);
     };
 }
@@ -227,28 +227,28 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
         SCProcessingQueue *videoReadingQueue = [SCProcessingQueue new];
 
         __weak typeof(self) wSelf = self;
-        
+
         videoReadingQueue.maxQueueSize = 2;
 
         [videoReadingQueue startProcessingWithBlock:^id{
             CMSampleBufferRef sampleBuffer = [wSelf.videoOutput copyNextSampleBuffer];
             SCSampleBufferHolder *holder = nil;
-            
+
             if (sampleBuffer != nil) {
                 holder = [SCSampleBufferHolder sampleBufferHolderWithSampleBuffer:sampleBuffer];
                 CFRelease(sampleBuffer);
             }
-            
+
             return holder;
         }];
-        
+
         if (_videoPixelAdaptor != nil) {
             filterRenderingQueue = [SCProcessingQueue new];
             filterRenderingQueue.maxQueueSize = 2;
             [filterRenderingQueue startProcessingWithBlock:^id{
                 SCIOPixelBuffers *pixelBuffers = nil;
                 SCSampleBufferHolder *bufferHolder = [videoReadingQueue dequeue];
-                
+
                 if (bufferHolder != nil) {
                     __strong typeof(self) strongSelf = wSelf;
 
@@ -264,20 +264,20 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
                 return pixelBuffers;
             }];
-            
+
             videoProcessingQueue = [SCProcessingQueue new];
             videoProcessingQueue.maxQueueSize = 2;
             [videoProcessingQueue startProcessingWithBlock:^id{
                 SCIOPixelBuffers *videoBuffers = [filterRenderingQueue dequeue];
-                
+
                 if (videoBuffers != nil) {
                     [wSelf CGRenderWithInputPixelBuffer:videoBuffers.inputPixelBuffer toOutputPixelBuffer:videoBuffers.outputPixelBuffer atTimeInterval:CMTimeGetSeconds(videoBuffers.time)];
                 }
-                
+
                 return videoBuffers;
             }];
         }
-        
+
         dispatch_group_enter(_dispatchGroup);
         _needsLeaveVideo = YES;
 
@@ -288,7 +288,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
                 SCIOPixelBuffers *videoBuffer = nil;
                 SCSampleBufferHolder *bufferHolder = nil;
 
-                CMTime time;
+                CMTime time = kCMTimeZero;
                 if (videoProcessingQueue != nil) {
                     videoBuffer = [videoProcessingQueue dequeue];
                     time = videoBuffer.time;
@@ -321,7 +321,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
                     shouldReadNextBuffer = NO;
                 }
             }
-            
+
             if (!shouldReadNextBuffer) {
                 [filterRenderingQueue stopProcessing];
                 [videoProcessingQueue stopProcessing];
@@ -347,20 +347,20 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
             BOOL shouldReadNextBuffer = YES;
             while (strongSelf.audioInput.isReadyForMoreMediaData && shouldReadNextBuffer && !strongSelf.cancelled) {
                 CMSampleBufferRef audioBuffer = [strongSelf.audioOutput copyNextSampleBuffer];
-                
+
                 if (audioBuffer != nil) {
                     shouldReadNextBuffer = [strongSelf.audioInput appendSampleBuffer:audioBuffer];
-                    
+
                     CMTime time = CMSampleBufferGetPresentationTimeStamp(audioBuffer);
-                    
+
                     CFRelease(audioBuffer);
-                    
+
                     [strongSelf _didAppendToInput:strongSelf.audioInput atTime:time];
                 } else {
                     shouldReadNextBuffer = NO;
                 }
             }
-            
+
             if (!shouldReadNextBuffer) {
                 [strongSelf markInputComplete:strongSelf.audioInput error:nil];
                 if (strongSelf.needsLeaveAudio) {
@@ -374,18 +374,18 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
 - (void)_setProgress:(float)progress {
     [self willChangeValueForKey:@"progress"];
-    
+
     _progress = progress;
-    
+
     [self didChangeValueForKey:@"progress"];
-    
+
     id<SCAssetExportSessionDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(assetExportSessionDidProgress:)]) {
         [delegate assetExportSessionDidProgress:self];
     }
 }
 
-- (void)callCompletionHandler:(void (^)())completionHandler {
+- (void)callCompletionHandler:(void (^)(void))completionHandler {
     if (!_cancelled) {
         [self _setProgress:1];
     }
@@ -453,11 +453,11 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
     if (needsPixelBuffer && _videoInput != nil) {
         NSDictionary *pixelBufferAttributes = @{
-                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_32BGRA],
+                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange],  // old setting = kCVPixelFormatType_32BGRA
                                                 (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:_outputBufferSize.width],
                                                 (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:_outputBufferSize.height]
                                                 };
-        
+
         _videoPixelAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
     }
 }
@@ -465,22 +465,23 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 - (void)cancelExport
 {
     _cancelled = YES;
-
+	__weak typeof(self) wSelf = self;
     dispatch_sync(_videoQueue, ^{
-        if (_needsLeaveVideo) {
-            _needsLeaveVideo = NO;
-            dispatch_group_leave(_dispatchGroup);
+		typeof(self) iSelf = wSelf;
+        if (iSelf->_needsLeaveVideo) {
+            iSelf->_needsLeaveVideo = NO;
+            dispatch_group_leave(iSelf->_dispatchGroup);
         }
 
-        dispatch_sync(_audioQueue, ^{
-            if (_needsLeaveAudio) {
-                _needsLeaveAudio = NO;
-                dispatch_group_leave(_dispatchGroup);
+        dispatch_sync(iSelf->_audioQueue, ^{
+            if (iSelf->_needsLeaveAudio) {
+                iSelf->_needsLeaveAudio = NO;
+                dispatch_group_leave(iSelf->_dispatchGroup);
             }
         });
 
-        [_reader cancelReading];
-        [_writer cancelWriting];
+        [iSelf->_reader cancelReading];
+        [iSelf->_writer cancelWriting];
     });
 }
 
@@ -582,26 +583,31 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     _inputBufferSize = CGSizeZero;
     if (videoTracks.count > 0 && self.videoConfiguration.enabled && !self.videoConfiguration.shouldIgnore) {
         AVAssetTrack *videoTrack = [videoTracks objectAtIndex:0];
+		CGAffineTransform trackTransform = videoTrack.preferredTransform;
+
+		// Output
+		AVVideoComposition *videoComposition = self.videoConfiguration.composition;
+
+		if (videoComposition == nil) {
+			_inputBufferSize = videoTrack.naturalSize;
+		} else {
+			_inputBufferSize = videoComposition.renderSize;
+		}
 
         // Input
-        NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:videoTrack.naturalSize];
+        NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:_inputBufferSize
+																				sizeIsSuggestion:videoComposition == nil];
 
         _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];
         if (_videoConfiguration.keepInputAffineTransform) {
             _videoInput.transform = videoTrack.preferredTransform;
-        } else {
-            _videoInput.transform = _videoConfiguration.affineTransform;
-        }
+        } else if (videoComposition) {
+			_videoInput.transform = trackTransform;
+        } else
+			_videoInput.transform = _videoConfiguration.affineTransform;
 
-        // Output
-        AVVideoComposition *videoComposition = self.videoConfiguration.composition;
-        if (videoComposition == nil) {
-            _inputBufferSize = videoTrack.naturalSize;
-        } else {
-            _inputBufferSize = videoComposition.renderSize;
-        }
 
-        CGSize outputBufferSize = _inputBufferSize;
+        CGSize outputBufferSize = videoComposition.renderSize;
         if (!CGSizeEqualToSize(self.videoConfiguration.bufferSize, CGSizeZero)) {
             outputBufferSize = self.videoConfiguration.bufferSize;
         }
@@ -621,12 +627,12 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
         NSDictionary *settings = nil;
         if (_filter != nil || self.videoConfiguration.overlay != nil) {
             settings = @{
-                         (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA],
+                         (id)kCVPixelBufferPixelFormatTypeKey     : @(kCVPixelFormatType_32BGRA),
                          (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
                          };
         } else {
             settings = @{
-                         (id)kCVPixelBufferPixelFormatTypeKey     : [NSNumber numberWithUnsignedInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange],
+                         (id)kCVPixelBufferPixelFormatTypeKey     : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange),
                          (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
                          };
         }
@@ -655,19 +661,19 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     }
 }
 
-- (void)exportAsynchronouslyWithCompletionHandler:(void (^)())completionHandler {
+- (void)exportAsynchronouslyWithCompletionHandler:(void (^)(void))completionHandler {
     _cancelled = NO;
     _nextAllowedVideoFrame = kCMTimeZero;
     NSError *error = nil;
-    
+
     [[NSFileManager defaultManager] removeItemAtURL:self.outputUrl error:nil];
-    
+
     _writer = [AVAssetWriter assetWriterWithURL:self.outputUrl fileType:self.outputFileType error:&error];
     _writer.shouldOptimizeForNetworkUse = _shouldOptimizeForNetworkUse;
     _writer.metadata = [SCRecorderTools assetWriterMetadata];
 
     EnsureSuccess(error, completionHandler);
-    
+
     _reader = [AVAssetReader assetReaderWithAsset:self.inputAsset error:&error];
     _reader.timeRange = _timeRange;
     EnsureSuccess(error, completionHandler);
@@ -683,30 +689,32 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     if (![_reader startReading]) {
         EnsureSuccess(_reader.error, completionHandler);
     }
-    
+
     if (![_writer startWriting]) {
         EnsureSuccess(_writer.error, completionHandler);
     }
-    
+
     [_writer startSessionAtSourceTime:kCMTimeZero];
-    
+
     _totalDuration = CMTimeGetSeconds(_inputAsset.duration);
 
     [self beginReadWriteOnAudio];
     [self beginReadWriteOnVideo];
-    
+
+	__weak typeof(self) wSelf = self;
     dispatch_group_notify(_dispatchGroup, dispatch_get_main_queue(), ^{
-        if (_error == nil) {
-            _error = _writer.error;
+		typeof(self) iSelf = wSelf;
+        if (iSelf->_error == nil) {
+            iSelf->_error = iSelf->_writer.error;
         }
-        
-        if (_error == nil && _writer.status != AVAssetWriterStatusCancelled) {
-            [_writer finishWritingWithCompletionHandler:^{
-                _error = _writer.error;
-                [self callCompletionHandler:completionHandler];
+
+        if (iSelf->_error == nil && iSelf->_writer.status != AVAssetWriterStatusCancelled) {
+            [iSelf->_writer finishWritingWithCompletionHandler:^{
+                iSelf->_error = iSelf->_writer.error;
+                [wSelf callCompletionHandler:completionHandler];
             }];
         } else {
-            [self callCompletionHandler:completionHandler];
+            [wSelf callCompletionHandler:completionHandler];
         }
     });
 }
@@ -729,6 +737,189 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
 - (AVAssetReader *)reader {
     return _reader;
+}
+
++ (UIImageOrientation)orientationForVideoTransform:(CGAffineTransform)videoTransform {
+
+	UIImageOrientation videoAssetOrientation_  = UIImageOrientationUp; //leave this - it may be used in the future
+
+	if(videoTransform.a == 0 && videoTransform.b == 1.0 && videoTransform.c == -1.0 && videoTransform.d == 0)  {
+		videoAssetOrientation_= UIImageOrientationRight;
+	}
+	if(videoTransform.a == 0 && videoTransform.b == -1.0 && videoTransform.c == 1.0 && videoTransform.d == 0)  {
+		videoAssetOrientation_ =  UIImageOrientationLeft;
+	}
+	if(videoTransform.a == 1.0 && videoTransform.b == 0 && videoTransform.c == 0 && videoTransform.d == 1.0)   {
+		videoAssetOrientation_ =  UIImageOrientationUp;
+	}
+	if(videoTransform.a == -1.0 && videoTransform.b == 0 && videoTransform.c == 0 && videoTransform.d == -1.0)
+	{
+		videoAssetOrientation_ = UIImageOrientationDown;
+	}
+	return videoAssetOrientation_;
+}
+
+- (CGAffineTransform)transformForVideoTransform:(CGAffineTransform)videoTransform
+									naturalSize:(CGSize)naturalSize
+						 withRequiredResolution:(CGSize)requiredResolution {
+	//FIXING ORIENTATION//
+	UIImageOrientation videoAssetOrientation_  = [SCAssetExportSession orientationForVideoTransform:videoTransform]; //leave this - it may be used in the future
+	BOOL isVideoAssetPortrait_  = NO;
+	if (videoAssetOrientation_ == UIImageOrientationRight ||
+		videoAssetOrientation_ == UIImageOrientationLeft) {
+		isVideoAssetPortrait_ = YES;
+	}
+	CGFloat trackWidth = naturalSize.width;
+	CGFloat trackHeight = naturalSize.height;
+	CGFloat widthRatio = 0;
+	CGFloat heightRatio = 0;
+
+	double aspectRatio = (MAX(trackWidth, trackHeight) / MIN(trackWidth, trackHeight));
+	double delta = ABS(aspectRatio - (16.0/9.0));
+	BOOL closeEnoughTo16x9 = delta < 0.1;	// 1.6777 .. 1.8777	tag:gabe - if this is encompassing too much - maybe 0.08?
+
+	//    DLog(@"image size %f,%f", trackWidth,trackHeight);
+	//    DLog(@"required size %f,%f", self.requiredResolution.width,self.requiredResolution.height);
+	//    DLog(@"Original transform a(%f) b(%f) c(%f) d(%f) tx(%f) ty(%f)",
+	//         videoTransform.a,videoTransform.b,videoTransform.c,videoTransform.d,videoTransform.tx,videoTransform.ty)
+	/*
+	 * 2 Main Cases
+	 * a- portrait
+	 * happens when taking video from the rear camera or selecting from the library
+	 *
+	 * b- landscape
+	 * clips from the library should be in landscape
+	 * as well as camera footage from the front camera
+	 *
+	 * */
+	if(isVideoAssetPortrait_) {
+		//        DLog(@"IS PORTRAIT - ORIGINAL TRANSFORM");
+		trackWidth = naturalSize.height;
+		trackHeight = naturalSize.width;
+
+		if (trackWidth == requiredResolution.width &&
+			trackHeight == requiredResolution.height) {
+			return videoTransform;
+		} else {
+			widthRatio = requiredResolution.width / trackWidth;
+			heightRatio = requiredResolution.height / trackHeight;
+
+			if (closeEnoughTo16x9) {
+				// aspect fill time
+				if (widthRatio < heightRatio)
+					widthRatio = heightRatio;
+				else
+					heightRatio = widthRatio;
+			} else {
+				/*
+				 * Since this is portrait, that means the height should be taller than the width
+				 * therefore, adjust to fit height and center via width
+				 * */
+
+				// aspect fit (old code)
+				heightRatio = requiredResolution.height / trackHeight;
+				widthRatio = heightRatio;
+			}
+			CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
+			CGFloat translationDistanceX = 0;
+			CGFloat translationDistanceY = 0;
+
+			/*
+			 * If width < required width, center by width
+			 * height will always fill the screen
+			 * center it by height Just in case
+			 * */
+			CGFloat newWidth = widthRatio * trackWidth;
+			if (newWidth != requiredResolution.width) {
+				translationDistanceX = (requiredResolution.width - newWidth)/2;
+			}
+			CGFloat newHeight = heightRatio * trackHeight;
+			if (newHeight != requiredResolution.height) {
+				translationDistanceY = (requiredResolution.height - newHeight)/2;
+			}
+
+			//            DLog(@"translate %f,%f", translationDistanceX, translationDistanceY);
+			return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, scaleFactor), CGAffineTransformMakeTranslation(translationDistanceX, translationDistanceY));
+		}
+	} else {
+		trackWidth = naturalSize.width;
+		trackHeight = naturalSize.height;
+		/*
+		 * Fix for shit saved locally
+		 * */
+		BOOL isOrientedUpWithSwitchedWidthHeight = NO;
+		if ((videoAssetOrientation_ == UIImageOrientationUp || videoAssetOrientation_ == UIImageOrientationDown)
+			&& trackWidth > trackHeight) {
+			isOrientedUpWithSwitchedWidthHeight = YES;
+		}
+		/*
+		 * Special case for photos that haven been recorded with swapped settings
+		 * */
+		if (isOrientedUpWithSwitchedWidthHeight) {
+			trackWidth = naturalSize.height;
+			trackHeight = naturalSize.width;
+			widthRatio = requiredResolution.width/trackWidth;
+			heightRatio = requiredResolution.height/trackHeight;
+			CGAffineTransform FirstAssetScaleFactor = CGAffineTransformMakeScale(widthRatio,heightRatio);
+			CGFloat translationDistance = (CGFloat) (heightRatio*fabs(videoTransform.ty));
+			return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, FirstAssetScaleFactor),CGAffineTransformMakeTranslation(0, translationDistance));//840 is the number
+		} else if (trackWidth == requiredResolution.width &&
+				   trackHeight == requiredResolution.height) {
+			/*If the resolution is the same, just rotate and scale*/
+			widthRatio = requiredResolution.width/trackWidth;
+			heightRatio = requiredResolution.height/trackHeight;
+			CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
+			return CGAffineTransformConcat(videoTransform, scaleFactor);
+		} else {
+			if (closeEnoughTo16x9) {
+				widthRatio = requiredResolution.width / trackWidth;
+				heightRatio = requiredResolution.height / trackHeight;
+
+				// aspect fill time
+				if (widthRatio < heightRatio)
+					widthRatio = heightRatio;
+				else
+					heightRatio = widthRatio;
+			} else {
+				/*If the resolutions are different and the video's height > width
+				 * scale by height
+				 * if the video is 16x9 it will fit
+				 * */
+				// aspect fit (old code)
+				if (trackHeight > trackWidth) {
+					heightRatio = requiredResolution.height/trackHeight;
+					widthRatio = heightRatio;
+				} else {
+					/* Occurs for square videos
+					 * otherwise will only happen for landscape videos which are not supported
+					 * */
+					widthRatio = requiredResolution.width/trackWidth;
+					heightRatio = widthRatio;
+				}
+			}
+			//            DLog(@"NOT PORTRAIT")
+			//            DLog(@"LANDSCAPE width ratio %f", widthRatio);
+			//            DLog(@"LANDSCAPE height ratio %f", heightRatio);
+			CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
+			CGFloat translationDistanceX = 0;
+			CGFloat translationDistanceY = 0;
+			/*
+			 * If width < required width, center by width
+			 * height will always fill the screen
+			 * */
+			CGFloat newWidth = widthRatio * trackWidth;
+			if (newWidth != requiredResolution.width) {
+				translationDistanceX = (requiredResolution.width - newWidth)/2;
+			}
+			CGFloat newHeight = heightRatio * trackHeight;
+			if (newHeight != requiredResolution.height) {
+				translationDistanceY = (requiredResolution.height - newHeight)/2;
+			}
+			//            DLog(@"translation x,y %f,%f", translationDistanceX, translationDistanceY)
+			//CGFloat translationDistance = (CGFloat) (heightRatio*fabs(videoTransform.ty));
+			return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, scaleFactor), CGAffineTransformMakeTranslation(translationDistanceX, translationDistanceY));
+		}
+	}
 }
 
 @end

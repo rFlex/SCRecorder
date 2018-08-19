@@ -53,6 +53,12 @@
  */
 @property (readonly, nonatomic) BOOL isRecording;
 
+/*
+ * > 0 if configuring
+ * */
+@property (readonly, nonatomic) int beginSessionConfigurationCount;
+@property (assign, nonatomic) BOOL finishedCommit;
+
 /**
  Change the flash mode on the camera
  */
@@ -112,7 +118,7 @@
 
 /**
  The value of this property defaults to YES, causing the capture session to automatically configure the app’s shared AVAudioSession instance for optimal recording.
- 
+
  If you set this property’s value to NO, your app is responsible for selecting appropriate audio session settings. Recording may fail if the audio session’s settings are incompatible with the capture session.
  */
 @property (assign, nonatomic) BOOL automaticallyConfiguresApplicationAudioSession;
@@ -180,7 +186,7 @@
 /**
  The maximum record duration. When the record session record duration
  reaches this bound, the recorder will automatically pause the recording,
- end the current record segment and send recorder:didCompletesession: on the 
+ end the current record segment and send recorder:didCompletesession: on the
  delegate.
  */
 @property (assign, nonatomic) CMTime maxRecordDuration;
@@ -188,7 +194,7 @@
 /**
  Whether the fast recording method should be enabled.
  Enabling this will disallow pretty much every features provided
- by SCVideoConfiguration and SCAudioConfiguration. It will internally 
+ by SCVideoConfiguration and SCAudioConfiguration. It will internally
  uses a AVCaptureMovieFileOutput that provides no settings. If you have
  some performance issue, you can try enabling this.
  Default is NO.
@@ -266,13 +272,18 @@
 /**
  The underlying AVCaptureStillImageOutput
  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 @property (readonly, nonatomic) AVCaptureStillImageOutput *__nullable photoOutput;
+#pragma clang diagnostic pop
 
 /**
  The dispatch queue that the SCRecorder uses for sending messages to the attached
  SCRecordSession.
  */
 @property (readonly, nonatomic) dispatch_queue_t __nonnull sessionQueue;
+
+@property (assign, nonatomic) BOOL audioMute;
 
 /**
  Create a recorder
@@ -356,7 +367,7 @@
 - (void)focusCenter;
 
 /**
- Refocus at the current position 
+ Refocus at the current position
  */
 - (void)refocus;
 
@@ -380,6 +391,12 @@
 - (BOOL)setActiveFormatWithFrameRate:(CMTimeScale)frameRate width:(int)width andHeight:(int)height error:(NSError*__nullable*__nullable)error;
 
 /**
+ this is necessary because for some reason, on the camera flip, BitSmash calls pause, then record, instead of just flipping
+ so, we need one 'master' prerecord so we know when the REAL start is
+ */
+- (void)prerecord;
+
+/**
  Allow the recorder to append the sample buffers inside the current setted session
  */
 - (void)record;
@@ -397,7 +414,7 @@
  if it is empty or not.
  @param completionHandler called on the main queue when the recorder is ready to record again.
  */
-- (void)pause:( void(^ __nullable)()) completionHandler;
+- (void)pause:( void(^ __nullable)(void)) completionHandler;
 
 /**
  Capture a photo from the camera
@@ -411,10 +428,13 @@
  */
 - (void)previewViewFrameChanged;
 
+- (NSError* __nullable)attachAudio;
+- (void)detachAudio;
+
 /**
  Get an image representing the last output video buffer.
  */
-- (UIImage *__nullable)snapshotOfLastVideoBuffer;
+- (UIImage * __nullable)snapshotOfLastVideoBuffer;
 
 /**
  Returns a shared recorder if you want to use the same instance throughout your app.
