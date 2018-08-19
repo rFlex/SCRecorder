@@ -155,6 +155,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 - (void)dispatchSyncOnSessionQueue:(void(^)(void))block {
     SCRecorder *recorder = self.recorder;
 
+	block = [block copy];
     if (recorder == nil || [SCRecorder isSessionQueue]) {
         block();
     } else {
@@ -519,7 +520,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 	__weak typeof(self) wSelf = self;
 	[self dispatchSyncOnSessionQueue:^{
 		typeof(self) iSelf = wSelf;
-        dispatch_sync(iSelf->_audioQueue, ^{
+//        dispatch_sync(iSelf->_audioQueue, ^{
             if (iSelf->_recordSegmentReady) {
                 iSelf->_recordSegmentReady = NO;
                 success = YES;
@@ -551,14 +552,14 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
                 } else {
                     [iSelf->_movieFileOutput stopRecording];
                 }
-            } else {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (completionHandler != nil) {
-                        completionHandler(nil, [SCRecordSession createError:@"The current record segment is not ready for this operation"]);
-                    }
-                });
-            }
-        });
+			} else {
+				if (completionHandler != nil) {
+					dispatch_async(dispatch_get_main_queue(), ^{
+						completionHandler(nil, [SCRecordSession createError:@"The current record segment is not ready for this operation"]);
+					});
+				}
+			}
+//        });
     }];
 
     return success;
@@ -715,14 +716,18 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 		typeof(self) iSelf = wSelf;
         if (iSelf->_assetWriter == nil) {
             [iSelf removeAllSegments:nil];
-            if (completionHandler != nil) {
-                completionHandler();
-            }
+			if (completionHandler != nil) {
+				dispatch_async(dispatch_get_main_queue(), ^{
+					completionHandler();
+				});
+			}
         } else {
             [iSelf endSegmentWithInfo:nil completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
                 [iSelf removeAllSegments:nil];
                 if (completionHandler != nil) {
-                    completionHandler();
+					dispatch_async(dispatch_get_main_queue(), ^{
+						completionHandler();
+					});
                 }
             }];
         }
