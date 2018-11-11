@@ -26,6 +26,8 @@
 @property (weak, nonatomic) IBOutlet UIView *toolsContainerView;
 @property (weak, nonatomic) IBOutlet UIButton *openToolsButton;
 
+@property (strong, nonatomic) UILongPressGestureRecognizer *longPressGestureRecognizer;
+
 - (IBAction)switchCameraMode:(id)sender;
 - (IBAction)switchFlash:(id)sender;
 - (IBAction)capturePhoto:(id)sender;

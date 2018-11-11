@@ -123,6 +123,9 @@
  */
 @property (assign, nonatomic) BOOL automaticallyConfiguresApplicationAudioSession;
 
+
+@property (assign, nonatomic) BOOL automaticallyConfiguresCaptureDeviceForWideColor;
+
 /**
  The captureSession. This will be null until prepare or startRunning has
  been called. Calling unprepare will set this property to null again.

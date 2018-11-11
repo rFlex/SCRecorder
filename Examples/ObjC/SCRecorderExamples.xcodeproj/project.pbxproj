@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		90A0D7DE1BC7367A008F1BB0 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90A0D7DD1BC7367A008F1BB0 /* Launch Screen.storyboard */; settings = {ASSET_TAGS = (); }; };
+		90A0D7DE1BC7367A008F1BB0 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90A0D7DD1BC7367A008F1BB0 /* Launch Screen.storyboard */; };
 		90D4FBED1BC6DDEC0017748D /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 90D4FBEC1BC6DDEC0017748D /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		DC10CF251ACFD082009880C4 /* libSCRecorder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC10CF1E1ACFCF6E009880C4 /* libSCRecorder.a */; };
 		DC1485DD1AFB78F2004896E9 /* a_filter.cisf in Resources */ = {isa = PBXBuildFile; fileRef = DC1485DC1AFB78F2004896E9 /* a_filter.cisf */; };
@@ -324,7 +324,7 @@
 				LastUpgradeCheck = 0510;
 				TargetAttributes = {
 					DC7F370718FC2A0D00D54901 = {
-						DevelopmentTeam = S9T665AXM4;
+						DevelopmentTeam = D82RJZ5422;
 					};
 				};
 			};
@@ -515,6 +515,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEFINES_MODULE = NO;
+				DEVELOPMENT_TEAM = D82RJZ5422;
 				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
@@ -524,7 +525,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
 				INFOPLIST_FILE = "Sources/SCRecorderExamples-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				OTHER_LDFLAGS = (
 					"-all_load",
 					"-ObjC",
@@ -544,6 +545,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEFINES_MODULE = NO;
+				DEVELOPMENT_TEAM = D82RJZ5422;
 				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Sources/SCRecorderExamples-Prefix.pch";
@@ -553,7 +555,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
 				INFOPLIST_FILE = "Sources/SCRecorderExamples-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				OTHER_LDFLAGS = (
 					"-all_load",
 					"-ObjC",

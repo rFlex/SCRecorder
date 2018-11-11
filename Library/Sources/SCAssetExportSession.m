@@ -421,8 +421,8 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
             cgContext = SCCreateContextFromPixelBuffer(pixelBuffer);
 
             options = @{
-                        SCContextOptionsCGContextKey: (__bridge id)cgContext
-                        };
+                    SCContextOptionsCGContextKey: (__bridge id)cgContext
+            };
         }
 
         _context = [SCContext contextWithType:_contextType options:options];
@@ -453,10 +453,11 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
     if (needsPixelBuffer && _videoInput != nil) {
         NSDictionary *pixelBufferAttributes = @{
-                                                (id)kCVPixelBufferPixelFormatTypeKey : [NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange],  // old setting = kCVPixelFormatType_32BGRA
-                                                (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:_outputBufferSize.width],
-                                                (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:_outputBufferSize.height]
-                                                };
+//                (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange),  // old setting = kCVPixelFormatType_32BGRA
+				(id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),  // old setting = kCVPixelFormatType_32BGRA
+                (id)kCVPixelBufferWidthKey : [NSNumber numberWithFloat:_outputBufferSize.width],
+                (id)kCVPixelBufferHeightKey : [NSNumber numberWithFloat:_outputBufferSize.height]
+        };
 
         _videoPixelAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoInput sourcePixelBufferAttributes:pixelBufferAttributes];
     }
@@ -465,9 +466,9 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 - (void)cancelExport
 {
     _cancelled = YES;
-	__weak typeof(self) wSelf = self;
+    __weak typeof(self) wSelf = self;
     dispatch_sync(_videoQueue, ^{
-		typeof(self) iSelf = wSelf;
+        typeof(self) iSelf = wSelf;
         if (iSelf->_needsLeaveVideo) {
             iSelf->_needsLeaveVideo = NO;
             dispatch_group_leave(iSelf->_dispatchGroup);
@@ -583,28 +584,28 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     _inputBufferSize = CGSizeZero;
     if (videoTracks.count > 0 && self.videoConfiguration.enabled && !self.videoConfiguration.shouldIgnore) {
         AVAssetTrack *videoTrack = [videoTracks objectAtIndex:0];
-		CGAffineTransform trackTransform = videoTrack.preferredTransform;
+        CGAffineTransform trackTransform = videoTrack.preferredTransform;
 
-		// Output
-		AVVideoComposition *videoComposition = self.videoConfiguration.composition;
+        // Output
+        AVVideoComposition *videoComposition = self.videoConfiguration.composition;
 
-		if (videoComposition == nil) {
-			_inputBufferSize = videoTrack.naturalSize;
-		} else {
-			_inputBufferSize = videoComposition.renderSize;
-		}
+        if (videoComposition == nil) {
+            _inputBufferSize = videoTrack.naturalSize;
+        } else {
+            _inputBufferSize = videoComposition.renderSize;
+        }
 
         // Input
         NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:_inputBufferSize
-																				sizeIsSuggestion:videoComposition == nil];
+                                                                                sizeIsSuggestion:videoComposition == nil];
 
         _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];
         if (_videoConfiguration.keepInputAffineTransform) {
             _videoInput.transform = videoTrack.preferredTransform;
         } else if (videoComposition) {
-			_videoInput.transform = trackTransform;
+            _videoInput.transform = trackTransform;
         } else
-			_videoInput.transform = _videoConfiguration.affineTransform;
+            _videoInput.transform = _videoConfiguration.affineTransform;
 
 
         CGSize outputBufferSize = videoComposition.renderSize;
@@ -627,14 +628,15 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
         NSDictionary *settings = nil;
         if (_filter != nil || self.videoConfiguration.overlay != nil) {
             settings = @{
-                         (id)kCVPixelBufferPixelFormatTypeKey     : @(kCVPixelFormatType_32BGRA),
-                         (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
-                         };
+                    (id)kCVPixelBufferPixelFormatTypeKey     : @(kCVPixelFormatType_32BGRA),
+                    (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
+            };
         } else {
             settings = @{
-                         (id)kCVPixelBufferPixelFormatTypeKey     : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange),
-                         (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
-                         };
+                    (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
+//                         (id)kCVPixelBufferPixelFormatTypeKey     : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange),
+                    (id)kCVPixelBufferIOSurfacePropertiesKey : [NSDictionary dictionary]
+            };
         }
 
         AVAssetReaderOutput *reader = nil;
@@ -701,9 +703,9 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     [self beginReadWriteOnAudio];
     [self beginReadWriteOnVideo];
 
-	__weak typeof(self) wSelf = self;
+    __weak typeof(self) wSelf = self;
     dispatch_group_notify(_dispatchGroup, dispatch_get_main_queue(), ^{
-		typeof(self) iSelf = wSelf;
+        typeof(self) iSelf = wSelf;
         if (iSelf->_error == nil) {
             iSelf->_error = iSelf->_writer.error;
         }
@@ -741,48 +743,48 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
 + (UIImageOrientation)orientationForVideoTransform:(CGAffineTransform)videoTransform {
 
-	UIImageOrientation videoAssetOrientation_  = UIImageOrientationUp; //leave this - it may be used in the future
+    UIImageOrientation videoAssetOrientation_  = UIImageOrientationUp; //leave this - it may be used in the future
 
-	if(videoTransform.a == 0 && videoTransform.b == 1.0 && videoTransform.c == -1.0 && videoTransform.d == 0)  {
-		videoAssetOrientation_= UIImageOrientationRight;
-	}
-	if(videoTransform.a == 0 && videoTransform.b == -1.0 && videoTransform.c == 1.0 && videoTransform.d == 0)  {
-		videoAssetOrientation_ =  UIImageOrientationLeft;
-	}
-	if(videoTransform.a == 1.0 && videoTransform.b == 0 && videoTransform.c == 0 && videoTransform.d == 1.0)   {
-		videoAssetOrientation_ =  UIImageOrientationUp;
-	}
-	if(videoTransform.a == -1.0 && videoTransform.b == 0 && videoTransform.c == 0 && videoTransform.d == -1.0)
-	{
-		videoAssetOrientation_ = UIImageOrientationDown;
-	}
-	return videoAssetOrientation_;
+    if(videoTransform.a == 0 && videoTransform.b == 1.0 && videoTransform.c == -1.0 && videoTransform.d == 0)  {
+        videoAssetOrientation_= UIImageOrientationRight;
+    }
+    if(videoTransform.a == 0 && videoTransform.b == -1.0 && videoTransform.c == 1.0 && videoTransform.d == 0)  {
+        videoAssetOrientation_ =  UIImageOrientationLeft;
+    }
+    if(videoTransform.a == 1.0 && videoTransform.b == 0 && videoTransform.c == 0 && videoTransform.d == 1.0)   {
+        videoAssetOrientation_ =  UIImageOrientationUp;
+    }
+    if(videoTransform.a == -1.0 && videoTransform.b == 0 && videoTransform.c == 0 && videoTransform.d == -1.0)
+    {
+        videoAssetOrientation_ = UIImageOrientationDown;
+    }
+    return videoAssetOrientation_;
 }
 
 - (CGAffineTransform)transformForVideoTransform:(CGAffineTransform)videoTransform
-									naturalSize:(CGSize)naturalSize
-						 withRequiredResolution:(CGSize)requiredResolution {
-	//FIXING ORIENTATION//
-	UIImageOrientation videoAssetOrientation_  = [SCAssetExportSession orientationForVideoTransform:videoTransform]; //leave this - it may be used in the future
-	BOOL isVideoAssetPortrait_  = NO;
-	if (videoAssetOrientation_ == UIImageOrientationRight ||
-		videoAssetOrientation_ == UIImageOrientationLeft) {
-		isVideoAssetPortrait_ = YES;
-	}
-	CGFloat trackWidth = naturalSize.width;
-	CGFloat trackHeight = naturalSize.height;
-	CGFloat widthRatio = 0;
-	CGFloat heightRatio = 0;
+                                    naturalSize:(CGSize)naturalSize
+                         withRequiredResolution:(CGSize)requiredResolution {
+    //FIXING ORIENTATION//
+    UIImageOrientation videoAssetOrientation_  = [SCAssetExportSession orientationForVideoTransform:videoTransform]; //leave this - it may be used in the future
+    BOOL isVideoAssetPortrait_  = NO;
+    if (videoAssetOrientation_ == UIImageOrientationRight ||
+            videoAssetOrientation_ == UIImageOrientationLeft) {
+        isVideoAssetPortrait_ = YES;
+    }
+    CGFloat trackWidth = naturalSize.width;
+    CGFloat trackHeight = naturalSize.height;
+    CGFloat widthRatio = 0;
+    CGFloat heightRatio = 0;
 
-	double aspectRatio = (MAX(trackWidth, trackHeight) / MIN(trackWidth, trackHeight));
-	double delta = ABS(aspectRatio - (16.0/9.0));
-	BOOL closeEnoughTo16x9 = delta < 0.1;	// 1.6777 .. 1.8777	tag:gabe - if this is encompassing too much - maybe 0.08?
+    double aspectRatio = (MAX(trackWidth, trackHeight) / MIN(trackWidth, trackHeight));
+    double delta = ABS(aspectRatio - (16.0/9.0));
+    BOOL closeEnoughTo16x9 = delta < 0.1;	// 1.6777 .. 1.8777	tag:gabe - if this is encompassing too much - maybe 0.08?
 
-	//    DLog(@"image size %f,%f", trackWidth,trackHeight);
-	//    DLog(@"required size %f,%f", self.requiredResolution.width,self.requiredResolution.height);
-	//    DLog(@"Original transform a(%f) b(%f) c(%f) d(%f) tx(%f) ty(%f)",
-	//         videoTransform.a,videoTransform.b,videoTransform.c,videoTransform.d,videoTransform.tx,videoTransform.ty)
-	/*
+    //    DLog(@"image size %f,%f", trackWidth,trackHeight);
+    //    DLog(@"required size %f,%f", self.requiredResolution.width,self.requiredResolution.height);
+    //    DLog(@"Original transform a(%f) b(%f) c(%f) d(%f) tx(%f) ty(%f)",
+    //         videoTransform.a,videoTransform.b,videoTransform.c,videoTransform.d,videoTransform.tx,videoTransform.ty)
+    /*
 	 * 2 Main Cases
 	 * a- portrait
 	 * happens when taking video from the rear camera or selecting from the library
@@ -792,134 +794,134 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 	 * as well as camera footage from the front camera
 	 *
 	 * */
-	if(isVideoAssetPortrait_) {
-		//        DLog(@"IS PORTRAIT - ORIGINAL TRANSFORM");
-		trackWidth = naturalSize.height;
-		trackHeight = naturalSize.width;
+    if(isVideoAssetPortrait_) {
+        //        DLog(@"IS PORTRAIT - ORIGINAL TRANSFORM");
+        trackWidth = naturalSize.height;
+        trackHeight = naturalSize.width;
 
-		if (trackWidth == requiredResolution.width &&
-			trackHeight == requiredResolution.height) {
-			return videoTransform;
-		} else {
-			widthRatio = requiredResolution.width / trackWidth;
-			heightRatio = requiredResolution.height / trackHeight;
+        if (trackWidth == requiredResolution.width &&
+                trackHeight == requiredResolution.height) {
+            return videoTransform;
+        } else {
+            widthRatio = requiredResolution.width / trackWidth;
+            heightRatio = requiredResolution.height / trackHeight;
 
-			if (closeEnoughTo16x9) {
-				// aspect fill time
-				if (widthRatio < heightRatio)
-					widthRatio = heightRatio;
-				else
-					heightRatio = widthRatio;
-			} else {
-				/*
+            if (closeEnoughTo16x9) {
+                // aspect fill time
+                if (widthRatio < heightRatio)
+                    widthRatio = heightRatio;
+                else
+                    heightRatio = widthRatio;
+            } else {
+                /*
 				 * Since this is portrait, that means the height should be taller than the width
 				 * therefore, adjust to fit height and center via width
 				 * */
 
-				// aspect fit (old code)
-				heightRatio = requiredResolution.height / trackHeight;
-				widthRatio = heightRatio;
-			}
-			CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
-			CGFloat translationDistanceX = 0;
-			CGFloat translationDistanceY = 0;
+                // aspect fit (old code)
+                heightRatio = requiredResolution.height / trackHeight;
+                widthRatio = heightRatio;
+            }
+            CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
+            CGFloat translationDistanceX = 0;
+            CGFloat translationDistanceY = 0;
 
-			/*
+            /*
 			 * If width < required width, center by width
 			 * height will always fill the screen
 			 * center it by height Just in case
 			 * */
-			CGFloat newWidth = widthRatio * trackWidth;
-			if (newWidth != requiredResolution.width) {
-				translationDistanceX = (requiredResolution.width - newWidth)/2;
-			}
-			CGFloat newHeight = heightRatio * trackHeight;
-			if (newHeight != requiredResolution.height) {
-				translationDistanceY = (requiredResolution.height - newHeight)/2;
-			}
+            CGFloat newWidth = widthRatio * trackWidth;
+            if (newWidth != requiredResolution.width) {
+                translationDistanceX = (requiredResolution.width - newWidth)/2;
+            }
+            CGFloat newHeight = heightRatio * trackHeight;
+            if (newHeight != requiredResolution.height) {
+                translationDistanceY = (requiredResolution.height - newHeight)/2;
+            }
 
-			//            DLog(@"translate %f,%f", translationDistanceX, translationDistanceY);
-			return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, scaleFactor), CGAffineTransformMakeTranslation(translationDistanceX, translationDistanceY));
-		}
-	} else {
-		trackWidth = naturalSize.width;
-		trackHeight = naturalSize.height;
-		/*
+            //            DLog(@"translate %f,%f", translationDistanceX, translationDistanceY);
+            return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, scaleFactor), CGAffineTransformMakeTranslation(translationDistanceX, translationDistanceY));
+        }
+    } else {
+        trackWidth = naturalSize.width;
+        trackHeight = naturalSize.height;
+        /*
 		 * Fix for shit saved locally
 		 * */
-		BOOL isOrientedUpWithSwitchedWidthHeight = NO;
-		if ((videoAssetOrientation_ == UIImageOrientationUp || videoAssetOrientation_ == UIImageOrientationDown)
-			&& trackWidth > trackHeight) {
-			isOrientedUpWithSwitchedWidthHeight = YES;
-		}
-		/*
+        BOOL isOrientedUpWithSwitchedWidthHeight = NO;
+        if ((videoAssetOrientation_ == UIImageOrientationUp || videoAssetOrientation_ == UIImageOrientationDown)
+                && trackWidth > trackHeight) {
+            isOrientedUpWithSwitchedWidthHeight = YES;
+        }
+        /*
 		 * Special case for photos that haven been recorded with swapped settings
 		 * */
-		if (isOrientedUpWithSwitchedWidthHeight) {
-			trackWidth = naturalSize.height;
-			trackHeight = naturalSize.width;
-			widthRatio = requiredResolution.width/trackWidth;
-			heightRatio = requiredResolution.height/trackHeight;
-			CGAffineTransform FirstAssetScaleFactor = CGAffineTransformMakeScale(widthRatio,heightRatio);
-			CGFloat translationDistance = (CGFloat) (heightRatio*fabs(videoTransform.ty));
-			return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, FirstAssetScaleFactor),CGAffineTransformMakeTranslation(0, translationDistance));//840 is the number
-		} else if (trackWidth == requiredResolution.width &&
-				   trackHeight == requiredResolution.height) {
-			/*If the resolution is the same, just rotate and scale*/
-			widthRatio = requiredResolution.width/trackWidth;
-			heightRatio = requiredResolution.height/trackHeight;
-			CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
-			return CGAffineTransformConcat(videoTransform, scaleFactor);
-		} else {
-			if (closeEnoughTo16x9) {
-				widthRatio = requiredResolution.width / trackWidth;
-				heightRatio = requiredResolution.height / trackHeight;
+        if (isOrientedUpWithSwitchedWidthHeight) {
+            trackWidth = naturalSize.height;
+            trackHeight = naturalSize.width;
+            widthRatio = requiredResolution.width/trackWidth;
+            heightRatio = requiredResolution.height/trackHeight;
+            CGAffineTransform FirstAssetScaleFactor = CGAffineTransformMakeScale(widthRatio,heightRatio);
+            CGFloat translationDistance = (CGFloat) (heightRatio*fabs(videoTransform.ty));
+            return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, FirstAssetScaleFactor),CGAffineTransformMakeTranslation(0, translationDistance));//840 is the number
+        } else if (trackWidth == requiredResolution.width &&
+                trackHeight == requiredResolution.height) {
+            /*If the resolution is the same, just rotate and scale*/
+            widthRatio = requiredResolution.width/trackWidth;
+            heightRatio = requiredResolution.height/trackHeight;
+            CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
+            return CGAffineTransformConcat(videoTransform, scaleFactor);
+        } else {
+            if (closeEnoughTo16x9) {
+                widthRatio = requiredResolution.width / trackWidth;
+                heightRatio = requiredResolution.height / trackHeight;
 
-				// aspect fill time
-				if (widthRatio < heightRatio)
-					widthRatio = heightRatio;
-				else
-					heightRatio = widthRatio;
-			} else {
-				/*If the resolutions are different and the video's height > width
+                // aspect fill time
+                if (widthRatio < heightRatio)
+                    widthRatio = heightRatio;
+                else
+                    heightRatio = widthRatio;
+            } else {
+                /*If the resolutions are different and the video's height > width
 				 * scale by height
 				 * if the video is 16x9 it will fit
 				 * */
-				// aspect fit (old code)
-				if (trackHeight > trackWidth) {
-					heightRatio = requiredResolution.height/trackHeight;
-					widthRatio = heightRatio;
-				} else {
-					/* Occurs for square videos
+                // aspect fit (old code)
+                if (trackHeight > trackWidth) {
+                    heightRatio = requiredResolution.height/trackHeight;
+                    widthRatio = heightRatio;
+                } else {
+                    /* Occurs for square videos
 					 * otherwise will only happen for landscape videos which are not supported
 					 * */
-					widthRatio = requiredResolution.width/trackWidth;
-					heightRatio = widthRatio;
-				}
-			}
-			//            DLog(@"NOT PORTRAIT")
-			//            DLog(@"LANDSCAPE width ratio %f", widthRatio);
-			//            DLog(@"LANDSCAPE height ratio %f", heightRatio);
-			CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
-			CGFloat translationDistanceX = 0;
-			CGFloat translationDistanceY = 0;
-			/*
+                    widthRatio = requiredResolution.width/trackWidth;
+                    heightRatio = widthRatio;
+                }
+            }
+            //            DLog(@"NOT PORTRAIT")
+            //            DLog(@"LANDSCAPE width ratio %f", widthRatio);
+            //            DLog(@"LANDSCAPE height ratio %f", heightRatio);
+            CGAffineTransform scaleFactor = CGAffineTransformMakeScale(widthRatio, heightRatio);
+            CGFloat translationDistanceX = 0;
+            CGFloat translationDistanceY = 0;
+            /*
 			 * If width < required width, center by width
 			 * height will always fill the screen
 			 * */
-			CGFloat newWidth = widthRatio * trackWidth;
-			if (newWidth != requiredResolution.width) {
-				translationDistanceX = (requiredResolution.width - newWidth)/2;
-			}
-			CGFloat newHeight = heightRatio * trackHeight;
-			if (newHeight != requiredResolution.height) {
-				translationDistanceY = (requiredResolution.height - newHeight)/2;
-			}
-			//            DLog(@"translation x,y %f,%f", translationDistanceX, translationDistanceY)
-			//CGFloat translationDistance = (CGFloat) (heightRatio*fabs(videoTransform.ty));
-			return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, scaleFactor), CGAffineTransformMakeTranslation(translationDistanceX, translationDistanceY));
-		}
-	}
+            CGFloat newWidth = widthRatio * trackWidth;
+            if (newWidth != requiredResolution.width) {
+                translationDistanceX = (requiredResolution.width - newWidth)/2;
+            }
+            CGFloat newHeight = heightRatio * trackHeight;
+            if (newHeight != requiredResolution.height) {
+                translationDistanceY = (requiredResolution.height - newHeight)/2;
+            }
+            //            DLog(@"translation x,y %f,%f", translationDistanceX, translationDistanceY)
+            //CGFloat translationDistance = (CGFloat) (heightRatio*fabs(videoTransform.ty));
+            return CGAffineTransformConcat(CGAffineTransformConcat(videoTransform, scaleFactor), CGAffineTransformMakeTranslation(translationDistanceX, translationDistanceY));
+        }
+    }
 }
 
 @end

@@ -17,48 +17,51 @@
     CMVideoDimensions dimensions;
     dimensions.width = 0;
     dimensions.height = 0;
-    
+
     return [SCRecorderTools formatInRange:format frameRate:frameRate dimensions:dimensions];
 }
 
 + (BOOL)formatInRange:(AVCaptureDeviceFormat*)format frameRate:(CMTimeScale)frameRate dimensions:(CMVideoDimensions)dimensions {
     CMVideoDimensions size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
-    
+
     if (size.width >= dimensions.width && size.height >= dimensions.height) {
         for (AVFrameRateRange *range in format.videoSupportedFrameRateRanges) {
             if (range.minFrameDuration.timescale >= frameRate && range.maxFrameDuration.timescale <= frameRate) {
-                return YES;
-            }
+				return YES;
+			}
         }
     }
-    
+
     return NO;
 }
 
 + (CMTimeScale)maxFrameRateForFormat:(AVCaptureDeviceFormat *)format minFrameRate:(CMTimeScale)minFrameRate {
     CMTimeScale lowerTimeScale = 0;
     for (AVFrameRateRange *range in format.videoSupportedFrameRateRanges) {
-        if (range.minFrameDuration.timescale >= minFrameRate && (lowerTimeScale == 0 || range.minFrameDuration.timescale < lowerTimeScale)) {
-            lowerTimeScale = range.minFrameDuration.timescale;
+    	CMTimeScale rangeMinDur = range.minFrameDuration.timescale;
+        if (rangeMinDur >= minFrameRate && (lowerTimeScale == 0 || rangeMinDur < lowerTimeScale)) {
+            lowerTimeScale = rangeMinDur;
         }
     }
-    
+
     return lowerTimeScale;
 }
 
 + (AVCaptureDevice *)videoDeviceForPosition:(AVCaptureDevicePosition)position {
     NSArray *videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-    
+
     for (AVCaptureDevice *device in videoDevices) {
         if (device.position == (AVCaptureDevicePosition)position) {
             return device;
         }
     }
-    
     return nil;
 }
 
 + (NSString *)captureSessionPresetForDimension:(CMVideoDimensions)videoDimension {
+    if (videoDimension.width >= 3840 && videoDimension.height >= 2160) {
+        return AVCaptureSessionPreset3840x2160;
+    }
     if (videoDimension.width >= 1920 && videoDimension.height >= 1080) {
         return AVCaptureSessionPreset1920x1080;
     }
@@ -74,7 +77,7 @@
     if (videoDimension.width >= 352 && videoDimension.height >= 288) {
         return AVCaptureSessionPreset352x288;
     }
-    
+
     return AVCaptureSessionPresetLow;
 }
 
@@ -86,42 +89,44 @@
     CMVideoDimensions highestDeviceDimension;
     highestDeviceDimension.width = 0;
     highestDeviceDimension.height = 0;
-    
+
     for (AVCaptureDeviceFormat *format in device.formats) {
         CMVideoDimensions dimension = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
-        
-        if (dimension.width <= (int)maxSize.width && dimension.height <= (int)maxSize.height && dimension.width * dimension.height > highestDeviceDimension.width * highestDeviceDimension.height) {
+
+        if (dimension.width <= (int)maxSize.width &&
+				dimension.height <= (int)maxSize.height &&
+				dimension.width * dimension.height > highestDeviceDimension.width * highestDeviceDimension.height) {
             highestDeviceDimension = dimension;
         }
     }
-    
+
     return [SCRecorderTools captureSessionPresetForDimension:highestDeviceDimension];
 }
 
 + (NSString *)bestCaptureSessionPresetCompatibleWithAllDevices {
     NSArray *videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 
-	CMVideoDimensions highestCompatibleDimension = {0,0};
+    CMVideoDimensions highestCompatibleDimension = {0,0};
     BOOL lowestSet = NO;
-    
+
     for (AVCaptureDevice *device in videoDevices) {
         CMVideoDimensions highestDeviceDimension;
         highestDeviceDimension.width = 0;
         highestDeviceDimension.height = 0;
-        
+
         for (AVCaptureDeviceFormat *format in device.formats) {
             CMVideoDimensions dimension = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
-            
+
             if (dimension.width * dimension.height > highestDeviceDimension.width * highestDeviceDimension.height) {
                 highestDeviceDimension = dimension;
             }
         }
-        
+
         if (!lowestSet || (highestCompatibleDimension.width * highestCompatibleDimension.height > highestDeviceDimension.width * highestDeviceDimension.height)) {
             lowestSet = YES;
             highestCompatibleDimension = highestDeviceDimension;
         }
-        
+
     }
 
     return [SCRecorderTools captureSessionPresetForDimension:highestCompatibleDimension];
@@ -132,12 +137,12 @@
     creationDate.keySpace = AVMetadataKeySpaceCommon;
     creationDate.key = AVMetadataCommonKeyCreationDate;
     creationDate.value = [[NSDate date] toISO8601];
-    
+
     AVMutableMetadataItem *software = [AVMutableMetadataItem new];
     software.keySpace = AVMetadataKeySpaceCommon;
     software.key = AVMetadataCommonKeySoftware;
     software.value = @"SCRecorder";
-    
+
     return @[software, creationDate];
 }
 

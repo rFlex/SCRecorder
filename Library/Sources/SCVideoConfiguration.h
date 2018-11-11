@@ -11,7 +11,8 @@
 #import "SCMediaTypeConfiguration.h"
 #import "SCFilter.h"
 
-#define kSCVideoConfigurationDefaultCodec AVVideoCodecH264
+//#define kSCVideoConfigurationDefaultCodec AVVideoCodecH264
+#define kSCVideoConfigurationDefaultCodec AVVideoCodecTypeHEVC
 #define kSCVideoConfigurationDefaultScalingMode AVVideoScalingModeResizeAspectFill
 #define kSCVideoConfigurationDefaultBitrate 2000000
 
@@ -29,7 +30,7 @@ typedef enum : NSUInteger {
 /**
  Called to determine whether setFrame:, updateWithVideoTime: and layoutIfNeeded should be called on the main thread.
  You should avoid returning YES as much as possible from this method, since it will potentially
- greatly reduce the encoding speed. Some views like UITextView requires to layout on the main thread. 
+ greatly reduce the encoding speed. Some views like UITextView requires to layout on the main thread.
  */
 - (BOOL)requiresUpdateOnMainThreadAtVideoTime:(NSTimeInterval)time videoSize:(CGSize)videoSize;
 
@@ -83,7 +84,7 @@ typedef enum : NSUInteger {
  A value more than 1 will make the buffers last longer, it creates
  a slow motion effect. A value less than 1 will make the buffers be
  shorter, it creates a timelapse effect.
- 
+
  Only used in SCRecorder.
  */
 @property (assign, nonatomic) CGFloat timeScale;
@@ -120,14 +121,14 @@ typedef enum : NSUInteger {
 /**
  If YES, the affineTransform will be ignored and the output affineTransform
  will be the same as the input asset.
- 
+
  Only used in SCAssetExportSession.
  */
 @property (assign, nonatomic) BOOL keepInputAffineTransform;
 
 /**
  The video composition to use.
- 
+
  Only used in SCAssetExportSession.
  */
 @property (strong, nonatomic) AVVideoComposition *__nullable composition;
@@ -135,14 +136,14 @@ typedef enum : NSUInteger {
 /**
  The watermark to use. If the composition is not set, this watermark
  image will be applied on the exported video.
- 
+
  Only used in SCAssetExportSession.
  */
 @property (strong, nonatomic) UIImage *__nullable watermarkImage;
 
 /**
  The watermark image location and size in the input video frame coordinates.
- 
+
  Only used in SCAssetExportSession.
  */
 @property (assign, nonatomic) CGRect watermarkFrame;
@@ -152,7 +153,7 @@ typedef enum : NSUInteger {
  to figure out which size to use by looking at the composition and the natural
  size of the inputAsset. If the filter you set return back an image with a different
  size, you should put the output size here.
- 
+
  Only used in SCAssetExportSession.
  Default is CGSizeZero
  */
@@ -165,16 +166,16 @@ typedef enum : NSUInteger {
 
 /**
  The overlay view that will be drawn on top of the video.
- 
+
  Only used in SCAssetExportSession.
  */
 @property (strong, nonatomic) UIView<SCVideoOverlay> *__nullable overlay;
 
 /**
  The watermark anchor location.
- 
+
  Default is top left
- 
+
  Only used in SCAssetExportSession.
  */
 @property (assign, nonatomic) SCWatermarkAnchorLocation watermarkAnchorLocation;

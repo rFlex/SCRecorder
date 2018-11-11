@@ -24,6 +24,12 @@
 	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>tor record</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>to mic</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>gimee fotos acces</string>
 	<key>UILaunchStoryboardName</key>
 	<string>Launch Screen</string>
 	<key>UIMainStoryboardFile</key>

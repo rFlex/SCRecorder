@@ -107,7 +107,7 @@
 
 - (void)deleteRecordSession {
     [self.player setItemByAsset:nil];
-    [_recordSession removeAllSegments];
+//    [_recordSession removeAllSegments];
     _recordSession = nil;
 }
 

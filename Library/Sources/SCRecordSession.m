@@ -155,7 +155,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 - (void)dispatchSyncOnSessionQueue:(void(^)(void))block {
     SCRecorder *recorder = self.recorder;
 
-	block = [block copy];
+    block = [block copy];
     if (recorder == nil || [SCRecorder isSessionQueue]) {
         block();
     } else {
@@ -169,7 +169,7 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)removeSegment:(SCRecordSessionSegment *)segment {
-	__weak typeof(self) wSelf = self;
+    __weak typeof(self) wSelf = self;
     [self dispatchSyncOnSessionQueue:^{
         NSUInteger index = [wSelf.segments indexOfObject:segment];
         if (index != NSNotFound) {
@@ -179,9 +179,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)removeSegmentAtIndex:(NSInteger)segmentIndex deleteFile:(BOOL)deleteFile {
-	__weak typeof(self) wSelf = self;
+    __weak typeof(self) wSelf = self;
     [self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+        typeof(self) iSelf = wSelf;
         SCRecordSessionSegment *segment = [iSelf->_segments objectAtIndex:segmentIndex];
         [iSelf->_segments removeObjectAtIndex:segmentIndex];
 
@@ -207,9 +207,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)removeLastSegment {
-	__weak typeof(self) wSelf = self;
+    __weak typeof(self) wSelf = self;
     [self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+        typeof(self) iSelf = wSelf;
         if (iSelf->_segments.count > 0) {
             [self removeSegmentAtIndex:iSelf->_segments.count - 1 deleteFile:YES];
         }
@@ -218,28 +218,28 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
 - (void)removeAllSegments:(void(^ __nullable)(void))completionHandler {
     [self removeAllSegments:YES
-          withCompletion:completionHandler];
+             withCompletion:completionHandler];
 }
 
 - (void)removeAllSegments:(BOOL)removeFiles
            withCompletion:(void(^ __nullable)(void))completionHandler;{
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
-		while (iSelf->_segments.count > 0) {
-			if (removeFiles) {
-				SCRecordSessionSegment *segment = [iSelf->_segments objectAtIndex:0];
-				[segment deleteFile];
-			}
-			[iSelf->_segments removeObjectAtIndex:0];
-		}
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
+        while (iSelf->_segments.count > 0) {
+            if (removeFiles) {
+                SCRecordSessionSegment *segment = [iSelf->_segments objectAtIndex:0];
+                [segment deleteFile];
+            }
+            [iSelf->_segments removeObjectAtIndex:0];
+        }
 
-		iSelf->_segmentsDuration = kCMTimeZero;
+        iSelf->_segmentsDuration = kCMTimeZero;
 
-		if (completionHandler) {
-			completionHandler();
-		}
-	}];
+        if (completionHandler) {
+            completionHandler();
+        }
+    }];
 }
 
 - (NSString*)_suggestedFileType {
@@ -282,6 +282,8 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         return @"wav";
     } else if ([fileType isEqualToString:AVFileTypeMPEGLayer3]) {
         return @"mp3";
+    } else if ([fileType isEqualToString:AVFileTypeHEIC]) {
+        return @"heic";
     }
 
     return nil;
@@ -366,9 +368,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)deinitialize {
-	__weak typeof(self) wSelf = self;
+    __weak typeof(self) wSelf = self;
     [self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+        typeof(self) iSelf = wSelf;
         [self endSegmentWithInfo:nil completionHandler:nil];
 
         iSelf->_audioConfiguration = nil;
@@ -390,9 +392,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         _videoInput.transform = _videoConfiguration.affineTransform;
 
         CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
-
         NSDictionary *pixelBufferAttributes = @{
-                (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange),
+				(id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
+//                (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange),
                 (id)kCVPixelBufferWidthKey : @(dimensions.width),
                 (id)kCVPixelBufferHeightKey : @(dimensions.height)
         };
@@ -427,18 +429,18 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)addSegment:(SCRecordSessionSegment *)segment {
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         [iSelf->_segments addObject:segment];
         iSelf->_segmentsDuration = CMTimeAdd(iSelf->_segmentsDuration, segment.duration);
     }];
 }
 
 - (void)insertSegment:(SCRecordSessionSegment *)segment atIndex:(NSInteger)segmentIndex {
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         [iSelf->_segments insertObject:segment atIndex:segmentIndex];
         iSelf->_segmentsDuration = CMTimeAdd(iSelf->_segmentsDuration, segment.duration);
     }];
@@ -466,20 +468,20 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)beginSegment:(NSError**)error {
-	__block NSError* localError;
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __block NSError* localError;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         if (iSelf->_assetWriter == nil) {
             iSelf->_assetWriter = [iSelf createWriter:&localError];
             iSelf->_currentSegmentDuration = kCMTimeZero;
             iSelf->_currentSegmentHasAudio = NO;
             iSelf->_currentSegmentHasVideo = NO;
         } else {
-			localError = [SCRecordSession createError:@"A record segment has already began."];
+            localError = [SCRecordSession createError:@"A record segment has already began."];
         }
     }];
-	if (error) *error = localError;
+    if (error) *error = localError;
 }
 
 - (void)_destroyAssetWriter {
@@ -494,9 +496,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)appendRecordSegmentUrl:(NSURL *)url info:(NSDictionary *)info error:(NSError *)error completionHandler:(void (^)(SCRecordSessionSegment *, NSError *))completionHandler {
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         SCRecordSessionSegment *segment = nil;
 
         if (error == nil) {
@@ -517,48 +519,48 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 - (BOOL)endSegmentWithInfo:(NSDictionary *)info completionHandler:(void(^)(SCRecordSessionSegment *segment, NSError* error))completionHandler {
     __block BOOL success = NO;
 
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
 //        dispatch_sync(iSelf->_audioQueue, ^{
-            if (iSelf->_recordSegmentReady) {
-                iSelf->_recordSegmentReady = NO;
-                success = YES;
+        if (iSelf->_recordSegmentReady) {
+            iSelf->_recordSegmentReady = NO;
+            success = YES;
 
-                AVAssetWriter *writer = iSelf->_assetWriter;
+            AVAssetWriter *writer = iSelf->_assetWriter;
 
-                if (writer != nil) {
-                    BOOL currentSegmentEmpty = (!iSelf->_currentSegmentHasVideo && !iSelf->_currentSegmentHasAudio);
+            if (writer != nil) {
+                BOOL currentSegmentEmpty = (!iSelf->_currentSegmentHasVideo && !iSelf->_currentSegmentHasAudio);
 
-                    if (currentSegmentEmpty) {
-                        [writer cancelWriting];
-                        [iSelf _destroyAssetWriter];
+                if (currentSegmentEmpty) {
+                    [writer cancelWriting];
+                    [iSelf _destroyAssetWriter];
 
-                        [iSelf removeFile:writer.outputURL];
+                    [iSelf removeFile:writer.outputURL];
 
-                        if (completionHandler != nil) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                completionHandler(nil, nil);
-                            });
-                        }
-                    } else {
-                        //                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_currentSegmentDuration));
-                        [writer endSessionAtSourceTime:CMTimeAdd(iSelf->_currentSegmentDuration, iSelf->_sessionStartTime)];
-
-                        [writer finishWritingWithCompletionHandler: ^{
-                            [iSelf appendRecordSegmentUrl:writer.outputURL info:info error:writer.error completionHandler:completionHandler];
-                        }];
+                    if (completionHandler != nil) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            completionHandler(nil, nil);
+                        });
                     }
                 } else {
-                    [iSelf->_movieFileOutput stopRecording];
+                    //                NSLog(@"Ending session at %fs", CMTimeGetSeconds(_currentSegmentDuration));
+                    [writer endSessionAtSourceTime:CMTimeAdd(iSelf->_currentSegmentDuration, iSelf->_sessionStartTime)];
+
+                    [writer finishWritingWithCompletionHandler: ^{
+                        [iSelf appendRecordSegmentUrl:writer.outputURL info:info error:writer.error completionHandler:completionHandler];
+                    }];
                 }
-			} else {
-				if (completionHandler != nil) {
-					dispatch_async(dispatch_get_main_queue(), ^{
-						completionHandler(nil, [SCRecordSession createError:@"The current record segment is not ready for this operation"]);
-					});
-				}
-			}
+            } else {
+                [iSelf->_movieFileOutput stopRecording];
+            }
+        } else {
+            if (completionHandler != nil) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionHandler(nil, [SCRecordSession createError:@"The current record segment is not ready for this operation"]);
+                });
+            }
+        }
 //        });
     }];
 
@@ -591,9 +593,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     __block NSString *fileType = nil;
     __block NSURL *outputUrl = nil;
 
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         fileType = [self _suggestedFileType];
 
         if (fileType == nil) {
@@ -652,9 +654,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
     __block NSString *fileType = nil;
     __block NSURL *outputUrl = url;
 
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         fileType = [iSelf _suggestedFileType];
 
         if (fileType == nil) {
@@ -711,23 +713,23 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)cancelSession:(void (^)(void))completionHandler {
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         if (iSelf->_assetWriter == nil) {
             [iSelf removeAllSegments:nil];
-			if (completionHandler != nil) {
-				dispatch_async(dispatch_get_main_queue(), ^{
-					completionHandler();
-				});
-			}
+            if (completionHandler != nil) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionHandler();
+                });
+            }
         } else {
             [iSelf endSegmentWithInfo:nil completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
                 [iSelf removeAllSegments:nil];
                 if (completionHandler != nil) {
-					dispatch_async(dispatch_get_main_queue(), ^{
-						completionHandler();
-					});
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completionHandler();
+                    });
                 }
             }];
         }
@@ -759,9 +761,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
     CMTime presentationTime = CMSampleBufferGetPresentationTimeStamp(adjustedBuffer);
     CMTime lastTimeAudio = CMTimeAdd(presentationTime, duration);
-	__weak typeof(self) wSelf = self;
+    __weak typeof(self) wSelf = self;
     dispatch_async(_audioQueue, ^{
-		typeof(self) iSelf = wSelf;
+        typeof(self) iSelf = wSelf;
         if ([iSelf->_audioInput isReadyForMoreMediaData] && [iSelf->_audioInput appendSampleBuffer:adjustedBuffer]) {
             iSelf->_lastTimeAudio = lastTimeAudio;
 
@@ -802,16 +804,16 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         }
         duration = computedFrameDuration;
     }
-
-    //    CMTime timeVideo = _lastTimeVideo;
-    //    CMTime actualBufferDuration = duration;
-    //
-    //    if (CMTIME_IS_VALID(timeVideo)) {
-    //        while (CMTIME_COMPARE_INLINE(CMTimeSubtract(actualBufferTime, timeVideo), >=, CMTimeMultiply(actualBufferDuration, 2))) {
-    //            NSLog(@"Missing buffer");
-    //            timeVideo = CMTimeAdd(timeVideo, actualBufferDuration);
-    //        }
-    //    }
+    /*{
+		CMTime timeVideo = _lastTimeVideo;
+		CMTime actualBufferDuration = duration;
+		if (CMTIME_IS_VALID(timeVideo)) {
+			while (CMTIME_COMPARE_INLINE(CMTimeSubtract(actualBufferTime, timeVideo), >=, CMTimeMultiply(actualBufferDuration, 2))) {
+				NSLog(@"Missing buffer");
+				timeVideo = CMTimeAdd(timeVideo, actualBufferDuration);
+			}
+		}
+	}*/
 
     if ([_videoInput isReadyForMoreMediaData]) {
         if ([_videoPixelBufferAdaptor appendPixelBuffer:videoPixelBuffer withPresentationTime:bufferTimestamp]) {
@@ -862,9 +864,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 }
 
 - (void)appendSegmentsToComposition:(AVMutableComposition *)composition audioMix:(AVMutableAudioMix *)audioMix {
-	__weak typeof(self) wSelf = self;
+    __weak typeof(self) wSelf = self;
     [self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+        typeof(self) iSelf = wSelf;
         AVMutableCompositionTrack *audioTrack = nil;
         AVMutableCompositionTrack *videoTrack = nil;
 
@@ -919,9 +921,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
 - (AVPlayerItem *)playerItemRepresentingSegments {
     __block AVPlayerItem *playerItem = nil;
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         if (iSelf->_segments.count == 1) {
             SCRecordSessionSegment *segment = iSelf->_segments.firstObject;
             playerItem = [AVPlayerItem playerItemWithAsset:segment.asset];
@@ -938,9 +940,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
 - (AVAsset *)assetRepresentingSegments {
     __block AVAsset *asset = nil;
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         if (iSelf->_segments.count == 1) {
             SCRecordSessionSegment *segment = iSelf->_segments.firstObject;
             asset = segment.asset;
@@ -1023,9 +1025,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 - (void)setSegmentsDirectory:(NSString *)segmentsDirectory {
     _segmentsDirectory = [segmentsDirectory copy];
 
-	__weak typeof(self) wSelf = self;
-	[self dispatchSyncOnSessionQueue:^{
-		typeof(self) iSelf = wSelf;
+    __weak typeof(self) wSelf = self;
+    [self dispatchSyncOnSessionQueue:^{
+        typeof(self) iSelf = wSelf;
         NSFileManager *fileManager = [NSFileManager defaultManager];
         for (SCRecordSessionSegment *recordSegment in iSelf.segments) {
             NSURL *newUrl = [SCRecordSessionSegment segmentURLForFilename:recordSegment.url.lastPathComponent andDirectory:iSelf->_segmentsDirectory];
