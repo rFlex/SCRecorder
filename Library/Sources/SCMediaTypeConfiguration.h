@@ -47,6 +47,6 @@ extern NSString *__nonnull SCPresetLowQuality;
  */
 @property (copy, nonatomic) NSString *__nullable preset;
 
-- (NSDictionary *__nonnull)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef __nullable)sampleBuffer;
+- (NSDictionary *__nonnull)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef __nullable)sampleBuffer usingOutput:(AVCaptureVideoDataOutput *)output;
 
 @end

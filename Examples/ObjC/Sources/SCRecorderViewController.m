@@ -66,6 +66,17 @@
 
 	[self.view insertSubview:_ghostImageView aboveSubview:self.previewView];
 
+	NSArray *types = @[AVCaptureDeviceTypeBuiltInMicrophone,
+						AVCaptureDeviceTypeBuiltInWideAngleCamera,
+						AVCaptureDeviceTypeBuiltInTelephotoCamera,
+						AVCaptureDeviceTypeBuiltInDualCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera];
+	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession
+			discoverySessionWithDeviceTypes:types
+								  mediaType:AVMediaTypeVideo
+								   position:AVCaptureDevicePositionUnspecified];
+	NSLog(@"devices %@", session.devices);
+
+
 	_recorder = [SCRecorder recorder];
 	[_recorder beginConfiguration];
 	_recorder.captureSessionPreset = AVCaptureSessionPresetInputPriority;
@@ -81,8 +92,9 @@
 //	videoConfiguration.preset = SCPresetHighestQuality;
 //	videoConfiguration.bitrate = 10000000;	//(10 mbps)
 //	videoConfiguration.bitrate = 85000000; 	//(85 mbps)
-//	videoConfiguration.bitrate = 100000000; //(100 mbps)
-//	videoConfiguration.bitrate = 150000000; //(510 mbps)
+//	videoConfiguration.bitrate = 100 000 000; //(100 mbps)
+//	videoConfiguration.bitrate = 50 366 912
+	videoConfiguration.bitrate = 150000000; //(150 mbps)
 //	videoConfiguration.size = CGSizeMake(1080, 1920);
 	videoConfiguration.size = CGSizeMake(2160, 3840);
 	videoConfiguration.maxFrameRate = 0;

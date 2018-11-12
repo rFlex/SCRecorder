@@ -36,11 +36,20 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
 	return CGSizeMake(videoSize.width / ratio, videoSize.height / ratio);
 }
 
-- (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize {
-	return [self createAssetWriterOptionsWithVideoSize:videoSize sizeIsSuggestion:YES];
+- (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize usingOutput:(AVCaptureVideoDataOutput *)output {
+	return [self createAssetWriterOptionsWithVideoSize:videoSize usingOutput:output sizeIsSuggestion:YES];
+}
+
+- (NSDictionary *)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer usingOutput:(AVCaptureVideoDataOutput *)output {
+	CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+	size_t width = CVPixelBufferGetWidth(imageBuffer);
+	size_t height = CVPixelBufferGetHeight(imageBuffer);
+
+	return [self createAssetWriterOptionsWithVideoSize:CGSizeMake(width, height) usingOutput:output];
 }
 
 - (NSDictionary *)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize
+											usingOutput:(AVCaptureVideoDataOutput *)output
 									   sizeIsSuggestion:(BOOL)suggestion {
 	NSDictionary *options = self.options;
 	if (options != nil) {
@@ -81,47 +90,69 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
 			outputSize.height = videoSize.width;
 		}
 	}
+	/*NSMutableDictionary *compressionSettings = NSMutableDictionary.dictionary;
 
-	NSMutableDictionary *compressionSettings = NSMutableDictionary.dictionary;
+	compressionSettings[AVVideoAverageBitRateKey] = @(bitrate);
 
-	if (self.codec == AVVideoCodecH264) {
-		compressionSettings[AVVideoAverageBitRateKey] = @(bitrate);
+	if (self.codec == AVVideoCodecTypeH264) {
+
 		compressionSettings[AVVideoMaxKeyFrameIntervalDurationKey] = @0.0f;
 		if (self.shouldKeepOnlyKeyFrames) {
 			compressionSettings[AVVideoMaxKeyFrameIntervalKey] = @1;
 		}
 		//only for h264
 		//	compressionSettings[AVVideoAverageNonDroppableFrameRateKey] = @30;
-	} else if (self.codec == AVVideoCodecHEVC) {
+	} else if (self.codec == AVVideoCodecTypeHEVC) {
 //		compressionSettings[AVVideoQualityKey] = @1.0;
 	}
-
 	if (self.profileLevel) {
 		compressionSettings[AVVideoProfileLevelKey] = self.profileLevel;
 	}
 	//seems to break shit
-//	compressionSettings[AVVideoAllowWideColorKey] = @(YES);
-	compressionSettings[AVVideoAllowFrameReorderingKey] = @NO;
+	compressionSettings[AVVideoAllowWideColorKey] 					= @(YES);
+	compressionSettings[AVVideoAllowFrameReorderingKey] 			= @(NO);*/
 //    [compressionSettings setObject:AVVideoH264EntropyModeCABAC forKey:AVVideoH264EntropyModeKey];
 //got rid of setting the frame rates.. not sure if it helped or not
 //	compressionSettings[AVVideoExpectedSourceFrameRateKey] = @60;
 
-	return @{
-			AVVideoCodecKey : self.codec,
-			AVVideoScalingModeKey : self.scalingMode,
-			AVVideoWidthKey : [NSNumber numberWithInteger:outputSize.width],
-			AVVideoHeightKey : [NSNumber numberWithInteger:outputSize.height],
-			AVVideoCompressionPropertiesKey : compressionSettings,
-	};
+	NSMutableDictionary *colorSettings = NSMutableDictionary.dictionary;
+	//HD
+	//	colorSettings[AVVideoColorPrimariesKey] = AVVideoColorPrimaries_ITU_R_709_2;
+	//	colorSettings[AVVideoTransferFunctionKey] = AVVideoTransferFunction_ITU_R_709_2;
+	//	colorSettings[AVVideoYCbCrMatrixKey] = AVVideoYCbCrMatrix_ITU_R_709_2;
+	//Wide-color
+	colorSettings[AVVideoColorPrimariesKey] 						= AVVideoColorPrimaries_P3_D65;
+	colorSettings[AVVideoTransferFunctionKey] 						= AVVideoTransferFunction_ITU_R_709_2;
+	colorSettings[AVVideoYCbCrMatrixKey] 							= AVVideoYCbCrMatrix_ITU_R_709_2;
 
-}
+	NSMutableDictionary *recommendedSettings = [[output
+			recommendedVideoSettingsForVideoCodecType:self.codec
+							assetWriterOutputFileType:AVFileTypeQuickTimeMovie] mutableCopy];
 
-- (NSDictionary *)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer {
-	CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-	size_t width = CVPixelBufferGetWidth(imageBuffer);
-	size_t height = CVPixelBufferGetHeight(imageBuffer);
+	NSMutableDictionary *apertureSettings = NSMutableDictionary.dictionary;
+	apertureSettings[AVVideoCleanApertureWidthKey] 					= recommendedSettings[AVVideoWidthKey];
+	apertureSettings[AVVideoCleanApertureHeightKey] 				= recommendedSettings[AVVideoHeightKey];
+	apertureSettings[AVVideoCleanApertureHorizontalOffsetKey] 		= @(0);
+	apertureSettings[AVVideoCleanApertureVerticalOffsetKey] 		= @(0);
 
-	return [self createAssetWriterOptionsWithVideoSize:CGSizeMake(width, height)];
+	recommendedSettings[AVVideoColorPropertiesKey] 					= colorSettings;
+	recommendedSettings[AVVideoCleanApertureKey] 					= apertureSettings;
+
+	recommendedSettings[AVVideoScalingModeKey] 						= self.scalingMode;
+	recommendedSettings[AVVideoWidthKey] 							= [NSNumber numberWithInteger:outputSize.width];
+	recommendedSettings[AVVideoHeightKey] 							= [NSNumber numberWithInteger:outputSize.height];
+
+	NSLog(@"recommmended %@", recommendedSettings);
+	return recommendedSettings;
+//	return @{
+//			AVVideoCodecKey : self.codec,
+//			AVVideoScalingModeKey : self.scalingMode,
+//			AVVideoWidthKey : [NSNumber numberWithInteger:outputSize.width],
+//			AVVideoHeightKey : [NSNumber numberWithInteger:outputSize.height],
+//			AVVideoCompressionPropertiesKey : compressionSettings,
+//			AVVideoPixelAspectRatioKey : AVVideoPixelAspectRatioHorizontalSpacingKey,
+//			AVVideoColorPropertiesKey : colorSettings,
+//	};
 }
 
 @end

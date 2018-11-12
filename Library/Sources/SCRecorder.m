@@ -775,7 +775,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 	if (!recordSession.videoInitializationFailed && !_videoConfiguration.shouldIgnore) {
 		if (!recordSession.videoInitialized) {
 			NSError *error = nil;
-			NSDictionary *settings = [self.videoConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
+			NSDictionary *settings = [self.videoConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer usingOutput:_videoOutput];
 
 			CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
 			[recordSession initializeVideo:settings formatDescription:formatDescription error:&error];
@@ -854,7 +854,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 	if (!recordSession.audioInitializationFailed && !_audioConfiguration.shouldIgnore) {
 		if (!recordSession.audioInitialized) {
 			NSError *error = nil;
-			NSDictionary *settings = [self.audioConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer];
+			NSDictionary *settings = [self.audioConfiguration createAssetWriterOptionsUsingSampleBuffer:sampleBuffer usingOutput:_audioOutput];
 			CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
 			[recordSession initializeAudio:settings formatDescription:formatDescription error:&error];
 //            NSLog(@"INITIALIZED AUDIO");

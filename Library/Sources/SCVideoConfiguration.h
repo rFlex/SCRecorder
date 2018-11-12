@@ -181,8 +181,9 @@ typedef enum : NSUInteger {
 @property (assign, nonatomic) SCWatermarkAnchorLocation watermarkAnchorLocation;
 
 
-- (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize;
+- (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize usingOutput:(AVCaptureVideoDataOutput *)output;
 - (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize
+													 usingOutput:(AVCaptureVideoDataOutput *)output
 												sizeIsSuggestion:(BOOL)suggestion;
 
 @end

@@ -552,7 +552,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 - (void)_setupAudioUsingTracks:(NSArray *)audioTracks {
     if (audioTracks.count > 0 && self.audioConfiguration.enabled && !self.audioConfiguration.shouldIgnore) {
         // Input
-        NSDictionary *audioSettings = [_audioConfiguration createAssetWriterOptionsUsingSampleBuffer:nil];
+        NSDictionary *audioSettings = [_audioConfiguration createAssetWriterOptionsUsingSampleBuffer:nil usingOutput:_audioOutput];
         _audioInput = [self addWriter:AVMediaTypeAudio withSettings:audioSettings];
 
         // Output
@@ -597,6 +597,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
         // Input
         NSDictionary *videoSettings = [_videoConfiguration createAssetWriterOptionsWithVideoSize:_inputBufferSize
+																					 usingOutput:_videoOutput
                                                                                 sizeIsSuggestion:videoComposition == nil];
 
         _videoInput = [self addWriter:AVMediaTypeVideo withSettings:videoSettings];

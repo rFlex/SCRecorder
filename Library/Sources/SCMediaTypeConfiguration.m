@@ -16,15 +16,15 @@ const NSString *SCPresetLowQuality = @"LowQuality";
 
 - (id)init {
     self = [super init];
-    
+
     if (self) {
         _enabled = YES;
     }
-    
+
     return self;
 }
 
-- (NSDictionary *)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+- (NSDictionary *)createAssetWriterOptionsUsingSampleBuffer:(CMSampleBufferRef)sampleBuffer usingOutput:(AVCaptureVideoDataOutput *)output {
     return nil;
 }
 
