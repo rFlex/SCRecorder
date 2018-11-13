@@ -180,6 +180,12 @@ typedef enum : NSUInteger {
  */
 @property (assign, nonatomic) SCWatermarkAnchorLocation watermarkAnchorLocation;
 
+/*
+ * Uses the recommended settings for the current camera device (front/back)
+ *
+ * */
+@property (assign, nonatomic) BOOL usesRecommendedSettings;
+
 
 - (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize usingOutput:(AVCaptureVideoDataOutput *__nullable)output;
 - (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize

@@ -106,6 +106,7 @@
 	videoConfiguration.sizeAsSquare = NO;
 	videoConfiguration.codec = AVVideoCodecTypeHEVC;
 	videoConfiguration.enabled = YES;
+	videoConfiguration.usesRecommendedSettings = YES;
 	_recorder.videoOrientation = AVCaptureVideoOrientationPortrait;
 	_recorder.photoConfiguration.enabled = NO;
 
