@@ -152,19 +152,32 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
 			compressionSettings[AVVideoProfileLevelKey] = self.profileLevel;
 		}
 		//seems to break shit
-		compressionSettings[AVVideoAllowWideColorKey] 					= @(YES);
+//		compressionSettings[AVVideoAllowWideColorKey] 					= @(NO);
 		compressionSettings[AVVideoAllowFrameReorderingKey] 			= @(NO);
 		//    [compressionSettings setObject:AVVideoH264EntropyModeCABAC forKey:AVVideoH264EntropyModeKey];
 		//got rid of setting the frame rates.. not sure if it helped or not
 		//	compressionSettings[AVVideoExpectedSourceFrameRateKey] = @60;
+		NSMutableDictionary *colorSettings = NSMutableDictionary.dictionary;
+		//HD
+		colorSettings[AVVideoColorPrimariesKey] = AVVideoColorPrimaries_ITU_R_709_2;
+		colorSettings[AVVideoTransferFunctionKey] = AVVideoTransferFunction_ITU_R_709_2;
+		colorSettings[AVVideoYCbCrMatrixKey] = AVVideoYCbCrMatrix_ITU_R_709_2;
+
+		NSMutableDictionary *apertureSettings = NSMutableDictionary.dictionary;
+		apertureSettings[AVVideoCleanApertureWidthKey] = [NSNumber numberWithInteger:outputSize.width];
+		apertureSettings[AVVideoCleanApertureHeightKey] = [NSNumber numberWithInteger:outputSize.height];
+		apertureSettings[AVVideoCleanApertureHorizontalOffsetKey] = @(0);
+		apertureSettings[AVVideoCleanApertureVerticalOffsetKey] = @(0);
 
 		return @{
-				AVVideoCodecKey                : self.codec,
-				AVVideoScalingModeKey          : self.scalingMode,
-				AVVideoWidthKey                : [NSNumber numberWithInteger:outputSize.width],
-				AVVideoHeightKey               : [NSNumber numberWithInteger:outputSize.height],
-				AVVideoCompressionPropertiesKey: compressionSettings,
-				AVVideoPixelAspectRatioKey     : AVVideoPixelAspectRatioHorizontalSpacingKey,
+				AVVideoCodecKey                	: self.codec,
+				AVVideoScalingModeKey          	: self.scalingMode,
+				AVVideoWidthKey                	: [NSNumber numberWithInteger:outputSize.width],
+				AVVideoHeightKey               	: [NSNumber numberWithInteger:outputSize.height],
+				AVVideoCompressionPropertiesKey	: compressionSettings,
+				AVVideoColorPropertiesKey		: colorSettings,
+				AVVideoCleanApertureKey			: apertureSettings,
+
 		};
 	}
 }
