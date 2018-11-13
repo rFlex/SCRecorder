@@ -11,6 +11,10 @@
 
 @interface SCRecorderTools : NSObject
 
++ (CGSize)getHighestAvailableFormatForDevicePosition:(AVCaptureDevicePosition)position
+											  minFPS:(CGFloat)minFPS
+											  maxFPS:(CGFloat)maxFPS;
+
 /**
  Returns the best session preset that is compatible with all available video
  devices (front and back camera). It will ensure that buffer output from
