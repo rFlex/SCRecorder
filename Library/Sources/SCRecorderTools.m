@@ -13,15 +13,10 @@
 
 @implementation SCRecorderTools
 
-+ (CGSize)getHighestAvailableFormatForDevicePosition:(AVCaptureDevicePosition)position
++ (struct SCDeviceSetting)getHighestAvailableFormatForDevicePosition:(AVCaptureDevicePosition)position
 											  minFPS:(CGFloat)minFPS
 											  maxFPS:(CGFloat)maxFPS {
-	struct deviceSetting {
-		CGSize resolution;
-		CGFloat fpsMax;
-	};
-
-	struct deviceSetting bestDeviceSetting;
+	struct SCDeviceSetting bestDeviceSetting;
 	bestDeviceSetting.resolution = CGSizeZero;
 	bestDeviceSetting.fpsMax = 0;
 
@@ -57,7 +52,7 @@
 			}
 		}
 	}
-	return bestDeviceSetting.resolution;
+	return bestDeviceSetting;
 }
 
 

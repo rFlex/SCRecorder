@@ -9,11 +9,16 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
+struct SCDeviceSetting {
+	CGSize resolution;
+	CGFloat fpsMax;
+};
+
 @interface SCRecorderTools : NSObject
 
-+ (CGSize)getHighestAvailableFormatForDevicePosition:(AVCaptureDevicePosition)position
-											  minFPS:(CGFloat)minFPS
-											  maxFPS:(CGFloat)maxFPS;
++ (struct SCDeviceSetting)getHighestAvailableFormatForDevicePosition:(AVCaptureDevicePosition)position
+														minFPS:(CGFloat)minFPS
+														maxFPS:(CGFloat)maxFPS;
 
 /**
  Returns the best session preset that is compatible with all available video
