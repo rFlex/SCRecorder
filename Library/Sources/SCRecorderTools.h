@@ -18,7 +18,8 @@ struct SCDeviceSetting {
 
 + (struct SCDeviceSetting)getHighestAvailableFormatForDevicePosition:(AVCaptureDevicePosition)position
 														minFPS:(CGFloat)minFPS
-														maxFPS:(CGFloat)maxFPS;
+														maxFPS:(CGFloat)maxFPS
+															  is16x9:(BOOL)is16x9;
 
 /**
  Returns the best session preset that is compatible with all available video

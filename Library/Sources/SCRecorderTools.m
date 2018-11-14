@@ -14,8 +14,9 @@
 @implementation SCRecorderTools
 
 + (struct SCDeviceSetting)getHighestAvailableFormatForDevicePosition:(AVCaptureDevicePosition)position
-											  minFPS:(CGFloat)minFPS
-											  maxFPS:(CGFloat)maxFPS {
+															  minFPS:(CGFloat)minFPS
+															  maxFPS:(CGFloat)maxFPS
+															  is16x9:(BOOL)is16x9 {
 	struct SCDeviceSetting bestDeviceSetting;
 	bestDeviceSetting.resolution = CGSizeZero;
 	bestDeviceSetting.fpsMax = 0;
@@ -38,6 +39,13 @@
 			CGFloat maxFPS = [SCRecorderTools maxFrameRateForFormat:format minFrameRate:30];
 			CMVideoDimensions dimension = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
 			CGSize dSize = CGSizeMake(dimension.width, dimension.height);
+
+			double 	aspectRatio = (MAX(dSize.width, dSize.height) / MIN(dSize.width, dSize.height));
+			double 	delta = ABS(aspectRatio - (16.0/9.0));
+			BOOL 	closeEnoughTo16x9 = delta < 0.1;	// 1.6777 .. 1.8777	tag:gabe - if this is encompassing too much - maybe 0.08?
+
+			if (!closeEnoughTo16x9 && is16x9)
+				continue;
 
 			if (CGSizeEqualToSize(CGSizeZero, bestDeviceSetting.resolution)) {
 				bestDeviceSetting.resolution = dSize;
