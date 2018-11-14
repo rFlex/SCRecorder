@@ -11,6 +11,7 @@
 @implementation SCVideoConfiguration
 
 @synthesize usesRecommendedSettings;
+@synthesize forceSizeWithRecommendedSettings;
 
 - (id)init {
 	self = [super init];
@@ -100,7 +101,8 @@ static CGSize MakeVideoSize(CGSize videoSize, float requestedWidth) {
 	if (usesRecommendedSettings) {
 		NSNumber *recWidth = recommendedSettings[AVVideoWidthKey];
 		NSNumber *recHeight = recommendedSettings[AVVideoHeightKey];
-		outputSize = CGSizeMake(recWidth.floatValue, recHeight.floatValue);
+		if (!forceSizeWithRecommendedSettings)
+			outputSize = CGSizeMake(recWidth.floatValue, recHeight.floatValue);
 
 		NSMutableDictionary *recommendedCompressionSettings = recommendedSettings[AVVideoCompressionPropertiesKey];
 

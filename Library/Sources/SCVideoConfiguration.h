@@ -186,6 +186,12 @@ typedef enum : NSUInteger {
  * */
 @property (assign, nonatomic) BOOL usesRecommendedSettings;
 
+/*
+ * Only used if recommended setttings == true. Ensures the given size is used
+ *
+ * */
+@property (assign, nonatomic) BOOL forceSizeWithRecommendedSettings;
+
 
 - (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize usingOutput:(AVCaptureVideoDataOutput *__nullable)output;
 - (NSDictionary *__nonnull)createAssetWriterOptionsWithVideoSize:(CGSize)videoSize
