@@ -24,6 +24,11 @@
 @interface SCRecorder : NSObject<AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate>
 
 /**
+ Time interval between audio and video sample buffer's presentation time
+ */
+- (CMTime)videoDelay;
+
+/**
  Access the configuration for the video.
  */
 @property (readonly, nonatomic) SCVideoConfiguration  * __nonnull videoConfiguration;

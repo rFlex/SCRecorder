@@ -768,14 +768,15 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
             iSelf->_lastTimeAudio = lastTimeAudio;
 
             if (!iSelf->_currentSegmentHasVideo) {
-                iSelf->_currentSegmentDuration = CMTimeSubtract(lastTimeAudio, iSelf->_sessionStartTime);
+                iSelf->_currentSegmentDuration = CMTimeAdd(CMTimeSubtract(lastTimeAudio, iSelf->_sessionStartTime), [self.recorder videoDelay]);
             }
 
-            //            NSLog(@"Appending audio at %fs (buffer: %fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)), CMTimeGetSeconds(actualBufferTime));
+            //            NSLog(@"Appending audio at %.3fs", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)));
             iSelf->_currentSegmentHasAudio = YES;
 
             completion(YES);
         } else {
+            NSLog(@"Failed to Append audio at %.3fs", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(adjustedBuffer)));
             completion(NO);
         }
 
@@ -786,8 +787,9 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 - (void)_startSessionIfNeededAtTime:(CMTime)time
 {
     if (CMTIME_IS_INVALID(_sessionStartTime)) {
-        _sessionStartTime = time;
-        [_assetWriter startSessionAtSourceTime:time];
+        CMTime bufferTimestamp = CMTimeAdd(time, [self.recorder videoDelay]);
+        _sessionStartTime = bufferTimestamp;
+        [_assetWriter startSessionAtSourceTime:bufferTimestamp];
     }
 }
 
@@ -804,26 +806,15 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
         }
         duration = computedFrameDuration;
     }
-    /*{
-		CMTime timeVideo = _lastTimeVideo;
-		CMTime actualBufferDuration = duration;
-		if (CMTIME_IS_VALID(timeVideo)) {
-			while (CMTIME_COMPARE_INLINE(CMTimeSubtract(actualBufferTime, timeVideo), >=, CMTimeMultiply(actualBufferDuration, 2))) {
-				NSLog(@"Missing buffer");
-				timeVideo = CMTimeAdd(timeVideo, actualBufferDuration);
-			}
-		}
-	}*/
-
+    
     if ([_videoInput isReadyForMoreMediaData]) {
         if ([_videoPixelBufferAdaptor appendPixelBuffer:videoPixelBuffer withPresentationTime:bufferTimestamp]) {
-            _currentSegmentDuration = CMTimeSubtract(CMTimeAdd(bufferTimestamp, duration), _sessionStartTime);
+            _currentSegmentDuration = CMTimeAdd(CMTimeSubtract(CMTimeAdd(bufferTimestamp, duration), _sessionStartTime),[self.recorder videoDelay]);
             _lastTimeVideo = actualBufferTime;
 
             _currentSegmentHasVideo = YES;
             completion(YES);
         } else {
-            NSLog(@"Failed to append buffer");
             completion(NO);
         }
     } else {
