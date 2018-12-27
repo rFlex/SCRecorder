@@ -563,7 +563,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSec * NSEC_PER_SEC)), _sessionQueue, ^{
         
         _isRecording = NO;
-        [wSelf clearBufferHolder:firstVideoRecBuffer];
+        [wSelf clearFirstRecVideoBufferHolder];
+        wSelf.isPausingNow = NO;
+        _isRecordingActuallyStarted = NO;
         
         void (^block)(void) = ^{
             typeof(self) iSelf = wSelf;
@@ -597,7 +599,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
             } else {
                 dispatch_handler(completionHandler);
             }
-            wSelf.isPausingNow = NO;
         };
         
         if ([SCRecorder isSessionQueue]) {
@@ -643,7 +644,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 	if (CMTIME_IS_VALID(suggestedMaxRecordDuration)) {
 		if (CMTIME_COMPARE_INLINE(currentRecordDuration, >=, suggestedMaxRecordDuration)) {
 			_isRecording = NO;
-            [self clearBufferHolder:firstVideoRecBuffer];
+            [self clearFirstRecVideoBufferHolder];
 
 			dispatch_async(_sessionQueue, ^{
 				[recordSession endSegmentWithInfo:[self _createSegmentInfo] completionHandler:^(SCRecordSessionSegment *segment, NSError *error) {
@@ -755,7 +756,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
 - (void)captureOutput:(AVCaptureFileOutput *)captureOutput didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray *)connections error:(NSError *)error {
 	_isRecording = NO;
-    [self clearBufferHolder:firstVideoRecBuffer];
+    [self clearFirstRecVideoBufferHolder];
 
 	__weak typeof(self) wSelf = self;
 	dispatch_async(_sessionQueue, ^{
@@ -986,9 +987,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     }
 }
 
-- (void)clearBufferHolder:(SCSampleBufferHolder*)sampleBufferHolder{
-    sampleBufferHolder.sampleBuffer = nil;
-    sampleBufferHolder = nil;
+- (void)clearFirstRecVideoBufferHolder{
+    firstVideoRecBuffer.sampleBuffer = nil;
+    firstVideoRecBuffer = nil;
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -1288,6 +1289,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
 - (CMTime)videoDelay{
     CMTime videoDelay = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(everyAudioCapturedBuffer.sampleBuffer),CMSampleBufferGetPresentationTimeStamp(everyVideoCapturedBuffer.sampleBuffer));
+    if (CMTimeGetSeconds(videoDelay) < 0) {
+        videoDelay = kCMTimeZero;
+    }
     return videoDelay;
 }
 

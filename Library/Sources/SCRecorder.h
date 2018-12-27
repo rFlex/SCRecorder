@@ -425,6 +425,11 @@
 - (void)pause:( void(^ __nullable)(void)) completionHandler;
 
 /**
+ Indicates that recording is in pausing process now
+ */
+@property (assign, nonatomic, readonly) BOOL isPausingNow;
+
+/**
  Capture a photo from the camera
  @param completionHandler called on the main queue with the image taken or an error in case of a problem
  */
