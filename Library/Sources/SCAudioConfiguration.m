@@ -62,14 +62,23 @@
 	if (channels == 0) {
 		channels = kSCAudioConfigurationDefaultNumberOfChannels;
 	}
-
-	return @{
-			AVFormatIDKey : @(self.format),
-			AVEncoderBitRateKey : @(bitrate),
-			AVNumberOfChannelsKey : @(channels),
-			AVSampleRateKey : [NSNumber numberWithInt: sampleRate],
-			AVEncoderAudioQualityKey : @(AVAudioQualityMax)
-	};
+	//crash when using AVEncoderAudioQualityKey in ios 11
+	if (@available(iOS 12.0, *)) {
+		return @{
+				AVFormatIDKey : @(self.format),
+				AVEncoderBitRateKey : @(bitrate),
+				AVNumberOfChannelsKey : @(channels),
+				AVSampleRateKey : [NSNumber numberWithInt: sampleRate],
+				AVEncoderAudioQualityKey : @(AVAudioQualityMax)
+		};
+	} else {
+		return @{
+				AVFormatIDKey : @(self.format),
+				AVEncoderBitRateKey : @(bitrate),
+				AVNumberOfChannelsKey : @(channels),
+				AVSampleRateKey : [NSNumber numberWithInt: sampleRate],
+		};
+	}
 }
 
 @end
