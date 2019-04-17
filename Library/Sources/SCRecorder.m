@@ -70,8 +70,13 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
         _renderingEnabled = YES;
 
+        _trueDepthEnabled = NO;
+
         dispatch_queue_set_specific(_sessionQueue, kSCRecorderRecordSessionQueueKey, "true", nil);
         dispatch_set_target_queue(_sessionQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+
+        dispatch_set_target_queue(_dataOutputQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+
 
         _captureSessionPreset = AVCaptureSessionPresetHigh;
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
@@ -340,15 +345,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 } else {
                     _videoOutputAdded = YES;
                 }
-
-                // Use an AVCaptureDataOutputSynchronizer to synchronize the video data and depth data outputs.
-                // The first output in the dataOutputs array, in this case the AVCaptureVideoDataOutput, is the "master" output.
-                if (@available(iOS 11.0, *)) {
-                    if (_depthOutputAdded && _metadataOutputAdded && _videoOutputAdded) {
-                        _outputSynchronizer = [[AVCaptureDataOutputSynchronizer alloc] initWithDataOutputs:@[_videoOutput, _depthOutput, _metadataOutput]];
-                        [_outputSynchronizer setDelegate:self queue:_dataOutputQueue];
-                    }
-                }
             }
 
             _audioOutputAdded = NO;
@@ -387,6 +383,15 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                         newError = [SCRecorder createError:@"Cannot add photoOutput inside the session"];
                     }
                 }
+            }
+        }
+
+        // Use an AVCaptureDataOutputSynchronizer to synchronize the video data and depth data outputs.
+        // The first output in the dataOutputs array, in this case the AVCaptureVideoDataOutput, is the "master" output.
+        if (@available(iOS 11.0, *)) {
+            if (_depthOutputAdded && _metadataOutputAdded && _videoOutputAdded) {
+                _outputSynchronizer = [[AVCaptureDataOutputSynchronizer alloc] initWithDataOutputs:@[_videoOutput, _depthOutput, _metadataOutput]];
+                [_outputSynchronizer setDelegate:self queue:_dataOutputQueue];
             }
         }
 
@@ -815,13 +820,13 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         return;
     }
 
-    AVCaptureSynchronizedDepthData *syncedDepthData = (AVCaptureSynchronizedDepthData *)synchronizedDataCollection[_depthOutput];
-    AVCaptureSynchronizedSampleBufferData *syncedVideoData = (AVCaptureSynchronizedSampleBufferData *)synchronizedDataCollection[_videoOutput];
+    AVCaptureSynchronizedDepthData *syncedDepthData = (AVCaptureSynchronizedDepthData *)[synchronizedDataCollection synchronizedDataForCaptureOutput:_depthOutput];
+    AVCaptureSynchronizedSampleBufferData *syncedVideoData = (AVCaptureSynchronizedSampleBufferData *)[synchronizedDataCollection synchronizedDataForCaptureOutput:_videoOutput];
     if (syncedDepthData == nil || syncedVideoData == nil || syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped) {
         return;
     }
 
-    AVCaptureSynchronizedMetadataObjectData *syncedMetadata = (AVCaptureSynchronizedMetadataObjectData *)synchronizedDataCollection[_metadataOutput];
+    AVCaptureSynchronizedMetadataObjectData *syncedMetadata = (AVCaptureSynchronizedMetadataObjectData *)[synchronizedDataCollection synchronizedDataForCaptureOutput:_metadataOutput];
     AVMetadataObject *firstFace = syncedMetadata.metadataObjects.firstObject;
     AVMetadataObject *faceMetadata = nil;
     AVCaptureConnection *connection = [_videoOutput connectionWithMediaType:AVMediaTypeVideo];
@@ -832,11 +837,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     CVPixelBufferRef depthPixelBuffer = syncedDepthData.depthData.depthDataMap;
     CVPixelBufferRef videoPixelBuffer = CMSampleBufferGetImageBuffer(syncedVideoData.sampleBuffer);
     CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(syncedVideoData.sampleBuffer);
-    [self.delegate recorder:self
-  didOutputVideoPixelBuffer:videoPixelBuffer
-                depthBuffer:depthPixelBuffer
-          formatDescription:formatDescription
-               faceMetadata:faceMetadata];
+
+    id<SCRecorderDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(recorder:didOutputVideoPixelBuffer:depthBuffer:formatDescription:faceMetadata:)]) {
+        [delegate recorder:self didOutputVideoPixelBuffer:videoPixelBuffer depthBuffer:depthPixelBuffer formatDescription:formatDescription faceMetadata:faceMetadata];
+    }
 
     // do stuff with buffer
 }
@@ -1380,6 +1385,10 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         return nil;
     }
 
+    AVCaptureDevice *trueDepthDevice = _trueDepthDiscoverySession.devices.firstObject;
+    if (_trueDepthEnabled && trueDepthDevice && _device == AVCaptureDevicePositionFront) {
+        return trueDepthDevice;
+    }
     return [SCRecorderTools videoDeviceForPosition:_device];
 }
 
@@ -1453,7 +1462,17 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)setTrueDepthEnabled:(BOOL)trueDepthEnabled {
+    _trueDepthEnabled = trueDepthEnabled;
 
+    if (_captureSession != nil) {
+        [self reconfigureVideoInput:self.videoConfiguration.enabled audioInput:NO];
+    }
+
+    if (_trueDepthEnabled) {
+        [self setCaptureSessionPreset:AVCaptureSessionPreset1280x720];
+    } else {
+        [self setCaptureSessionPreset:AVCaptureSessionPresetHigh];
+    }
 }
 
 - (void)setFlashMode:(SCFlashMode)flashMode {
