@@ -49,11 +49,11 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
  Called when the capture session outputs a video sample buffer
  with depth data synced.
  */
-- (__nonnull CVPixelBufferRef)recorder:(SCRecorder *__nonnull)recorder
+- (CVPixelBufferRef __nonnull)recorder:(SCRecorder *__nonnull)recorder
              didOutputVideoPixelBuffer:(__nonnull CVPixelBufferRef)videoBuffer
                            depthBuffer:(__nonnull CVPixelBufferRef) depthBuffer
                      formatDescription:(__nonnull CMFormatDescriptionRef) formatDescription
-                          faceMetadata:(AVMetadataObject * _Nullable)faceMetadata;
+                          faceMetadata:(AVMetadataObject * __nullable)faceMetadata;
 
 /**
  Called when the capture session outputs an audio sample buffer.
