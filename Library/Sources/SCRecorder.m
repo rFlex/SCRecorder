@@ -819,7 +819,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                                                   depthBuffer:depthPixelBuffer
                                             formatDescription:formatDescription
                                                  faceMetadata:faceMetadata];
-
     // do stuff with buffer
 }
 
