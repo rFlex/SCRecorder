@@ -814,11 +814,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     CVPixelBufferRef depthPixelBuffer = syncedDepthData.depthData.depthDataMap;
     CVPixelBufferRef videoPixelBuffer = CMSampleBufferGetImageBuffer(syncedVideoData.sampleBuffer);
     CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(syncedVideoData.sampleBuffer);
-    CVPixelBufferRef modifiedBuffer = [self.delegate recorder:self
-                                    didOutputVideoPixelBuffer:videoPixelBuffer
-                                                  depthBuffer:depthPixelBuffer
-                                            formatDescription:formatDescription
-                                                 faceMetadata:faceMetadata];
+    [self.delegate recorder:self
+  didOutputVideoPixelBuffer:videoPixelBuffer
+                depthBuffer:depthPixelBuffer
+          formatDescription:formatDescription
+               faceMetadata:faceMetadata];
     // do stuff with buffer
 }
 
