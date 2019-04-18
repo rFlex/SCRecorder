@@ -336,6 +336,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 if (![session.outputs containsObject:_videoOutput]) {
                     if ([session canAddOutput:_videoOutput]) {
                         [session addOutput:_videoOutput];
+                        _videoOutput.videoSettings = @{ (NSString *)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA) };
                         _videoOutputAdded = YES;
                     } else {
                         if (newError == nil) {
