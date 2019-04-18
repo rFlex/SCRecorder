@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7A3AF7112268CAE100618842 /* SCPlayerMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3AF7102268CAE100618842 /* SCPlayerMetalView.swift */; };
+		7A3AF7122268CD1000618842 /* SCPlayerMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3AF7102268CAE100618842 /* SCPlayerMetalView.swift */; };
 		9079317B1BD2A06700D7D181 /* SCFilter+VideoComposition.h in Headers */ = {isa = PBXBuildFile; fileRef = 907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */; };
 		9079317C1BD2A06700D7D181 /* SCFilter+VideoComposition.m in Sources */ = {isa = PBXBuildFile; fileRef = 9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */; };
 		9079317F1BD451C200D7D181 /* SCFilter+UIImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 9079317D1BD451C200D7D181 /* SCFilter+UIImage.h */; };
@@ -125,6 +127,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7A3AF70F2268CAE000618842 /* SCRecorder-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SCRecorder-Bridging-Header.h"; sourceTree = "<group>"; };
+		7A3AF7102268CAE100618842 /* SCPlayerMetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCPlayerMetalView.swift; sourceTree = "<group>"; };
 		907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SCFilter+VideoComposition.h"; sourceTree = "<group>"; };
 		9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SCFilter+VideoComposition.m"; sourceTree = "<group>"; };
 		9079317D1BD451C200D7D181 /* SCFilter+UIImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SCFilter+UIImage.h"; sourceTree = "<group>"; };
@@ -462,6 +466,8 @@
 				DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */,
 				DC23C1C61AAF95600013E14C /* SCRecordSessionSegment.m */,
 				DCF3A68E1AB9F4760034CF5C /* SCRecorderDelegate.h */,
+				7A3AF7102268CAE100618842 /* SCPlayerMetalView.swift */,
+				7A3AF70F2268CAE000618842 /* SCRecorder-Bridging-Header.h */,
 			);
 			name = Recorder;
 			sourceTree = "<group>";
@@ -641,6 +647,9 @@
 				LastUpgradeCheck = 0620;
 				ORGANIZATIONNAME = rFlex;
 				TargetAttributes = {
+					DC23FE1017B4200700389EDA = {
+						LastSwiftMigration = 1020;
+					};
 					DCDC1DF21AC79592001DC3D9 = {
 						CreatedOnToolsVersion = 6.2;
 					};
@@ -651,6 +660,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = DC551C3B17ADD66000E37F8F;
@@ -691,6 +701,7 @@
 				DC50285A18E52023004E833F /* SCRecordSession.m in Sources */,
 				DC23C1C81AAF95600013E14C /* SCRecordSessionSegment.m in Sources */,
 				DCB041681924663700D945D2 /* SCAssetExportSession.m in Sources */,
+				7A3AF7112268CAE100618842 /* SCPlayerMetalView.swift in Sources */,
 				DCA163961A2028B800505966 /* SCVideoConfiguration.m in Sources */,
 				DCEE378B1B17E6480019C7B5 /* SCContext.m in Sources */,
 				DC50285818E51FC0004E833F /* SCRecorder.m in Sources */,
@@ -733,6 +744,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCEE378E1B17F3D50019C7B5 /* SCWeakSelectorTarget.m in Sources */,
+				7A3AF7122268CD1000618842 /* SCPlayerMetalView.swift in Sources */,
 				DCEE378F1B17F3D50019C7B5 /* SCFilterAnimation.m in Sources */,
 				DCEE378D1B17F3CA0019C7B5 /* SCContext.m in Sources */,
 				DCDC1E161AC797EF001DC3D9 /* SCVideoConfiguration.m in Sources */,
@@ -774,14 +786,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				DEFINES_MODULE = NO;
+				DEFINES_MODULE = YES;
 				DSTROOT = /tmp/SCAudioVideoRecorder.dst;
 				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/SCRecorder-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -789,14 +805,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				DEFINES_MODULE = NO;
+				DEFINES_MODULE = YES;
 				DSTROOT = /tmp/SCAudioVideoRecorder.dst;
 				ENABLE_BITCODE = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/SCRecorder-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -817,6 +836,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				DEFINES_MODULE = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -831,7 +851,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 			};
@@ -854,6 +874,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				DEFINES_MODULE = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -861,7 +882,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;

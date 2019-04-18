@@ -8,13 +8,14 @@
 
 #import "SCRecorder.h"
 #import "SCRecordSession_Internal.h"
+#import "SCRecorder-Swift.h"
 #define dispatch_handler(x) if (x != nil) dispatch_async(dispatch_get_main_queue(), x)
 #define kSCRecorderRecordSessionQueueKey "SCRecorderRecordSessionQueue"
 #define kMinTimeBetweenAppend 0.004
 
 API_AVAILABLE(ios(11.0))
 @interface SCRecorder() <AVCaptureDataOutputSynchronizerDelegate> {
-    AVCaptureVideoPreviewLayer *_previewLayer;
+    SCPlayerMetalView *_playerView;
     AVCaptureSession *_captureSession;
     UIView *_previewView;
     AVCaptureVideoDataOutput *_videoOutput;
@@ -79,8 +80,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
 
         _captureSessionPreset = AVCaptureSessionPresetHigh;
-        _previewLayer = [[AVCaptureVideoPreviewLayer alloc] init];
-        _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        _playerView = [[SCPlayerMetalView alloc] initWithFrame:CGRectZero];
         _initializeSessionLazily = YES;
 
         _videoOrientation = AVCaptureVideoOrientationPortrait;
@@ -171,9 +171,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if ([videoConnection isVideoOrientationSupported]) {
         videoConnection.videoOrientation = videoOrientation;
     }
-    if ([_previewLayer.connection isVideoOrientationSupported]) {
-        _previewLayer.connection.videoOrientation = videoOrientation;
-    }
+//    if ([_previewLayer.connection isVideoOrientationSupported]) {
+//        _previewLayer.connection.videoOrientation = videoOrientation;
+//    }
 
     AVCaptureConnection *photoConnection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
     if ([photoConnection isVideoOrientationSupported]) {
@@ -421,7 +421,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         *error = _error;
     }
 
-    _previewLayer.session = session;
+//    _previewLayer.session = session;
 
     [self reconfigureVideoInput:YES audioInput:YES];
 
@@ -435,6 +435,14 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if (!self.isPrepared) {
         success = [self prepare:nil];
     }
+
+//    let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
+//    let videoDevicePosition = self.videoDeviceInput.device.position
+//    let rotation = PreviewMetalView.Rotation(with: interfaceOrientation,
+//                                             videoOrientation: videoOrientation,
+//                                             cameraPosition: videoDevicePosition)
+
+//    _playerView.mirroring = YES;
 
     dispatch_async(_dataOutputQueue, ^{
         _renderingEnabled = YES;
@@ -538,7 +546,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
             _renderingEnabled = NO;
         });
 
-        _previewLayer.session = nil;
+//        _previewLayer.session = nil;
         _captureSession = nil;
     }
     [self _reconfigureSession];
@@ -816,6 +824,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     });
 }
 
+#pragma mark - Data Synchronizer
+
 - (void)dataOutputSynchronizer:(AVCaptureDataOutputSynchronizer *)synchronizer didOutputSynchronizedDataCollection:(AVCaptureSynchronizedDataCollection *)synchronizedDataCollection  API_AVAILABLE(ios(11.0)) {
     if (!_renderingEnabled || !_trueDepthEnabled) {
         return;
@@ -844,7 +854,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         [delegate recorder:self didOutputVideoPixelBuffer:videoPixelBuffer depthBuffer:depthPixelBuffer formatDescription:formatDescription faceMetadata:faceMetadata];
     }
 
-    // do stuff with buffer
+    _playerView.pixelBuffer = videoPixelBuffer;
 }
 
 - (void)_handleVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer withSession:(SCRecordSession *)recordSession connection:(AVCaptureConnection *)connection {
@@ -992,6 +1002,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 CFRelease(sampleBuffer);
             });
         }
+
+        _playerView.pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
     } else if (captureOutput == _audioOutput) {
         _lastAudioBuffer.sampleBuffer = sampleBuffer;
         //        NSLog(@"AUDIO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
@@ -1220,8 +1232,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)previewViewFrameChanged {
-    _previewLayer.affineTransform = CGAffineTransformIdentity;
-    _previewLayer.frame = _previewView.bounds;
+    _playerView.layer.affineTransform = CGAffineTransformIdentity;
+    _playerView.frame = _previewView.bounds;
 }
 
 #pragma mark - FOCUS
@@ -1425,12 +1437,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)setPreviewView:(UIView *)previewView {
-    [_previewLayer removeFromSuperlayer];
+    [_playerView removeFromSuperview];
 
     _previewView = previewView;
 
     if (_previewView != nil) {
-        [_previewView.layer insertSublayer:_previewLayer atIndex:0];
+        [_previewView insertSubview:_playerView atIndex:0];
 
         [self previewViewFrameChanged];
     }
@@ -1520,7 +1532,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (AVCaptureVideoPreviewLayer*)previewLayer {
-    return _previewLayer;
+//    return _previewLayer;
+    return nil;
 }
 
 - (BOOL)isPrepared {
