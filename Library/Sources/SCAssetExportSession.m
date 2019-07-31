@@ -41,6 +41,7 @@
 @property (nonatomic, assign) BOOL needsLeaveAudio;
 @property (nonatomic, assign) BOOL needsLeaveVideo;
 @property (nonatomic, assign) CMTime nextAllowedVideoFrame;
+@property (nonatomic, assign) BOOL paused;
 
 @end
 
@@ -484,6 +485,19 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
         [iSelf->_reader cancelReading];
         [iSelf->_writer cancelWriting];
     });
+}
+
+- (void)pauseExport {
+    if (self.paused) {
+        return;
+    }
+    self.paused = YES;
+    dispatch_suspend(_videoQueue);
+}
+
+- (void)resumeExport{
+    self.paused = NO;
+    dispatch_resume(_videoQueue);
 }
 
 - (SCFilter *)_generateRenderingFilterForVideoSize:(CGSize)videoSize {

@@ -69,6 +69,11 @@
 @property (readonly, atomic) BOOL cancelled;
 
 /**
+ Will be set to YES if pauseExport was called
+ */
+@property (readonly, nonatomic, assign) BOOL paused;
+
+/**
  The timeRange to read from the inputAsset
  */
 @property (assign, nonatomic) CMTimeRange timeRange;
@@ -102,6 +107,16 @@
  Cancels exportAsynchronouslyWithCompletionHandler
  */
 - (void)cancelExport;
+
+/**
+ Pauses export. Call will set paused property to YES.
+ */
+- (void)pauseExport;
+
+/**
+ Resumes export. Call will set paused property to NO.
+ */
+- (void)resumeExport;
 
 /**
  Starts the asynchronous execution of the export session
