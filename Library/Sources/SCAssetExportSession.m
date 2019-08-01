@@ -487,16 +487,21 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     });
 }
 
-- (void)pauseExport {
+- (void)pauseExport{
     if (self.paused) {
         return;
     }
     self.paused = YES;
+    dispatch_suspend(_audioQueue);
     dispatch_suspend(_videoQueue);
 }
 
 - (void)resumeExport{
+    if (!self.paused) {
+        return;
+    }
     self.paused = NO;
+    dispatch_resume(_audioQueue);
     dispatch_resume(_videoQueue);
 }
 
