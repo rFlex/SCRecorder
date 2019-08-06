@@ -1289,7 +1289,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
 - (CMTime)videoDelay{
     CMTime videoDelay = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(everyAudioCapturedBuffer.sampleBuffer),CMSampleBufferGetPresentationTimeStamp(everyVideoCapturedBuffer.sampleBuffer));
-    if (CMTimeGetSeconds(videoDelay) < 0) {
+    if (CMTimeGetSeconds(videoDelay) < 0 || !CMTIME_IS_NUMERIC(videoDelay)) {
         videoDelay = kCMTimeZero;
     }
     return videoDelay;
