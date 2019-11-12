@@ -78,7 +78,7 @@
                 }
 
                 if (shouldStopProcessing) {
-                    [self stopProcessing];
+                    [self stopProcessingWithQueueCleaning:NO];
                 }
             }
         }
@@ -90,11 +90,15 @@
 }
 
 - (void)stopProcessing {
+    [self stopProcessingWithQueueCleaning:YES];
+}
+
+- (void)stopProcessingWithQueueCleaning:(BOOL)cleanQueue {
     dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
 
     _completed = YES;
-
-    [_queue removeAllObjects];
+    if (cleanQueue)
+        [_queue removeAllObjects];
     
     while (dispatch_semaphore_signal(_availableItemsToDequeue) < 0) {
 
@@ -104,26 +108,28 @@
     }
     
 
-    dispatch_semaphore_signal(_accessQueue);    
+    dispatch_semaphore_signal(_accessQueue);
 }
 
 - (id)dequeue {
     id obj = nil;
-    
-    if (!_completed) {
-        dispatch_semaphore_wait(_availableItemsToDequeue, DISPATCH_TIME_FOREVER);
-        
-        dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
-        if (_queue.count > 0) {
-            obj = _queue.firstObject;
-            [_queue removeObjectAtIndex:0];
-            dispatch_semaphore_signal(_availableItemsToEnqueue);
-        } else {
-            dispatch_semaphore_signal(_availableItemsToDequeue);
-        }
-
-        dispatch_semaphore_signal(_accessQueue);
+    if (_completed && _queue.count <= 0) {
+        [self stopProcessing];
+        return nil;
     }
+    
+    dispatch_semaphore_wait(_availableItemsToDequeue, DISPATCH_TIME_FOREVER);
+    
+    dispatch_semaphore_wait(_accessQueue, DISPATCH_TIME_FOREVER);
+    if (_queue.count > 0) {
+        obj = _queue.firstObject;
+        [_queue removeObjectAtIndex:0];
+        dispatch_semaphore_signal(_availableItemsToEnqueue);
+    } else {
+        dispatch_semaphore_signal(_availableItemsToDequeue);
+    }
+
+    dispatch_semaphore_signal(_accessQueue);
     
     return obj;
 }
