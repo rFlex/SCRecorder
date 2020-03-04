@@ -680,21 +680,41 @@ NSString * const SCRecordSessionDocumentDirectory = @"DocumentDirectory";
 
         return nil;
     } else {
-        AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:asset presetName:exportSessionPreset];
-        exportSession.outputURL = outputUrl;
-        exportSession.outputFileType = fileType;
-        exportSession.shouldOptimizeForNetworkUse = YES;
-        [exportSession exportAsynchronouslyWithCompletionHandler:^{
-            NSError *error = exportSession.error;
+        
+        if (self.segments.count == 1) {
+            
+            NSError* copyError = nil;
+            NSURL* srcURL = ((AVURLAsset*)asset).URL;
+            [[NSFileManager defaultManager] copyItemAtURL:srcURL
+                                                    toURL:outputUrl
+                                                    error:&copyError];
+            NSError* delError = nil;
+            [[NSFileManager defaultManager] removeItemAtURL:srcURL
+                                                      error:&delError];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completionHandler != nil)
+                    completionHandler(outputUrl, copyError);
+            });
+            return nil;
+            
+        } else {
+            
+            AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:asset presetName:exportSessionPreset];
+            exportSession.outputURL = outputUrl;
+            exportSession.outputFileType = fileType;
+            exportSession.shouldOptimizeForNetworkUse = YES;
+            [exportSession exportAsynchronouslyWithCompletionHandler:^{
+                NSError *error = exportSession.error;
 
-            if (completionHandler != nil) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(outputUrl, error);
-                });
-            }
-        }];
-
-        return exportSession;
+                if (completionHandler != nil) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completionHandler(outputUrl, error);
+                    });
+                }
+            }];
+            return exportSession;
+        }
 
     }
 }
