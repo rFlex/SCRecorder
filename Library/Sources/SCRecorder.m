@@ -423,14 +423,58 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 	CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
 	CIImage *ciImage = [CIImage imageWithCVPixelBuffer:buffer];
 
-	CGImageRef cgImage = [_context createCGImage:ciImage fromRect:CGRectMake(0, 0, CVPixelBufferGetWidth(buffer), CVPixelBufferGetHeight(buffer))];
-
-	UIImage *image = [UIImage imageWithCGImage:cgImage];
-
-	CGImageRelease(cgImage);
+    // [CIContext createCGImage:...] leads to bigger memory consumption
+    UIImage *image = [self imageFromCIImage:ciImage
+                                      scale:1
+                                orientation:UIImageOrientationUp];
 	CFRelease(sampleBuffer);
 
 	return image;
+}
+
+static const size_t kComponentsPerPixel = 4;
+static const size_t kBitsPerComponent = sizeof(unsigned char) * 8;
+static void releasePixels(void *info, const void *data, size_t size)
+{
+    free((void*)data);
+}
+- (UIImage *)imageFromCIImage:(CIImage *)img
+                        scale:(CGFloat)scale
+                  orientation:(UIImageOrientation)orientation {
+    
+    int width = (int)img.extent.size.width;
+    int height = (int)img.extent.size.height;
+   
+    long memsize = sizeof(unsigned char) * width * height * kComponentsPerPixel;
+   
+    unsigned char *rawData = malloc(memsize);
+   
+    CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer: @NO}];
+   
+    CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
+   
+    [context render:img toBitmap:rawData rowBytes:width*kComponentsPerPixel bounds:img.extent format:kCIFormatRGBA8 colorSpace:rgb];
+   
+    CGDataProviderRef provider = CGDataProviderCreateWithData(nil, rawData, memsize, releasePixels);
+   
+    CGImageRef imageFromContext = CGImageCreate(width,
+                                                height,
+                                                kBitsPerComponent,
+                                                kBitsPerComponent * kComponentsPerPixel,
+                                                width*kComponentsPerPixel,
+                                                rgb,
+                                                kCGBitmapByteOrderDefault | kCGImageAlphaLast,
+                                                provider,
+                                                NULL,
+                                                false,
+                                                kCGRenderingIntentDefault);
+    UIImage *outImage = [UIImage imageWithCGImage:imageFromContext scale:scale orientation:orientation];
+   
+    CGImageRelease(imageFromContext);
+    CGDataProviderRelease(provider);
+    CGColorSpaceRelease(rgb);
+   
+    return outImage;
 }
 
 - (UIImage *)snapshotOfLastVideoBuffer {
