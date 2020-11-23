@@ -186,7 +186,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
             if ([overlay respondsToSelector:@selector(updateWithVideoTime:)]) {
                 [overlay updateWithVideoTime:timeSeconds];
             }
-
+            [overlay.layer renderInContext:ctx];
 //            [overlay layoutIfNeeded];
         };
 
@@ -195,8 +195,6 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
         } else {
             layoutBlock();
         }
-
-        [overlay.layer renderInContext:ctx];
 
         CGContextRelease(ctx);
     };
