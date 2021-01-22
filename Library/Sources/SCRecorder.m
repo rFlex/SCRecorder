@@ -1009,6 +1009,49 @@ static void releasePixels(void *info, const void *data, size_t size)
 	}
 }
 
+- (void)_cacheAudioSampleBuffer:(CMSampleBufferRef)sampleBuffer withSession:(SCRecordSession *)recordSession {
+    
+    CMTime                     sampleTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+    CMTime                    sampleDuration = CMSampleBufferGetDuration(sampleBuffer);
+
+    if (_didCaptureFirstSessionBuffer == NO) {
+//                NSLog(@"**** FIRST SESSION ***");
+        _firstSessionTime = sampleTime;
+        _lastBufferTime = sampleTime;
+        _didCaptureFirstSessionBuffer = YES;
+    }
+    if (_didCaptureFirstAudioBuffer == NO) {
+//                NSLog(@"**** FIRST BUFFER ***");
+        _runningTime = CMTimeSubtract(_lastBufferTime, _firstSessionTime);
+        _firstBufferTime = sampleTime;
+        _didCaptureFirstAudioBuffer = YES;
+    }
+    _lastBufferTime = CMTimeAdd(sampleTime, sampleDuration);
+
+    id<SCRecorderDelegate>     delegate = self.delegate;
+    CMBlockBufferRef        blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
+    CMItemCount             sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
+    size_t                    sampleSize = CMSampleBufferGetSampleSize(sampleBuffer, 0);
+    size_t                    dataLength = sampleCount * sampleSize;
+    SInt16*                    data = malloc(dataLength);
+    OSStatus                status = CMBlockBufferCopyDataBytes(blockBuffer, 0, dataLength, data);
+    CMTime                     bufferTimestamp = CMTimeSubtract(sampleTime, _firstBufferTime);
+
+    if (CMTimeCompare(_runningTime, kCMTimeZero))
+        bufferTimestamp = CMTimeAdd(bufferTimestamp, _runningTime);
+
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0), ^{
+    if (status == kCMBlockBufferNoErr) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [delegate recorder:self didReceiveAudioBuffer:data length:sampleCount timestamp:bufferTimestamp];
+        });
+    } else {
+        NSLog(@"OSStatus = %i", status);
+    }
+    free(data);
+//    });
+}
+
 - (void)storeSampleBuffer:(CMSampleBufferRef)sampleBuffer forOutput:(AVCaptureOutput *)captureOutput {
     
     if (captureOutput == _videoOutput) {
@@ -1065,6 +1108,11 @@ static void releasePixels(void *info, const void *data, size_t size)
             }
             
         }
+        
+        if (!_isRecording) {
+            [self _cacheAudioSampleBuffer:sampleBuffer withSession:_session];
+        }
+        
         if (_audioConfiguration.shouldIgnore) {
             return;
         }
