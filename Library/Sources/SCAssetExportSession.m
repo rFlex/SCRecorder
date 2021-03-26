@@ -43,6 +43,10 @@
 @property (nonatomic, assign) CMTime nextAllowedVideoFrame;
 @property (nonatomic, assign) BOOL paused;
 
+@property (nonatomic, weak) SCProcessingQueue* filterRenderingQueue;
+@property (nonatomic, weak) SCProcessingQueue* videoProcessingQueue;
+@property (nonatomic, weak) SCProcessingQueue* videoReadingQueue;
+
 @end
 
 @implementation SCAssetExportSession
@@ -224,6 +228,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
         SCProcessingQueue *videoProcessingQueue = nil;
         SCProcessingQueue *filterRenderingQueue = nil;
         SCProcessingQueue *videoReadingQueue = [SCProcessingQueue new];
+        self.videoReadingQueue = videoReadingQueue;
 
         __weak typeof(self) wSelf = self;
 
@@ -243,6 +248,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 
         if (_videoPixelAdaptor != nil) {
             filterRenderingQueue = [SCProcessingQueue new];
+            self.filterRenderingQueue = filterRenderingQueue;
             filterRenderingQueue.maxQueueSize = 2;
             [filterRenderingQueue startProcessingWithBlock:^id{
                 SCIOPixelBuffers *pixelBuffers = nil;
@@ -265,6 +271,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
             }];
 
             videoProcessingQueue = [SCProcessingQueue new];
+            self.videoProcessingQueue = videoProcessingQueue;
             videoProcessingQueue.maxQueueSize = 2;
             [videoProcessingQueue startProcessingWithBlock:^id{
                 SCIOPixelBuffers *videoBuffers = [filterRenderingQueue dequeue];
@@ -467,6 +474,14 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
     _cancelled = YES;
     __weak typeof(self) wSelf = self;
     dispatch_sync(_videoQueue, ^{
+        
+        [self.filterRenderingQueue stopProcessing];
+        [self.videoProcessingQueue stopProcessing];
+        [self.videoReadingQueue stopProcessing];
+        
+        [self markInputComplete:self.audioInput error:nil];
+        [self markInputComplete:self.videoInput error:nil];
+        
         typeof(self) iSelf = wSelf;
         if (iSelf->_needsLeaveVideo) {
             iSelf->_needsLeaveVideo = NO;
