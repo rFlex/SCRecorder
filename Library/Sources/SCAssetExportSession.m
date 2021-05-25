@@ -473,7 +473,7 @@ static CGContextRef SCCreateContextFromPixelBuffer(CVPixelBufferRef pixelBuffer)
 {
     _cancelled = YES;
     __weak typeof(self) wSelf = self;
-    dispatch_sync(_videoQueue, ^{
+    dispatch_async(_videoQueue, ^{
         
         [self.filterRenderingQueue stopProcessing];
         [self.videoProcessingQueue stopProcessing];
